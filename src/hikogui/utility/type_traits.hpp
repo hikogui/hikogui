@@ -18,7 +18,8 @@
 
 hi_export_module(hikogui.utility.type_traits);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 /** Is a numeric signed integer.
  *
  * The following types are numeric integers: signed char,
@@ -442,71 +443,6 @@ using make_uintxx_t = typename make_uintxx<N>::type;
 template<std::size_t N>
 using make_floatxx_t = typename make_floatxx<N>::type;
 
-/** Get an integer type that will fit all values from all template parameters.
- *
- * If there is a mix of signed and unsigned integer types, then:
- * 1. all unsigned integers are upgraded to a larger signed integer, then
- * 2. the largest signed integer is returned in `type`.
- *
- * If all integers are unsigned or all integers are signed, then:
- * 1. the largest integer is returned in `type`.
- *
- * @tparam L An integer type.
- * @tparam R Other integer types.
- */
-template<typename L, typename... R>
-struct common_integer;
-
-template<std::integral T>
-struct common_integer<T, T> {
-    using type = T;
-};
-
-template<std::unsigned_integral L, std::unsigned_integral R>
-struct common_integer<L, R> {
-    using type = std::conditional_t<(sizeof(L) > sizeof(R)), L, R>;
-};
-
-template<std::signed_integral L, std::signed_integral R>
-struct common_integer<L, R> {
-    using type = std::conditional_t<(sizeof(L) > sizeof(R)), L, R>;
-};
-
-template<std::unsigned_integral L, std::signed_integral R>
-struct common_integer<L, R> {
-    using _left_type = std::conditional_t<
-        (sizeof(L) < sizeof(short)),
-        short,
-        std::conditional_t<(sizeof(L) < sizeof(int)), int, std::conditional_t<(sizeof(L) < sizeof(long)), long, long long>>>;
-
-    using type = common_integer<_left_type, R>::type;
-};
-
-template<std::signed_integral L, std::unsigned_integral R>
-struct common_integer<L, R> {
-    using type = common_integer<R, L>::type;
-};
-
-template<std::integral L, std::integral M, std::integral... R>
-struct common_integer<L, M, R...> {
-    using type = common_integer<L, typename common_integer<M, R...>::type>::type;
-};
-
-/** Get an integer type that will fit all values from all template parameters.
- *
- * If there is a mix of signed and unsigned integer types, then:
- * 1. all unsigned integers are upgraded to a larger signed integer, then
- * 2. the largest signed integer is returned.
- *
- * If all integers are unsigned or all integers are signed, then:
- * 1. the largest integer is returned.
- *
- * @tparam L An integer type.
- * @tparam R Other integer types.
- */
-template<std::integral L, std::integral... R>
-using common_integer_t = common_integer<L, R...>::type;
-
 template<typename T>
 struct remove_cvptr {
     using type = std::remove_cv_t<std::remove_pointer_t<T>>;
@@ -521,25 +457,25 @@ template<typename To, typename From, typename Ei = void>
 struct copy_cv {};
 
 template<typename To, typename From>
-    requires(not std::is_const_v<From> and not std::is_volatile_v<From>)
+requires(not std::is_const_v<From> and not std::is_volatile_v<From>)
 struct copy_cv<To, From> {
     using type = std::remove_cv_t<To>;
 };
 
 template<typename To, typename From>
-    requires(not std::is_const_v<From> and std::is_volatile_v<From>)
+requires(not std::is_const_v<From> and std::is_volatile_v<From>)
 struct copy_cv<To, From> {
     using type = std::remove_cv_t<To> volatile;
 };
 
 template<typename To, typename From>
-    requires(std::is_const_v<From> and not std::is_volatile_v<From>)
+requires(std::is_const_v<From> and not std::is_volatile_v<From>)
 struct copy_cv<To, From> {
     using type = std::remove_cv_t<To> const;
 };
 
 template<typename To, typename From>
-    requires(std::is_const_v<From> and std::is_volatile_v<From>)
+requires(std::is_const_v<From> and std::is_volatile_v<From>)
 struct copy_cv<To, From> {
     using type = std::remove_cv_t<To> const volatile;
 };
@@ -552,7 +488,7 @@ using copy_cv_t = typename copy_cv<To, From>::type;
 template<typename T>
 struct has_value_type {
     template<typename C>
-    static std::true_type test(typename C::value_type *);
+    static std::true_type test(typename C::value_type*);
     template<typename>
     static std::false_type test(...);
 
@@ -686,8 +622,8 @@ struct is_forward_of<Context, std::unique_ptr<Expected>> :
     std::conditional_t<std::is_convertible_v<Context, std::unique_ptr<Expected>>, std::true_type, std::false_type> {};
 
 template<typename Context, typename Expected>
-struct is_forward_of<Context, Expected *> :
-    std::conditional_t<std::is_convertible_v<Context, Expected *>, std::true_type, std::false_type> {};
+struct is_forward_of<Context, Expected*> :
+    std::conditional_t<std::is_convertible_v<Context, Expected*>, std::true_type, std::false_type> {};
 
 template<typename Context, typename Result, typename... Args>
 struct is_forward_of<Context, Result(Args...)> :
@@ -799,7 +735,7 @@ struct default_values<T> : std::true_type {
 };
 
 template<typename T>
-    requires(std::is_enum_v<T>)
+requires(std::is_enum_v<T>)
 struct default_values<T> : std::true_type {
     constexpr static T off = static_cast<T>(0);
     constexpr static T on = static_cast<T>(1);
@@ -808,4 +744,5 @@ struct default_values<T> : std::true_type {
 template<typename T>
 constexpr bool default_values_v = default_values<T>::value;
 
-}} // namespace hi::inline v1
+} // namespace v1
+} // namespace hi::inline v1

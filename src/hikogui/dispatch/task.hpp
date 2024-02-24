@@ -5,6 +5,7 @@
 #pragma once
 
 #include "notifier.hpp"
+#include "awaitable.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../concurrency/thread.hpp" // XXX #616
@@ -15,21 +16,19 @@
 #include <exception>
 #include <optional>
 
-hi_export_module(hikogui.dispatch : scoped_task);
+hi_export_module(hikogui.dispatch : task);
 
 hi_export namespace hi::inline v1 {
 
-/** A scoped_task.
+/** A task.
  *
- * Like the `hi::task` instance this implements a asynchronous co-routine task.
- *
- * If the `scoped_task` object is destroyed, the potentially non-completed co-routine will be destroyed as well.
- * A `scoped_task` is a move-only object.
+ * This implements a asynchronous co-routine task.
  *
  * @tparam T The type returned by co_return.
+ * @tparam DestroyFrame Destroy the coroutine frame when `task` goes out of scope.
  */
-template<typename T = void>
-class scoped_task {
+template<typename T = void, bool DestroyFrame = false>
+class task {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type)>;
@@ -67,9 +66,9 @@ public:
             return {};
         }
 
-        scoped_task get_return_object() noexcept
+        task get_return_object() noexcept
         {
-            return scoped_task{handle_type::from_promise(*this)};
+            return task{handle_type::from_promise(*this)};
         }
 
         /** Before we enter the coroutine, allow the caller to set the callback.
@@ -78,50 +77,62 @@ public:
         {
             return {};
         }
+
+        template<convertible_to_awaitable RHS>
+        decltype(auto) await_transform(RHS&& rhs)
+        {
+            return awaitable_cast<std::remove_cvref_t<RHS>>{}(std::forward<RHS>(rhs));
+        }
     };
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
+    task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
 
-    ~scoped_task()
+    ~task()
     {
-        if (_coroutine) {
+        if (DestroyFrame and _coroutine) {
             _coroutine.destroy();
         }
     }
 
-    scoped_task() = default;
+    task() = default;
 
-    // scoped_task can not be copied because it tracks if the co-routine must be destroyed by the
-    // shared_ptr to the value shared between scoped_task and the promise.
-    scoped_task(scoped_task const&) = delete;
-    scoped_task& operator=(scoped_task const&) = delete;
+    // task can not be copied because it tracks if the co-routine must be destroyed by the
+    // shared_ptr to the value shared between task and the promise.
+    task(task const&) = delete;
+    task& operator=(task const&) = delete;
 
-    scoped_task(scoped_task&& other) noexcept
+    task(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
     }
 
-    scoped_task& operator=(scoped_task&& other) noexcept
+    task& operator=(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         return *this;
+    }
+
+    /** Check if the co-routine was started.
+    */
+    [[nodiscard]] bool started() const noexcept
+    {
+        return _coroutine;
+    }
+
+    /** Check if the co-routine is running
+     */
+    [[nodiscard]] bool running() const noexcept
+    {
+        return _coroutine and not _coroutine.done();
     }
 
     /** Check if the co-routine has completed.
      */
     [[nodiscard]] bool done() const noexcept
     {
-        hi_axiom(_coroutine);
-        return _coroutine.done();
-    }
-
-    /** Check if the co-routine has completed.
-     */
-    explicit operator bool() const noexcept
-    {
-        return done();
+        return _coroutine and _coroutine.done();
     }
 
     /** Get the return value returned from co_return.
@@ -166,16 +177,23 @@ public:
         return _coroutine.promise().notifier.subscribe(std::forward<Func>(func), flags);
     }
 
+    /** Create an awaiter that can await on this task.
+     */
+    auto operator co_await() const noexcept
+    {
+        return _coroutine.promise().notifier.operator co_await();
+    }
+
 private:
     // Optional value type
     handle_type _coroutine;
 };
 
 /**
- * @sa scoped_task<>
+ * @sa task<>
  */
-template<>
-class scoped_task<void> {
+template<bool DestroyFrame>
+class task<void, DestroyFrame> {
 public:
     using value_type = void;
     using notifier_type = notifier<void()>;
@@ -198,58 +216,68 @@ public:
             return {};
         }
 
-        scoped_task get_return_object() noexcept
+        task get_return_object() noexcept
         {
-            return scoped_task{handle_type::from_promise(*this)};
+            return task{handle_type::from_promise(*this)};
         }
 
         std::suspend_never initial_suspend() noexcept
         {
             return {};
         }
+
+        template<convertible_to_awaitable RHS>
+        decltype(auto) await_transform(RHS&& rhs)
+        {
+            return awaitable_cast<std::remove_cvref_t<RHS>>{}(std::forward<RHS>(rhs));
+        }
     };
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
+    task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
 
-    ~scoped_task()
+    ~task()
     {
-        if (_coroutine) {
+        if (DestroyFrame and _coroutine) {
             _coroutine.destroy();
         }
     }
 
-    scoped_task() = default;
-    scoped_task(scoped_task const&) = delete;
-    scoped_task& operator=(scoped_task const&) = delete;
+    task() = default;
+    task(task const&) = delete;
+    task& operator=(task const&) = delete;
 
-    scoped_task(scoped_task&& other) noexcept
+    task(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
     }
 
-    scoped_task& operator=(scoped_task&& other) noexcept
+    task& operator=(task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         return *this;
     }
 
-    /**
-     * @sa scoped_task<>::completed()
+    /** Check if the co-routine was started.
+    */
+    [[nodiscard]] bool started() const noexcept
+    {
+        return _coroutine;
+    }
+
+    /** Check if the co-routine is running
+     */
+    [[nodiscard]] bool running() const noexcept
+    {
+        return _coroutine and not _coroutine.done();
+    }
+
+    /** Check if the co-routine has completed.
      */
     [[nodiscard]] bool done() const noexcept
     {
-        hi_axiom(_coroutine);
-        return _coroutine.done();
-    }
-
-    /**
-     * @sa scoped_task<>::operator bool()
-     */
-    explicit operator bool() const noexcept
-    {
-        return done();
+        return _coroutine and _coroutine.done();
     }
 
     /** Get the return value returned from co_return.
@@ -276,9 +304,63 @@ public:
         return _coroutine.promise().notifier.subscribe(std::forward<Func>(func), flags);
     }
 
+    /** Create an awaiter that can await on this task.
+     */
+    auto operator co_await() const noexcept
+    {
+        return _coroutine.promise().notifier.operator co_await();
+    }
+
 private:
     // Optional value type
     handle_type _coroutine;
 };
+
+template<typename T = void>
+using scoped_task = task<T, true>;
+
+/** type-trait to determine if the given type @a T is a task.
+*/
+template<typename T>
+struct is_task : std::false_type {};
+
+template<typename ResultType, bool DestroyFrame>
+struct is_task<hi::task<ResultType, DestroyFrame>> : std::true_type {};
+
+/** type-trait to determine if the given type @a T is a task.
+*/
+template<typename T>
+constexpr bool is_task_v = is_task<T>::value;
+
+template<typename T>
+struct task_value_type;
+
+template<typename ResultType, bool DestroyFrame>
+struct task_value_type<hi::task<ResultType, DestroyFrame>> {
+    using type = ResultType;
+};
+
+template<typename T>
+using task_value_type_t = task_value_type<T>::type;
+
+/** type-trait to determining if the given invocable @a Func is a task.
+*/
+template<typename Func, typename... ArgTypes>
+struct is_invocable_task {
+    constexpr static bool value = is_task_v<std::invoke_result_t<Func, ArgTypes...>>;
+};
+
+/** type-trait to determining if the given invocable @a Func is a task.
+*/
+template<typename Func, typename... ArgTypes>
+constexpr bool is_invocable_task_v = is_invocable_task<Func, ArgTypes...>::value;
+
+template<typename Func, typename... ArgTypes>
+struct invoke_task_result {
+    using type = task_value_type_t<std::invoke_result_t<Func, ArgTypes...>>;
+};
+
+template<typename Func, typename... ArgTypes>
+using invoke_task_result_t = invoke_task_result<Func, ArgTypes...>::type;
 
 } // namespace hi::inline v1

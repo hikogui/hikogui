@@ -12,7 +12,6 @@
 #include "../unicode/unicode.hpp"
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../path/path.hpp"
 #include <limits>
 #include <array>

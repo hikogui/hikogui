@@ -22,6 +22,7 @@
 #include "exception.hpp" // export
 #include "fixed_string.hpp" // export
 #include "forward_value.hpp" // export
+#include "generator.hpp" // export
 #include "hash.hpp" // export
 #include "initialize.hpp" // export
 #include "math.hpp" // export

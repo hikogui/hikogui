@@ -10,6 +10,7 @@
 
 #include "abstract_button_widget.hpp"
 #include "../macros.hpp"
+#include <stop_token>
 
 hi_export_module(hikogui.widgets.toolbar_button_widget);
 
@@ -19,7 +20,7 @@ hi_export namespace hi { inline namespace v1 {
  *
  * @ingroup widgets
  */
-class toolbar_button_widget final : public abstract_button_widget {
+class toolbar_button_widget : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
@@ -37,6 +38,18 @@ public:
     toolbar_button_widget(not_null<widget_intf const *> parent, button_widget_attribute auto&&...attributes) noexcept :
         toolbar_button_widget(parent, std::make_shared<button_delegate>(), hi_forward(attributes)...)
     {
+    }
+
+    [[nodiscard]] std::stop_token get_stop_token() const noexcept
+    {
+        return _stop_source.get_token();
+    }
+
+    template<typename Awaiter>
+    task<> wait_for(Awaiter &&awaiter) noexcept
+    {
+        co_await std::forward<Awaiter>(awaiter);
+        set_value(widget_value::off);
     }
 
     /// @privatesection
@@ -75,6 +88,7 @@ public:
     // @endprivatesection
 private:
     box_constraints _label_constraints;
+    std::stop_source _stop_source;
 
     void draw_toolbar_button(draw_context const& context) noexcept
     {

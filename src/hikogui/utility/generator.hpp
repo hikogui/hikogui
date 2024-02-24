@@ -10,10 +10,10 @@
 #include <memory>
 #include <memory_resource>
 #include <type_traits>
-#include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include "debugger.hpp"
 
-hi_export_module(hikogui.coroutine.generator);
+hi_export_module(hikogui.utility.generator);
 
 hi_export namespace hi::inline v1 {
 

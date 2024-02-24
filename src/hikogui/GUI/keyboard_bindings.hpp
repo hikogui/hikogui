@@ -8,7 +8,6 @@
 #include "gui_event.hpp"
 #include "../utility/utility.hpp"
 #include "../codec/codec.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <unordered_map>
 #include <tuple>

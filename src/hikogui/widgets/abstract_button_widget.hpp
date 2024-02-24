@@ -14,7 +14,6 @@
 #include "../algorithm/algorithm.hpp"
 #include "../l10n/l10n.hpp"
 #include "../observer/observer.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <memory>
 #include <string>
@@ -123,7 +122,7 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
 

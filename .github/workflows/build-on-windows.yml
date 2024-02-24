@@ -58,7 +58,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
     
       - name: 🔽 Install Vulkan SDK
-        uses: jakoch/install-vulkan-sdk-action@v1.0.1 # https://github.com/jakoch/install-vulkan-sdk-action/
+        uses: jakoch/install-vulkan-sdk-action@v1.0.2 # https://github.com/jakoch/install-vulkan-sdk-action/
         with: 
           vulkan_version: latest
           optional_components: com.lunarg.vulkan.vma
@@ -207,7 +207,7 @@ jobs:
     #
     #  # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
     #  - name: 📦 🚀 Upload Artifact
-    #    uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
+    #    uses: actions/upload-artifact@v4 # https://github.com/actions/upload-artifact
     #    with:
     #      name: ${{env.ARTIFACT_NAME}}
     #      path: build/${{env.ARTIFACT_NAME}}.zip

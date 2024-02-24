@@ -7,7 +7,6 @@
 #include "font_weight.hpp"
 #include "font_style.hpp"
 #include "../utility/utility.hpp"
-#include "../coroutine/coroutine.hpp"
 #include "../macros.hpp"
 #include <coroutine>
 #include <string>
