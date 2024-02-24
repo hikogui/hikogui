@@ -91,6 +91,14 @@ hi_target("sse,sse2,f16c")
     auto const r = _mm_cvtps_ph(a_, _MM_FROUND_CUR_DIRECTION);
     return std::bit_cast<std::array<uint16_t,4>>(_mm_cvtsi128_si64(r));
 }
+
+[[nodiscard]] inline uint16_t float_to_half_f16c(float a) noexcept
+{
+    auto a_ = std::array<float, 4>{};
+    std::get<0>(a_) = a;
+    auto const r = float_to_half_f16c(a_);
+    return std::get<0>(r);
+}
 #endif
 
 

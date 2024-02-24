@@ -94,6 +94,14 @@ hi_target("sse,sse2,f16c") [[nodiscard]] hi_inline std::array<float, 4> half_to_
     _mm_storeu_ps(r_.data(), r);
     return r_;
 }
+
+[[nodiscard]] inline float half_to_float_f16c(uint16_t v) noexcept
+{
+    auto v_ = std::array<uint16_t, 4>{};
+    std::get<0>(v_) = v;
+    auto const r = half_to_float_f16c(v_);
+    return std::get<0>(r);
+}
 #endif
 
 [[nodiscard]] constexpr std::array<float, 4> half_to_float(std::array<uint16_t, 4> v) noexcept
