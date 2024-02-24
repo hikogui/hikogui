@@ -152,6 +152,14 @@ hi_target("sse,sse2")
     r = _mm_shuffle_epi32(r, 0b11'11'10'00);
     return std::bit_cast<std::array<uint16_t,4>>(_mm_cvtsi128_si64(r));
 }
+
+[[nodiscard]] inline uint16_t float_to_half_sse2(float a) noexcept
+{
+    auto a_ = std::array<float, 4>{};
+    std::get<0>(a_) = a;
+    auto const r = float_to_half_sse2(a_);
+    return std::get<0>(r);
+}
 #endif
 
 [[nodiscard]] constexpr uint16_t float_to_half(float v) noexcept
