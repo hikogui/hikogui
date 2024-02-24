@@ -92,6 +92,7 @@ hi_target("sse,sse2,f16c")
     return std::bit_cast<std::array<uint16_t,4>>(_mm_cvtsi128_si64(r));
 }
 
+hi_target("sse,sse2,f16c")
 [[nodiscard]] inline uint16_t float_to_half_f16c(float a) noexcept
 {
     auto a_ = std::array<float, 4>{};
@@ -153,6 +154,7 @@ hi_target("sse,sse2")
     return std::bit_cast<std::array<uint16_t,4>>(_mm_cvtsi128_si64(r));
 }
 
+hi_target("sse,sse2")
 [[nodiscard]] inline uint16_t float_to_half_sse2(float a) noexcept
 {
     auto a_ = std::array<float, 4>{};

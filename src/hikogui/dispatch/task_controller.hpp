@@ -42,7 +42,7 @@ public:
         return cancel_features_v<FuncType, ArgTypes...>;
     }
 
-    task<result_type> run(std::stop_token stop_token, hi::progress_token progress_token)
+    task<result_type> run(std::stop_token stop_token, hi::progress_token progress_token) override
     {
         return std::apply(
             cancelable_async_task<FuncType, ArgTypes...>,
