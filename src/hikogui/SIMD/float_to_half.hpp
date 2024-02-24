@@ -9,7 +9,6 @@
 #else
 #include "cpu_id_generic.hpp"
 #endif
-#include "misc.hpp"
 #include <cstdint>
 #include <bit>
 #include <type_traits>
@@ -75,7 +74,7 @@ hi_export namespace hi { inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] std::array<uint16_t,4> float_to_half_generic(std::array<float,4> a) noexcept
+[[nodiscard]] constexpr std::array<uint16_t,4> float_to_half_generic(std::array<float,4> a) noexcept
 {
     auto r = std::array<uint16_t,4>{};
     for (size_t i = 0; i != 4; ++i) {
@@ -86,7 +85,7 @@ hi_export namespace hi { inline namespace v1 {
 
 #if HI_HAS_X86
 hi_target("sse,sse2,f16c")
-[[nodiscard]] std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> a) noexcept
+[[nodiscard]] inline std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> a) noexcept
 {
     auto const a_ = _mm_loadu_ps(a.data());
     auto const r = _mm_cvtps_ph(a_, _MM_FROUND_CUR_DIRECTION);
@@ -94,9 +93,10 @@ hi_target("sse,sse2,f16c")
 }
 #endif
 
+
 #if HI_HAS_X86
 hi_target("sse,sse2")
-[[nodiscard]] std::array<uint16_t,4> float_to_half_sse2(std::array<float,4> a) noexcept
+[[nodiscard]] inline std::array<uint16_t,4> float_to_half_sse2(std::array<float,4> a) noexcept
 {
     auto r = _mm_castps_si128(_mm_loadu_ps(a.data()));
 
@@ -114,7 +114,7 @@ hi_target("sse,sse2")
     auto const is_zero = _mm_cmpeq_epi32(r, _mm_setzero_si128());
 
     // Adjust exponent.
-    r = _mm_sub_epi32(r, _mm_set1_epi32(112 * 0x0040'0000);
+    r = _mm_sub_epi32(r, _mm_set1_epi32(112 * 0x0040'0000));
 
     // If after adjustment the exponent is zero or less, then it is a denormal.
     auto const is_denorm = _mm_andnot_si128(is_zero, _mm_cmpgt_epi32(_mm_setzero_si128(), r));

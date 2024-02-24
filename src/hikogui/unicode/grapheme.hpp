@@ -188,7 +188,7 @@ struct grapheme {
     constexpr grapheme& operator=(grapheme const&) noexcept = default;
     constexpr grapheme& operator=(grapheme&&) noexcept = default;
 
-    constexpr grapheme(intrinsic_t, value_type value) : _value(value) {}
+    constexpr grapheme(std::in_place_t, value_type value) : _value(value) {}
 
     constexpr value_type& intrinsic() noexcept
     {
@@ -288,7 +288,7 @@ struct grapheme {
 
     [[nodiscard]] constexpr iso_639 language() const noexcept
     {
-        return iso_639{intrinsic_t{}, narrow_cast<uint16_t>((_value >> 21) & 0x7fff)};
+        return iso_639{std::in_place_t{}, narrow_cast<uint16_t>((_value >> 21) & 0x7fff)};
     }
 
     constexpr void set_language(iso_639 rhs) noexcept
@@ -329,7 +329,7 @@ struct grapheme {
 
     [[nodiscard]] constexpr iso_15924 script() const noexcept
     {
-        return iso_15924{intrinsic_t{}, narrow_cast<uint16_t>((_value >> 36) & 0x3ff)};
+        return iso_15924{std::in_place_t{}, narrow_cast<uint16_t>((_value >> 36) & 0x3ff)};
     }
 
     /** Set the script of the grapheme.
@@ -356,7 +356,7 @@ struct grapheme {
 
     [[nodiscard]] constexpr iso_3166 region() const noexcept
     {
-        return iso_3166{intrinsic_t{}, narrow_cast<uint16_t>((_value >> 46) & 0x3ff)};
+        return iso_3166{std::in_place_t{}, narrow_cast<uint16_t>((_value >> 46) & 0x3ff)};
     }
 
     constexpr void set_region(iso_3166 rhs) noexcept
@@ -372,11 +372,11 @@ struct grapheme {
     {
         auto tmp = _value;
         tmp >>= 21;
-        hilet language_ = iso_639{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x7fff)};
+        hilet language_ = iso_639{std::in_place_t{}, narrow_cast<uint16_t>(tmp & 0x7fff)};
         tmp >>= 15;
-        hilet script_ = iso_15924{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
+        hilet script_ = iso_15924{std::in_place_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
         tmp >>= 10;
-        hilet region_ = iso_3166{intrinsic_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
+        hilet region_ = iso_3166{std::in_place_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
         return hi::language_tag{language_, script_, region_};
     }
 

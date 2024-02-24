@@ -7,7 +7,6 @@
 #include "../macros.hpp"
 #include "half_to_float.hpp"
 #include "float_to_half.hpp"
-#include "misc.hpp"
 #include <cstdint>
 #include <type_traits>
 #include <bit>
@@ -24,8 +23,6 @@ hi_warning_ignore_msvc(26472);
 
 hi_export namespace hi { inline namespace v1 {
 
-
-
 struct half {
     uint16_t v = 0;
 
@@ -39,7 +36,7 @@ struct half {
     constexpr explicit half(double other) noexcept : half(static_cast<float>(other)) {}
     constexpr explicit half(long double other) noexcept : half(static_cast<float>(other)) {}
 
-    constexpr half(intrinsic_t, uint16_t v) noexcept : v(v) {}
+    constexpr half(std::in_place_t, uint16_t v) noexcept : v(v) {}
 
     [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
     {
@@ -102,7 +99,7 @@ struct half {
 #define HI_X_binary_bit_op(op) \
     [[nodiscard]] constexpr friend half operator op(half const& lhs, half const& rhs) noexcept \
     { \
-        return half(hi::intrinsic, lhs.v op rhs.v); \
+        return half(std::in_place, lhs.v op rhs.v); \
     }
 
         // clang-format off
@@ -172,47 +169,47 @@ struct numeric_limits<::hi::half> {
 
     constexpr static value_type min() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x0400);
+        return ::hi::half(std::in_place, 0x0400);
     }
 
     constexpr static value_type lowest() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0xfbff);
+        return ::hi::half(std::in_place, 0xfbff);
     }
 
     constexpr static value_type max() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x7bff);
+        return ::hi::half(std::in_place, 0x7bff);
     }
 
     constexpr static value_type epsilon() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0xfbff);
+        return ::hi::half(std::in_place, 0xfbff);
     }
 
     constexpr static value_type round_error() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x3800); // 0.5
+        return ::hi::half(std::in_place, 0x3800); // 0.5
     }
 
     constexpr static value_type infinity() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x7c00);
+        return ::hi::half(std::in_place, 0x7c00);
     }
 
     constexpr static value_type quiet_NaN() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x7c01);
+        return ::hi::half(std::in_place, 0x7c01);
     }
 
     constexpr static value_type signaling_NaN() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x7e01);
+        return ::hi::half(std::in_place, 0x7e01);
     }
 
     constexpr static value_type denorm_min() noexcept
     {
-        return ::hi::half(::hi::intrinsic, 0x0001);
+        return ::hi::half(std::in_place, 0x0001);
     }
 };
 

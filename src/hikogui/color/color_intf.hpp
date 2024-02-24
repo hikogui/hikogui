@@ -76,9 +76,9 @@ public:
 
     [[nodiscard]] constexpr explicit color(hi::semantic_color semantic_color, float alpha = 1.0f) noexcept : _v()
     {
-        _v.x() = half(intrinsic, 0xf900 + static_cast<uint8_t>(semantic_color));
-        _v.y() = half(intrinsic, 0x0000);
-        _v.z() = half(intrinsic, 0x0000);
+        _v.x() = half(std::in_place, 0xf900 + static_cast<uint8_t>(semantic_color));
+        _v.y() = half(std::in_place, 0x0000);
+        _v.z() = half(std::in_place, 0x0000);
         _v.w() = half(1.0f);
     }
 

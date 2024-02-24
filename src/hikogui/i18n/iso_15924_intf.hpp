@@ -64,7 +64,7 @@ public:
         return iso_15924{994};
     }
 
-    constexpr iso_15924(intrinsic_t, uint16_t v) noexcept : _v(v)
+    constexpr iso_15924(std::in_place_t, uint16_t v) noexcept : _v(v)
     {
         hi_axiom_bounds(_v, 0, 1000);
     }

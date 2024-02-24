@@ -332,6 +332,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp>
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float_to_half.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_to_float.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
@@ -421,8 +423,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/hash.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/initialize.hpp

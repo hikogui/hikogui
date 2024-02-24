@@ -2,7 +2,7 @@
 #pragma once
 
 #include "array_generic.hpp"
-#include "../utility/utility.hpp"
+#include "half.hpp"
 #include "../macros.hpp"
 #include <cstddef>
 #include <utility>

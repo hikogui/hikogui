@@ -30,7 +30,7 @@ public:
     not_null(nullptr_t) = delete;
     not_null &operator=(nullptr_t) = delete;
 
-    not_null(intrinsic_t, T &&o) noexcept : _p(std::move(o)) {}
+    not_null(std::in_place_t, T &&o) noexcept : _p(std::move(o)) {}
 
     template<nullable_pointer O>
     not_null(not_null<O> const &o) noexcept
@@ -146,13 +146,13 @@ private:
 template<typename T, typename... Args>
 [[nodiscard]] not_null<std::unique_ptr<T>> make_unique_not_null(Args &&... args)
 {
-    return not_null<std::unique_ptr<T>>{intrinsic, std::make_unique<T>(std::forward<Args>(args)...)};
+    return not_null<std::unique_ptr<T>>{std::in_place, std::make_unique<T>(std::forward<Args>(args)...)};
 }
 
 template<typename T, typename... Args>
 [[nodiscard]] not_null<std::shared_ptr<T>> make_shared_not_null(Args &&... args)
 {
-    return not_null<std::shared_ptr<T>>{intrinsic, std::make_shared<T>(std::forward<Args>(args)...)};
+    return not_null<std::shared_ptr<T>>{std::in_place, std::make_shared<T>(std::forward<Args>(args)...)};
 }
 
 template<typename T>
@@ -164,7 +164,7 @@ template<typename T>
 template<typename T>
 [[nodiscard]] not_null<T *> make_not_null(T &ptr) noexcept
 {
-    return not_null<T *>{intrinsic, std::addressof(ptr)};
+    return not_null<T *>{std::in_place, std::addressof(ptr)};
 }
 
 template<typename T>

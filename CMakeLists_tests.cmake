@@ -130,7 +130,6 @@ target_sources(hikogui_gtests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exceptions_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null_tests.cpp
@@ -157,8 +156,9 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector3_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float_to_half_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_to_float_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_tests.cpp
 )
 
 show_build_target_properties(hikogui_gtests)

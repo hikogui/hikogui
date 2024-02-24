@@ -74,18 +74,6 @@ template<typename T, typename U>
     return lhs.exchange(rhs, std::memory_order::relaxed) != rhs;
 }
 
-/** Tag used for special functions or constructions to do a override compared to another function of the same name
- */
-struct override_t {};
-
-/** Tag used in constructors to set the intrinsic value of that object.
- *
- * Those objects are also expected to include a `intrinsic()` getter function returning
- * a reference to the intrinsic value of that object.
- */
-struct intrinsic_t {};
-constexpr auto intrinsic = intrinsic_t{};
-
 /** A type that can not be constructed, copied, moved or destructed.
  */
 struct unusable_t {

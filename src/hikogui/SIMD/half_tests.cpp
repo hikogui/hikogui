@@ -3,124 +3,125 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "half.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <iostream>
 #include <limits>
 #include <algorithm>
 
+TEST_SUITE(half_suite)
+{
 
-TEST(half, half_to_float)
+TEST_CASE(half_to_float)
 {
 //    // Thanks to https://github.com/ecorm for the list of test vectors.
 //
 //    // half infinity is one beyond the half range.
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x7C00)) == std::numeric_limits<float>::infinity());
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x7C00)) == std::numeric_limits<float>::infinity());
 //
 //    // Largest normal.
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x7bff)) == 65504.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x7bff)) == 65504.0f);
 //
 //    // (+) 2^15
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x7800)) == 32768.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x7800)) == 32768.0f);
 //
 //    // (+) 1/2 max normal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x77FF)) == 32752.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x77FF)) == 32752.0f);
 //
 //    // (+) approx pi
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x4248)) == 3.140625f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x4248)) == 3.140625f);
 //
 //    // (+) approx e
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x4170)) == 2.71875f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x4170)) == 2.71875f);
 //
 //    // (+) two
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x4000)) == 2.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x4000)) == 2.0f);
 //
 //    // (+) smallest > 1.0
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x3C01)) == 1.0009766f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x3C01)) == 1.0009766f);
 //
 //    // (+) one
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x3C00)) == 1.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x3C00)) == 1.0f);
 //
 //    // (+) largest < 1.0
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x3BFF)) == 0.9995117f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x3BFF)) == 0.9995117f);
 //
 //    // (+) approx 2/3
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x3956)) == 0.6669922f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x3956)) == 0.6669922f);
 //
 //    // (+) approx 1/3
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x3555)) == 0.33325195f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x3555)) == 0.33325195f);
 //
 //    // (+) smallest normal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x0400)) == 6.1035156E-05f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x0400)) == 6.1035156E-05f);
 //
 //    // (+) largest subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x03FF)) == 0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x03FF)) == 0.0f);
 //
 //    // (+) middle subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x0200)) == 0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x0200)) == 0.0f);
 //
 //    // (+) just below mid-subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x01FF)) == 0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x01FF)) == 0.0f);
 //
 //    // (+) smallest subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x0001)) == 0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x0001)) == 0.0f);
 //
 //    // (+) positive zero
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x0000)) == 0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x0000)) == 0.0f);
 //
 //    // (-) negative zero
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x8000)) == -0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x8000)) == -0.0f);
 //
 //    // (-) highest subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x8001)) == -0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x8001)) == -0.0f);
 //
 //    // (-) just above mid-subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x81FF)) == -0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x81FF)) == -0.0f);
 //
 //    // (-) middle subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x8200)) == -0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x8200)) == -0.0f);
 //
 //    // (-) lowest subnormal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x83FF)) == -0.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x83FF)) == -0.0f);
 //
 //    // (-) highest normal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0x8400)) == -6.1035156E-05f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0x8400)) == -6.1035156E-05f);
 //
 //    // (-) approx -1/3
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xB555)) == -0.33325195f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xB555)) == -0.33325195f);
 //
 //    // (-) approx -2/3
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xB956)) == -0.6669922f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xB956)) == -0.6669922f);
 //
 //    // (-) lowest > -1.0
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xBBFF)) == -0.9995117f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xBBFF)) == -0.9995117f);
 //
 //    // (-) minus one
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xBC00)) == -1.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xBC00)) == -1.0f);
 //
 //    // (-) highest < -1.0
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xBC01)) == -1.0009766f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xBC01)) == -1.0009766f);
 //
 //    // (-) minus two
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xC000)) == -2.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xC000)) == -2.0f);
 //
 //    // (-) approx e
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xC170)) == -2.71875f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xC170)) == -2.71875f);
 //
 //    // (-) approx pi
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xC248)) == -3.140625f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xC248)) == -3.140625f);
 //
 //    // (-) 1/2 lowest normal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xF7FF)) == -32752.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xF7FF)) == -32752.0f);
 //
 //    // (-) 2^15
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xF800)) == -32768.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xF800)) == -32768.0f);
 //
 //    // (-) lowest normal
-//    static_assert(static_cast<float>(hi::half(hi::intrinsic, 0xFBFF)) == -65504.0f);
+//    static_assert(static_cast<float>(hi::half(std::in_place, 0xFBFF)) == -65504.0f);
 }
 
-TEST(half, float_to_half)
+TEST_CASE(float_to_half)
 {
 //    // Thanks to https://github.com/ecorm for the list of test vectors.
 //
@@ -280,3 +281,5 @@ TEST(half, float_to_half)
 //    // -65520
 //    static_assert(hi::half(-65520.0f).intrinsic() == 0xFBFF);
 }
+
+};

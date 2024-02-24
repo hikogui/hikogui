@@ -23,7 +23,7 @@
 
 [[nodiscard]] constexpr hi::grapheme grapheme_tests_default_grapheme(char32_t code_point)
 {
-    return hi::grapheme{hi::intrinsic, grapheme_tests_default_grapheme_intrinsic(code_point)};
+    return hi::grapheme{std::in_place, grapheme_tests_default_grapheme_intrinsic(code_point)};
 }
 
 TEST(grapheme, intrinsic_init)

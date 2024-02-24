@@ -10,7 +10,6 @@
 #else
 #include "cpu_id_generic.hpp"
 #endif
-#include "misc.hpp"
 #include <cstdint>
 #include <bit>
 #include <type_traits>
@@ -75,7 +74,7 @@ namespace detail {
 {
     auto r = std::array<float, 65536>{};
 
-    for (auto i = 0_uz; i != 65536; ++i) {
+    for (size_t i = 0; i != 65536; ++i) {
         r[i] = half_to_float_generic(static_cast<uint16_t>(i));
     }
 
