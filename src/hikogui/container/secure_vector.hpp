@@ -239,10 +239,11 @@ hi_export_module(hikogui.container.secure_vector);
 //         --_end;
 //     }
 // 
-//     constexpr iterator emplace(const_iterator pos, auto &&...args)
+//     template<typename... Args>
+//     constexpr iterator emplace(const_iterator pos, Args&&...args)
 //     {
 //         auto const index = std::distance(begin(), pos);
-//         auto const n_first = &emplace_back(hi_forward(args)...);
+//         auto const n_first = &emplace_back(std::forward<Args>(args)...);
 // 
 //         // Rotate the newly back-emplaced item to it's intended position.
 //         auto const first = _begin + index;

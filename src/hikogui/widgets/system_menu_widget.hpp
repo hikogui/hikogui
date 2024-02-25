@@ -40,10 +40,11 @@ public:
         _icon_widget = std::make_unique<icon_widget>(this, icon);
     }
 
-    system_menu_widget(not_null<widget_intf const *> parent, forward_of<observer<hi::icon>> auto&& icon) noexcept :
+    template<forward_of<observer<hi::icon>> Icon>
+    system_menu_widget(not_null<widget_intf const *> parent, Icon&& icon) noexcept :
         system_menu_widget(parent)
     {
-        this->icon = hi_forward(icon);
+        this->icon = std::forward<Icon>(icon);
     }
 
     /// @privatesection

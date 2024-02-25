@@ -105,11 +105,11 @@ public:
                 return set_attributes<NumLabels + 1>(std::forward<Rest>(rest)...);
 
             } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-                alignment = hi_forward(first);
+                alignment = std::forward<First>(first);
                 return set_attributes<NumLabels>(std::forward<Rest>(rest)...);
 
             } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-                text_style = hi_forward(first);
+                text_style = std::forward<First>(first);
                 return set_attributes<NumLabels>(std::forward<Rest>(rest)...);
 
             } else {

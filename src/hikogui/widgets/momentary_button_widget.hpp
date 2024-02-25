@@ -23,18 +23,20 @@ public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
 
+    template<button_widget_attribute... Attributes>
     momentary_button_widget(
         not_null<widget_intf const *> parent,
         std::shared_ptr<delegate_type> delegate,
-        button_widget_attribute auto&&...attributes) noexcept :
+        Attributes&&...attributes) noexcept :
         super(parent, std::move(delegate))
     {
         alignment = alignment::middle_center();
-        set_attributes<0>(hi_forward(attributes)...);
+        set_attributes<0>(std::forward<Attributes>(attributes)...);
     }
 
-    momentary_button_widget(not_null<widget_intf const *> parent, button_widget_attribute auto&&...attributes) noexcept :
-        momentary_button_widget(parent, std::make_shared<delegate_type>(), hi_forward(attributes)...)
+    template<button_widget_attribute... Attributes>
+    momentary_button_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept :
+        momentary_button_widget(parent, std::make_shared<delegate_type>(), std::forward<Attributes>(attributes)...)
     {
     }
 

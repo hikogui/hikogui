@@ -124,13 +124,14 @@ public:
         });
     }
 
+    template<text_field_widget_attribute... Attributes>
     text_field_widget(
         not_null<widget_intf const *> parent,
         std::shared_ptr<delegate_type> delegate,
-        text_field_widget_attribute auto&&...attributes) noexcept :
+        Attributes&&...attributes) noexcept :
         text_field_widget(parent, std::move(delegate))
     {
-        set_attributes(hi_forward(attributes)...);
+        set_attributes(std::forward<Attributes>(attributes)...);
     }
 
     /** Construct a text field widget.
@@ -139,13 +140,14 @@ public:
      * @param value The value or `observer` value which represents the state of the text-field.
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
+    template<incompatible_with<std::shared_ptr<delegate_type>> Value, text_field_widget_attribute... Attributes>
     text_field_widget(
         not_null<widget_intf const *> parent,
-        incompatible_with<std::shared_ptr<delegate_type>> auto&& value,
-        text_field_widget_attribute auto&&...attributes) noexcept requires requires
+        Value&& value,
+        Attributes&&...attributes) noexcept requires requires
     {
-        make_default_text_field_delegate(hi_forward(value));
-    } : text_field_widget(parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+        make_default_text_field_delegate(std::forward<Value>(value));
+    } : text_field_widget(parent, make_default_text_field_delegate(std::forward<Value>(value)), std::forward<Attributes>(attributes)...) {}
 
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
@@ -317,17 +319,19 @@ private:
     callback<void(label)> _error_label_cbt;
 
     void set_attributes() noexcept {}
-    void set_attributes(text_field_widget_attribute auto&& first, text_field_widget_attribute auto&&...rest) noexcept
+
+    template<text_field_widget_attribute First, text_field_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+            text_style = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
 
-        set_attributes(hi_forward(rest)...);
+        set_attributes(std::forward<Rest>(rest)...);
     }
 
     void revert(bool force) noexcept

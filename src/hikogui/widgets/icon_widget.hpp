@@ -48,25 +48,28 @@ public:
      */
     observer<alignment> alignment = hi::alignment::middle_center();
 
-    icon_widget(not_null<widget_intf const *> parent, icon_widget_attribute auto&&...attributes) noexcept :
+    template<icon_widget_attribute... Attributes>
+    icon_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept :
         icon_widget(parent)
     {
-        set_attributes(hi_forward(attributes)...);
+        set_attributes(std::forward<Attributes>(attributes)...);
     }
 
     void set_attributes() noexcept {}
-    void set_attributes(icon_widget_attribute auto&& first, icon_widget_attribute auto&&...rest) noexcept
+
+    template<icon_widget_attribute First, icon_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::icon>>) {
-            icon = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::color>>) {
-            color = hi_forward(first);
+        if constexpr (forward_of<First, observer<hi::icon>>) {
+            icon = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::color>>) {
+            color = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
-        set_attributes(hi_forward(rest)...);
+        set_attributes(std::forward<Rest>(rest)...);
     }
 
     /// @privatesection

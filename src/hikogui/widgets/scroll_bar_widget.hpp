@@ -22,8 +22,8 @@
 
 hi_export_module(hikogui.widgets.scroll_bar_widget);
 
-
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** Scroll bar widget
  * This widget is used in a pair of a vertical and horizontal scrollbar as
@@ -45,12 +45,16 @@ public:
     observer<float> aperture;
     observer<float> content;
 
+    template<forward_of<observer<float>> Content, forward_of<observer<float>> Aperture, forward_of<observer<float>> Offset>
     scroll_bar_widget(
-        not_null<widget_intf const *> parent,
-        forward_of<observer<float>> auto&& content,
-        forward_of<observer<float>> auto&& aperture,
-        forward_of<observer<float>> auto&& offset) noexcept :
-        widget(parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
+        not_null<widget_intf const*> parent,
+        Content&& content,
+        Aperture&& aperture,
+        Offset&& offset) noexcept :
+        widget(parent),
+        content(std::forward<Content>(content)),
+        aperture(std::forward<Aperture>(aperture)),
+        offset(std::forward<Offset>(offset))
     {
         _content_cbt = this->content.subscribe([&](auto...) {
             ++global_counter<"scroll_bar_widget:content:relayout">;
@@ -271,11 +275,11 @@ private:
     void draw_slider(draw_context const& context) noexcept
     {
         auto const corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() / 2.0f} :
-                                                      hi::corner_radii{_slider_rectangle.height() / 2.0f};
+                                                           hi::corner_radii{_slider_rectangle.height() / 2.0f};
 
-        context.draw_box(
-            layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
+        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

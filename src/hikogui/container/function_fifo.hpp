@@ -44,10 +44,10 @@ public:
      * @retval false The fifo was empty.
      */
     template<typename... Args>
-    auto run_one(Args&&...args) noexcept
+    auto run_one(Args const &...args) noexcept
     {
-        return _fifo.take_one([&args...](auto& item) {
-            return item(hi_forward(args)...);
+        return _fifo.take_one([args...](auto& item) {
+            return item(args...);
         });
     }
 
