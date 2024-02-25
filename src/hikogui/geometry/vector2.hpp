@@ -238,9 +238,9 @@ public:
      */
     [[nodiscard]] constexpr friend float cross(vector2 const& lhs, vector2 const& rhs) noexcept
     {
-        hilet tmp1 = rhs._v.yxwz();
-        hilet tmp2 = lhs._v * tmp1;
-        hilet tmp3 = hsub(tmp2, tmp2);
+        auto const tmp1 = rhs._v.yxwz();
+        auto const tmp2 = lhs._v * tmp1;
+        auto const tmp3 = hsub(tmp2, tmp2);
         return tmp3.x();
     }
 

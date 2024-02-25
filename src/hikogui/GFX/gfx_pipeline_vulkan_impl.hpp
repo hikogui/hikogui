@@ -41,7 +41,7 @@ hi_inline void gfx_pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuf
 
 hi_inline void gfx_pipeline::build_descriptor_sets()
 {
-    hilet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
+    auto const descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
     if (ssize(descriptorSetLayoutBindings) == 0) {
         // Make sure that there is no descriptor set.
@@ -49,7 +49,7 @@ hi_inline void gfx_pipeline::build_descriptor_sets()
         return;
     }
 
-    hilet descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
+    auto const descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
         vk::DescriptorSetLayoutCreateFlags(),
         narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()),
         descriptorSetLayoutBindings.data()};
@@ -57,7 +57,7 @@ hi_inline void gfx_pipeline::build_descriptor_sets()
     hi_axiom_not_null(device());
     descriptorSetLayout = device()->createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
-    hilet descriptorPoolSizes =
+    auto const descriptorPoolSizes =
         transform<std::vector<vk::DescriptorPoolSize>>(descriptorSetLayoutBindings, [](auto x) -> vk::DescriptorPoolSize {
             return {x.descriptorType, narrow_cast<uint32_t>(x.descriptorCount)};
         });
@@ -68,9 +68,9 @@ hi_inline void gfx_pipeline::build_descriptor_sets()
          narrow_cast<uint32_t>(descriptorPoolSizes.size()),
          descriptorPoolSizes.data()});
 
-    hilet descriptorSetLayouts = std::array{descriptorSetLayout};
+    auto const descriptorSetLayouts = std::array{descriptorSetLayout};
 
-    hilet descriptorSets = device()->allocateDescriptorSets(
+    auto const descriptorSets = device()->allocateDescriptorSets(
         {descriptorPool, narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()});
 
     descriptorSet = descriptorSets.at(0);
@@ -164,9 +164,9 @@ hi_inline void gfx_pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t 
         1.0f,
         0.0f}};
 
-    hilet scissor = vk::Rect2D{vk::Offset2D{0, 0}, extent};
+    auto const scissor = vk::Rect2D{vk::Offset2D{0, 0}, extent};
 
-    hilet scissors = std::array{scissor};
+    auto const scissors = std::array{scissor};
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
@@ -199,11 +199,11 @@ hi_inline void gfx_pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t 
         VK_FALSE // alphaToOneEnable
     };
 
-    hilet pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
+    auto const pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
 
     /* Pre-multiplied alpha blending.
      */
-    hilet pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
+    auto const pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
 
     const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {
         vk::PipelineColorBlendStateCreateFlags(),
@@ -212,9 +212,9 @@ hi_inline void gfx_pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t 
         narrow_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()),
         pipelineColorBlendAttachmentStates.data()};
 
-    hilet dynamicStates = std::array{vk::DynamicState::eScissor};
+    auto const dynamicStates = std::array{vk::DynamicState::eScissor};
 
-    hilet pipelineDynamicStateInfo = vk::PipelineDynamicStateCreateInfo{
+    auto const pipelineDynamicStateInfo = vk::PipelineDynamicStateCreateInfo{
         vk::PipelineDynamicStateCreateFlags(), narrow_cast<uint32_t>(dynamicStates.size()), dynamicStates.data()};
 
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {

@@ -76,7 +76,7 @@ template<>
 template<std::integral T>
 [[nodiscard]] hi_inline std::expected<T, std::error_code> get_user_setting(std::string_view key) noexcept
 {
-    if (hilet value = get_user_setting_integral(key)) {
+    if (auto const value = get_user_setting_integral(key)) {
         if (can_narrow_cast<T>(*value)) {
             return narrow_cast<T>(*value);
         } else {

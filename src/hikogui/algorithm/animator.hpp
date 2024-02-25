@@ -99,8 +99,8 @@ private:
     {
         using namespace std::chrono_literals;
 
-        hilet dt = _current_time - _start_time;
-        hilet p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
+        auto const dt = _current_time - _start_time;
+        auto const p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
         return std::clamp(p, 0.0f, 1.0f);
     }
 };

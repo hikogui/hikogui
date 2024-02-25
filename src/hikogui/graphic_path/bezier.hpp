@@ -60,25 +60,25 @@ constexpr std::array<T, 4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 
 constexpr point2 bezierPointAt(point2 P1, point2 P2, float t) noexcept
 {
-    hilet t_ = f32x4::broadcast(t);
-    hilet[a, b] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(P2));
+    auto const t_ = f32x4::broadcast(t);
+    auto const[a, b] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(P2));
     return point2{a * t_ + b};
 }
 
 constexpr point2 bezierPointAt(point2 P1, point2 C, point2 P2, float t) noexcept
 {
-    hilet t_ = f32x4::broadcast(t);
-    hilet[a, b, c] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C), static_cast<f32x4>(P2));
+    auto const t_ = f32x4::broadcast(t);
+    auto const[a, b, c] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C), static_cast<f32x4>(P2));
     return point2{a * t_ * t_ + b * t_ + c};
 }
 
 constexpr point2 bezierPointAt(point2 P1, point2 C1, point2 C2, point2 P2, float t) noexcept
 {
-    hilet t_ = f32x4::broadcast(t);
-    hilet tt_ = t_ * t_;
-    hilet ttt_ = tt_ * t_;
+    auto const t_ = f32x4::broadcast(t);
+    auto const tt_ = t_ * t_;
+    auto const ttt_ = tt_ * t_;
 
-    hilet[a, b, c, d] =
+    auto const[a, b, c, d] =
         bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C1), static_cast<f32x4>(C2), static_cast<f32x4>(P2));
     return point2{a * ttt_ + b * tt_ + c * t_ + d};
 }
@@ -91,10 +91,10 @@ constexpr vector2 bezierTangentAt(point2 P1, point2 P2, float t) noexcept
 constexpr vector2 bezierTangentAt(point2 P1, point2 C, point2 P2, float t) noexcept
 {
     constexpr auto _2 = f32x4::broadcast(2);
-    hilet t_ = f32x4::broadcast(t);
-    hilet P1_ = static_cast<f32x4>(P1);
-    hilet C_ = static_cast<f32x4>(C);
-    hilet P2_ = static_cast<f32x4>(P2);
+    auto const t_ = f32x4::broadcast(t);
+    auto const P1_ = static_cast<f32x4>(P1);
+    auto const C_ = static_cast<f32x4>(C);
+    auto const P2_ = static_cast<f32x4>(P2);
 
     return vector2{_2 * t_ * (P2_ - _2 * C_ + P1_) + _2 * (C_ - P1_)};
 }
@@ -104,31 +104,31 @@ constexpr vector2 bezierTangentAt(point2 P1, point2 C1, point2 C2, point2 P2, fl
     constexpr auto _2 = f32x4::broadcast(2);
     constexpr auto _3 = f32x4::broadcast(3);
     constexpr auto _6 = f32x4::broadcast(6);
-    hilet t_ = f32x4::broadcast(t);
-    hilet tt_ = t_ * t_;
-    hilet P1_ = static_cast<f32x4>(P1);
-    hilet C1_ = static_cast<f32x4>(C1);
-    hilet C2_ = static_cast<f32x4>(C2);
-    hilet P2_ = static_cast<f32x4>(P2);
+    auto const t_ = f32x4::broadcast(t);
+    auto const tt_ = t_ * t_;
+    auto const P1_ = static_cast<f32x4>(P1);
+    auto const C1_ = static_cast<f32x4>(C1);
+    auto const C2_ = static_cast<f32x4>(C2);
+    auto const P2_ = static_cast<f32x4>(P2);
 
     return vector2{_3 * tt_ * (P2_ - _3 * C2_ + _3 * C1_ - P1_) + _6 * t_ * (C2_ - _2 * C1_ + P1_) + _3 * (C1_ - P1_)};
 }
 
 hi_inline lean_vector<float> bezierFindT(float P1, float P2, float x) noexcept
 {
-    hilet[a, b] = bezierToPolynomial(P1, P2);
+    auto const[a, b] = bezierToPolynomial(P1, P2);
     return solvePolynomial(a, b - x);
 }
 
 hi_inline lean_vector<float> bezierFindT(float P1, float C, float P2, float x) noexcept
 {
-    hilet[a, b, c] = bezierToPolynomial(P1, C, P2);
+    auto const[a, b, c] = bezierToPolynomial(P1, C, P2);
     return solvePolynomial(a, b, c - x);
 }
 
 hi_inline lean_vector<float> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
 {
-    hilet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
+    auto const[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return solvePolynomial(a, b, c, d - x);
 }
 
@@ -138,8 +138,8 @@ hi_inline lean_vector<float> bezierFindT(float P1, float C1, float C2, float P2,
  */
 hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
 {
-    hilet t_above = dot(P - P1, P2 - P1);
-    hilet t_below = dot(P2 - P1, P2 - P1);
+    auto const t_above = dot(P - P1, P2 - P1);
+    auto const t_below = dot(P2 - P1, P2 - P1);
     if (t_below == 0.0) {
         [[unlikely]] return {};
     } else {
@@ -154,18 +154,18 @@ hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, p
 hi_inline lean_vector<float> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
 {
     constexpr auto _2 = f32x4::broadcast(2);
-    hilet P1_ = static_cast<f32x4>(P1);
-    hilet P2_ = static_cast<f32x4>(P2);
-    hilet C_ = static_cast<f32x4>(C);
+    auto const P1_ = static_cast<f32x4>(P1);
+    auto const P2_ = static_cast<f32x4>(P2);
+    auto const C_ = static_cast<f32x4>(C);
 
-    hilet p = P - P1;
-    hilet p1 = C - P1;
-    hilet p2 = vector2{P2_ - (_2 * C_) + P1_};
+    auto const p = P - P1;
+    auto const p1 = C - P1;
+    auto const p2 = vector2{P2_ - (_2 * C_) + P1_};
 
-    hilet a = dot(p2, p2);
-    hilet b = 3 * dot(p1, p2);
-    hilet c = dot(2 * p1, p1) - dot(p2, p);
-    hilet d = -dot(p1, p);
+    auto const a = dot(p2, p2);
+    auto const b = 3 * dot(p1, p2);
+    auto const c = dot(2 * p1, p1) - dot(p2, p);
+    auto const d = -dot(p1, p);
     return solvePolynomial(a, b, c, d);
 }
 
@@ -183,7 +183,7 @@ hi_inline lean_vector<float> bezierFindX(point2 P1, point2 P2, float y) noexcept
     }
 
     auto r = lean_vector<float>{};
-    for (hilet t : bezierFindT(P1.y(), P2.y(), y)) {
+    for (auto const t : bezierFindT(P1.y(), P2.y(), y)) {
         if (t >= 0.0f && t < 1.0f) {
             r.push_back(bezierPointAt(P1, P2, t).x());
         }
@@ -207,7 +207,7 @@ hi_inline lean_vector<float> bezierFindX(point2 P1, point2 C, point2 P2, float y
         return r;
     }
 
-    for (hilet t : bezierFindT(P1.y(), C.y(), P2.y(), y)) {
+    for (auto const t : bezierFindT(P1.y(), C.y(), P2.y(), y)) {
         if (t >= 0.0f && t <= 1.0f) {
             r.push_back(bezierPointAt(P1, C, P2, t).x());
         }
@@ -231,7 +231,7 @@ hi_inline lean_vector<float> bezierFindX(point2 P1, point2 C1, point2 C2, point2
         return r;
     }
 
-    for (hilet t : bezierFindT(P1.y(), C1.y(), C2.y(), P2.y(), y)) {
+    for (auto const t : bezierFindT(P1.y(), C1.y(), C2.y(), P2.y(), y)) {
         if (t >= 0.0f && t <= 1.0f) {
             r.push_back(bezierPointAt(P1, C1, C2, P2, t).x());
         }
@@ -253,13 +253,13 @@ hi_inline float bezierFlatness(point2 P1, point2 P2) noexcept
  */
 hi_inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
 {
-    hilet P1P2 = hypot(P2 - P1);
+    auto const P1P2 = hypot(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    hilet P1C1 = hypot(C - P1);
-    hilet C1P2 = hypot(P2 - C);
+    auto const P1C1 = hypot(C - P1);
+    auto const C1P2 = hypot(P2 - C);
     return P1P2 / (P1C1 + C1P2);
 }
 
@@ -268,21 +268,21 @@ hi_inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
  */
 hi_inline float bezierFlatness(point2 P1, point2 C1, point2 C2, point2 P2) noexcept
 {
-    hilet P1P2 = hypot(P2 - P1);
+    auto const P1P2 = hypot(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    hilet P1C1 = hypot(C1 - P1);
-    hilet C1C2 = hypot(C2 - C1);
-    hilet C2P2 = hypot(P2 - C2);
+    auto const P1C1 = hypot(C1 - P1);
+    auto const C1C2 = hypot(C2 - C1);
+    auto const C2P2 = hypot(P2 - C2);
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 
 hi_inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float distance) noexcept
 {
-    hilet v = P2 - P1;
-    hilet n = normal(v);
+    auto const v = P2 - P1;
+    auto const n = normal(v);
     return {P1 + n * distance, P2 + n * distance};
 }
 
@@ -291,22 +291,22 @@ hi_inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float dis
 hi_inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
 {
     // convert points to vectors.
-    hilet p = A1;
-    hilet r = A2 - A1;
-    hilet q = B1;
-    hilet s = B2 - B1;
+    auto const p = A1;
+    auto const r = A2 - A1;
+    auto const q = B1;
+    auto const s = B2 - B1;
 
     // find t and u in:
     // p + t*r == q + us
-    hilet crossRS = cross(r, s);
+    auto const crossRS = cross(r, s);
     if (crossRS == 0.0f) {
         // Parallel, other non, or a range of points intersect.
         return {};
 
     } else {
-        hilet q_min_p = q - p;
-        hilet t = cross(q_min_p, s) / crossRS;
-        hilet u = cross(q_min_p, r) / crossRS;
+        auto const q_min_p = q - p;
+        auto const t = cross(q_min_p, s) / crossRS;
+        auto const u = cross(q_min_p, r) / crossRS;
 
         if (t >= 0.0f && t <= 1.0f && u >= 0.0f && u <= 1.0f) {
             return bezierPointAt(A1, A2, t);
@@ -322,21 +322,21 @@ hi_inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2, point
 hi_inline std::optional<point2> getExtrapolatedIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
 {
     // convert points to vectors.
-    hilet p = A1;
-    hilet r = A2 - A1;
-    hilet q = B1;
-    hilet s = B2 - B1;
+    auto const p = A1;
+    auto const r = A2 - A1;
+    auto const q = B1;
+    auto const s = B2 - B1;
 
     // find t and u in:
     // p + t*r == q + us
-    hilet crossRS = cross(r, s);
+    auto const crossRS = cross(r, s);
     if (crossRS == 0.0f) {
         // Parallel, other non, or a range of points intersect.
         return {};
 
     } else {
-        hilet q_min_p = q - p;
-        hilet t = cross(q_min_p, s) / crossRS;
+        auto const q_min_p = q - p;
+        auto const t = cross(q_min_p, s) / crossRS;
 
         return bezierPointAt(A1, A2, t);
     }

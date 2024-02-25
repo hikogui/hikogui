@@ -471,31 +471,31 @@ template<std::floating_point Out, std::integral In>
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr bool can_round_cast(In rhs) noexcept
 {
-    hilet rhs_ = std::round(rhs);
+    auto const rhs_ = std::round(rhs);
     return rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max();
 }
 
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr bool can_floor_cast(In rhs) noexcept
 {
-    hilet rhs_ = std::floor(rhs);
+    auto const rhs_ = std::floor(rhs);
     return rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max();
 }
 
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr bool can_ceil_cast(In rhs) noexcept
 {
-    hilet rhs_ = std::ceil(rhs);
+    auto const rhs_ = std::ceil(rhs);
     return rhs_ >= std::numeric_limits<Out>::lowest() and rhs_ <= std::numeric_limits<Out>::max();
 }
 
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out round_cast(In rhs) noexcept
 {
-    hilet lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
-    hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
+    auto const lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
+    auto const highest = static_cast<long double>(std::numeric_limits<Out>::max());
 
-    hilet rhs_ = std::round(rhs);
+    auto const rhs_ = std::round(rhs);
     hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
@@ -503,10 +503,10 @@ template<std::integral Out, std::floating_point In>
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out floor_cast(In rhs) noexcept
 {
-    hilet lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
-    hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
+    auto const lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
+    auto const highest = static_cast<long double>(std::numeric_limits<Out>::max());
 
-    hilet rhs_ = std::floor(rhs);
+    auto const rhs_ = std::floor(rhs);
     hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
@@ -514,10 +514,10 @@ template<std::integral Out, std::floating_point In>
 template<std::integral Out, std::floating_point In>
 [[nodiscard]] constexpr Out ceil_cast(In rhs) noexcept
 {
-    hilet lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
-    hilet highest = static_cast<long double>(std::numeric_limits<Out>::max());
+    auto const lowest = static_cast<long double>(std::numeric_limits<Out>::lowest());
+    auto const highest = static_cast<long double>(std::numeric_limits<Out>::max());
 
-    hilet rhs_ = std::ceil(rhs);
+    auto const rhs_ = std::ceil(rhs);
     hi_axiom(rhs_ >= lowest and rhs_ <= highest);
     return static_cast<Out>(rhs_);
 }
@@ -766,7 +766,7 @@ template<typename T, byte_like Byte>
     }
     hi_axiom_not_null(bytes.data());
 
-    hilet data = bytes.data() + offset;
+    auto const data = bytes.data() + offset;
 
     if constexpr (alignof(value_type) != 1) {
         if (std::bit_cast<std::uintptr_t>(data) % alignof(value_type) != 0) {
@@ -791,7 +791,7 @@ template<typename T, byte_like Byte>
     }
     hi_axiom_not_null(bytes.data());
 
-    hilet data = bytes.data() + offset;
+    auto const data = bytes.data() + offset;
 
     if constexpr (alignof(value_type) != 1) {
         if (std::bit_cast<std::uintptr_t>(data) % alignof(value_type) != 0) {

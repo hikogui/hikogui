@@ -152,7 +152,7 @@ public:
 
         while (ptr != last) {
             // Construct a block in big endian.
-            hilet shift = 8 * ((bytes_per_block - 1) - byte_index_in_block);
+            auto const shift = 8 * ((bytes_per_block - 1) - byte_index_in_block);
             block |= static_cast<long long>(*(ptr++)) << shift;
 
             if (++byte_index_in_block == bytes_per_block) {
@@ -205,7 +205,7 @@ public:
         long long block = 0;
 
         for (; ptr != last; ++ptr) {
-            hilet digit = int_from_char<long long>(*ptr);
+            auto const digit = int_from_char<long long>(*ptr);
             if (digit == -1) {
                 // Whitespace is ignored.
                 continue;
@@ -248,12 +248,12 @@ private:
     template<typename ItOut>
     static void encode_block(long long block, long long nr_bytes, ItOut output) noexcept
     {
-        hilet padding = bytes_per_block - nr_bytes;
+        auto const padding = bytes_per_block - nr_bytes;
 
         // Construct a block in little-endian, using easy division/modulo.
         auto char_block = std::string{};
         for (long long i = 0; i != chars_per_block; ++i) {
-            hilet v = block % radix;
+            auto const v = block % radix;
             block /= radix;
 
             if (i < padding) {
@@ -273,7 +273,7 @@ private:
     template<typename ItOut>
     constexpr static void decode_block(long long block, long long nr_chars, ItOut output)
     {
-        hilet padding = chars_per_block - nr_chars;
+        auto const padding = chars_per_block - nr_chars;
 
         if (block and bytes_per_block == padding) {
             throw parse_error("Invalid number of character to decode.");
@@ -281,8 +281,8 @@ private:
 
         // Construct a block in little-endian, using easy division/modulo.
         for (long long i = 0; i != (bytes_per_block - padding); ++i) {
-            hilet shift = 8 * ((bytes_per_block - 1) - i);
-            hilet byte = static_cast<std::byte>((block >> shift) & 0xff);
+            auto const shift = 8 * ((bytes_per_block - 1) - i);
+            auto const byte = static_cast<std::byte>((block >> shift) & 0xff);
 
             *(output++) = byte;
         }

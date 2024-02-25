@@ -73,7 +73,7 @@ public:
     ~gfx_device()
     {
         try {
-            hilet lock = std::scoped_lock(gfx_system_mutex);
+            auto const lock = std::scoped_lock(gfx_system_mutex);
 
             tone_mapper_pipeline->destroy(this);
             tone_mapper_pipeline = nullptr;
@@ -90,7 +90,7 @@ public:
 
             vmaDestroyAllocator(allocator);
 
-            for (hilet& queue : _queues) {
+            for (auto const& queue : _queues) {
                 intrinsic.destroy(queue.command_pool);
             }
 
@@ -109,7 +109,7 @@ public:
 
     std::string string() const noexcept
     {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
 
         return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.uuid_string());
     }
@@ -278,7 +278,7 @@ public:
     {
         auto best_present_mode = vk::PresentModeKHR{};
         auto best_present_mode_score = 0;
-        for (hilet& present_mode : physicalIntrinsic.getSurfacePresentModesKHR(surface)) {
+        for (auto const& present_mode : physicalIntrinsic.getSurfacePresentModesKHR(surface)) {
             int present_mode_score = 0;
 
             switch (present_mode) {
@@ -340,8 +340,8 @@ public:
         VkBuffer buffer;
         VmaAllocation allocation;
 
-        hilet bufferCreateInfo_ = static_cast<VkBufferCreateInfo>(bufferCreateInfo);
-        hilet result =
+        auto const bufferCreateInfo_ = static_cast<VkBufferCreateInfo>(bufferCreateInfo);
+        auto const result =
             vk::Result{vmaCreateBuffer(allocator, &bufferCreateInfo_, &allocationCreateInfo, &buffer, &allocation, nullptr)};
 
         if (result != vk::Result::eSuccess) {
@@ -366,8 +366,8 @@ public:
         VkImage image;
         VmaAllocation allocation;
 
-        hilet imageCreateInfo_ = static_cast<VkImageCreateInfo>(imageCreateInfo);
-        hilet result =
+        auto const imageCreateInfo_ = static_cast<VkImageCreateInfo>(imageCreateInfo);
+        auto const result =
             vk::Result{vmaCreateImage(allocator, &imageCreateInfo_, &allocationCreateInfo, &image, &allocation, nullptr)};
 
         if (result != vk::Result::eSuccess) {
@@ -388,9 +388,9 @@ public:
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        hilet& queue = get_graphics_queue();
-        hilet commandBuffers = intrinsic.allocateCommandBuffers({queue.command_pool, vk::CommandBufferLevel::ePrimary, 1});
-        hilet commandBuffer = commandBuffers.at(0);
+        auto const& queue = get_graphics_queue();
+        auto const commandBuffers = intrinsic.allocateCommandBuffers({queue.command_pool, vk::CommandBufferLevel::ePrimary, 1});
+        auto const commandBuffer = commandBuffers.at(0);
 
         commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
         return commandBuffer;
@@ -404,7 +404,7 @@ public:
 
         std::vector<vk::CommandBuffer> const commandBuffers = {commandBuffer};
 
-        hilet& queue = get_graphics_queue();
+        auto const& queue = get_graphics_queue();
         queue.queue.submit(
             {{
                 0,
@@ -430,8 +430,8 @@ public:
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        hilet[srcAccessMask, srcStage] = access_and_stage_from_layout(src_layout);
-        hilet[dstAccessMask, dstStage] = access_and_stage_from_layout(dst_layout);
+        auto const[srcAccessMask, srcStage] = access_and_stage_from_layout(src_layout);
+        auto const[dstAccessMask, dstStage] = access_and_stage_from_layout(dst_layout);
 
         std::vector<vk::ImageMemoryBarrier> barriers = {
             {srcAccessMask,
@@ -465,7 +465,7 @@ public:
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        hilet command_buffer = beginSingleTimeCommands();
+        auto const command_buffer = beginSingleTimeCommands();
 
         transition_layout(command_buffer, image, format, src_layout, dst_layout);
 
@@ -481,7 +481,7 @@ public:
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        hilet commandBuffer = beginSingleTimeCommands();
+        auto const commandBuffer = beginSingleTimeCommands();
 
         commandBuffer.copyImage(srcImage, srcLayout, dstImage, dstLayout, regions);
 
@@ -496,7 +496,7 @@ public:
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        hilet commandBuffer = beginSingleTimeCommands();
+        auto const commandBuffer = beginSingleTimeCommands();
 
         commandBuffer.clearColorImage(image, layout, color, ranges);
 
@@ -509,7 +509,7 @@ public:
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
         void *mapping;
-        hilet result = vk::Result{vmaMapMemory(allocator, allocation, &mapping)};
+        auto const result = vk::Result{vmaMapMemory(allocator, allocation, &mapping)};
         if (result != vk::Result::eSuccess) {
             throw gui_error(std::format("vmaMapMemory failed {}", to_string(result)));
         }
@@ -533,11 +533,11 @@ public:
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        hilet alignment = physicalProperties.limits.nonCoherentAtomSize;
+        auto const alignment = physicalProperties.limits.nonCoherentAtomSize;
 
-        hilet alignedOffset = (offset / alignment) * alignment;
-        hilet adjustedSize = size + (offset - alignedOffset);
-        hilet alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
+        auto const alignedOffset = (offset / alignment) * alignment;
+        auto const adjustedSize = size + (offset - alignedOffset);
+        auto const alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
 
         vmaFlushAllocation(allocator, allocation, alignedOffset, alignedSize);
     }
@@ -559,10 +559,10 @@ public:
         // no lock, only local variable.
 
         // Make sure the address is aligned to uint32_t;
-        hilet address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
+        auto const address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
         hi_assert((address & 2) == 0);
 
-        hilet shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
+        auto const shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
         return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
     }
 
@@ -793,7 +793,7 @@ private:
 
     static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const vk::PhysicalDeviceFeatures& requiredFeatures)
     {
-        hilet availableFeatures = physicalDevice.getFeatures();
+        auto const availableFeatures = physicalDevice.getFeatures();
         auto meetsRequirements = true;
 
         meetsRequirements &=
@@ -912,12 +912,12 @@ private:
 
     [[nodiscard]] std::vector<vk::DeviceQueueCreateInfo> make_device_queue_create_infos() const noexcept
     {
-        hilet default_queue_priority = std::array{1.0f};
+        auto const default_queue_priority = std::array{1.0f};
         uint32_t queue_family_index = 0;
 
         auto r = std::vector<vk::DeviceQueueCreateInfo>{};
         for (auto queue_family_properties : physicalIntrinsic.getQueueFamilyProperties()) {
-            hilet num_queues = 1;
+            auto const num_queues = 1;
             hi_assert(size(default_queue_priority) >= num_queues);
             r.emplace_back(vk::DeviceQueueCreateFlags(), queue_family_index++, num_queues, default_queue_priority.data());
         }
@@ -959,12 +959,12 @@ private:
 
     void initialize_queues(std::vector<vk::DeviceQueueCreateInfo> const& device_queue_create_infos) noexcept
     {
-        hilet queue_family_properties = physicalIntrinsic.getQueueFamilyProperties();
+        auto const queue_family_properties = physicalIntrinsic.getQueueFamilyProperties();
 
-        for (hilet& device_queue_create_info : device_queue_create_infos) {
-            hilet queue_family_index = device_queue_create_info.queueFamilyIndex;
-            hilet& queue_family_property = queue_family_properties[queue_family_index];
-            hilet queue_flags = queue_family_property.queueFlags;
+        for (auto const& device_queue_create_info : device_queue_create_infos) {
+            auto const queue_family_index = device_queue_create_info.queueFamilyIndex;
+            auto const& queue_family_property = queue_family_properties[queue_family_index];
+            auto const queue_flags = queue_family_property.queueFlags;
 
             for (uint32_t queue_index = 0; queue_index != device_queue_create_info.queueCount; ++queue_index) {
                 auto queue = intrinsic.getQueue(queue_family_index, queue_index);
@@ -1016,16 +1016,16 @@ private:
             allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
             allocationCreateInfo.pUserData = const_cast<char *>("staging vertex index buffer");
             allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-            hilet[stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation] =
+            auto const[stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation] =
                 createBuffer(bufferCreateInfo, allocationCreateInfo);
             setDebugUtilsObjectNameEXT(stagingvertexIndexBuffer, "staging vertex index buffer");
 
             // Initialize indices.
-            hilet stagingvertexIndexBufferData = mapMemory<vertex_index_type>(stagingvertexIndexBufferAllocation);
+            auto const stagingvertexIndexBufferData = mapMemory<vertex_index_type>(stagingvertexIndexBufferAllocation);
             for (std::size_t i = 0; i < maximum_number_of_indices; i++) {
-                hilet vertexInRectangle = i % 6;
-                hilet rectangleNr = i / 6;
-                hilet rectangleBase = rectangleNr * 4;
+                auto const vertexInRectangle = i % 6;
+                auto const rectangleNr = i / 6;
+                auto const rectangleBase = rectangleNr * 4;
 
                 switch (vertexInRectangle) {
                 case 0:

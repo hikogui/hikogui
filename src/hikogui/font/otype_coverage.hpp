@@ -37,11 +37,11 @@ struct coverage_format2_range {
 
     hi_assert_or_return(*glyph_id >= 0 && *glyph_id < num_glyphs, -2);
 
-    hilet header1 = make_placement_ptr<coverage_format1>(bytes, offset);
+    auto const header1 = make_placement_ptr<coverage_format1>(bytes, offset);
     if (*header1->coverage_format == 1) {
-        hilet table = make_placement_array<big_uint16_buf_t>(bytes, offset, *header1->glyph_count);
+        auto const table = make_placement_array<big_uint16_buf_t>(bytes, offset, *header1->glyph_count);
 
-        hilet it = std::lower_bound(table.begin(), table.end(), glyph_id, [](hilet &item, hilet &value) {
+        auto const it = std::lower_bound(table.begin(), table.end(), glyph_id, [](auto const &item, auto const &value) {
             return *item < *value;
         });
 
@@ -53,11 +53,11 @@ struct coverage_format2_range {
 
     } else if (*header1->coverage_format == 2) {
         offset = 0;
-        hilet header2 = make_placement_ptr<coverage_format2>(bytes, offset);
+        auto const header2 = make_placement_ptr<coverage_format2>(bytes, offset);
 
-        hilet table = make_placement_array<coverage_format2_range>(bytes, offset, *header2->range_count);
+        auto const table = make_placement_array<coverage_format2_range>(bytes, offset, *header2->range_count);
 
-        hilet it = std::lower_bound(table.begin(), table.end(), glyph_id, [](hilet &item, hilet &value) {
+        auto const it = std::lower_bound(table.begin(), table.end(), glyph_id, [](auto const &item, auto const &value) {
             return *item.end_glyph_id < *value;
         });
 

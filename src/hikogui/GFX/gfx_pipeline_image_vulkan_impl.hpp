@@ -41,8 +41,8 @@ hi_inline void gfx_pipeline_image::draw_in_command_buffer(vk::CommandBuffer comm
         sizeof(push_constants),
         &pushConstants);
 
-    hilet numberOfRectangles = vertexBufferData.size() / 4;
-    hilet numberOfTriangles = numberOfRectangles * 2;
+    auto const numberOfRectangles = vertexBufferData.size() / 4;
+    auto const numberOfTriangles = numberOfRectangles * 2;
     device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
@@ -70,7 +70,7 @@ hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_image::create
 hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_image::createWriteDescriptorSet() const
 {
     hi_axiom_not_null(device());
-    hilet& sharedImagePipeline = device()->image_pipeline;
+    auto const& sharedImagePipeline = device()->image_pipeline;
 
     return {
         {
@@ -165,9 +165,9 @@ hi_inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surfac
 
     // Like before the surface may not be assigned to a device either.
     // In that case also return an empty image.
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
     if ((this->device = surface->device()) != nullptr) {
-        hilet[num_columns, num_rows] = size_in_int_pages();
+        auto const[num_columns, num_rows] = size_in_int_pages();
         this->pages = device->image_pipeline->allocate_pages(num_columns * num_rows);
     }
 }
@@ -176,7 +176,7 @@ hi_inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surfac
     paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
         this->upload(image);
     }
 }
@@ -185,7 +185,7 @@ hi_inline gfx_pipeline_image::paged_image::paged_image(gfx_surface const *surfac
     paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
         this->upload(image);
     }
 }
@@ -228,7 +228,7 @@ hi_inline void gfx_pipeline_image::paged_image::upload(png const& image) noexcep
     hi_assert(image.width() == width and image.height() == height);
 
     if (device) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
 
         state = state_type::drawing;
 
@@ -245,7 +245,7 @@ hi_inline void gfx_pipeline_image::paged_image::upload(pixmap_span<sfloat_rgba16
     hi_assert(image.width() == width and image.height() == height);
 
     if (device) {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
 
         state = state_type::drawing;
 
@@ -280,7 +280,7 @@ hi_inline std::vector<std::size_t> gfx_pipeline_image::device_shared::allocate_p
 
     auto r = std::vector<std::size_t>();
     for (int i = 0; i < num_pages; i++) {
-        hilet page = _atlas_free_pages.back();
+        auto const page = _atlas_free_pages.back();
         r.push_back(page);
         _atlas_free_pages.pop_back();
     }
@@ -309,8 +309,8 @@ hi_inline hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_
     // The amount of pixels per page, that is the page plus two borders.
     constexpr auto page_stride = gfx_pipeline_image::paged_image::page_size + 2;
 
-    hilet image_nr = page / gfx_pipeline_image::device_shared::atlas_num_pages_per_image;
-    hilet image_page = page % gfx_pipeline_image::device_shared::atlas_num_pages_per_image;
+    auto const image_nr = page / gfx_pipeline_image::device_shared::atlas_num_pages_per_image;
+    auto const image_page = page % gfx_pipeline_image::device_shared::atlas_num_pages_per_image;
 
     return point3{
         narrow_cast<float>((image_page % gfx_pipeline_image::device_shared::atlas_num_pages_per_axis) * page_stride + 1),
@@ -326,7 +326,7 @@ hi_inline hi::pixmap_span<sfloat_rgba16> gfx_pipeline_image::device_shared::get_
  */
 hi_inline point2 get_staging_position(const gfx_pipeline_image::paged_image& image, std::size_t page_index)
 {
-    hilet width_in_pages = (image.width + gfx_pipeline_image::paged_image::page_size - 1) / gfx_pipeline_image::paged_image::page_size;
+    auto const width_in_pages = (image.width + gfx_pipeline_image::paged_image::page_size - 1) / gfx_pipeline_image::paged_image::page_size;
 
     return point2{
         narrow_cast<float>((page_index % width_in_pages) * gfx_pipeline_image::paged_image::page_size + 1),
@@ -335,12 +335,12 @@ hi_inline point2 get_staging_position(const gfx_pipeline_image::paged_image& ima
 
 hi_inline void gfx_pipeline_image::device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
-    hilet width = ceil_cast<std::size_t>(border_rectangle.width());
-    hilet height = ceil_cast<std::size_t>(border_rectangle.height());
-    hilet bottom = floor_cast<std::size_t>(border_rectangle.bottom());
-    hilet top = ceil_cast<std::size_t>(border_rectangle.top());
-    hilet left = floor_cast<std::size_t>(border_rectangle.left());
-    hilet right = ceil_cast<std::size_t>(border_rectangle.right());
+    auto const width = ceil_cast<std::size_t>(border_rectangle.width());
+    auto const height = ceil_cast<std::size_t>(border_rectangle.height());
+    auto const bottom = floor_cast<std::size_t>(border_rectangle.bottom());
+    auto const top = ceil_cast<std::size_t>(border_rectangle.top());
+    auto const left = floor_cast<std::size_t>(border_rectangle.left());
+    auto const right = ceil_cast<std::size_t>(border_rectangle.right());
 
     hi_assert(bottom == 0);
     hi_assert(left == 0);
@@ -372,10 +372,10 @@ hi_inline void gfx_pipeline_image::device_shared::clear_staging_between_border_a
     hi_assert(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
     hi_assert(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
 
-    hilet border_top = floor_cast<std::size_t>(border_rectangle.top());
-    hilet border_right = floor_cast<std::size_t>(border_rectangle.right());
-    hilet upload_top = floor_cast<std::size_t>(upload_rectangle.top());
-    hilet upload_right = floor_cast<std::size_t>(upload_rectangle.right());
+    auto const border_top = floor_cast<std::size_t>(border_rectangle.top());
+    auto const border_right = floor_cast<std::size_t>(border_rectangle.right());
+    auto const upload_top = floor_cast<std::size_t>(upload_rectangle.top());
+    auto const upload_right = floor_cast<std::size_t>(upload_rectangle.right());
     hi_assert(border_right <= upload_right);
     hi_assert(border_top <= upload_top);
 
@@ -398,11 +398,11 @@ hi_inline void gfx_pipeline_image::device_shared::clear_staging_between_border_a
 
 hi_inline void gfx_pipeline_image::device_shared::prepare_staging_for_upload(paged_image const& image) noexcept
 {
-    hilet image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
-    hilet border_rectangle = image_rectangle + 1;
-    hilet upload_width = ceil(image.width, paged_image::page_size) + 2;
-    hilet upload_height = ceil(image.height, paged_image::page_size) + 2;
-    hilet upload_rectangle = aarectangle{extent2{narrow_cast<float>(upload_width), narrow_cast<float>(upload_height)}};
+    auto const image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
+    auto const border_rectangle = image_rectangle + 1;
+    auto const upload_width = ceil(image.width, paged_image::page_size) + 2;
+    auto const upload_height = ceil(image.height, paged_image::page_size) + 2;
+    auto const upload_rectangle = aarectangle{extent2{narrow_cast<float>(upload_width), narrow_cast<float>(upload_height)}};
 
     make_staging_border_transparent(border_rectangle);
     clear_staging_between_border_and_upload(border_rectangle, upload_rectangle);
@@ -419,19 +419,19 @@ hi_inline void gfx_pipeline_image::device_shared::update_atlas_with_staging_pixm
 
     std::array<std::vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
     for (std::size_t index = 0; index < size(image.pages); index++) {
-        hilet page = image.pages.at(index);
+        auto const page = image.pages.at(index);
 
-        hilet src_position = get_staging_position(image, index);
-        hilet dst_position = get_atlas_position(page);
+        auto const src_position = get_staging_position(image, index);
+        auto const dst_position = get_atlas_position(page);
 
         // Copy including a 1 pixel border.
         constexpr auto width = narrow_cast<int32_t>(paged_image::page_size + 2);
         constexpr auto height = narrow_cast<int32_t>(paged_image::page_size + 2);
-        hilet src_x = floor_cast<int32_t>(src_position.x() - 1.0f);
-        hilet src_y = floor_cast<int32_t>(src_position.y() - 1.0f);
-        hilet dst_x = floor_cast<int32_t>(dst_position.x() - 1.0f);
-        hilet dst_y = floor_cast<int32_t>(dst_position.y() - 1.0f);
-        hilet dst_z = floor_cast<std::size_t>(dst_position.z());
+        auto const src_x = floor_cast<int32_t>(src_position.x() - 1.0f);
+        auto const src_y = floor_cast<int32_t>(src_position.y() - 1.0f);
+        auto const dst_x = floor_cast<int32_t>(dst_position.x() - 1.0f);
+        auto const dst_y = floor_cast<int32_t>(dst_position.y() - 1.0f);
+        auto const dst_z = floor_cast<std::size_t>(dst_position.z());
 
         auto& regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
         regionsToCopy.emplace_back(
@@ -443,7 +443,7 @@ hi_inline void gfx_pipeline_image::device_shared::update_atlas_with_staging_pixm
     }
 
     for (std::size_t atlas_texture_index = 0; atlas_texture_index < size(atlas_textures); atlas_texture_index++) {
-        hilet& regions_to_copy = regions_to_copy_per_atlas_texture.at(atlas_texture_index);
+        auto const& regions_to_copy = regions_to_copy_per_atlas_texture.at(atlas_texture_index);
         if (regions_to_copy.empty()) {
             continue;
         }
@@ -491,7 +491,7 @@ hi_inline void gfx_pipeline_image::device_shared::teardown_shaders(gfx_device co
 
 hi_inline void gfx_pipeline_image::device_shared::add_atlas_image()
 {
-    hilet current_image_index = size(atlas_textures);
+    auto const current_image_index = size(atlas_textures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -514,10 +514,10 @@ hi_inline void gfx_pipeline_image::device_shared::add_atlas_image()
     allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    hilet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    auto const[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
-    hilet atlasImageView = device.createImageView(
+    auto const atlasImageView = device.createImageView(
         {vk::ImageViewCreateFlags(),
          atlasImage,
          vk::ImageViewType::e2D,
@@ -534,7 +534,7 @@ hi_inline void gfx_pipeline_image::device_shared::add_atlas_image()
     atlas_textures.push_back({atlasImage, atlasImageAllocation, atlasImageView});
 
     // Add pages for this image to free list.
-    hilet page_offset = current_image_index * atlas_num_pages_per_image;
+    auto const page_offset = current_image_index * atlas_num_pages_per_image;
     for (int i = 0; i < atlas_num_pages_per_image; i++) {
         _atlas_free_pages.push_back({page_offset + i});
     }
@@ -571,9 +571,9 @@ hi_inline void gfx_pipeline_image::device_shared::build_atlas()
     allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
     allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    hilet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    auto const[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(image, "image-pipeline staging image");
-    hilet data = device.mapMemory<sfloat_rgba16>(allocation);
+    auto const data = device.mapMemory<sfloat_rgba16>(allocation);
 
     staging_texture = {
         image,
@@ -634,38 +634,38 @@ hi_inline void gfx_pipeline_image::device_shared::place_vertices(
     constexpr auto page_size2 =
         f32x4{narrow_cast<float>(paged_image::page_size), narrow_cast<float>(paged_image::page_size), 0.0f, 0.0f};
 
-    hilet image_size = image.size();
-    hilet size_in_float_pages = f32x4{image.size_in_float_pages()};
-    hilet size_in_int_pages = i32x4{ceil(size_in_float_pages)};
-    hilet num_columns = narrow_cast<std::size_t>(size_in_int_pages.x());
-    hilet num_rows = narrow_cast<std::size_t>(size_in_int_pages.y());
+    auto const image_size = image.size();
+    auto const size_in_float_pages = f32x4{image.size_in_float_pages()};
+    auto const size_in_int_pages = i32x4{ceil(size_in_float_pages)};
+    auto const num_columns = narrow_cast<std::size_t>(size_in_int_pages.x());
+    auto const num_rows = narrow_cast<std::size_t>(size_in_int_pages.y());
 
-    hilet page_to_quad_ratio = rcp(size_in_float_pages);
-    hilet page_to_quad_ratio_x = scale3{page_to_quad_ratio.xxx1()};
-    hilet page_to_quad_ratio_y = scale3{page_to_quad_ratio.yyy1()};
-    hilet left_increment = page_to_quad_ratio_y * box.left();
-    hilet right_increment = page_to_quad_ratio_y * box.right();
+    auto const page_to_quad_ratio = rcp(size_in_float_pages);
+    auto const page_to_quad_ratio_x = scale3{page_to_quad_ratio.xxx1()};
+    auto const page_to_quad_ratio_y = scale3{page_to_quad_ratio.yyy1()};
+    auto const left_increment = page_to_quad_ratio_y * box.left();
+    auto const right_increment = page_to_quad_ratio_y * box.right();
 
     auto left_bottom = box.p0;
     auto right_bottom = box.p1;
     auto bottom_increment = page_to_quad_ratio_x * (right_bottom - left_bottom);
     auto it = image.pages.begin();
     for (std::size_t page_index = 0, row_nr = 0; row_nr != num_rows; ++row_nr) {
-        hilet left_top = left_bottom + left_increment;
-        hilet right_top = right_bottom + right_increment;
-        hilet top_increment = page_to_quad_ratio_x * (right_top - left_top);
+        auto const left_top = left_bottom + left_increment;
+        auto const right_top = right_bottom + right_increment;
+        auto const top_increment = page_to_quad_ratio_x * (right_top - left_top);
 
         auto new_p0 = left_bottom;
         auto new_p2 = left_top;
         for (std::size_t column_nr = 0; column_nr != num_columns; ++column_nr, ++page_index, ++it) {
-            hilet new_p1 = new_p0 + bottom_increment;
-            hilet new_p3 = new_p2 + top_increment;
+            auto const new_p1 = new_p0 + bottom_increment;
+            auto const new_p3 = new_p2 + top_increment;
 
             // The new quad, limited to the right-top corner of the original quad.
-            hilet atlas_position = get_atlas_position(*it);
+            auto const atlas_position = get_atlas_position(*it);
 
-            hilet xy = f32x4{narrow_cast<float>(column_nr), narrow_cast<float>(row_nr * paged_image::page_size), 0.0f, 0.0f};
-            hilet uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
+            auto const xy = f32x4{narrow_cast<float>(column_nr), narrow_cast<float>(row_nr * paged_image::page_size), 0.0f, 0.0f};
+            auto const uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
 
             vertices.emplace_back(new_p0, clipping_rectangle, get<0>(uv_rectangle));
             vertices.emplace_back(new_p1, clipping_rectangle, get<1>(uv_rectangle));

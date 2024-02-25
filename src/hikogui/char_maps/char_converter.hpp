@@ -118,7 +118,7 @@ public:
         using std::begin;
         using std::end;
 
-        hilet[size, valid] = _size(cbegin(src), cend(src));
+        auto const[size, valid] = _size(cbegin(src), cend(src));
 
         auto r = OutRange{};
         if constexpr (From == To and std::is_same_v<InRange, OutRange>) {
@@ -157,7 +157,7 @@ public:
     {
         using std::begin;
 
-        hilet[size, valid] = _size(first, last);
+        auto const[size, valid] = _size(first, last);
         auto r = OutRange{};
         if (size == 0) {
             return r;
@@ -187,7 +187,7 @@ public:
     {
         hi_assert_not_null(ptr);
 
-        hilet num_chars = size / sizeof(from_char_type);
+        auto const num_chars = size / sizeof(from_char_type);
 
         endian = from_encoder_type{}.guess_endian(ptr, size, endian);
         if (endian == std::endian::native) {
@@ -239,8 +239,8 @@ private:
 #if defined(HI_HAS_SSE2)
             if constexpr (_has_read_ascii_chunk16 and _has_write_ascii_chunk16) {
                 while (std::distance(it, last) >= 16) {
-                    hilet chunk = from_encoder_type{}.read_ascii_chunk16(it);
-                    hilet ascii_mask = _mm_movemask_epi8(chunk);
+                    auto const chunk = from_encoder_type{}.read_ascii_chunk16(it);
+                    auto const ascii_mask = _mm_movemask_epi8(chunk);
                     if (ascii_mask) {
                         // This chunk contains non-ASCII characters.
                         auto partial_count = std::countr_zero(truncate<uint16_t>(ascii_mask));
@@ -263,8 +263,8 @@ private:
 #if defined(HI_HAS_SSE2)
             if constexpr (_has_read_ascii_chunk16 and _has_write_ascii_chunk16) {
                 while (std::distance(src, src_last) >= 16) {
-                    hilet chunk = from_encoder_type{}.read_ascii_chunk16(src);
-                    hilet ascii_mask = _mm_movemask_epi8(chunk);
+                    auto const chunk = from_encoder_type{}.read_ascii_chunk16(src);
+                    auto const ascii_mask = _mm_movemask_epi8(chunk);
                     if (ascii_mask) {
                         // This chunk contains non-ASCII characters.
                         break;
@@ -293,10 +293,10 @@ private:
                 break;
             }
 
-            hilet[code_point, read_valid] = from_encoder_type{}.read(it, last);
+            auto const[code_point, read_valid] = from_encoder_type{}.read(it, last);
             valid &= read_valid;
 
-            hilet[write_count, write_valid] = to_encoder_type{}.size(code_point);
+            auto const[write_count, write_valid] = to_encoder_type{}.size(code_point);
             count += write_count;
             valid &= write_valid;
         }
@@ -316,7 +316,7 @@ private:
                 break;
             }
 
-            hilet[code_point, from_valid] = from_encoder_type{}.read(src, src_last);
+            auto const[code_point, from_valid] = from_encoder_type{}.read(src, src_last);
             to_encoder_type{}.write(code_point, dst);
         }
     }

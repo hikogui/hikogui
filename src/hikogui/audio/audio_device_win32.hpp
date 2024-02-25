@@ -421,8 +421,8 @@ private:
             audio_sample_format::int20(),
             audio_sample_format::int16()};
 
-        for (hilet &sample_format : sample_formats) {
-            hilet format = audio_stream_format{sample_format, sample_rate, speaker_mapping};
+        for (auto const &sample_format : sample_formats) {
+            auto const format = audio_stream_format{sample_format, sample_rate, speaker_mapping};
             if (supports_format(format)) {
                 return format;
             }
@@ -440,8 +440,8 @@ private:
             audio_sample_format::int20(),
             audio_sample_format::int16()};
 
-        for (hilet &sample_format : sample_formats) {
-            hilet format = audio_stream_format{sample_format, sample_rate, num_channels};
+        for (auto const &sample_format : sample_formats) {
+            auto const format = audio_stream_format{sample_format, sample_rate, num_channels};
             if (supports_format(format)) {
                 return format;
             }
@@ -456,7 +456,7 @@ private:
         auto r = std::vector<audio_stream_format>{};
         r.reserve(size(speaker_mappings) + (max_num_channels / 2) + 2);
 
-        for (hilet &info: speaker_mappings) {
+        for (auto const &info: speaker_mappings) {
             if (auto f = best_format(sample_rate, info.mapping)) {
                 r.push_back(*std::move(f));
             }
@@ -483,7 +483,7 @@ private:
         // https://github.com/EddieRingle/portaudio/blob/master/src/os/win/pa_win_wdmks_utils.c
         // https://docs.microsoft.com/en-us/previous-versions/ff561658(v=vs.85)
 
-        for (hilet& format_range : get_format_ranges()) {
+        for (auto const& format_range : get_format_ranges()) {
             hi_log_info("      * {}", format_range);
         }
     }
@@ -516,7 +516,7 @@ private:
         WAVEFORMATEX *ex;
         hi_hresult_check(_audio_client->GetMixFormat(&ex));
         hi_assert_not_null(ex);
-        hilet r = audio_stream_format_from_win32(*ex);
+        auto const r = audio_stream_format_from_win32(*ex);
         CoTaskMemFree(ex);
         return r;
     }
@@ -535,7 +535,7 @@ private:
         // Split the ranged sample rates into individual sample rates.
         auto it = first;
         while (it != last) {
-            hilet format = audio_stream_format{it->format, it->min_sample_rate, it->num_channels};
+            auto const format = audio_stream_format{it->format, it->min_sample_rate, it->num_channels};
 
             // Eliminate bit-depths that are not supported.
             if (not supports_format(format)) {
@@ -545,7 +545,7 @@ private:
 
             // Check the speaker mapping capability at this bit-depth and sample rate.
             it->surround_mode_mask = surround_mode::none;
-            for (hilet mode : enumerate_surround_modes()) {
+            for (auto const mode : enumerate_surround_modes()) {
                 auto surround_format = format;
                 surround_format.speaker_mapping = to_speaker_mapping(mode);
                 surround_format.num_channels = narrow_cast<uint16_t>(popcount(surround_format.speaker_mapping));
@@ -580,7 +580,7 @@ private:
         format_ranges.insert(format_ranges.cend(), tmp.cbegin(), tmp.cend());
 
         std::sort(format_ranges.begin(), format_ranges.end(), std::greater{});
-        last = std::unique(format_ranges.begin(), format_ranges.end(), [](hilet& lhs, hilet& rhs) {
+        last = std::unique(format_ranges.begin(), format_ranges.end(), [](auto const& lhs, auto const& rhs) {
             return equal_except_bit_depth(lhs, rhs);
         });
         format_ranges.erase(last, format_ranges.end());

@@ -92,7 +92,7 @@ public:
 constexpr void fill(pixmap_span<sfloat_rgba16> image, f32x4 color) noexcept
 {
     for (std::size_t y = 0; y != image.height(); ++y) {
-        hilet row = image[y];
+        auto const row = image[y];
         for (std::size_t x = 0; x != image.width(); ++x) {
             row[x] = color;
         }

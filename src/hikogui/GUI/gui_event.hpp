@@ -230,7 +230,7 @@ public:
      */
     constexpr void set_type(gui_event_type type) noexcept
     {
-        hilet previous_variant = variant();
+        auto const previous_variant = variant();
 
         _type = type;
         if (previous_variant != variant()) {

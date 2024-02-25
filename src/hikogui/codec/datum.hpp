@@ -492,7 +492,7 @@ public:
     {
         if (auto f = get_if<double>(*this)) {
             errno = 0;
-            hilet r = std::round(*f);
+            auto const r = std::round(*f);
             if (errno == EDOM or errno == ERANGE or r < narrow_cast<double>(std::numeric_limits<T>::min()) or
                 r > narrow_cast<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
@@ -546,7 +546,7 @@ public:
         case tag_type::vector:
             {
                 auto r = std::string{"["};
-                for (hilet& item : *_value._vector) {
+                for (auto const& item : *_value._vector) {
                     r += repr(item);
                     r += ',';
                 }
@@ -556,7 +556,7 @@ public:
         case tag_type::map:
             {
                 auto r = std::string{"{"};
-                for (hilet& item : *_value._map) {
+                for (auto const& item : *_value._map) {
                     r += repr(item.first);
                     r += ':';
                     r += repr(item.second);
@@ -677,7 +677,7 @@ public:
         case tag_type::vector:
             {
                 std::size_t r = 0;
-                for (hilet& v : *_value._vector) {
+                for (auto const& v : *_value._vector) {
                     r = hash_mix(r, v.hash());
                 }
                 return r;
@@ -685,7 +685,7 @@ public:
         case tag_type::map:
             {
                 std::size_t r = 0;
-                for (hilet& kv : *_value._map) {
+                for (auto const& kv : *_value._map) {
                     r = hash_mix(r, kv.first.hash(), kv.second.hash());
                 }
                 return r;
@@ -699,13 +699,13 @@ public:
 
     [[nodiscard]] constexpr std::size_t size() const
     {
-        if (hilet *s = get_if<std::string>(*this)) {
+        if (auto const *s = get_if<std::string>(*this)) {
             return s->size();
-        } else if (hilet *v = get_if<vector_type>(*this)) {
+        } else if (auto const *v = get_if<vector_type>(*this)) {
             return v->size();
-        } else if (hilet *m = get_if<map_type>(*this)) {
+        } else if (auto const *m = get_if<map_type>(*this)) {
             return m->size();
-        } else if (hilet *b = get_if<bstring>(*this)) {
+        } else if (auto const *b = get_if<bstring>(*this)) {
             return b->size();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.size()", repr(*this)));
@@ -719,7 +719,7 @@ public:
 
     [[nodiscard]] constexpr datum const& back() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.back()", repr(*this)));
             }
@@ -743,7 +743,7 @@ public:
 
     [[nodiscard]] constexpr datum const& front() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.front()", repr(*this)));
             }
@@ -767,7 +767,7 @@ public:
 
     [[nodiscard]] constexpr auto cbegin() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             return v->cbegin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.cbegin()", repr(*this)));
@@ -776,7 +776,7 @@ public:
 
     [[nodiscard]] constexpr auto begin() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             return v->begin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
@@ -785,7 +785,7 @@ public:
 
     [[nodiscard]] constexpr auto begin()
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             return v->begin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
@@ -794,7 +794,7 @@ public:
 
     [[nodiscard]] constexpr auto cend() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             return v->cend();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.cend()", repr(*this)));
@@ -803,7 +803,7 @@ public:
 
     [[nodiscard]] constexpr auto end() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             return v->end();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
@@ -812,7 +812,7 @@ public:
 
     [[nodiscard]] constexpr auto end()
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const *v = get_if<vector_type>(*this)) {
             return v->end();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
@@ -823,10 +823,10 @@ public:
      */
     [[nodiscard]] vector_type keys() const
     {
-        if (hilet *m = get_if<map_type>(*this)) {
+        if (auto const *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (hilet& kv : *m) {
+            for (auto const& kv : *m) {
                 r.push_back(kv.first);
             }
             return r;
@@ -839,10 +839,10 @@ public:
      */
     [[nodiscard]] vector_type values() const
     {
-        if (hilet *m = get_if<map_type>(*this)) {
+        if (auto const *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (hilet& kv : *m) {
+            for (auto const& kv : *m) {
                 r.push_back(kv.second);
             }
             return r;
@@ -855,11 +855,11 @@ public:
      */
     [[nodiscard]] vector_type items() const
     {
-        if (hilet *m = get_if<map_type>(*this)) {
+        if (auto const *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
 
-            for (hilet& item : *m) {
+            for (auto const& item : *m) {
                 r.push_back(make_vector(item.first, item.second));
             }
             return r;
@@ -984,7 +984,7 @@ public:
     [[nodiscard]] datum const& operator[](datum const& rhs) const
     {
         if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
-            hilet& v = get<vector_type>(*this);
+            auto const& v = get<vector_type>(*this);
 
             auto index = get<long long>(rhs);
             if (index < 0) {
@@ -997,8 +997,8 @@ public:
             return v[index];
 
         } else if (holds_alternative<map_type>(*this)) {
-            hilet& m = get<map_type>(*this);
-            hilet it = m.find(rhs);
+            auto const& m = get<map_type>(*this);
+            auto const it = m.find(rhs);
             if (it == m.end()) {
                 throw std::overflow_error(std::format("Key {} not found in map", repr(rhs)));
             }
@@ -1114,25 +1114,25 @@ public:
 
     [[nodiscard]] friend constexpr bool operator==(datum const& lhs, datum const& rhs) noexcept
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() == doubles.rhs();
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() == long_longs.rhs();
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return bools.lhs() == bools.rhs();
 
-        } else if (hilet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+        } else if (auto const ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return ymds.lhs() == ymds.rhs();
 
-        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (auto const strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() == strings.rhs();
 
-        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (auto const vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() == vectors.rhs();
 
-        } else if (hilet maps = promote_if<map_type>(lhs, rhs)) {
+        } else if (auto const maps = promote_if<map_type>(lhs, rhs)) {
             return maps.lhs() == maps.rhs();
 
         } else {
@@ -1168,28 +1168,28 @@ public:
      */
     [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const& lhs, datum const& rhs) noexcept
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() <=> doubles.rhs();
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() <=> long_longs.rhs();
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return bools.lhs() <=> bools.rhs();
 
-        } else if (hilet year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+        } else if (auto const year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return year_month_days.lhs() <=> year_month_days.rhs();
 
-        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (auto const strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() <=> strings.rhs();
 
-        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (auto const vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() <=> vectors.rhs();
 
-        } else if (hilet maps = promote_if<map_type>(lhs, rhs)) {
+        } else if (auto const maps = promote_if<map_type>(lhs, rhs)) {
             return maps.lhs() <=> maps.rhs();
 
-        } else if (hilet bstrings = promote_if<bstring>(lhs, rhs)) {
+        } else if (auto const bstrings = promote_if<bstring>(lhs, rhs)) {
             return bstrings.lhs() <=> bstrings.rhs();
 
         } else {
@@ -1209,10 +1209,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator-(datum const& rhs)
     {
-        if (hilet rhs_double = get_if<double>(rhs)) {
+        if (auto const rhs_double = get_if<double>(rhs)) {
             return datum{-*rhs_double};
 
-        } else if (hilet rhs_long_long = get_if<long long>(rhs)) {
+        } else if (auto const rhs_long_long = get_if<long long>(rhs)) {
             return datum{-*rhs_long_long};
 
         } else {
@@ -1231,7 +1231,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator~(datum const& rhs)
     {
-        if (hilet rhs_long_long = get_if<long long>(rhs)) {
+        if (auto const rhs_long_long = get_if<long long>(rhs)) {
             return datum{~*rhs_long_long};
 
         } else {
@@ -1255,16 +1255,16 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator+(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() + doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() + long_longs.rhs()};
 
-        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (auto const strings = promote_if<std::string>(lhs, rhs)) {
             return datum{strings.lhs() + strings.rhs()};
 
-        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (auto const vectors = promote_if<vector_type>(lhs, rhs)) {
             auto r = vectors.lhs();
             r.insert(r.end(), vectors.rhs().begin(), vectors.rhs().end());
             return datum{std::move(r)};
@@ -1287,10 +1287,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator-(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() - doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() - long_longs.rhs()};
 
         } else {
@@ -1311,10 +1311,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator*(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() * doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() * long_longs.rhs()};
 
         } else {
@@ -1335,13 +1335,13 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator/(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             if (doubles.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{doubles.lhs() / doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
@@ -1365,7 +1365,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator%(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '%' {}", repr(lhs), repr(rhs)));
             }
@@ -1388,10 +1388,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum pow(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{pow(doubles.lhs(), doubles.rhs())};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{pow(long_longs.lhs(), long_longs.rhs())};
 
         } else {
@@ -1411,10 +1411,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator&(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() & long_longs.rhs()};
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() and bools.rhs()};
 
         } else {
@@ -1434,10 +1434,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator|(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() | long_longs.rhs()};
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() or bools.rhs()};
 
         } else {
@@ -1457,10 +1457,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator^(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() ^ long_longs.rhs()};
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() != bools.rhs()};
 
         } else {
@@ -1482,7 +1482,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator<<(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
                 throw std::domain_error(std::format("Invalid shift count {} '<<' {}", repr(lhs), repr(rhs)));
             }
@@ -1506,7 +1506,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator>>(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
                 throw std::domain_error(std::format("Invalid shift count {} '>>' {}", repr(lhs), repr(rhs)));
             }
@@ -1570,7 +1570,7 @@ public:
         case tag_type::vector:
             {
                 auto r = std::string{"["};
-                for (hilet& item : *rhs._value._vector) {
+                for (auto const& item : *rhs._value._vector) {
                     r += repr(item);
                     r += ',';
                 }
@@ -1580,7 +1580,7 @@ public:
         case tag_type::map:
             {
                 auto r = std::string{"{"};
-                for (hilet& item : *rhs._value._map) {
+                for (auto const& item : *rhs._value._map) {
                     r += repr(item.first);
                     r += ':';
                     r += repr(item.second);
@@ -1949,7 +1949,7 @@ private:
         std::vector<datum *>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (hilet index : indices.filter(ssize(*vector))) {
+            for (auto const index : indices.filter(ssize(*vector))) {
                 (*vector)[index].find(it + 1, it_end, r);
             }
         }
@@ -1962,8 +1962,8 @@ private:
         std::vector<datum *>& r) noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
-            for (hilet& name : names) {
-                hilet name_ = datum{name};
+            for (auto const& name : names) {
+                auto const name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
                     jt->second.find(it + 1, it_end, r);
@@ -1979,8 +1979,8 @@ private:
         std::vector<datum *>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            hilet first = slice.begin(vector->size());
-            hilet last = slice.end(vector->size());
+            auto const first = slice.begin(vector->size());
+            auto const last = slice.end(vector->size());
 
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
@@ -2028,7 +2028,7 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             auto jt = vector->begin();
             while (jt != vector->end()) {
-                hilet match = jt->remove(it + 1, it_end);
+                auto const match = jt->remove(it + 1, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2042,7 +2042,7 @@ private:
         } else if (auto map = get_if<datum::map_type>(*this)) {
             auto jt = map->begin();
             while (jt != map->end()) {
-                hilet match = jt->second.remove(it + 1, it_end);
+                auto const match = jt->second.remove(it + 1, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2063,7 +2063,7 @@ private:
         int r = 0;
 
         {
-            hilet match = this->remove(it + 1, it_end);
+            auto const match = this->remove(it + 1, it_end);
             if (match == 2) {
                 return 2;
             }
@@ -2073,7 +2073,7 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             auto jt = vector->begin();
             while (jt != vector->end()) {
-                hilet match = jt->remove(it, it_end);
+                auto const match = jt->remove(it, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2087,7 +2087,7 @@ private:
         } else if (auto map = get_if<datum::map_type>(*this)) {
             auto jt = map->begin();
             while (jt != map->end()) {
-                hilet match = jt->second.remove(it, it_end);
+                auto const match = jt->second.remove(it, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2110,8 +2110,8 @@ private:
             int r = 0;
             std::size_t offset = 0;
 
-            for (hilet index : indices.filter(ssize(*vector))) {
-                hilet match = (*vector)[index - offset].remove(it + 1, it_end);
+            for (auto const index : indices.filter(ssize(*vector))) {
+                auto const match = (*vector)[index - offset].remove(it + 1, it_end);
                 r |= match ? 1 : 0;
                 if (match == 2) {
                     vector->erase(vector->begin() + (index - offset));
@@ -2132,11 +2132,11 @@ private:
         if (auto map = get_if<datum::map_type>(*this)) {
             int r = 0;
 
-            for (hilet& name : names) {
-                hilet name_ = datum{name};
+            for (auto const& name : names) {
+                auto const name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
-                    hilet match = jt->second.remove(it + 1, it_end);
+                    auto const match = jt->second.remove(it + 1, it_end);
                     r |= match ? 1 : 0;
                     if (match == 2) {
                         map->erase(jt);
@@ -2157,13 +2157,13 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
 
-            hilet first = slice.begin(vector->size());
-            hilet last = slice.end(vector->size());
+            auto const first = slice.begin(vector->size());
+            auto const last = slice.end(vector->size());
 
             std::size_t offset = 0;
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
-                    hilet match = (*this)[index - offset].remove(it + 1, it_end);
+                    auto const match = (*this)[index - offset].remove(it + 1, it_end);
                     r |= match ? 1 : 0;
 
                     if (match == 2) {
@@ -2272,11 +2272,11 @@ private:
         } else if (std::holds_alternative<jsonpath::current>(*it)) {
             return find_one(it + 1, it_end, create);
 
-        } else if (hilet *indices = std::get_if<jsonpath::indices>(&*it)) {
+        } else if (auto const *indices = std::get_if<jsonpath::indices>(&*it)) {
             hi_axiom(indices->size() == 1);
             return find_one_index(indices->front(), it, it_end, create);
 
-        } else if (hilet *names = std::get_if<jsonpath::names>(&*it)) {
+        } else if (auto const *names = std::get_if<jsonpath::names>(&*it)) {
             hi_axiom(names->size() == 1);
             return find_one_name(datum{names->front()}, it, it_end, create);
 

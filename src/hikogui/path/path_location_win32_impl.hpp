@@ -33,7 +33,7 @@ hi_export [[nodiscard]] hi_inline std::filesystem::path get_path_by_id(const KNO
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath) != S_OK) {
         hi_log_fatal("Could not get known folder path.");
     }
-    hilet d = defer{[&] {
+    auto const d = defer{[&] {
         CoTaskMemFree(wpath);
     }};
 
@@ -53,7 +53,7 @@ hi_export [[nodiscard]] hi_inline std::filesystem::path data_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
     // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
-    hilet local_app_data = get_path_by_id(FOLDERID_LocalAppData);
+    auto const local_app_data = get_path_by_id(FOLDERID_LocalAppData);
     return local_app_data / get_application_vendor() / get_application_name() / "";
 }
 
@@ -97,17 +97,17 @@ hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> system_font_d
 
 hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> font_dirs() noexcept
 {
-    for (hilet& path : resource_dirs()) {
+    for (auto const& path : resource_dirs()) {
         co_yield path;
     }
-    for (hilet& path : system_font_dirs()) {
+    for (auto const& path : system_font_dirs()) {
         co_yield path;
     }
 }
 
 hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> theme_dirs() noexcept
 {
-    for (hilet& path : resource_dirs()) {
+    for (auto const& path : resource_dirs()) {
         co_yield path;
     }
 }

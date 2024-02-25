@@ -91,12 +91,12 @@ public:
         _alignment(alignment),
         _script(script)
     {
-        hilet& font = find_font(style->family_id, style->variant);
+        auto const& font = find_font(style->family_id, style->variant);
         _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
 
         _text.reserve(text.size());
-        for (hilet& c : text) {
-            hilet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
+        for (auto const& c : text) {
+            auto const clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
             auto& tmp = _text.emplace_back(clean_c, style, dpi_scale);
             tmp.initialize_glyph(font);
@@ -110,20 +110,20 @@ public:
             },
             _bidi_context);
 
-        _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
+        _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](auto const& c) -> decltype(auto) {
             return c.grapheme.starter();
         });
 
         _line_break_widths.reserve(text.size());
-        for (hilet& c : _text) {
+        for (auto const& c : _text) {
             _line_break_widths.push_back(is_visible(c.general_category) ? c.width : -c.width);
         }
 
-        _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
+        _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](auto const& c) -> decltype(auto) {
             return c.grapheme.starter();
         });
 
-        _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](hilet& c) -> decltype(auto) {
+        _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](auto const& c) -> decltype(auto) {
             return c.grapheme.starter();
         });
 
@@ -207,12 +207,12 @@ public:
     [[nodiscard]] aarectangle
     bounding_rectangle(float maximum_line_width, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept
     {
-        hilet rectangle = aarectangle{
+        auto const rectangle = aarectangle{
             point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
         constexpr auto baseline = 0.0f;
         constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
 
-        hilet lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
+        auto const lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
         hi_assert(not lines.empty());
 
         auto max_width = 0.0f;
@@ -220,8 +220,8 @@ public:
             inplace_max(max_width, line.width);
         }
 
-        hilet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
-        hilet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
+        auto const max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
+        auto const min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
         return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
     }
 
@@ -322,12 +322,12 @@ public:
             return end();
         }
 
-        hilet left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
-        hilet right_of_line = column_nr >= _lines[line_nr].size();
+        auto const left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
+        auto const right_of_line = column_nr >= _lines[line_nr].size();
 
         if (left_of_line or right_of_line) {
-            hilet ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
-            hilet go_up = left_of_line == ltr;
+            auto const ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
+            auto const go_up = left_of_line == ltr;
             if (go_up) {
                 // Go to line above.
                 if (static_cast<ptrdiff_t>(--line_nr) < 0) {
@@ -511,7 +511,7 @@ public:
      */
     [[nodiscard]] bool is_on_left(text_cursor cursor) const noexcept
     {
-        hilet it = get_it(cursor);
+        auto const it = get_it(cursor);
         if (it != end()) {
             return (it->direction == unicode_bidi_class::L) == cursor.before();
         } else {
@@ -527,7 +527,7 @@ public:
      */
     [[nodiscard]] bool is_on_right(text_cursor cursor) const noexcept
     {
-        hilet it = get_it(cursor);
+        auto const it = get_it(cursor);
         if (it != end()) {
             return (it->direction == unicode_bidi_class::L) == cursor.after();
         } else {
@@ -547,12 +547,12 @@ public:
             return {};
         }
 
-        hilet line_it = std::ranges::min_element(_lines, std::ranges::less{}, [position](hilet& line) {
+        auto const line_it = std::ranges::min_element(_lines, std::ranges::less{}, [position](auto const& line) {
             return std::abs(line.y - position.y());
         });
 
         if (line_it != _lines.end()) {
-            hilet[char_it, after] = line_it->get_nearest(position);
+            auto const[char_it, after] = line_it->get_nearest(position);
             return {narrow_cast<size_t>(std::distance(_text.begin(), char_it)), after};
         } else {
             return {};
@@ -563,7 +563,7 @@ public:
      */
     [[nodiscard]] std::pair<text_cursor, text_cursor> select_char(text_cursor cursor) const noexcept
     {
-        hilet index = cursor.index();
+        auto const index = cursor.index();
         return {get_before_cursor(index), get_after_cursor(index)};
     }
 
@@ -585,7 +585,7 @@ public:
      */
     [[nodiscard]] std::pair<text_cursor, text_cursor> select_paragraph(text_cursor cursor) const noexcept
     {
-        hilet first_index = [&]() {
+        auto const first_index = [&]() {
             auto i = cursor.index();
             while (i > 0) {
                 if (_text[i - 1].general_category == unicode_general_category::Zp) {
@@ -595,7 +595,7 @@ public:
             }
             return i;
         }();
-        hilet last_index = [&]() {
+        auto const last_index = [&]() {
             auto i = cursor.index();
             while (i < _text.size()) {
                 if (_text[i].general_category == unicode_general_category::Zp) {
@@ -627,7 +627,7 @@ public:
      */
     [[nodiscard]] char_const_iterator move_left_char(char_const_iterator it) const noexcept
     {
-        hilet[column_nr, line_nr] = get_column_line(it);
+        auto const[column_nr, line_nr] = get_column_line(it);
         return get_it(column_nr - 1, line_nr);
     }
 
@@ -638,7 +638,7 @@ public:
      */
     [[nodiscard]] char_const_iterator move_right_char(char_const_iterator it) const noexcept
     {
-        hilet[column_nr, line_nr] = get_column_line(it);
+        auto const[column_nr, line_nr] = get_column_line(it);
         return get_it(column_nr + 1, line_nr);
     }
 
@@ -688,12 +688,12 @@ public:
         }
 
         if (std::isnan(x)) {
-            hilet char_it = get_it(cursor);
+            auto const char_it = get_it(cursor);
             hi_assert(char_it != _text.end());
             x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
         }
 
-        hilet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
+        auto const[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
         return get_before_cursor(new_char_it);
     }
 
@@ -714,7 +714,7 @@ public:
             x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
         }
 
-        hilet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
+        auto const[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
         return get_before_cursor(new_char_it);
     }
 
@@ -748,15 +748,15 @@ public:
 
     [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept
     {
-        hilet[column_nr, line_nr] = get_column_line(cursor);
-        hilet& line = _lines[line_nr];
+        auto const[column_nr, line_nr] = get_column_line(cursor);
+        auto const& line = _lines[line_nr];
         return get_before_cursor(line.first);
     }
 
     [[nodiscard]] text_cursor move_end_line(text_cursor cursor) const noexcept
     {
-        hilet[column_nr, line_nr] = get_column_line(cursor);
-        hilet& line = _lines[line_nr];
+        auto const[column_nr, line_nr] = get_column_line(cursor);
+        auto const& line = _lines[line_nr];
 
         auto it = line.last;
         while (it != line.first) {
@@ -776,7 +776,7 @@ public:
         } else if (cursor.index() != 0) {
             cursor = {cursor.index() - 1, false};
         }
-        hilet[first, last] = select_sentence(cursor);
+        auto const[first, last] = select_sentence(cursor);
         return first.before_neighbor(size());
     }
 
@@ -787,7 +787,7 @@ public:
         } else if (cursor.index() != _text.size() - 1) {
             cursor = {cursor.index() + 1, true};
         }
-        hilet[first, last] = select_sentence(cursor);
+        auto const[first, last] = select_sentence(cursor);
         return last.before_neighbor(size());
     }
 
@@ -798,7 +798,7 @@ public:
         } else if (cursor.index() != 0) {
             cursor = {cursor.index() - 1, false};
         }
-        hilet[first, last] = select_paragraph(cursor);
+        auto const[first, last] = select_paragraph(cursor);
         return first.before_neighbor(size());
     }
 
@@ -809,7 +809,7 @@ public:
         } else if (cursor.index() != _text.size() - 1) {
             cursor = {cursor.index() + 1, true};
         }
-        hilet[first, last] = select_paragraph(cursor);
+        auto const[first, last] = select_paragraph(cursor);
         return last.before_neighbor(size());
     }
 
@@ -892,9 +892,9 @@ private:
         auto prev = lines.begin();
         prev->y = 0.0f;
         for (auto it = prev + 1; it != lines.end(); ++it) {
-            hilet height =
+            auto const height =
                 prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
-            hilet spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
+            auto const spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
             // Lines advance downward on the y-axis.
             it->y = prev->y - spacing * height;
             prev = it;
@@ -920,7 +920,7 @@ private:
                 return -lines.back().y;
 
             } else {
-                hilet mp_index = lines.size() / 2;
+                auto const mp_index = lines.size() / 2;
                 if (lines.size() % 2 == 1) {
                     return -lines[mp_index].y;
 
@@ -943,7 +943,7 @@ private:
         }
 
         // Reposition the lines, and round to sub-pixel boundary.
-        hilet rcp_sub_pixel_height = 1.0f / sub_pixel_height;
+        auto const rcp_sub_pixel_height = 1.0f / sub_pixel_height;
         for (auto& line : lines) {
             line.y = std::round((line.y + adjustment) * rcp_sub_pixel_height) * sub_pixel_height;
         }
@@ -964,7 +964,7 @@ private:
         auto char_its = std::vector<text_shaper::char_iterator>{};
         // Make room for implicit line-separators.
         char_its.reserve(text.size() + lines.size());
-        for (hilet& line : lines) {
+        for (auto const& line : lines) {
             // Add all the characters of a line.
             for (auto it = line.first; it != line.last; ++it) {
                 char_its.push_back(it);
@@ -975,7 +975,7 @@ private:
             }
         }
 
-        hilet[char_its_last, paragraph_directions] = unicode_bidi(
+        auto const[char_its_last, paragraph_directions] = unicode_bidi(
             char_its.begin(),
             char_its.end(),
             [&](text_shaper::char_const_iterator it) {
@@ -1014,7 +1014,7 @@ private:
         auto line_it = lines.begin();
         line_it->columns.clear();
         auto column_nr = 0_uz;
-        for (hilet char_it : char_its) {
+        for (auto const char_it : char_its) {
             if (char_it == text.end()) {
                 // Ignore the virtual line separators.
                 continue;
@@ -1053,8 +1053,8 @@ private:
 
         auto stack = std::vector<entry_type>{};
 
-        hilet a4_one_column = 172.0f * 2.83465f * dpi_scale;
-        hilet a4_two_column = 88.0f * 2.83465f * dpi_scale;
+        auto const a4_one_column = 172.0f * 2.83465f * dpi_scale;
+        auto const a4_two_column = 88.0f * 2.83465f * dpi_scale;
 
         // Max-width first.
         auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
@@ -1087,15 +1087,15 @@ private:
             co_yield {std::move(min_lines), min_width};
 
             do {
-                hilet entry = stack.back();
+                auto const entry = stack.back();
                 stack.pop_back();
 
                 if (entry.max_height > entry.max_height + 1 and entry.max_width >= entry.min_width + 2.0f) {
                     // There lines between the current two sizes; split in two.
-                    hilet half_width = (entry.min_width + entry.max_width) * 0.5f;
+                    auto const half_width = (entry.min_width + entry.max_width) * 0.5f;
 
                     auto [split_width, split_lines] = detail::unicode_LB_width(opportunities, widths, half_width);
-                    hilet split_height = split_lines.size();
+                    auto const split_height = split_lines.size();
 
                     if (split_height == entry.min_height) {
                         // We didn't find a proper split, need to try the upper half. Use `half_width` to split right down the
@@ -1133,7 +1133,7 @@ private:
         float line_spacing,
         float paragraph_spacing) noexcept
     {
-        hilet line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
+        auto const line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
 
         auto r = text_shaper::line_vector{};
         r.reserve(line_sizes.size());
@@ -1141,12 +1141,12 @@ private:
         auto char_it = _text.begin();
         auto width_it = _line_break_widths.begin();
         auto line_nr = 0_uz;
-        for (hilet line_size : line_sizes) {
+        for (auto const line_size : line_sizes) {
             hi_axiom(line_size > 0);
-            hilet char_eol = char_it + line_size;
-            hilet width_eol = width_it + line_size;
+            auto const char_eol = char_it + line_size;
+            auto const width_eol = width_it + line_size;
 
-            hilet line_width = detail::unicode_LB_width(width_it, width_eol);
+            auto const line_width = detail::unicode_LB_width(width_it, width_eol);
             r.emplace_back(line_nr++, _text.begin(), char_it, char_eol, line_width, _initial_line_metrics);
 
             char_it = char_eol;
@@ -1190,7 +1190,7 @@ private:
         // Find the first script in the text if no script is found use the text_shaper's default script.
         auto first_script = _script;
         for (auto& c : _text) {
-            hilet script = ucd_get_script(c.grapheme.starter());
+            auto const script = ucd_get_script(c.grapheme.starter());
             if (script != iso_15924::wildcard() or script == iso_15924::uncoded() or script == iso_15924::common() or
                 script == iso_15924::inherited()) {
                 first_script = script;
@@ -1212,7 +1212,7 @@ private:
 
             c.script = ucd_get_script(c.grapheme.starter());
             if (c.script == iso_15924::uncoded() or c.script == iso_15924::common()) {
-                hilet bracket_type = ucd_get_bidi_paired_bracket_type(c.grapheme.starter());
+                auto const bracket_type = ucd_get_bidi_paired_bracket_type(c.grapheme.starter());
                 // clang-format off
                 c.script =
                     bracket_type == unicode_bidi_paired_bracket_type::o ? previous_script :
@@ -1249,14 +1249,14 @@ private:
         // In the algorithm below we search before and after the character that the cursor is at.
         // We do not use the before/after differentiation.
 
-        hilet first_index = [&]() {
+        auto const first_index = [&]() {
             auto i = cursor.index();
             while (break_opportunities[i] == unicode_break_opportunity::no) {
                 --i;
             }
             return i;
         }();
-        hilet last_index = [&]() {
+        auto const last_index = [&]() {
             auto i = cursor.index();
             while (break_opportunities[i + 1] == unicode_break_opportunity::no) {
                 ++i;
@@ -1279,7 +1279,7 @@ private:
             }
         }
 
-        hilet last_category = (first != last) ? (last - 1)->general_category : unicode_general_category::Cn;
+        auto const last_category = (first != last) ? (last - 1)->general_category : unicode_general_category::Cn;
         return {metrics, last_category};
     }
 
@@ -1308,10 +1308,10 @@ private:
 
             // Advance to the base-line of the next line.
             auto [current_metrics, current_category] = get_line_metrics(char_it_first, char_it_last);
-            hilet line_height = previous_metrics.descender + std::max(previous_metrics.line_gap, current_metrics.line_gap) +
+            auto const line_height = previous_metrics.descender + std::max(previous_metrics.line_gap, current_metrics.line_gap) +
                 current_metrics.ascender;
 
-            hilet spacing = previous_category == unicode_general_category::Zp ? previous_metrics.paragraph_spacing :
+            auto const spacing = previous_category == unicode_general_category::Zp ? previous_metrics.paragraph_spacing :
                                                                                 previous_metrics.line_spacing;
             total_height += spacing * line_height;
 

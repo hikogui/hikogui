@@ -180,13 +180,13 @@ public:
      */
     [[nodiscard]] bstring read_bstring(std::size_t max_size = 10'000'000)
     {
-        hilet offset = get_seek();
-        hilet size_ = std::min(max_size, this->size() - offset);
+        auto const offset = get_seek();
+        auto const size_ = std::min(max_size, this->size() - offset);
 
         auto r = bstring{};
         // XXX c++23 resize_and_overwrite()
         r.resize(size_);
-        hilet bytes_read = read(r.data(), size_);
+        auto const bytes_read = read(r.data(), size_);
         r.resize(bytes_read);
         return r;
     }
@@ -205,7 +205,7 @@ public:
     {
         hi_assert(get_seek() == 0);
 
-        hilet size_ = size();
+        auto const size_ = size();
         if (size_ > max_size) {
             throw io_error("read_string() requires the file size to be smaler than max_size.");
         }
@@ -213,7 +213,7 @@ public:
         auto r = std::string{};
         // XXX c++23 resize_and_overwrite()
         r.resize(size_);
-        hilet bytes_read = read(r.data(), size_);
+        auto const bytes_read = read(r.data(), size_);
         r.resize(bytes_read);
         return r;
     }

@@ -109,8 +109,8 @@ apply_markup(It first, ItEnd last, language_tag default_language = language_tag{
                     write_command(command);
 
                 } else if (command.size() == 1) {
-                    if (hilet command_g = command.front(); command_g.is_ascii()) {
-                        hilet command_c = char_cast<char>(command_g.starter());
+                    if (auto const command_g = command.front(); command_g.is_ascii()) {
+                        auto const command_c = char_cast<char>(command_g.starter());
                         if (command_c == '.') {
                             current_language = default_language;
                             current_phrasing = default_phrasing;

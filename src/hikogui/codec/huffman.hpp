@@ -47,7 +47,7 @@ public:
 
         int offset = 0;
         while (--code_length > 0) {
-            hilet select = (code >> code_length) & 1;
+            auto const select = (code >> code_length) & 1;
             offset += select;
 
             int value = tree[offset];
@@ -69,7 +69,7 @@ public:
         }
 
         // place the symbol as a leaf.
-        hilet select = code & 1;
+        auto const select = code & 1;
         offset += select;
 
         hi_axiom(tree[offset] == 0);
@@ -139,7 +139,7 @@ public:
         }
 
         // Sort the table based on the length of the code, followed by symbol
-        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](hilet& a, hilet& b) {
+        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](auto const& a, auto const& b) {
             if (a.length == b.length) {
                 return a.symbol < b.symbol;
             } else {

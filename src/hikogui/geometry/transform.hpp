@@ -151,7 +151,7 @@ concept transformer = transformer2<T> or transformer3<T>;
 [[nodiscard]] hi_inline float operator*(matrix2 const& lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-    hilet abs_scale = hypot<0b0011>(get<0>(lhs) * f32x4::broadcast(rhs)).x();
+    auto const abs_scale = hypot<0b0011>(get<0>(lhs) * f32x4::broadcast(rhs)).x();
 
     // We want to keep the sign of the original scaler, even if the matrix has rotation.
     return std::copysign(abs_scale, rhs);
@@ -165,7 +165,7 @@ concept transformer = transformer2<T> or transformer3<T>;
 [[nodiscard]] hi_inline float operator*(matrix3 const &lhs, float const& rhs) noexcept
 {
     // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
-    hilet abs_scale = hypot<0b0111>(get<0>(lhs) * f32x4::broadcast(rhs)).x();
+    auto const abs_scale = hypot<0b0111>(get<0>(lhs) * f32x4::broadcast(rhs)).x();
 
     // We want to keep the sign of the original scaler, even if the matrix has rotation.
     return std::copysign(abs_scale, rhs);
@@ -335,7 +335,7 @@ concept transformer = transformer2<T> or transformer3<T>;
  */
 [[nodiscard]] constexpr rectangle operator*(transformer auto const& lhs, aarectangle const& rhs) noexcept
 {
-    hilet rhs_ = rectangle{rhs};
+    auto const rhs_ = rectangle{rhs};
     return rectangle{lhs * rhs_.origin, lhs * rhs_.right, lhs * rhs_.up};
 }
 
@@ -348,7 +348,7 @@ concept transformer = transformer2<T> or transformer3<T>;
 [[deprecated("Use full_mul() or fast_mul() instead.")]] [[nodiscard]] constexpr rectangle
 operator*(matrix2 const& lhs, aarectangle const& rhs) noexcept
 {
-    hilet rhs_ = rectangle{rhs};
+    auto const rhs_ = rectangle{rhs};
     return rectangle{lhs * rhs_.origin, lhs * rhs_.right, lhs * rhs_.up};
 }
 
@@ -360,7 +360,7 @@ operator*(matrix2 const& lhs, aarectangle const& rhs) noexcept
  */
 [[nodiscard]] constexpr rectangle full_mul(matrix2 const& lhs, aarectangle const& rhs) noexcept
 {
-    hilet rhs_ = rectangle{rhs};
+    auto const rhs_ = rectangle{rhs};
     return rectangle{lhs * rhs_.origin, lhs * rhs_.right, lhs * rhs_.up};
 }
 
@@ -441,14 +441,14 @@ constexpr Lhs& operator*=(Lhs& lhs, Rhs const& rhs) noexcept
 
 [[nodiscard]] constexpr aarectangle fit(aarectangle const& bounds, aarectangle const& rectangle) noexcept
 {
-    hilet resized_rectangle = aarectangle{
+    auto const resized_rectangle = aarectangle{
         rectangle.left(),
         rectangle.bottom(),
         std::min(rectangle.width(), bounds.width()),
         std::min(rectangle.height(), bounds.height())};
 
-    hilet translate_from_p0 = max(vector2{}, get<0>(bounds) - get<0>(resized_rectangle));
-    hilet translate_from_p3 = min(vector2{}, get<3>(bounds) - get<3>(resized_rectangle));
+    auto const translate_from_p0 = max(vector2{}, get<0>(bounds) - get<0>(resized_rectangle));
+    auto const translate_from_p3 = min(vector2{}, get<3>(bounds) - get<3>(resized_rectangle));
     return translate2{translate_from_p0 + translate_from_p3} * resized_rectangle;
 }
 
@@ -462,10 +462,10 @@ constexpr Lhs& operator*=(Lhs& lhs, Rhs const& rhs) noexcept
  */
 [[nodiscard]] constexpr quad scale_from_center(quad const& lhs, scale2 const& rhs) noexcept
 {
-    hilet top_extra = (lhs.top() * rhs.x() - lhs.top()) * 0.5f;
-    hilet bottom_extra = (lhs.bottom() * rhs.x() - lhs.bottom()) * 0.5f;
-    hilet left_extra = (lhs.left() * rhs.y() - lhs.left()) * 0.5f;
-    hilet right_extra = (lhs.right() * rhs.y() - lhs.right()) * 0.5f;
+    auto const top_extra = (lhs.top() * rhs.x() - lhs.top()) * 0.5f;
+    auto const bottom_extra = (lhs.bottom() * rhs.x() - lhs.bottom()) * 0.5f;
+    auto const left_extra = (lhs.left() * rhs.y() - lhs.left()) * 0.5f;
+    auto const right_extra = (lhs.right() * rhs.y() - lhs.right()) * 0.5f;
 
     return {
         lhs.p0 - bottom_extra - left_extra,

@@ -109,7 +109,7 @@ public:
         // - We don't care about memory ordering with other writer threads. as
         //   each slot has an atomic for handling read/writer contention.
         // - We don't have to check full/empty, this is done on the slot itself.
-        hilet offset = _head.fetch_add(slot_size, std::memory_order::relaxed);
+        auto const offset = _head.fetch_add(slot_size, std::memory_order::relaxed);
         return get_slot(offset).template wait_emplace_and_invoke<Message>(std::forward<Func>(func), std::forward<Args>(args)...);
     }
 

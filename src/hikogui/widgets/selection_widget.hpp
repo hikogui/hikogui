@@ -191,7 +191,7 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        hilet extra_size = extent2{theme().size() + theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        auto const extra_size = extent2{theme().size() + theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
 
         auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
 
@@ -214,7 +214,7 @@ public:
                 _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size(), context.height()};
 
                 // The unknown_label is located to the right of the selection box icon.
-                hilet option_rectangle = aarectangle{
+                auto const option_rectangle = aarectangle{
                     _left_box_rectangle.right() + theme().margin<float>(),
                     0.0f,
                     context.width() - _left_box_rectangle.width() - theme().margin<float>() * 2.0f,
@@ -226,7 +226,7 @@ public:
                 _left_box_rectangle = aarectangle{context.width() - theme().size(), 0.0f, theme().size(), context.height()};
 
                 // The unknown_label is located to the left of the selection box icon.
-                hilet option_rectangle = aarectangle{
+                auto const option_rectangle = aarectangle{
                     theme().margin<float>(),
                     0.0f,
                     context.width() - _left_box_rectangle.width() - theme().margin<float>() * 2.0f,
@@ -236,7 +236,7 @@ public:
             }
 
             _chevrons_glyph = find_glyph(elusive_icon::ChevronUp);
-            hilet chevrons_glyph_bbox = _chevrons_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const chevrons_glyph_bbox = _chevrons_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox, alignment::middle_center());
         }
 
@@ -244,13 +244,13 @@ public:
         // from the point of view of the selection widget.
         // The overlay should start on the same left edge as the selection box and the same width.
         // The height of the overlay should be the maximum height, which will show all the options.
-        hilet overlay_width = std::clamp(
+        auto const overlay_width = std::clamp(
             context.width() - theme().size(), _overlay_constraints.minimum.width(), _overlay_constraints.maximum.width());
-        hilet overlay_height = _overlay_constraints.preferred.height();
-        hilet overlay_x = os_settings::left_to_right() ? theme().size() : context.width() - theme().size() - overlay_width;
-        hilet overlay_y = (context.height() - overlay_height) / 2;
-        hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
-        hilet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
+        auto const overlay_height = _overlay_constraints.preferred.height();
+        auto const overlay_x = os_settings::left_to_right() ? theme().size() : context.width() - theme().size() - overlay_width;
+        auto const overlay_y = (context.height() - overlay_height) / 2;
+        auto const overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
+        auto const overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
         _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, theme().baseline_adjustment()};
         _overlay_widget->set_layout(context.transform(_overlay_shape, transform_command::overlay));
 
@@ -480,7 +480,7 @@ private:
 
     void draw_left_box(draw_context const& context) noexcept
     {
-        hilet corner_radii = os_settings::left_to_right() ?
+        auto const corner_radii = os_settings::left_to_right() ?
             hi::corner_radii(theme().rounding_radius<float>(), 0.0f, theme().rounding_radius<float>(), 0.0f) :
             hi::corner_radii(0.0f, theme().rounding_radius<float>(), 0.0f, theme().rounding_radius<float>());
         context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);

@@ -350,7 +350,7 @@ public:
             return false;
         }
 
-        hilet rhs_swap = rhs.v.zwxy();
+        auto const rhs_swap = rhs.v.zwxy();
 
         // lhs.p0.x > rhs.p3.x | lhs.p0.y > rhs.p3.y
         if (((lhs.v > rhs_swap).mask() & 0b0011) != 0) {
@@ -392,12 +392,12 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle operator*(aarectangle const& lhs, value_type rhs) noexcept
     {
-        hilet new_extent = lhs.size() * rhs;
-        hilet diff = vector2{new_extent} - vector2{lhs.size()};
-        hilet offset = diff * 0.5f;
+        auto const new_extent = lhs.size() * rhs;
+        auto const diff = vector2{new_extent} - vector2{lhs.size()};
+        auto const offset = diff * 0.5f;
 
-        hilet p0 = get<0>(lhs) - offset;
-        hilet p3 = max(get<3>(lhs) + offset, p0);
+        auto const p0 = get<0>(lhs) - offset;
+        auto const p3 = max(get<3>(lhs) + offset, p0);
         return aarectangle{p0, p3};
     }
 
@@ -435,8 +435,8 @@ public:
 
     [[nodiscard]] friend constexpr aarectangle round(aarectangle const& rhs) noexcept
     {
-        hilet p0 = round(get<0>(rhs));
-        hilet size = round(rhs.size());
+        auto const p0 = round(get<0>(rhs));
+        auto const size = round(rhs.size());
         return aarectangle{p0, size};
     }
 
@@ -444,8 +444,8 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle ceil(aarectangle const& rhs) noexcept
     {
-        hilet p0 = floor(get<0>(rhs));
-        hilet p3 = ceil(get<3>(rhs));
+        auto const p0 = floor(get<0>(rhs));
+        auto const p3 = ceil(get<3>(rhs));
         return aarectangle{p0, p3};
     }
 
@@ -453,8 +453,8 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle ceil(aarectangle const& lhs, extent2 const& rhs) noexcept
     {
-        hilet p0 = floor(get<0>(lhs), rhs);
-        hilet p3 = ceil(get<3>(lhs), rhs);
+        auto const p0 = floor(get<0>(lhs), rhs);
+        auto const p3 = ceil(get<3>(lhs), rhs);
         return aarectangle{p0, p3};
     }
 
@@ -462,8 +462,8 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle floor(aarectangle const& rhs) noexcept
     {
-        hilet p0 = ceil(get<0>(rhs));
-        hilet p3 = floor(get<3>(rhs));
+        auto const p0 = ceil(get<0>(rhs));
+        auto const p3 = floor(get<3>(rhs));
         return aarectangle{p0, p3};
     }
 
@@ -477,8 +477,8 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle intersect(aarectangle const& lhs, aarectangle const& rhs) noexcept
     {
-        hilet p0 = max(get<0>(lhs), get<0>(rhs));
-        hilet p3 = min(get<3>(lhs), get<3>(rhs));
+        auto const p0 = max(get<0>(lhs), get<0>(rhs));
+        auto const p3 = min(get<3>(lhs), get<3>(rhs));
         if (p0.x() < p3.x() && p0.y() < p3.y()) {
             return {p0, p3};
         } else {
@@ -488,11 +488,11 @@ public:
 
     [[nodiscard]] friend value_type distance(aarectangle const& lhs, point2 const& rhs) noexcept
     {
-        hilet lhs_ = static_cast<array_type>(lhs);
-        hilet rhs_ = static_cast<array_type>(rhs);
+        auto const lhs_ = static_cast<array_type>(lhs);
+        auto const rhs_ = static_cast<array_type>(rhs);
         // Only (x,y) of subsequent calculations are valid, (z,w) have garbage values.
-        hilet closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
-        hilet v_closest_point = closest_point - rhs_;
+        auto const closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
+        auto const v_closest_point = closest_point - rhs_;
         return hypot<0b0011>(v_closest_point).x();
     }
 
@@ -538,25 +538,25 @@ public:
 
     void store(value_type desired, std::memory_order = std::memory_order_seq_cst) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         _value = desired;
     }
 
     value_type load(std::memory_order = std::memory_order_seq_cst) const noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _value;
     }
 
     value_type exchange(value_type desired, std::memory_order = std::memory_order_seq_cst) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return std::exchange(_value, desired);
     }
 
     bool compare_exchange_weak(value_type& expected, value_type desired, std::memory_order, std::memory_order) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         if (_value == expected) {
             _value = desired;
             return true;
@@ -591,7 +591,7 @@ public:
 
     value_type fetch_or(value_type arg, std::memory_order = std::memory_order_seq_cst) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         auto tmp = _value;
         _value = tmp | arg;
         return tmp;
@@ -599,7 +599,7 @@ public:
 
     value_type operator|=(value_type arg) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _value |= arg;
     }
 

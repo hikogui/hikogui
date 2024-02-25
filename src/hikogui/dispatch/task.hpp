@@ -144,7 +144,7 @@ public:
     {
         hi_axiom(done());
 
-        hilet& promise = _coroutine.promise();
+        auto const& promise = _coroutine.promise();
         if (promise.value) {
             return *promise.value;
 
@@ -289,7 +289,7 @@ public:
     {
         hi_axiom(done());
 
-        hilet& promise = _coroutine.promise();
+        auto const& promise = _coroutine.promise();
         if (promise.exception) {
             std::rethrow_exception(promise.exception);
         }

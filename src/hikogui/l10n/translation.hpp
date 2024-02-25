@@ -59,7 +59,7 @@ hi_inline void add_translation(std::string_view msgid, language_tag language, st
 
 hi_inline void add_translations(po_translations const &po_translations) noexcept
 {
-    for (hilet &translation : po_translations.translations) {
+    for (auto const &translation : po_translations.translations) {
         auto msgid = translation.msgctxt ? *translation.msgctxt + '|' + translation.msgid : translation.msgid;
         add_translation(std::move(msgid), po_translations.language, translation.msgstr);
     }
@@ -94,13 +94,13 @@ get_translation(std::string_view msgid, long long n, std::vector<language_tag> c
     // Update only the language in each iteration.
     auto key = translation_key{std::string{msgid}, language_tag{}};
 
-    for (hilet language : languages) {
+    for (auto const language : languages) {
         key.language = language;
 
-        hilet i = translations.find(key);
+        auto const i = translations.find(key);
         if (i != translations.cend()) {
-            hilet plurality = cardinal_plural(language, n, i->second.size());
-            hilet& translation = i->second[plurality];
+            auto const plurality = cardinal_plural(language, n, i->second.size());
+            auto const& translation = i->second[plurality];
             if (translation.size() != 0) {
                 return {translation, language};
             }

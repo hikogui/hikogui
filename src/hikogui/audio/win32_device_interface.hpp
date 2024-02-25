@@ -59,7 +59,7 @@ public:
 
     [[nodiscard]] generator<ULONG> find_streaming_pins(audio_direction direction) const noexcept
     {
-        hilet num_pins = pin_count();
+        auto const num_pins = pin_count();
         for (ULONG pin_nr = 0; pin_nr != num_pins; ++pin_nr) {
             if (is_streaming_pin(pin_nr, direction)) {
                 co_yield pin_nr;
@@ -106,7 +106,7 @@ public:
                     continue;
                 }
 
-                hilet *format_range_ = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
+                auto const *format_range_ = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
                 if (format_range_->MinimumBitsPerSample > 64) {
                     hi_log_error(
                         "Bad KSDATARANGE_AUDIO MinimumBitsPerSample == {} for device {}",
@@ -147,24 +147,24 @@ public:
                     continue;
                 }
 
-                hilet num_bits_first = format_range_->MinimumBitsPerSample;
-                hilet num_bits_last = format_range_->MaximumBitsPerSample;
-                hilet num_channels = narrow_cast<uint16_t>(format_range_->MaximumChannels);
-                hilet min_sample_rate = narrow_cast<uint32_t>(format_range_->MinimumSampleFrequency);
-                hilet max_sample_rate = narrow_cast<uint32_t>(format_range_->MaximumSampleFrequency);
+                auto const num_bits_first = format_range_->MinimumBitsPerSample;
+                auto const num_bits_last = format_range_->MaximumBitsPerSample;
+                auto const num_channels = narrow_cast<uint16_t>(format_range_->MaximumChannels);
+                auto const min_sample_rate = narrow_cast<uint32_t>(format_range_->MinimumSampleFrequency);
+                auto const max_sample_rate = narrow_cast<uint32_t>(format_range_->MaximumSampleFrequency);
 
                 // There are only very few sample-formats that a device will actually support, therefor
                 // the audio-format-range discretized them. Very likely the audio device driver will be lying.
                 for (auto num_bits = num_bits_first; num_bits <= num_bits_last; ++num_bits) {
-                    hilet num_bytes = narrow_cast<uint8_t>((num_bits + 7) / 8);
+                    auto const num_bytes = narrow_cast<uint8_t>((num_bits + 7) / 8);
                     if (has_int) {
-                        hilet num_minor_bits = narrow_cast<uint8_t>(num_bits - 1);
-                        hilet sample_format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
+                        auto const num_minor_bits = narrow_cast<uint8_t>(num_bits - 1);
+                        auto const sample_format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
                         co_yield audio_format_range{
                             sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
                     }
                     if (has_float and num_bits == 32) {
-                        hilet sample_format = pcm_format{true, std::endian::native, true, num_bytes, 8, 23};
+                        auto const sample_format = pcm_format{true, std::endian::native, true, num_bytes, 8, 23};
                         co_yield audio_format_range{
                             sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
                     }
@@ -183,7 +183,7 @@ public:
     [[nodiscard]] generator<audio_format_range> get_format_ranges(audio_direction direction) const noexcept
     {
         for (auto pin_nr : find_streaming_pins(direction)) {
-            for (hilet& range : get_format_ranges(pin_nr)) {
+            for (auto const& range : get_format_ranges(pin_nr)) {
                 co_yield range;
             }
         }
@@ -197,7 +197,7 @@ public:
 
         auto *header = std::launder(reinterpret_cast<KSMULTIPLE_ITEM const *>(ptr));
 
-        hilet expected_size = header->Count * sizeof(T) + sizeof(KSMULTIPLE_ITEM);
+        auto const expected_size = header->Count * sizeof(T) + sizeof(KSMULTIPLE_ITEM);
         if (header->Size != expected_size) {
             throw io_error("KSMULTIPLE_ITEM header corrupt");
         }
@@ -350,7 +350,7 @@ private:
     [[nodiscard]] bool is_standerdio_medium(ULONG pin_nr) const noexcept
     {
         try {
-            for (hilet& identifier : get_pin_properties<KSIDENTIFIER>(pin_nr, KSPROPERTY_PIN_MEDIUMS)) {
+            for (auto const& identifier : get_pin_properties<KSIDENTIFIER>(pin_nr, KSPROPERTY_PIN_MEDIUMS)) {
                 if (not IsEqualGUID(identifier->Set, KSMEDIUMSETID_Standard)) {
                     continue;
                 }

@@ -68,13 +68,13 @@ public:
 
     std::string format() const noexcept override
     {
-        hilet utc_time_point = time_stamp_utc::make(_time_stamp);
-        hilet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
-        hilet local_time_point = cached_current_zone().to_local(sys_time_point);
+        auto const utc_time_point = time_stamp_utc::make(_time_stamp);
+        auto const sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
+        auto const local_time_point = cached_current_zone().to_local(sys_time_point);
 
-        hilet cpu_id = _time_stamp.cpu_id();
-        hilet thread_id = _time_stamp.thread_id();
-        hilet thread_name = get_thread_name(thread_id);
+        auto const cpu_id = _time_stamp.cpu_id();
+        auto const thread_id = _time_stamp.thread_id();
+        auto const thread_name = get_thread_name(thread_id);
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
             return std::format("{} {}({}) {:5} {}", local_time_point, thread_name, cpu_id, log_level_name, _what());
@@ -118,7 +118,7 @@ public:
     {
         static_assert(std::popcount(std::to_underlying(Level)) == 1);
 
-        hilet state = global_state.load(std::memory_order::relaxed);
+        auto const state = global_state.load(std::memory_order::relaxed);
         if (not to_bool(state & Level)) {
             return;
         }
@@ -151,7 +151,7 @@ public:
             std::unique_ptr<detail::log_message_base> copy_of_message;
 
             {
-                hilet lock = std::scoped_lock(_mutex);
+                auto const lock = std::scoped_lock(_mutex);
 
                 wrote_message = _fifo.take_one([&copy_of_message](auto& message) {
                     copy_of_message = message.make_unique_copy();

@@ -100,7 +100,7 @@ public:
         }
 
         // Calculate the position of the slider.
-        hilet slider_offset = std::round(*offset * travel_vs_hidden_content_ratio());
+        auto const slider_offset = std::round(*offset * travel_vs_hidden_content_ratio());
         if constexpr (axis == axis::vertical) {
             _slider_rectangle = aarectangle{0.0f, slider_offset, context.width(), slider_length()};
         } else {
@@ -148,9 +148,9 @@ public:
             if (event.mouse().cause.left_button) {
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
-                hilet slider_movement = axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x();
-                hilet content_movement = round_cast<int>(slider_movement * hidden_content_vs_travel_ratio());
-                hilet new_offset = _offset_before_drag + content_movement;
+                auto const slider_movement = axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x();
+                auto const content_movement = round_cast<int>(slider_movement * hidden_content_vs_travel_ratio());
+                auto const new_offset = _offset_before_drag + content_movement;
                 offset = clamp_offset(new_offset);
                 return true;
             }
@@ -196,7 +196,7 @@ private:
      */
     [[nodiscard]] float clamp_offset(float new_offset) const noexcept
     {
-        hilet scrollable_distance = std::max(0.0f, *content - *aperture);
+        auto const scrollable_distance = std::max(0.0f, *content - *aperture);
         return std::clamp(new_offset, 0.0f, scrollable_distance);
     }
 
@@ -210,7 +210,7 @@ private:
     {
         hi_axiom(loop::main().on_thread());
 
-        hilet preferred_length = [&] {
+        auto const preferred_length = [&] {
             if (*content == 0.0f) {
                 return rail_length();
             } else {
@@ -245,7 +245,7 @@ private:
     {
         hi_axiom(loop::main().on_thread());
 
-        hilet _slider_travel_range = slider_travel_range();
+        auto const _slider_travel_range = slider_travel_range();
         return _slider_travel_range != 0 ? std::round(hidden_content() / _slider_travel_range) : 0.0f;
     }
 
@@ -257,20 +257,20 @@ private:
     {
         hi_axiom(loop::main().on_thread());
 
-        hilet _hidden_content = hidden_content();
+        auto const _hidden_content = hidden_content();
         return _hidden_content != 0 ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
     void draw_rails(draw_context const& context) noexcept
     {
-        hilet corner_radii =
+        auto const corner_radii =
             axis == axis::vertical ? hi::corner_radii{layout().width() * 0.5f} : hi::corner_radii{layout().height() * 0.5f};
         context.draw_box(layout(), layout().rectangle(), background_color(), corner_radii);
     }
 
     void draw_slider(draw_context const& context) noexcept
     {
-        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() / 2.0f} :
+        auto const corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() / 2.0f} :
                                                       hi::corner_radii{_slider_rectangle.height() / 2.0f};
 
         context.draw_box(

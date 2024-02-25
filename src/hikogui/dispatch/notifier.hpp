@@ -148,7 +148,7 @@ public:
     [[nodiscard]] callback_type subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
         auto callback = callback_type{std::forward<Func>(func)};
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         _callbacks.emplace_back(callback, flags);
         return callback;
     }
@@ -167,7 +167,7 @@ public:
      */
     void operator()(Args... args) const noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
 
         for (auto& [callback, flags] : _callbacks) {
             if (is_synchronous(flags)) {
@@ -235,7 +235,7 @@ private:
         hi_axiom(_mutex.is_locked());
 
         // Cleanup all callbacks that have expired, or when they may only be triggered once.
-        std::erase_if(_callbacks, [](hilet& item) {
+        std::erase_if(_callbacks, [](auto const& item) {
             return item.first.expired();
         });
     }

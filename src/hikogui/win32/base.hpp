@@ -161,7 +161,7 @@ hi_inline auto global_win32_error_category = win32_error_category{};
             return std::unexpected{win32_error::invalid_data};
         }
 
-        hilet ws = std::wstring_view{first, static_cast<std::size_t>(it_zero - first)};
+        auto const ws = std::wstring_view{first, static_cast<std::size_t>(it_zero - first)};
         if (ws.empty()) {
             // The list is terminated with an empty string.
             break;
@@ -182,12 +182,12 @@ hi_inline auto global_win32_error_category = win32_error_category{};
 
 [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
 {
-    hilet error_code_ = static_cast<DWORD>(std::to_underlying(error_code));
+    auto const error_code_ = static_cast<DWORD>(std::to_underlying(error_code));
 
     // FormatMessageW() is unable to tell what the buffer size should be.
     // But 64Kbyte is the largest buffer that one should pass.
     LPWSTR buffer = nullptr;
-    hilet result = ::FormatMessageW(
+    auto const result = ::FormatMessageW(
         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL, // source
         error_code_,

@@ -109,7 +109,7 @@ public:
         theme = get_selected_theme().transform(dpi);
 
         _widget_constraints = _widget->update_constraints();
-        hilet new_size = _widget_constraints.preferred;
+        auto const new_size = _widget_constraints.preferred;
 
         // Reset the keyboard target to not focus anything.
         update_keyboard_target({});
@@ -186,7 +186,7 @@ public:
             return;
         }
 
-        hilet t1 = trace<"window::render">();
+        auto const t1 = trace<"window::render">();
 
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(surface);
@@ -202,7 +202,7 @@ public:
 #endif
 
         if (need_reconstrain) {
-            hilet t2 = trace<"window::constrain">();
+            auto const t2 = trace<"window::constrain">();
 
             theme = get_selected_theme().transform(dpi);
 
@@ -220,8 +220,8 @@ public:
         // the logic for layout and drawing becomes complicated.
         if (_resize.exchange(false, std::memory_order::relaxed)) {
             // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
-            hilet current_size = rectangle.size();
-            hilet new_size = _widget_constraints.preferred;
+            auto const current_size = rectangle.size();
+            auto const new_size = _widget_constraints.preferred;
             if (new_size != current_size) {
                 hi_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
                 set_window_size(new_size);
@@ -229,8 +229,8 @@ public:
 
         } else {
             // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
-            hilet current_size = rectangle.size();
-            hilet new_size = clamp(current_size, _widget_constraints.minimum, _widget_constraints.maximum);
+            auto const current_size = rectangle.size();
+            auto const new_size = clamp(current_size, _widget_constraints.minimum, _widget_constraints.maximum);
             if (new_size != current_size and size_state() != gui_window_size::minimized) {
                 hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
                 set_window_size(new_size);
@@ -256,12 +256,12 @@ public:
 #endif
 
         if (need_reconstrain or need_relayout or widget_size != rectangle.size()) {
-            hilet t2 = trace<"window::layout">();
+            auto const t2 = trace<"window::layout">();
             widget_size = rectangle.size();
 
             // Guarantee that the layout size is always at least the minimum size.
             // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
-            hilet widget_layout_size = max(_widget_constraints.minimum, widget_size);
+            auto const widget_layout_size = max(_widget_constraints.minimum, widget_size);
             _widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
             // After layout do a complete redraw.
@@ -281,11 +281,11 @@ public:
             draw_context.saturation = 1.0f;
 
             {
-                hilet t2 = trace<"window::draw">();
+                auto const t2 = trace<"window::draw">();
                 _widget->draw(draw_context);
             }
             {
-                hilet t2 = trace<"window::submit">();
+                auto const t2 = trace<"window::submit">();
                 surface->render_finish(draw_context);
             }
         }
@@ -364,11 +364,11 @@ public:
         }
 
         if (state == gui_window_size::normal) {
-            hilet left = round_cast<int>(_restore_rectangle.left());
-            hilet top = round_cast<int>(_restore_rectangle.top());
-            hilet width = round_cast<int>(_restore_rectangle.width());
-            hilet height = round_cast<int>(_restore_rectangle.height());
-            hilet inv_top = round_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
+            auto const left = round_cast<int>(_restore_rectangle.left());
+            auto const top = round_cast<int>(_restore_rectangle.top());
+            auto const width = round_cast<int>(_restore_rectangle.width());
+            auto const height = round_cast<int>(_restore_rectangle.height());
+            auto const inv_top = round_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
             SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
             _size_state = gui_window_size::normal;
 
@@ -377,15 +377,15 @@ public:
             _size_state = gui_window_size::minimized;
 
         } else if (state == gui_window_size::maximized) {
-            hilet workspace = workspace_rectangle();
-            hilet max_size = _widget_constraints.maximum;
+            auto const workspace = workspace_rectangle();
+            auto const max_size = _widget_constraints.maximum;
 
             // Try to resize the window while keeping the toolbar in the same location.
-            hilet width = std::min(max_size.width(), workspace.width());
-            hilet height = std::min(max_size.height(), workspace.height());
-            hilet left = std::clamp(rectangle.left(), workspace.left(), workspace.right() - width);
-            hilet top = std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top());
-            hilet inv_top = os_settings::primary_monitor_rectangle().height() - top;
+            auto const width = std::min(max_size.width(), workspace.width());
+            auto const height = std::min(max_size.height(), workspace.height());
+            auto const left = std::clamp(rectangle.left(), workspace.left(), workspace.right() - width);
+            auto const top = std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top());
+            auto const inv_top = os_settings::primary_monitor_rectangle().height() - top;
             SetWindowPos(
                 win32Window,
                 HWND_TOP,
@@ -397,18 +397,18 @@ public:
             _size_state = gui_window_size::maximized;
 
         } else if (state == gui_window_size::fullscreen) {
-            hilet fullscreen = fullscreen_rectangle();
-            hilet max_size = _widget_constraints.maximum;
+            auto const fullscreen = fullscreen_rectangle();
+            auto const max_size = _widget_constraints.maximum;
             if (fullscreen.width() > max_size.width() or fullscreen.height() > max_size.height()) {
                 // Do not go full screen if the widget is unable to go that large.
                 return;
             }
 
-            hilet left = round_cast<int>(fullscreen.left());
-            hilet top = round_cast<int>(fullscreen.top());
-            hilet width = round_cast<int>(fullscreen.width());
-            hilet height = round_cast<int>(fullscreen.height());
-            hilet inv_top = round_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
+            auto const left = round_cast<int>(fullscreen.left());
+            auto const top = round_cast<int>(fullscreen.top());
+            auto const width = round_cast<int>(fullscreen.width());
+            auto const height = round_cast<int>(fullscreen.height());
+            auto const inv_top = round_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
             SetWindowPos(win32Window, HWND_TOP, left, inv_top, width, height, 0);
             _size_state = gui_window_size::fullscreen;
         }
@@ -418,7 +418,7 @@ public:
      */
     [[nodiscard]] aarectangle workspace_rectangle() const noexcept
     {
-        hilet monitor = MonitorFromWindow(win32Window, MONITOR_DEFAULTTOPRIMARY);
+        auto const monitor = MonitorFromWindow(win32Window, MONITOR_DEFAULTTOPRIMARY);
         if (monitor == NULL) {
             hi_log_error("Could not get monitor for the window.");
             return {0, 0, 1920, 1080};
@@ -431,13 +431,13 @@ public:
             return {0, 0, 1920, 1080};
         }
 
-        hilet left = narrow_cast<float>(info.rcWork.left);
-        hilet top = narrow_cast<float>(info.rcWork.top);
-        hilet right = narrow_cast<float>(info.rcWork.right);
-        hilet bottom = narrow_cast<float>(info.rcWork.bottom);
-        hilet width = right - left;
-        hilet height = bottom - top;
-        hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
+        auto const left = narrow_cast<float>(info.rcWork.left);
+        auto const top = narrow_cast<float>(info.rcWork.top);
+        auto const right = narrow_cast<float>(info.rcWork.right);
+        auto const bottom = narrow_cast<float>(info.rcWork.bottom);
+        auto const width = right - left;
+        auto const height = bottom - top;
+        auto const inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
         return aarectangle{left, inv_bottom, width, height};
     }
 
@@ -445,7 +445,7 @@ public:
      */
     [[nodiscard]] aarectangle fullscreen_rectangle() const noexcept
     {
-        hilet monitor = MonitorFromWindow(win32Window, MONITOR_DEFAULTTOPRIMARY);
+        auto const monitor = MonitorFromWindow(win32Window, MONITOR_DEFAULTTOPRIMARY);
         if (monitor == NULL) {
             hi_log_error("Could not get monitor for the window.");
             return {0, 0, 1920, 1080};
@@ -458,13 +458,13 @@ public:
             return {0, 0, 1920, 1080};
         }
 
-        hilet left = narrow_cast<float>(info.rcMonitor.left);
-        hilet top = narrow_cast<float>(info.rcMonitor.top);
-        hilet right = narrow_cast<float>(info.rcMonitor.right);
-        hilet bottom = narrow_cast<float>(info.rcMonitor.bottom);
-        hilet width = right - left;
-        hilet height = bottom - top;
-        hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
+        auto const left = narrow_cast<float>(info.rcMonitor.left);
+        auto const top = narrow_cast<float>(info.rcMonitor.top);
+        auto const right = narrow_cast<float>(info.rcMonitor.right);
+        auto const bottom = narrow_cast<float>(info.rcMonitor.bottom);
+        auto const width = right - left;
+        auto const height = bottom - top;
+        auto const inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
         return aarectangle{left, inv_bottom, width, height};
     }
 
@@ -487,7 +487,7 @@ public:
         constexpr auto tan_half_degree = 0.00872686779075879f;
         constexpr auto viewing_distance = 20.0f;
 
-        hilet ppd = 2 * viewing_distance * dpi * tan_half_degree;
+        auto const ppd = 2 * viewing_distance * dpi * tan_half_degree;
 
         if (ppd > 55.0f) {
             // High resolution displays do not require subpixel-aliasing.
@@ -507,15 +507,15 @@ public:
         hi_axiom(loop::main().on_thread());
 
         // Position the system menu on the left side, below the system menu button.
-        hilet left = rectangle.left();
-        hilet top = rectangle.top() - 30.0f;
+        auto const left = rectangle.left();
+        auto const top = rectangle.top() - 30.0f;
 
         // Convert to y-axis down coordinate system
-        hilet inv_top = os_settings::primary_monitor_rectangle().height() - top;
+        auto const inv_top = os_settings::primary_monitor_rectangle().height() - top;
 
         // Open the system menu window and wait.
-        hilet system_menu = GetSystemMenu(win32Window, false);
-        hilet cmd =
+        auto const system_menu = GetSystemMenu(win32Window, false);
+        auto const cmd =
             TrackPopupMenu(system_menu, TPM_RETURNCMD, round_cast<int>(left), round_cast<int>(inv_top), 0, win32Window, NULL);
         if (cmd > 0) {
             SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
@@ -533,11 +533,11 @@ public:
             hi_log_error("Could not get the window's rectangle on the screen.");
         }
 
-        hilet new_width = round_cast<int>(new_extent.width());
-        hilet new_height = round_cast<int>(new_extent.height());
-        hilet new_x = os_settings::left_to_right() ? narrow_cast<int>(original_rect.left) :
+        auto const new_width = round_cast<int>(new_extent.width());
+        auto const new_height = round_cast<int>(new_extent.height());
+        auto const new_x = os_settings::left_to_right() ? narrow_cast<int>(original_rect.left) :
                                                      narrow_cast<int>(original_rect.right - new_width);
-        hilet new_y = narrow_cast<int>(original_rect.top);
+        auto const new_y = narrow_cast<int>(original_rect.top);
 
         SetWindowPos(
             win32Window,
@@ -666,7 +666,7 @@ public:
             return std::nullopt;
         }
 
-        hilet defer_CloseClipboard = defer([] {
+        auto const defer_CloseClipboard = defer([] {
             CloseClipboard();
         });
 
@@ -677,7 +677,7 @@ public:
             case CF_OEMTEXT:
             case CF_UNICODETEXT:
                 {
-                    hilet cb_data = GetClipboardData(CF_UNICODETEXT);
+                    auto const cb_data = GetClipboardData(CF_UNICODETEXT);
                     if (cb_data == nullptr) {
                         hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
                         return std::nullopt;
@@ -689,7 +689,7 @@ public:
                         return std::nullopt;
                     }
 
-                    hilet defer_GlobalUnlock = defer([cb_data] {
+                    auto const defer_GlobalUnlock = defer([cb_data] {
                         if (not GlobalUnlock(cb_data) and GetLastError() != ERROR_SUCCESS) {
                             hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
                         }
@@ -725,7 +725,7 @@ public:
             return;
         }
 
-        hilet defer_CloseClipboard = defer([] {
+        auto const defer_CloseClipboard = defer([] {
             CloseClipboard();
         });
 
@@ -742,7 +742,7 @@ public:
             return;
         }
 
-        hilet defer_GlobalFree([&wtext_handle] {
+        auto const defer_GlobalFree([&wtext_handle] {
             if (wtext_handle != nullptr) {
                 GlobalFree(wtext_handle);
             }
@@ -755,7 +755,7 @@ public:
                 return;
             }
 
-            hilet defer_GlobalUnlock = defer([wtext_handle] {
+            auto const defer_GlobalUnlock = defer([wtext_handle] {
                 if (not GlobalUnlock(wtext_handle) and GetLastError() != ERROR_SUCCESS) {
                     hi_log_error("Could not unlock string data '{}'", get_last_error_message());
                 }
@@ -836,7 +836,7 @@ public:
 
         case window_set_keyboard_target:
             {
-                hilet& target = event.keyboard_target();
+                auto const& target = event.keyboard_target();
                 if (target.widget_id == 0) {
                     update_keyboard_target(target.group, target.direction);
                 } else if (target.direction == keyboard_focus_direction::here) {
@@ -890,14 +890,14 @@ public:
         }
 
         // Send the event to the correct widget.
-        hilet handled = send_events_to_widget(
+        auto const handled = send_events_to_widget(
             events.front().variant() == gui_event_variant::mouse ? _mouse_target_id : _keyboard_target_id, events);
 
         // Intercept the keyboard generated escape.
         // A keyboard generated escape should always remove keyboard focus.
         // The update_keyboard_target() function will send gui_keyboard_exit and a
         // potential duplicate gui_cancel messages to all widgets that need it.
-        for (hilet event_ : events) {
+        for (auto const event_ : events) {
             if (event_ == gui_cancel) {
                 update_keyboard_target({}, keyboard_focus_group::all);
             }
@@ -991,7 +991,7 @@ private:
         auto target_widget = get_if(_widget.get(), target_id, false);
         while (target_widget) {
             // Each widget will try to handle the first event it can.
-            for (hilet& event : events) {
+            for (auto const& event : events) {
                 if (target_widget->handle_event(target_widget->layout().from_window * event)) {
                     return true;
                 }
@@ -1009,9 +1009,9 @@ private:
         hi_axiom(loop::main().on_thread());
 
         // Convert bottom to y-axis up coordinate system.
-        hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - new_rectangle.bottom;
+        auto const inv_bottom = os_settings::primary_monitor_rectangle().height() - new_rectangle.bottom;
 
-        hilet new_screen_rectangle = aarectangle{
+        auto const new_screen_rectangle = aarectangle{
             narrow_cast<float>(new_rectangle.left),
             narrow_cast<float>(inv_bottom),
             narrow_cast<float>(new_rectangle.right - new_rectangle.left),
@@ -1089,11 +1089,11 @@ private:
         r.keyboard_modifiers = get_keyboard_modifiers();
         r.keyboard_state = get_keyboard_state();
 
-        hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-        hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+        auto const x = narrow_cast<float>(GET_X_LPARAM(lParam));
+        auto const y = narrow_cast<float>(GET_Y_LPARAM(lParam));
 
         // Convert to y-axis up coordinate system, y is in window-local.
-        hilet inv_y = rectangle.height() - y;
+        auto const inv_y = rectangle.height() - y;
 
         // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
         // of the vertical bar. But most applications do not fix this problem.
@@ -1148,7 +1148,7 @@ private:
             hi_no_default();
         }
 
-        hilet a_button_is_pressed = r.mouse().down.left_button or r.mouse().down.middle_button or r.mouse().down.right_button or
+        auto const a_button_is_pressed = r.mouse().down.left_button or r.mouse().down.middle_button or r.mouse().down.right_button or
             r.mouse().down.x1_button or r.mouse().down.x2_button;
 
         switch (uMsg) {
@@ -1176,10 +1176,10 @@ private:
         case WM_RBUTTONDOWN:
         case WM_XBUTTONDOWN:
             {
-                hilet within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
-                hilet double_click_distance =
+                auto const within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
+                auto const double_click_distance =
                     std::sqrt(narrow_cast<float>(squared_hypot(r.mouse().position - multi_click_position)));
-                hilet within_double_click_distance = double_click_distance < os_settings::double_click_distance();
+                auto const within_double_click_distance = double_click_distance < os_settings::double_click_distance();
 
                 multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
                 multi_click_time_point = r.time_point;
@@ -1294,7 +1294,7 @@ private:
             win32Window, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
         if (!firstWindowHasBeenOpened) {
-            hilet win32_window_ = win32Window;
+            auto const win32_window_ = win32Window;
             switch (gui_window_size::normal) {
             case gui_window_size::normal:
                 ShowWindow(win32_window_, SW_SHOWNORMAL);
@@ -1332,7 +1332,7 @@ private:
         using namespace std::chrono_literals;
 
         gui_event mouse_event;
-        hilet current_time = std::chrono::utc_clock::now();
+        auto const current_time = std::chrono::utc_clock::now();
 
         switch (uMsg) {
         case WM_CLOSE:
@@ -1345,7 +1345,7 @@ private:
 
         case WM_CREATE:
             {
-                hilet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
+                auto const createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
                 RECT new_rectangle;
                 new_rectangle.left = createstruct_ptr->x;
                 new_rectangle.top = createstruct_ptr->y;
@@ -1360,7 +1360,7 @@ private:
 
         case WM_PAINT:
             {
-                hilet height = [this]() {
+                auto const height = [this]() {
                     hi_axiom(loop::main().on_thread());
                     return rectangle.height();
                 }();
@@ -1368,7 +1368,7 @@ private:
                 PAINTSTRUCT ps;
                 BeginPaint(win32Window, &ps);
 
-                hilet update_rectangle = aarectangle{
+                auto const update_rectangle = aarectangle{
                     narrow_cast<float>(ps.rcPaint.left),
                     narrow_cast<float>(height - ps.rcPaint.bottom),
                     narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
@@ -1419,7 +1419,7 @@ private:
 
         case WM_SIZING:
             {
-                hilet& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+                auto const& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
                 if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                     hi_log_error(
                         "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
@@ -1436,7 +1436,7 @@ private:
 
         case WM_MOVING:
             {
-                hilet& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
+                auto const& rect_ptr = *std::launder(std::bit_cast<RECT *>(lParam));
                 if (rect_ptr.right < rect_ptr.left or rect_ptr.bottom < rect_ptr.top) {
                     hi_log_error(
                         "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
@@ -1453,7 +1453,7 @@ private:
 
         case WM_WINDOWPOSCHANGED:
             {
-                hilet windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
+                auto const windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
                 RECT new_rectangle;
                 new_rectangle.left = windowpos_ptr->x;
                 new_rectangle.top = windowpos_ptr->y;
@@ -1503,7 +1503,7 @@ private:
         case WM_GETMINMAXINFO:
             {
                 hi_axiom(loop::main().on_thread());
-                hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
+                auto const minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
                 minmaxinfo->ptMaxSize.x = round_cast<LONG>(_widget_constraints.maximum.width());
                 minmaxinfo->ptMaxSize.y = round_cast<LONG>(_widget_constraints.maximum.height());
                 minmaxinfo->ptMinTrackSize.x = round_cast<LONG>(_widget_constraints.minimum.width());
@@ -1518,7 +1518,7 @@ private:
                 // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
                 return 1;
 
-            } else if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
+            } else if (auto const gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                 // Only pass code-points that are non-control and non-mark.
                 process_event(gui_event::keyboard_grapheme(grapheme{c}));
             }
@@ -1526,7 +1526,7 @@ private:
 
         case WM_DEADCHAR:
             if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-                if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
+                if (auto const gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                     // Only pass code-points that are non-control and non-mark.
                     process_event(gui_event::keyboard_partial_grapheme(grapheme{c}));
                 }
@@ -1535,7 +1535,7 @@ private:
 
         case WM_CHAR:
             if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
-                if (hilet gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
+                if (auto const gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                     // Only pass code-points that are non-control and non-mark.
                     process_event(gui_event::keyboard_grapheme(grapheme{c}));
                 }
@@ -1553,9 +1553,9 @@ private:
         case WM_KEYDOWN:
         case WM_KEYUP:
             {
-                hilet extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
-                hilet key_code = narrow_cast<int>(wParam);
-                hilet key_modifiers = get_keyboard_modifiers();
+                auto const extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
+                auto const key_code = narrow_cast<int>(wParam);
+                auto const key_modifiers = get_keyboard_modifiers();
                 auto virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
 
                 if (std::exchange(keymenu_pressed, false) and uMsg == WM_KEYDOWN and virtual_key == keyboard_virtual_key::space) {
@@ -1564,8 +1564,8 @@ private:
                 }
 
                 if (virtual_key != keyboard_virtual_key::nul) {
-                    hilet key_state = get_keyboard_state();
-                    hilet event_type = uMsg == WM_KEYDOWN ? gui_event_type::keyboard_down : gui_event_type::keyboard_up;
+                    auto const key_state = get_keyboard_state();
+                    auto const event_type = uMsg == WM_KEYDOWN ? gui_event_type::keyboard_down : gui_event_type::keyboard_up;
                     process_event(gui_event{event_type, virtual_key, key_modifiers, key_state});
                 }
             }
@@ -1610,13 +1610,13 @@ private:
             {
                 hi_axiom(loop::main().on_thread());
 
-                hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-                hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+                auto const x = narrow_cast<float>(GET_X_LPARAM(lParam));
+                auto const y = narrow_cast<float>(GET_Y_LPARAM(lParam));
 
                 // Convert to y-axis up coordinate system.
-                hilet inv_y = os_settings::primary_monitor_rectangle().height() - y;
+                auto const inv_y = os_settings::primary_monitor_rectangle().height() - y;
 
-                hilet hitbox_type = _widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
+                auto const hitbox_type = _widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
 
                 switch (hitbox_type) {
                 case hitbox_type::bottom_resize_border:
@@ -1682,7 +1682,7 @@ private:
                 dpi = narrow_cast<float>(LOWORD(wParam));
 
                 // Use the recommended rectangle to resize and reposition the window
-                hilet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
+                auto const new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
                 SetWindowPos(
                     win32Window,
                     NULL,
@@ -1712,7 +1712,7 @@ private:
     static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
     {
         if (uMsg == WM_CREATE && lParam) {
-            hilet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
+            auto const createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
 
             SetLastError(0);
             auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(createData->lpCreateParams));

@@ -262,13 +262,13 @@ public:
      */
     [[nodiscard]] constexpr friend vector3 cross(vector3 const& lhs, vector3 const& rhs) noexcept
     {
-        hilet a_left = lhs._v.yzxw();
-        hilet b_left = rhs._v.zxyw();
-        hilet left = a_left * b_left;
+        auto const a_left = lhs._v.yzxw();
+        auto const b_left = rhs._v.zxyw();
+        auto const left = a_left * b_left;
 
-        hilet a_right = lhs._v.zxyw();
-        hilet b_right = rhs._v.yzxw();
-        hilet right = a_right * b_right;
+        auto const a_right = lhs._v.zxyw();
+        auto const b_right = rhs._v.yzxw();
+        auto const right = a_right * b_right;
         return vector3{left - right};
     }
 

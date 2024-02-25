@@ -99,9 +99,9 @@ TEST(char_maps_utf_8, identity_copy)
 TEST(char_maps_utf_8, identity_invalid_chars)
 {
     //                                   ascii                 invalid overlong    surrogate       short   short
-    hilet invalid_tst_ = std::string{"abcdefghijklmnopqrstuvwxy\xfezAG\xe0\x80\x80H\xed\xa0\xadIJK\xe0LMNO\xe0\x80P"};
+    auto const invalid_tst_ = std::string{"abcdefghijklmnopqrstuvwxy\xfezAG\xe0\x80\x80H\xed\xa0\xadIJK\xe0LMNO\xe0\x80P"};
     //                                                            fallback repl   repl     fallback  repl
-    hilet invalid_exp = std::u8string{u8"abcdefghijklmnopqrstuvwxy\u00fezAG\ufffdH\ufffdIJK\u00e0LMNO\ufffdP"};
+    auto const invalid_exp = std::u8string{u8"abcdefghijklmnopqrstuvwxy\u00fezAG\ufffdH\ufffdIJK\u00e0LMNO\ufffdP"};
 
     // MSVC bug: https://developercommunity.visualstudio.com/t/escape-sequences-in-unicode-string-literals-are-ov/260684
     // hex-escape are treated as code-points (wrong) instead of code-units (correct)

@@ -42,8 +42,8 @@ struct grapheme_break_state {
 {
     using enum unicode_grapheme_cluster_break;
 
-    hilet lhs = state.previous;
-    hilet rhs = cluster_break;
+    auto const lhs = state.previous;
+    auto const rhs = cluster_break;
 
     enum class break_state {
         unknown,
@@ -62,9 +62,9 @@ struct grapheme_break_state {
     state.first_character = false;
 
     // GB3, GB4, GB5: Do not break between a CR and LF. Otherwise, break before and after controls.
-    hilet GB3 = (lhs == CR) && (rhs == LF);
-    hilet GB4 = (lhs == Control) || (lhs == CR) || (lhs == LF);
-    hilet GB5 = (rhs == Control) || (rhs == CR) || (rhs == LF);
+    auto const GB3 = (lhs == CR) && (rhs == LF);
+    auto const GB4 = (lhs == Control) || (lhs == CR) || (lhs == LF);
+    auto const GB5 = (rhs == Control) || (rhs == CR) || (rhs == LF);
     if (break_state == break_state::unknown) {
         if (GB3) {
             break_state = break_state::dont_break;
@@ -74,26 +74,26 @@ struct grapheme_break_state {
     }
 
     // GB6, GB7, GB8: Do not break Hangul syllable sequences.
-    hilet GB6 = (lhs == L) && ((rhs == L) || (rhs == V) || (rhs == LV) | (rhs == LVT));
-    hilet GB7 = ((lhs == LV) || (lhs == V)) && ((rhs == V) || (rhs == T));
-    hilet GB8 = ((lhs == LVT) || (lhs == T)) && (rhs == T);
+    auto const GB6 = (lhs == L) && ((rhs == L) || (rhs == V) || (rhs == LV) | (rhs == LVT));
+    auto const GB7 = ((lhs == LV) || (lhs == V)) && ((rhs == V) || (rhs == T));
+    auto const GB8 = ((lhs == LVT) || (lhs == T)) && (rhs == T);
     if ((break_state == break_state::unknown) && (GB6 || GB7 || GB8)) {
         break_state = break_state::dont_break;
     }
 
     // GB9: Do not break before extending characters or ZWJ.
-    hilet GB9 = ((rhs == Extend) || (rhs == ZWJ));
+    auto const GB9 = ((rhs == Extend) || (rhs == ZWJ));
 
     // GB9a, GB9b: Do not break before SpacingMarks, or after Prepend characters.
     // Both rules only apply to extended grapheme clusters.
-    hilet GB9a = (rhs == SpacingMark);
-    hilet GB9b = (lhs == Prepend);
+    auto const GB9a = (rhs == SpacingMark);
+    auto const GB9b = (lhs == Prepend);
     if ((break_state == break_state::unknown) & (GB9 || GB9a || GB9b)) {
         break_state = break_state::dont_break;
     }
 
     // GB11: Do not break within emoji modifier sequences or emoji zwj sequences.
-    hilet GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
+    auto const GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
     if ((break_state == break_state::unknown) && GB11) {
         break_state = break_state::dont_break;
     }
@@ -107,7 +107,7 @@ struct grapheme_break_state {
     // GB12, GB13: Do not break within emoji flag sequences.
     // That is, do not break between regional indicator (RI) symbols,
     // if there is an odd number of RI characters before the break point.
-    hilet GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) && ((state.RI_count % 2) == 1);
+    auto const GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) && ((state.RI_count % 2) == 1);
     if ((break_state == break_state::unknown) && (GB12_13)) {
         break_state = break_state::dont_break;
     }
@@ -148,7 +148,7 @@ template<typename It, typename ItEnd>
     auto state = detail::grapheme_break_state{};
 
     for (auto it = first; it != last; ++it) {
-        hilet opportunity = detail::breaks_grapheme(*it, state) ? unicode_break_opportunity::yes : unicode_break_opportunity::no;
+        auto const opportunity = detail::breaks_grapheme(*it, state) ? unicode_break_opportunity::yes : unicode_break_opportunity::no;
         r.push_back(opportunity);
     }
 

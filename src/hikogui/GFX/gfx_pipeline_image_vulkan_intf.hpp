@@ -119,8 +119,8 @@ public:
 
         [[nodiscard]] constexpr std::pair<std::size_t, std::size_t> size_in_int_pages() const noexcept
         {
-            hilet num_columns = (width + page_size - 1) / page_size;
-            hilet num_rows = (height + page_size - 1) / page_size;
+            auto const num_columns = (width + page_size - 1) / page_size;
+            auto const num_rows = (height + page_size - 1) / page_size;
             return {num_columns, num_rows};
         }
 

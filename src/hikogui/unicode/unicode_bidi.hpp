@@ -164,7 +164,7 @@ public:
         using enum unicode_bidi_class;
 
         hi_axiom(_begin != _end);
-        hilet& last_char = *(_end - 1);
+        auto const& last_char = *(_end - 1);
         return last_char.direction == LRI || last_char.direction == RLI || last_char.direction == FSI;
     }
 
@@ -301,10 +301,10 @@ constexpr void unicode_bidi_X1(
     stack.emplace_back(paragraph_embedding_level, ON, false);
 
     for (auto it = first; it != last; ++it) {
-        hilet current_embedding_level = stack.back().embedding_level;
-        hilet current_override_status = stack.back().override_status;
-        hilet next_odd_embedding_level = next_odd(current_embedding_level);
-        hilet next_even_embedding_level = next_even(current_embedding_level);
+        auto const current_embedding_level = stack.back().embedding_level;
+        auto const current_override_status = stack.back().override_status;
+        auto const next_odd_embedding_level = next_odd(current_embedding_level);
+        auto const next_even_embedding_level = next_even(current_embedding_level);
 
         auto RLI_implementation = [&] {
             it->embedding_level = current_embedding_level;
@@ -379,8 +379,8 @@ constexpr void unicode_bidi_X1(
             { // X5c. Isolates
                 auto sub_context = context;
                 sub_context.direction_mode = unicode_bidi_context::mode_type::auto_LTR;
-                hilet sub_paragraph_bidi_class = unicode_bidi_P2(it + 1, last, sub_context, true);
-                hilet sub_paragraph_embedding_level = unicode_bidi_P3(sub_paragraph_bidi_class);
+                auto const sub_paragraph_bidi_class = unicode_bidi_P2(it + 1, last, sub_context, true);
+                auto const sub_paragraph_embedding_level = unicode_bidi_P3(sub_paragraph_bidi_class);
                 if (sub_paragraph_embedding_level == 0) {
                     LRI_implementation();
                 } else {
@@ -442,7 +442,7 @@ constexpr void unicode_bidi_X1(
 [[nodiscard]] constexpr unicode_bidi_char_info_iterator
 unicode_bidi_X9(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept
 {
-    return std::remove_if(first, last, [](hilet& character) {
+    return std::remove_if(first, last, [](auto const& character) {
         using enum unicode_bidi_class;
 
         return character.direction == RLE || character.direction == LRE || character.direction == RLO ||
@@ -620,7 +620,7 @@ constexpr std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_
                     // If there is a canonical equivalent of the opening bracket, find it's mirrored glyph
                     // to compare with the closing bracket.
                     auto mirrored_glyph = ucd_get_bidi_mirroring_glyph(it->code_point);
-                    if (hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent()) {
+                    if (auto const canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent()) {
                         hi_axiom(ucd_get_bidi_paired_bracket_type(*canonical_equivalent) == unicode_bidi_paired_bracket_type::o);
 
                         mirrored_glyph = ucd_get_bidi_mirroring_glyph(*canonical_equivalent);
@@ -632,7 +632,7 @@ constexpr std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_
 
             case unicode_bidi_paired_bracket_type::c:
                 {
-                    hilet canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent();
+                    auto const canonical_equivalent = ucd_get_decomposition(it->code_point).canonical_equivalent();
                     auto jt = stack.end();
                     while (jt != stack.begin()) {
                         --jt;
@@ -682,7 +682,7 @@ constexpr std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_
     while (it != begin(isolated_run_sequence)) {
         --it;
 
-        if (hilet direction = unicode_bidi_N0_strong(it->direction); direction != ON) {
+        if (auto const direction = unicode_bidi_N0_strong(it->direction); direction != ON) {
             return direction;
         }
     }
@@ -697,7 +697,7 @@ unicode_bidi_N0_enclosed_strong_type(unicode_bidi_bracket_pair const& pair, unic
 
     auto opposite_direction = ON;
     for (auto it = pair.open + 1; it != pair.close; ++it) {
-        hilet direction = unicode_bidi_N0_strong(it->direction);
+        auto const direction = unicode_bidi_N0_strong(it->direction);
         if (direction == ON) {
             continue;
         }
@@ -719,7 +719,7 @@ constexpr void unicode_bidi_N0(unicode_bidi_isolated_run_sequence& isolated_run_
     }
 
     auto bracket_pairs = unicode_bidi_BD16(isolated_run_sequence);
-    hilet embedding_direction = isolated_run_sequence.embedding_direction();
+    auto const embedding_direction = isolated_run_sequence.embedding_direction();
 
     for (auto& pair : bracket_pairs) {
         auto pair_direction = unicode_bidi_N0_enclosed_strong_type(pair, embedding_direction);
@@ -763,10 +763,10 @@ constexpr void unicode_bidi_N1(unicode_bidi_isolated_run_sequence& isolated_run_
     auto first_NI = end(isolated_run_sequence);
 
     for (auto it = begin(isolated_run_sequence); it != end(isolated_run_sequence); ++it) {
-        hilet& char_info = *it;
+        auto const& char_info = *it;
         if (first_NI != end(isolated_run_sequence)) {
             if (!is_NI(char_info.direction)) {
-                hilet direction_after_NI = (it->direction == EN || it->direction == AN) ? R : it->direction;
+                auto const direction_after_NI = (it->direction == EN || it->direction == AN) ? R : it->direction;
 
                 if ((direction_before_NI == L || direction_before_NI == R) && direction_before_NI == direction_after_NI) {
                     std::for_each(first_NI, it, [direction_before_NI](auto& item) {
@@ -794,7 +794,7 @@ constexpr void unicode_bidi_N1(unicode_bidi_isolated_run_sequence& isolated_run_
 
 constexpr void unicode_bidi_N2(unicode_bidi_isolated_run_sequence& isolated_run_sequence)
 {
-    hilet embedding_direction = isolated_run_sequence.embedding_direction();
+    auto const embedding_direction = isolated_run_sequence.embedding_direction();
 
     for (auto& char_info : isolated_run_sequence) {
         if (is_NI(char_info.direction)) {
@@ -895,16 +895,16 @@ unicode_bidi_BD13(std::vector<unicode_bidi_level_run> level_runs) noexcept
     if (begin(isolated_run_sequence) != end(isolated_run_sequence)) {
         // The calculations on the iterator for last_char_it is required because
         // calling child() on an end iterator is undefined behavior.
-        hilet first_char_it = begin(isolated_run_sequence).child();
-        hilet last_char_it = (end(isolated_run_sequence) - 1).child() + 1;
+        auto const first_char_it = begin(isolated_run_sequence).child();
+        auto const last_char_it = (end(isolated_run_sequence) - 1).child() + 1;
 
-        hilet has_char_before = first_char_it != first;
-        hilet has_char_after = last_char_it != last;
+        auto const has_char_before = first_char_it != first;
+        auto const has_char_after = last_char_it != last;
 
-        hilet start_embedding_level = std::max(
+        auto const start_embedding_level = std::max(
             isolated_run_sequence.embedding_level(),
             has_char_before ? (first_char_it - 1)->embedding_level : paragraph_embedding_level);
-        hilet end_embedding_level = std::max(
+        auto const end_embedding_level = std::max(
             isolated_run_sequence.embedding_level(),
             has_char_after && !isolated_run_sequence.ends_with_isolate_initiator() ? last_char_it->embedding_level :
                                                                                      paragraph_embedding_level);
@@ -1095,7 +1095,7 @@ constexpr void unicode_bidi_P1_line(
     int8_t paragraph_embedding_level,
     unicode_bidi_context const& context) noexcept
 {
-    hilet[lowest_odd, highest] = unicode_bidi_L1(first, last, paragraph_embedding_level);
+    auto const[lowest_odd, highest] = unicode_bidi_L1(first, last, paragraph_embedding_level);
     unicode_bidi_L2(first, last, lowest_odd, highest);
     unicode_bidi_L3(first, last);
     // L4 is delayed after the original array has been shuffled.
@@ -1106,9 +1106,9 @@ constexpr void unicode_bidi_P1_line(
     unicode_bidi_char_info_iterator last,
     unicode_bidi_context const& context) noexcept
 {
-    hilet default_paragraph_direction = unicode_bidi_P2(first, last, context, false);
-    hilet paragraph_embedding_level = unicode_bidi_P3(default_paragraph_direction);
-    hilet paragraph_direction = paragraph_embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
+    auto const default_paragraph_direction = unicode_bidi_P2(first, last, context, false);
+    auto const paragraph_embedding_level = unicode_bidi_P3(default_paragraph_direction);
+    auto const paragraph_direction = paragraph_embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
     return {paragraph_embedding_level, paragraph_direction};
 }
 
@@ -1117,7 +1117,7 @@ constexpr void unicode_bidi_P1_line(
     unicode_bidi_char_info_iterator last,
     unicode_bidi_context const& context) noexcept
 {
-    hilet[paragraph_embedding_level, paragraph_direction] = unicode_bidi_P2_P3(first, last, context);
+    auto const[paragraph_embedding_level, paragraph_direction] = unicode_bidi_P2_P3(first, last, context);
 
     unicode_bidi_X1(first, last, paragraph_embedding_level, context);
     last = unicode_bidi_X9(first, last);
@@ -1125,9 +1125,9 @@ constexpr void unicode_bidi_P1_line(
 
     auto line_begin = first;
     for (auto it = first; it != last; ++it) {
-        hilet general_category = ucd_get_general_category(it->code_point);
+        auto const general_category = ucd_get_general_category(it->code_point);
         if (context.enable_line_separator and general_category == unicode_general_category::Zl) {
-            hilet line_end = it + 1;
+            auto const line_end = it + 1;
             unicode_bidi_P1_line(line_begin, line_end, paragraph_embedding_level, context);
             line_begin = line_end;
         }
@@ -1150,8 +1150,8 @@ constexpr void unicode_bidi_P1_line(
     auto paragraph_directions = std::vector<unicode_bidi_class>{};
     while (it != last) {
         if (it->direction == unicode_bidi_class::B) {
-            hilet paragraph_end = it + 1;
-            hilet[new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, paragraph_end, context);
+            auto const paragraph_end = it + 1;
+            auto const[new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, paragraph_end, context);
             paragraph_directions.push_back(paragraph_bidi_class);
 
             // Move the removed items of the paragraph to the end of the text.
@@ -1165,7 +1165,7 @@ constexpr void unicode_bidi_P1_line(
     }
 
     if (paragraph_begin != last) {
-        hilet[new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, last, context);
+        auto const[new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, last, context);
         paragraph_directions.push_back(paragraph_bidi_class);
         last = new_paragraph_end;
     }
@@ -1182,7 +1182,7 @@ constexpr void unicode_bidi_L4(
     SetTextDirection set_text_direction) noexcept
 {
     for (auto it = first; it != last; ++it, ++output_it) {
-        hilet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
+        auto const text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
         set_text_direction(*output_it, text_direction);
         if (it->direction == unicode_bidi_class::R and it->bracket_type != unicode_bidi_paired_bracket_type::n) {
             set_code_point(*output_it, ucd_get_bidi_mirroring_glyph(it->code_point));
@@ -1233,7 +1233,7 @@ constexpr std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     }
 
     auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);
-    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](hilet& item) {
+    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](auto const& item) {
         return item.index;
     });
 
@@ -1286,9 +1286,9 @@ unicode_bidi_direction(It first, It last, GetCodePoint get_code_point, unicode_b
 template<typename It, typename EndIt, typename CodePointFunc>
 constexpr It unicode_bidi_control_filter(It first, EndIt last, CodePointFunc const& code_point_func)
 {
-    return std::remove_if(first, last, [&](hilet& item) {
-        hilet code_point = code_point_func(item);
-        hilet bidi_class = ucd_get_bidi_class(code_point);
+    return std::remove_if(first, last, [&](auto const& item) {
+        auto const code_point = code_point_func(item);
+        auto const bidi_class = ucd_get_bidi_class(code_point);
         return is_control(bidi_class);
     });
 }

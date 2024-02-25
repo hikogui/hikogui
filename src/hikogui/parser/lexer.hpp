@@ -535,7 +535,7 @@ public:
                 return 0xffff'ffff;
             }
 
-            hilet[code_point, valid] = char_map<"utf-8">{}.read(_it, _last);
+            auto const[code_point, valid] = char_map<"utf-8">{}.read(_it, _last);
             return code_point;
         }
 
@@ -565,7 +565,7 @@ public:
 
         [[nodiscard]] constexpr token::kind_type parse_token_unicode_line_comment() noexcept
         {
-            hilet cp_ = _cp & 0x1f'ffff;
+            auto const cp_ = _cp & 0x1f'ffff;
             if (cp_ == U'\u0085' or cp_ == U'\u2028' or cp_ == U'\u2029') {
                 _state = state_type::idle;
                 advance_counters();
@@ -673,7 +673,7 @@ public:
 
         [[nodiscard]] constexpr token::kind_type process_command(char c = '\0') noexcept
         {
-            hilet command = _lexer->get_command(_state, c);
+            auto const command = _lexer->get_command(_state, c);
             _state = command.next_state;
 
             if (command.clear) {
@@ -1231,7 +1231,7 @@ private:
         static_assert(not has_advance_tag_argument<Args...>(), "any should not advance");
 
         for (uint8_t c = 0; c != 128; ++c) {
-            hilet& command = _add(from, char_cast<char>(c), to, args...);
+            auto const& command = _add(from, char_cast<char>(c), to, args...);
             hi_assert(not command.assigned, "any should be added first to a state");
         }
     }

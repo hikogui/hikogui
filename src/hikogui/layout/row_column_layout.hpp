@@ -89,7 +89,7 @@ public:
 
     cell_type& insert(const_iterator pos, std::convertible_to<T> auto&& value) noexcept
     {
-        hilet index = std::distance(cbegin(), pos);
+        auto const index = std::distance(cbegin(), pos);
 
         for (auto it = begin() + index; it != end(); ++it) {
             if constexpr (Axis == axis::x) {

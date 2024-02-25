@@ -100,8 +100,8 @@ public:
         auto r = lean_vector<glyph_id>{};
 
         // First try composed normalization
-        for (hilet c : g.composed()) {
-            if (hilet glyph_id = find_glyph(c)) {
+        for (auto const c : g.composed()) {
+            if (auto const glyph_id = find_glyph(c)) {
                 r.push_back(glyph_id);
             } else {
                 r.clear();
@@ -111,8 +111,8 @@ public:
 
         if (r.empty()) {
             // Now try decomposed normalization
-            for (hilet c : g.decomposed()) {
-                if (hilet glyph_id = find_glyph(c)) {
+            for (auto const c : g.decomposed()) {
+                if (auto const glyph_id = find_glyph(c)) {
                     r.push_back(glyph_id);
                 } else {
                     r.clear();

@@ -88,7 +88,7 @@ public:
     [[nodiscard]] bool try_lock() noexcept
     {
         // FIRST | OWNER | OTHER
-        hilet thread_id = current_thread_id();
+        auto const thread_id = current_thread_id();
 
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
@@ -143,7 +143,7 @@ public:
     void lock() noexcept
     {
         // FIRST | OWNER | OTHER
-        hilet thread_id = current_thread_id();
+        auto const thread_id = current_thread_id();
 
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.

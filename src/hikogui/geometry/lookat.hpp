@@ -36,11 +36,11 @@ public:
 
     [[nodiscard]] constexpr operator matrix3() noexcept
     {
-        hilet f = normalize(_lookat_location - _camera_location);
-        hilet s = normalize(cross(f, _up));
-        hilet u = cross(s, f);
+        auto const f = normalize(_lookat_location - _camera_location);
+        auto const s = normalize(cross(f, _up));
+        auto const u = cross(s, f);
 
-        hilet eye = vector3{static_cast<f32x4>(_camera_location).xyz0()};
+        auto const eye = vector3{static_cast<f32x4>(_camera_location).xyz0()};
 
         // clang-format off
         // Matrix constructor is in row-major for nice display.

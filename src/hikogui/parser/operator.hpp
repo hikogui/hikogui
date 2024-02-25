@@ -90,7 +90,7 @@ enum class graphic_character_t {
 [[nodiscard]] constexpr uint64_t operator_to_int(std::string_view str) noexcept
 {
     uint64_t r = 0;
-    for (hilet c: str) {
+    for (auto const c: str) {
         r <<= 5;
         r |= static_cast<uint64_t>(char_to_graphic_character(c));
     }

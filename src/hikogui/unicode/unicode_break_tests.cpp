@@ -34,19 +34,19 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
 {
     auto r = test_type{};
 
-    hilet split_line = hi::split(line, "\t#");
+    auto const split_line = hi::split(line, "\t#");
     if (split_line.size() < 2) {
         return {};
     }
     r.comment = std::format("{}: {}", line_nr, split_line[1]);
     r.line_nr = line_nr;
 
-    hilet columns = hi::split(split_line[0]);
+    auto const columns = hi::split(split_line[0]);
     if (columns.size() < 2) {
         return {};
     }
 
-    for (hilet column : columns) {
+    for (auto const column : columns) {
         if (column == "") {
             // Empty.
         } else if (column == "\xc3\xb7") {
@@ -64,13 +64,13 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
 
 static hi::generator<test_type> parse_tests(std::filesystem::path filename)
 {
-    hilet view = hi::file_view(filename);
-    hilet test_data = as_string_view(view);
+    auto const view = hi::file_view(filename);
+    auto const test_data = as_string_view(view);
 
     int line_nr = 1;
-    for (hilet line_view : std::views::split(test_data, std::string_view{"\n"})) {
-        hilet line = std::string_view{line_view.begin(), line_view.end()};
-        if (hilet optional_test = parse_test_line(line, line_nr)) {
+    for (auto const line_view : std::views::split(test_data, std::string_view{"\n"})) {
+        auto const line = std::string_view{line_view.begin(), line_view.end()};
+        if (auto const optional_test = parse_test_line(line, line_nr)) {
             co_yield *optional_test;
         }
         line_nr++;
@@ -81,8 +81,8 @@ static hi::generator<test_type> parse_tests(std::filesystem::path filename)
 
 TEST(unicode_break, grapheme_break)
 {
-    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "GraphemeBreakTest.txt")) {
-        hilet result = hi::unicode_grapheme_break(test.code_points.begin(), test.code_points.end());
+    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "GraphemeBreakTest.txt")) {
+        auto const result = hi::unicode_grapheme_break(test.code_points.begin(), test.code_points.end());
 
         ASSERT_EQ(test.expected, result) << test.comment;
     }
@@ -90,9 +90,9 @@ TEST(unicode_break, grapheme_break)
 
 TEST(unicode_break, word_break)
 {
-    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "WordBreakTest.txt")) {
-        hilet result =
-            hi::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
+    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "WordBreakTest.txt")) {
+        auto const result =
+            hi::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](auto const code_point) -> decltype(auto) {
                 return code_point;
             });
 
@@ -102,9 +102,9 @@ TEST(unicode_break, word_break)
 
 TEST(unicode_break, sentence_break)
 {
-    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "SentenceBreakTest.txt")) {
-        hilet result =
-            hi::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
+    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "SentenceBreakTest.txt")) {
+        auto const result =
+            hi::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](auto const code_point) -> decltype(auto) {
                 return code_point;
             });
 
@@ -114,9 +114,9 @@ TEST(unicode_break, sentence_break)
 
 TEST(unicode_break, line_break)
 {
-    for (hilet& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "LineBreakTest.txt")) {
+    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "LineBreakTest.txt")) {
         auto result =
-            hi::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
+            hi::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](auto const code_point) -> decltype(auto) {
                 return code_point;
             });
 

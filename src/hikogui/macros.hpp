@@ -471,16 +471,6 @@ inline void weak_terminate() noexcept
 #define hi_inline inline
 #endif
 
-/** Invariant should be the default for variables.
- *
- * C++ does have an invariant but it requires you to enter the 'const' keyword which
- * is easy to forget. Using a single keyword 'hilet' for an invariant makes it easier to notice
- * when you have defined a variant.
- */
-#ifndef hilet
-#define hilet auto const
-#endif
-
 /** Forward a value, based on the decltype of the value.
  */
 #ifndef hi_forward

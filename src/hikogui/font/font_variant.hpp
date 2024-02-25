@@ -82,8 +82,8 @@ public:
      */
     [[nodiscard]] friend generator<font_variant> alternatives(font_variant start) noexcept
     {
-        for (hilet s : alternatives(start.style())) {
-            for (hilet w : alternatives(start.weight())) {
+        for (auto const s : alternatives(start.style())) {
+            for (auto const w : alternatives(start.weight())) {
                 co_yield font_variant{w, s};
             }
         }

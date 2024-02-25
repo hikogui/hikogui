@@ -269,12 +269,12 @@ public:
     constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
         _constraints(num), _forward(forward)
     {
-        for (hilet& cell : cells) {
+        for (auto const& cell : cells) {
             construct_simple_cell(cell);
         }
         construct_fixup();
 
-        for (hilet& cell : cells) {
+        for (auto const& cell : cells) {
             construct_span_cell(cell);
         }
         construct_fixup();
@@ -382,15 +382,15 @@ public:
         // If the total extent is still too small, expand into the cells that are marked beyond_maximum.
         if (total_extent < new_extent) {
             // The result may expand slightly too much, we don't care.
-            count = std::count_if(begin(), end(), [](hilet& item) {
+            count = std::count_if(begin(), end(), [](auto const& item) {
                 return item.beyond_maximum;
             });
             if (count) {
                 auto expand = new_extent - total_extent;
-                hilet expand_per = std::ceil(expand / count);
+                auto const expand_per = std::ceil(expand / count);
 
                 for (auto& constraint : _constraints) {
-                    hilet expand_this = std::min(expand_per, expand);
+                    auto const expand_this = std::min(expand_per, expand);
                     if (constraint.beyond_maximum) {
                         constraint.extent += expand_this;
                         expand -= expand_this;
@@ -591,17 +591,17 @@ private:
     [[nodiscard]] constexpr std::pair<float, size_t>
     layout_shrink(const_iterator first, const_iterator last, float shrink = 0.0f, size_t count = 1) noexcept
     {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
+        auto const first_ = begin() + std::distance(cbegin(), first);
+        auto const last_ = begin() + std::distance(cbegin(), last);
 
         hi_axiom(shrink >= 0);
 
-        hilet shrink_per = std::floor(shrink / count);
+        auto const shrink_per = std::floor(shrink / count);
 
         auto new_extent = 0.0f;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
-            hilet shrink_this = std::max({shrink_per, shrink, it->extent - it->minimum});
+            auto const shrink_this = std::max({shrink_per, shrink, it->extent - it->minimum});
             it->extent -= shrink_this;
             shrink -= shrink_this;
 
@@ -637,18 +637,18 @@ private:
     [[nodiscard]] constexpr std::pair<float, size_t>
     layout_expand(const_iterator first, const_iterator last, float expand = 0.0f, size_t count = 1) noexcept
     {
-        hilet first_ = begin() + std::distance(cbegin(), first);
-        hilet last_ = begin() + std::distance(cbegin(), last);
+        auto const first_ = begin() + std::distance(cbegin(), first);
+        auto const last_ = begin() + std::distance(cbegin(), last);
 
         hi_axiom(expand >= 0.0f);
 
-        hilet expand_per = std::ceil(expand / count);
+        auto const expand_per = std::ceil(expand / count);
         hi_axiom(expand_per >= 0.0f);
 
         auto new_extent = 0.0f;
         auto new_count = 0_uz;
         for (auto it = first_; it != last_; ++it) {
-            hilet expand_this = std::min({expand_per, expand, it->maximum - it->extent});
+            auto const expand_this = std::min({expand_per, expand, it->maximum - it->extent});
             it->extent += expand_this;
             expand -= expand_this;
 
@@ -712,23 +712,23 @@ private:
         auto num_cells = narrow_cast<float>(cell.template span<axis>());
 
         if (cell.template span<axis>() > 1) {
-            hilet[span_minimum, span_preferred, span_maximum] = constraints(cell);
-            if (hilet extra = cell.template minimum<axis>() - span_minimum; extra > 0) {
-                hilet extra_per_cell = std::floor(extra / num_cells);
+            auto const[span_minimum, span_preferred, span_maximum] = constraints(cell);
+            if (auto const extra = cell.template minimum<axis>() - span_minimum; extra > 0) {
+                auto const extra_per_cell = std::floor(extra / num_cells);
                 for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
                     _constraints[i].minimum += extra_per_cell;
                 }
             }
 
-            if (hilet extra = cell.template preferred<axis>() - span_preferred; extra > 0) {
-                hilet extra_per_cell = std::floor(extra / num_cells);
+            if (auto const extra = cell.template preferred<axis>() - span_preferred; extra > 0) {
+                auto const extra_per_cell = std::floor(extra / num_cells);
                 for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
                     _constraints[i].preferred += extra_per_cell;
                 }
             }
 
-            if (hilet extra = cell.template maximum<axis>() - span_preferred; extra < 0) {
-                hilet extra_per_cell = std::ceil(extra / num_cells);
+            if (auto const extra = cell.template maximum<axis>() - span_preferred; extra < 0) {
+                auto const extra_per_cell = std::ceil(extra / num_cells);
                 for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
                     // The maximum could become too low here, fixup() will fix this.
                     _constraints[i].maximum += extra_per_cell;
@@ -976,7 +976,7 @@ public:
         hi_axiom(first_column < last_column);
         hi_axiom(first_row < last_row);
 
-        for (hilet& cell : _cells) {
+        for (auto const& cell : _cells) {
             if (first_column >= cell.last_column) {
                 continue;
             }
@@ -1125,7 +1125,7 @@ private:
 
         _num_rows = 0;
         _num_columns = 0;
-        for (hilet& cell : _cells) {
+        for (auto const& cell : _cells) {
             inplace_max(_num_rows, cell.last_row);
             inplace_max(_num_columns, cell.last_column);
         }

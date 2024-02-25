@@ -89,7 +89,7 @@ hi_export hi_inline std::pair<int, char **> crt_start(int, char **, void *instan
     argv[argc] = nullptr;
 
     // Make sure the console is in a valid state to write text to it.
-    hilet [tsc_frequency, aux_is_cpu_id] = hi::time_stamp_count::start_subsystem();
+    auto const [tsc_frequency, aux_is_cpu_id] = hi::time_stamp_count::start_subsystem();
 
     initialize();
     start_system();
