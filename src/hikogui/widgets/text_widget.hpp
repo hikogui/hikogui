@@ -139,13 +139,14 @@ public:
         this->delegate->init(*this);
     }
 
+    template<text_widget_attribute... Attributes>
     text_widget(
         not_null<widget_intf const*> parent,
         std::shared_ptr<delegate_type> delegate,
-        text_widget_attribute auto&&... attributes) noexcept :
+        Attributes&&... attributes) noexcept :
         text_widget(parent, std::move(delegate))
     {
-        set_attributes(hi_forward(attributes)...);
+        set_attributes(std::forward<Attributes>(attributes)...);
     }
 
     /** Construct a text widget.
@@ -154,11 +155,12 @@ public:
      * @param text The text to be displayed.
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
+    template<incompatible_with<std::shared_ptr<delegate_type>> Text, text_widget_attribute... Attributes>
     text_widget(
         not_null<widget_intf const*> parent,
-        incompatible_with<std::shared_ptr<delegate_type>> auto&& text,
-        text_widget_attribute auto&&... attributes) noexcept requires requires { make_default_text_delegate(hi_forward(text)); }
-        : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...)
+        Text&& text,
+        Attributes&&... attributes) noexcept requires requires { make_default_text_delegate(std::forward<Text>(text)); }
+        : text_widget(parent, make_default_text_delegate(std::forward<Text>(text)), std::forward<Attributes>(attributes)...)
     {
     }
 
@@ -823,17 +825,19 @@ private:
     callback<void(cursor_state_type)> _cursor_state_cbt;
 
     void set_attributes() noexcept {}
-    void set_attributes(text_widget_attribute auto&& first, text_widget_attribute auto&&... rest) noexcept
+
+    template<text_widget_attribute First, text_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&... rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+            text_style = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
 
-        set_attributes(hi_forward(rest)...);
+        set_attributes(std::forward<Rest>(rest)...);
     }
 
     /** Make parent scroll views, scroll to show the current selection and cursor.

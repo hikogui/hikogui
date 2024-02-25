@@ -471,12 +471,6 @@ inline void weak_terminate() noexcept
 #define hi_inline inline
 #endif
 
-/** Forward a value, based on the decltype of the value.
- */
-#ifndef hi_forward
-#define hi_forward(x) std::forward<decltype(x)>(x)
-#endif
-
 /** Return the result of an expression if the expression is valid.
  *
  * This macro uses a `requires {}` expression to determine if the expression is valid.

@@ -73,19 +73,21 @@ public:
         }
 
         void set_attributes() noexcept {}
-        void set_attributes(selection_widget_attribute auto&& first, selection_widget_attribute auto&&...rest) noexcept
+
+        template<selection_widget_attribute First, selection_widget_attribute... Rest>
+        void set_attributes(First&& first, Rest&&...rest) noexcept
         {
-            if constexpr (forward_of<decltype(first), observer<hi::label>>) {
-                off_label = hi_forward(first);
-            } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-                alignment = hi_forward(first);
-            } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-                text_style = hi_forward(first);
+            if constexpr (forward_of<First, observer<hi::label>>) {
+                off_label = std::forward<First>(first);
+            } else if constexpr (forward_of<First, observer<hi::alignment>>) {
+                alignment = std::forward<First>(first);
+            } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+                text_style = std::forward<First>(first);
             } else {
                 hi_static_no_default();
             }
 
-            set_attributes(hi_forward(rest)...);
+            set_attributes(std::forward<Rest>(rest)...);
         }
     };
 

@@ -39,9 +39,10 @@ public:
         std::optional<value_type> value = {};
         std::exception_ptr exception = nullptr;
 
-        void return_value(std::convertible_to<value_type> auto&& new_value) noexcept
+        template<std::convertible_to<value_type> NewValue>
+        void return_value(NewValue&& new_value) noexcept
         {
-            value = hi_forward(new_value);
+            value = std::forward<NewValue>(new_value);
         }
 
         void unhandled_exception() noexcept

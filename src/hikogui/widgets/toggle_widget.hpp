@@ -289,12 +289,12 @@ private:
     {
     }
 
-    template<size_t I>
-    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    template<size_t I, button_widget_attribute First, button_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
+            alignment = std::forward<First>(first);
+            set_attributes<I>(std::forward<Rest>(rest)...);
 
         } else {
             hi_static_no_default();

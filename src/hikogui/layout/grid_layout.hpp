@@ -40,19 +40,20 @@ struct grid_layout_cell {
     constexpr grid_layout_cell& operator=(grid_layout_cell const&) noexcept = default;
     constexpr grid_layout_cell& operator=(grid_layout_cell&&) noexcept = default;
 
+    template<std::convertible_to<value_type> Value>
     constexpr grid_layout_cell(
         size_t first_column,
         size_t first_row,
         size_t last_column,
         size_t last_row,
         bool beyond_maximum,
-        std::convertible_to<value_type> auto&& value) noexcept :
+        Value&& value) noexcept :
         first_column(first_column),
         first_row(first_row),
         last_column(last_column),
         last_row(last_row),
         beyond_maximum(beyond_maximum),
-        value(hi_forward(value))
+        value(std::forward<Value>(value))
     {
         hi_assert(first_column < last_column);
         hi_assert(first_row < last_row);

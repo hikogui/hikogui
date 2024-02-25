@@ -20,7 +20,8 @@
 
 hi_export_module(hikogui.widgets.window_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.
@@ -34,7 +35,8 @@ public:
 
     observer<label> title;
 
-    window_widget(forward_of<observer<label>> auto&& title) noexcept : super(nullptr), title(hi_forward(title))
+    template<forward_of<observer<label>> Title>
+    window_widget(Title&& title) noexcept : super(nullptr), title(std::forward<Title>(title))
     {
         _toolbar = std::make_unique<toolbar_widget>(this);
 
@@ -149,7 +151,7 @@ public:
 
         return r;
     }
-    
+
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
@@ -267,20 +269,20 @@ public:
             return true;
         }
     }
-    void set_window(gui_window *window) noexcept override
+    void set_window(gui_window* window) noexcept override
     {
         _window = window;
         if (_window) {
             _window->set_title(*title);
         }
     }
-    [[nodiscard]] gui_window *window() const noexcept override
+    [[nodiscard]] gui_window* window() const noexcept override
     {
         return _window;
     }
     /// @endprivatesection
 private:
-    gui_window *_window = nullptr;
+    gui_window* _window = nullptr;
 
     std::unique_ptr<grid_widget> _content;
     box_constraints _content_constraints;
@@ -294,8 +296,9 @@ private:
     mutable bool _can_resize_height;
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-    system_menu_widget *_system_menu = nullptr;
+    system_menu_widget* _system_menu = nullptr;
 #endif
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

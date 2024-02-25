@@ -378,9 +378,10 @@ public:
      *
      * @param func A function object corresponding to the `notify_proto` prototype.
      */
-    void subscribe(forward_of<notify_proto> auto&& func) noexcept
+    template<forward_of<notify_proto> Func>
+    void subscribe(Func&& func) noexcept
     {
-        _notify = hi_forward(func);
+        _notify = std::forward<Func>(func);
     }
 
     /** Unsubscribe the callback function.
