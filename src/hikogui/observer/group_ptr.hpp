@@ -55,8 +55,8 @@ public:
      */
     void notify_group_ptr(Args const&...args) const noexcept
     {
-        hilet owners_copy = [&] {
-            hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+        auto const owners_copy = [&] {
+            auto const lock = std::scoped_lock(_enable_group_ptr_mutex);
             return _enable_group_ptr_owners;
         }();
 
@@ -89,7 +89,7 @@ private:
 
     void _enable_group_ptr_add_owner(group_ptr<T> *owner) noexcept
     {
-        hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+        auto const lock = std::scoped_lock(_enable_group_ptr_mutex);
 
         _enable_group_ptr_owners.push_back(owner);
         hi_axiom(_enable_group_ptr_holds_invariant());
@@ -97,9 +97,9 @@ private:
 
     void _enable_group_ptr_remove_owner(group_ptr<T> *owner) noexcept
     {
-        hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+        auto const lock = std::scoped_lock(_enable_group_ptr_mutex);
 
-        hilet num_removed = std::erase(_enable_group_ptr_owners, owner);
+        auto const num_removed = std::erase(_enable_group_ptr_owners, owner);
         hi_assert(num_removed == 1);
         hi_axiom(_enable_group_ptr_holds_invariant());
     }
@@ -112,7 +112,7 @@ private:
      */
     void _enable_group_ptr_reseat(std::shared_ptr<enable_group_ptr> const& replacement) noexcept
     {
-        hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+        auto const lock = std::scoped_lock(_enable_group_ptr_mutex);
 
         hi_assert_not_null(replacement);
         hi_assert(replacement.get() != this);

@@ -70,7 +70,7 @@ private:
     {
         DWORD size = 0;
         {
-            hilet result = _direction == audio_direction::input ?
+            auto const result = _direction == audio_direction::input ?
                 waveInMessage((HWAVEIN)IntToPtr(_id), size_message_id, std::bit_cast<DWORD_PTR>(&size), NULL) :
                 waveOutMessage((HWAVEOUT)IntToPtr(_id), size_message_id, std::bit_cast<DWORD_PTR>(&size), NULL);
 
@@ -87,7 +87,7 @@ private:
         hi_assert(size > 0 and size % sizeof(wchar_t) == 0);
         auto str = std::wstring(size / sizeof(wchar_t) - 1, wchar_t{});
         {
-            hilet result = _direction == audio_direction::input ?
+            auto const result = _direction == audio_direction::input ?
                 waveInMessage((HWAVEIN)IntToPtr(_id), message_id, std::bit_cast<DWORD_PTR>(str.data()), size) :
                 waveOutMessage((HWAVEOUT)IntToPtr(_id), message_id, std::bit_cast<DWORD_PTR>(str.data()), size);
 

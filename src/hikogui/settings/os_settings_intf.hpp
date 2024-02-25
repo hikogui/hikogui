@@ -37,7 +37,7 @@ public:
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _language_tags;
     }
 
@@ -48,7 +48,7 @@ public:
     [[nodiscard]] static std::locale locale() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _locale;
     }
 
@@ -219,7 +219,7 @@ public:
     [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _primary_monitor_rectangle;
     }
 
@@ -238,7 +238,7 @@ public:
     [[nodiscard]] static aarectangle desktop_rectangle() noexcept
     {
         hi_axiom(_populated.load(std::memory_order::acquire));
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _desktop_rectangle;
     }
 
@@ -287,7 +287,7 @@ public:
     template<forward_of<void()> Func>
     [[nodiscard]] static callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(std::forward<Func>(func), flags);
     }
 
@@ -304,10 +304,10 @@ public:
      */
     static void gather() noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         auto setting_has_changed = false;
 
-        hilet current_time = std::chrono::utc_clock::now();
+        auto const current_time = std::chrono::utc_clock::now();
         if (current_time < _gather_last_time + gather_minimum_interval) {
             return;
         }
@@ -467,7 +467,7 @@ public:
         }
 
         try {
-            hilet primary_monitor_id = gather_primary_monitor_id();
+            auto const primary_monitor_id = gather_primary_monitor_id();
             if (compare_store(_primary_monitor_id, primary_monitor_id)) {
                 setting_has_changed = true;
                 hi_log_info("OS primary monitor id has changed: {}, updating vsync source", primary_monitor_id);

@@ -27,7 +27,7 @@ using unicode_break_iterator = unicode_break_vector::iterator;
 using unicode_break_const_iterator = unicode_break_vector::const_iterator;
 
 hi_inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
-    hilet *s = [&] () {
+    auto const *s = [&] () {
         switch (rhs) {
             using enum unicode_break_opportunity;
         case no: return "X";
@@ -47,7 +47,7 @@ hi_export template<>
 struct std::formatter<hi::unicode_break_opportunity, char> : std::formatter<char const *, char> {
     auto format(hi::unicode_break_opportunity const &t, auto &fc) const
     {
-        hilet *s = [&]() {
+        auto const *s = [&]() {
             switch (t) {
             using enum hi::unicode_break_opportunity;
             case no: return "X";

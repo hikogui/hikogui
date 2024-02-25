@@ -12,7 +12,7 @@ TEST(defer, early_out)
     int b = 0;
 
     do {
-        hilet d_a = hi::defer([&]{ a = 42; });
+        auto const d_a = hi::defer([&]{ a = 42; });
         ASSERT_EQ(a, 0);
 
         // If will be taken.
@@ -20,7 +20,7 @@ TEST(defer, early_out)
             break;
         }
 
-        hilet d_b = hi::defer([&]{ b = a + 1; });
+        auto const d_b = hi::defer([&]{ b = a + 1; });
     } while (false);
 
     ASSERT_EQ(a, 42);
@@ -33,7 +33,7 @@ TEST(defer, fully)
     int b = 0;
 
     do {
-        hilet d_a = hi::defer([&]{ a = 42; });
+        auto const d_a = hi::defer([&]{ a = 42; });
         ASSERT_EQ(a, 0);
 
         // If will NOT be taken.
@@ -41,7 +41,7 @@ TEST(defer, fully)
             break;
         }
 
-        hilet d_b = hi::defer([&]{ b = a + 5; });
+        auto const d_b = hi::defer([&]{ b = a + 5; });
         ASSERT_EQ(b, 0);
     } while (false);
 

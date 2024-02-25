@@ -208,7 +208,7 @@ public:
             _grid.set_layout(shape, theme().baseline_adjustment());
         }
 
-        for (hilet& cell : _grid) {
+        for (auto const& cell : _grid) {
             if (cell.value == grid_cell_type::button) {
                 _button_widget->set_layout(context.transform(cell.shape, transform_command::level));
 
@@ -231,7 +231,7 @@ public:
             context.draw_box(
                 layout(), layout().rectangle(), background_color(), outline_color, theme().border_width(), border_side::inside);
 
-            for (hilet& cell : _grid) {
+            for (auto const& cell : _grid) {
                 if (cell.value == grid_cell_type::button) {
                     _button_widget->draw(context);
 

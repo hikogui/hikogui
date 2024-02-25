@@ -83,8 +83,8 @@ constexpr float float32_max_diff = 0.0f;
 TEST(audio_sample_packer, pack_int16le_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int16_le(), 2};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int16_le(), 2};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -137,8 +137,8 @@ TEST(audio_sample_packer, pack_int16le_mono)
 TEST(audio_sample_packer, pack_int16be_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int16_be(), 2};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int16_be(), 2};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), int16_max_diff);
@@ -191,8 +191,8 @@ TEST(audio_sample_packer, pack_int16be_mono)
 TEST(audio_sample_packer, pack_int16le_stereo)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int16_le(), 4};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int16_le(), 4};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -271,8 +271,8 @@ TEST(audio_sample_packer, pack_int16le_stereo)
 TEST(audio_sample_packer, pack_int16le_trio)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int16_le(), 6};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int16_le(), 6};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -377,8 +377,8 @@ TEST(audio_sample_packer, pack_int16le_trio)
 TEST(audio_sample_packer, pack_int16le_quadro)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int16_le(), 8};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int16_le(), 8};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -509,8 +509,8 @@ TEST(audio_sample_packer, pack_int16le_quadro)
 TEST(audio_sample_packer, pack_int24le_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int24_le(), 3};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int24_le(), 3};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
@@ -563,8 +563,8 @@ TEST(audio_sample_packer, pack_int24le_mono)
 TEST(audio_sample_packer, pack_int24be_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int24_be(), 3};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int24_be(), 3};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), int24_max_diff);
@@ -617,8 +617,8 @@ TEST(audio_sample_packer, pack_int24be_mono)
 TEST(audio_sample_packer, pack_int24le_stereo)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int24_le(), 6};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int24_le(), 6};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
@@ -710,8 +710,8 @@ TEST(audio_sample_packer, pack_int24le_stereo)
 TEST(audio_sample_packer, pack_int20le_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int20_le(), 3};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int20_le(), 3};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), int20_max_diff);
@@ -764,8 +764,8 @@ TEST(audio_sample_packer, pack_int20le_mono)
 TEST(audio_sample_packer, pack_int20be_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::int20_be(), 3};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::int20_be(), 3};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), int20_max_diff);
@@ -818,8 +818,8 @@ TEST(audio_sample_packer, pack_int20be_mono)
 TEST(audio_sample_packer, pack_fix8_24le_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::fix8_23_le(), 4};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::fix8_23_le(), 4};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), fix8_24_max_diff);
@@ -872,8 +872,8 @@ TEST(audio_sample_packer, pack_fix8_24le_mono)
 TEST(audio_sample_packer, pack_fix8_24be_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::fix8_23_be(), 4};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::fix8_23_be(), 4};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), fix8_24_max_diff);
@@ -926,8 +926,8 @@ TEST(audio_sample_packer, pack_fix8_24be_mono)
 TEST(audio_sample_packer, pack_float32le_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::float32_le(), 4};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::float32_le(), 4};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), float32_max_diff);
@@ -980,8 +980,8 @@ TEST(audio_sample_packer, pack_float32le_mono)
 TEST(audio_sample_packer, pack_float32be_mono)
 {
     auto packed = make_packed();
-    hilet flat_samples = make_flat_samples();
-    hilet packer = audio_sample_packer{audio_sample_format::float32_be(), 4};
+    auto const flat_samples = make_flat_samples();
+    auto const packer = audio_sample_packer{audio_sample_format::float32_be(), 4};
 
     packer(flat_samples.data(), packed.data(), 1);
     ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), float32_max_diff);

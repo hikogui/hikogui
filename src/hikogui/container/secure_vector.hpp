@@ -241,11 +241,11 @@ hi_export_module(hikogui.container.secure_vector);
 // 
 //     constexpr iterator emplace(const_iterator pos, auto &&...args)
 //     {
-//         hilet index = std::distance(begin(), pos);
-//         hilet n_first = &emplace_back(hi_forward(args)...);
+//         auto const index = std::distance(begin(), pos);
+//         auto const n_first = &emplace_back(hi_forward(args)...);
 // 
 //         // Rotate the newly back-emplaced item to it's intended position.
-//         hilet first = _begin + index;
+//         auto const first = _begin + index;
 //         if (first != n_first) {
 //             std::rotate(first, n_first, _end);
 //         }
@@ -268,7 +268,7 @@ hi_export_module(hikogui.container.secure_vector);
 //             return;
 //         }
 // 
-//         hilet tmp = allocate(new_capacity);
+//         auto const tmp = allocate(new_capacity);
 //         try {
 //             secure_unitialized_move(_begin, _end, _tmp);
 //             _end = tmp + size();
@@ -289,8 +289,8 @@ hi_export_module(hikogui.container.secure_vector);
 //             }
 // 
 //         } else {
-//             hilet new_capacity = size();
-//             hilet tmp = allocate(new_capacity);
+//             auto const new_capacity = size();
+//             auto const tmp = allocate(new_capacity);
 //             try {
 //                 secure_unitialized_move(_begin, _end, _tmp);
 //                 _end = tmp + size();
@@ -327,7 +327,7 @@ hi_export_module(hikogui.container.secure_vector);
 //             return;
 //         }
 // 
-//         hilet minimum_new_capacity = size() + count;
+//         auto const minimum_new_capacity = size() + count;
 // 
 //         // Growth factor 1.5, slightly lower than the ideal golden ratio.
 //         auto new_capacity = capacity();
@@ -345,7 +345,7 @@ hi_export_module(hikogui.container.secure_vector);
 //     {
 //         reserve(new_size);
 // 
-//         hilet new_end = _begin + new_size;
+//         auto const new_end = _begin + new_size;
 // 
 //         if (new_end > _end) {
 //             // Construct the new values.

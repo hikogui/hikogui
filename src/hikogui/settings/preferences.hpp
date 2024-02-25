@@ -168,7 +168,7 @@ public:
      */
     void save() const noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         _save();
     }
 
@@ -180,7 +180,7 @@ public:
      */
     void save(std::filesystem::path location) noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         _location = std::move(location);
         _save();
     }
@@ -191,7 +191,7 @@ public:
      */
     void load() noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         _load();
     }
 
@@ -203,7 +203,7 @@ public:
      */
     void load(std::filesystem::path location) noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         _location = std::move(location);
         _load();
     }
@@ -296,7 +296,7 @@ private:
      */
     void check_modified() noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
 
         if (_modified) {
             _save();
@@ -307,7 +307,7 @@ private:
      */
     void write(jsonpath const& path, datum const value) noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         auto *v = _data.find_one_or_create(path);
         if (v == nullptr) {
             hi_log_fatal("Could not write '{}' to preference file '{}'", path, _location.string());
@@ -323,7 +323,7 @@ private:
      */
     datum read(jsonpath const& path) noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         if (auto const *const r = _data.find_one(path)) {
             return *r;
         } else {
@@ -335,7 +335,7 @@ private:
      */
     void remove(jsonpath const& path) noexcept
     {
-        hilet lock = std::scoped_lock(mutex);
+        auto const lock = std::scoped_lock(mutex);
         if (_data.remove(path)) {
             _modified = true;
         }
@@ -348,7 +348,7 @@ private:
 
 hi_inline void detail::preference_item_base::load() noexcept
 {
-    hilet value = this->_parent.read(_path);
+    auto const value = this->_parent.read(_path);
     if (value.is_undefined()) {
         this->reset();
     } else {

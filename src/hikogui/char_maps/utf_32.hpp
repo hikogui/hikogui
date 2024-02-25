@@ -110,16 +110,16 @@ struct char_map<"utf-32"> {
     hi_force_inline __m128i read_ascii_chunk16(It it) const noexcept
     {
         // Load the UTF-16 data.
-        hilet c0 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        auto const c0 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
         it += 4;
-        hilet c1 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        auto const c1 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
         it += 4;
-        hilet c2 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        auto const c2 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
         it += 4;
-        hilet c3 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        auto const c3 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
 
-        hilet lo = _mm_packs_epi32(c0, c1);
-        hilet hi = _mm_packs_epi32(c2, c3);
+        auto const lo = _mm_packs_epi32(c0, c1);
+        auto const hi = _mm_packs_epi32(c2, c3);
 
         // To get _mm_packus_epi16() to work we need to prepare the data as follows:
         //  - bit 15 must be '0'.
@@ -127,14 +127,14 @@ struct char_map<"utf-32"> {
 
         // Positive numbers -> 0b0000'0000
         // Negative numbers -> 0b1000'0000
-        hilet sign_lo = _mm_srai_epi16(lo, 15);
-        hilet sign_hi = _mm_srai_epi16(hi, 15);
-        hilet sign = _mm_packs_epi16(sign_lo, sign_hi);
+        auto const sign_lo = _mm_srai_epi16(lo, 15);
+        auto const sign_hi = _mm_srai_epi16(hi, 15);
+        auto const sign = _mm_packs_epi16(sign_lo, sign_hi);
 
         // ASCII            -> 0b0ccc'cccc
         // positive numbers -> 0b1???'????
         // negative numbers -> 0b0000'0000
-        hilet chunk = _mm_packus_epi16(lo, hi);
+        auto const chunk = _mm_packus_epi16(lo, hi);
 
         // ASCII            -> 0b0ccc'cccc
         // positive numbers -> 0b1???'????
@@ -145,14 +145,14 @@ struct char_map<"utf-32"> {
     template<typename It>
     hi_force_inline void write_ascii_chunk16(__m128i chunk, It dst) const noexcept
     {
-        hilet zero = _mm_setzero_si128();
-        hilet lo = _mm_unpacklo_epi8(chunk, zero);
-        hilet hi = _mm_unpackhi_epi8(chunk, zero);
+        auto const zero = _mm_setzero_si128();
+        auto const lo = _mm_unpacklo_epi8(chunk, zero);
+        auto const hi = _mm_unpackhi_epi8(chunk, zero);
 
-        hilet c0 = _mm_unpacklo_epi8(lo, zero);
-        hilet c1 = _mm_unpackhi_epi8(lo, zero);
-        hilet c2 = _mm_unpacklo_epi8(hi, zero);
-        hilet c3 = _mm_unpackhi_epi8(hi, zero);
+        auto const c0 = _mm_unpacklo_epi8(lo, zero);
+        auto const c1 = _mm_unpackhi_epi8(lo, zero);
+        auto const c2 = _mm_unpacklo_epi8(hi, zero);
+        auto const c3 = _mm_unpackhi_epi8(hi, zero);
 
         _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), c0);
         dst += 4;

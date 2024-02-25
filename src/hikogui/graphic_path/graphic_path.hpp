@@ -70,9 +70,9 @@ hi_export struct graphic_path {
             return true;
         }
 
-        hilet& firstColor = layerEndContours.front().second;
+        auto const& firstColor = layerEndContours.front().second;
 
-        for (hilet & [ endContour, color ] : layerEndContours) {
+        for (auto const & [ endContour, color ] : layerEndContours) {
             if (color != firstColor) {
                 return false;
             }
@@ -90,7 +90,7 @@ hi_export struct graphic_path {
 
         auto r = aarectangle{points.front().p, points.front().p};
 
-        for (hilet& point : points) {
+        for (auto const& point : points) {
             r |= point.p;
         }
 
@@ -144,8 +144,8 @@ hi_export struct graphic_path {
 
     [[nodiscard]] std::vector<bezier_point> getbezier_pointsOfContour(ssize_t contourNr) const noexcept
     {
-        hilet begin = points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
-        hilet end = points.begin() + contourEndPoints.at(contourNr) + 1;
+        auto const begin = points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
+        auto const end = points.begin() + contourEndPoints.at(contourNr) + 1;
         return std::vector(begin, end);
     }
 
@@ -170,7 +170,7 @@ hi_export struct graphic_path {
         std::vector<bezier_curve> r;
 
         for (auto contourNr = 0; contourNr < numberOfContours(); contourNr++) {
-            hilet beziers = getBeziersOfContour(contourNr);
+            auto const beziers = getBeziersOfContour(contourNr);
             r.insert(r.end(), beziers.begin(), beziers.end());
         }
         return r;
@@ -182,8 +182,8 @@ hi_export struct graphic_path {
 
         auto path = graphic_path{};
 
-        hilet begin = beginLayer(layerNr);
-        hilet end = endLayer(layerNr);
+        auto const begin = beginLayer(layerNr);
+        auto const end = endLayer(layerNr);
         for (ssize_t contourNr = begin; contourNr != end; contourNr++) {
             path.addContour(beginContour(contourNr), endContour(contourNr));
         }
@@ -311,7 +311,7 @@ hi_export struct graphic_path {
     {
         hi_assert(isContourOpen());
 
-        hilet lastPosition = currentPosition();
+        auto const lastPosition = currentPosition();
         closeContour();
         points.emplace_back(lastPosition + direction, bezier_point::Type::Anchor);
     }
@@ -346,7 +346,7 @@ hi_export struct graphic_path {
     {
         hi_assert(isContourOpen());
 
-        hilet p = currentPosition();
+        auto const p = currentPosition();
         points.emplace_back(p + controlDirection, bezier_point::Type::QuadraticControl);
         points.emplace_back(p + direction, bezier_point::Type::Anchor);
     }
@@ -369,7 +369,7 @@ hi_export struct graphic_path {
     {
         hi_assert(isContourOpen());
 
-        hilet p = currentPosition();
+        auto const p = currentPosition();
         points.emplace_back(p + controlDirection1, bezier_point::Type::CubicControl1);
         points.emplace_back(p + controlDirection2, bezier_point::Type::CubicControl2);
         points.emplace_back(p + direction, bezier_point::Type::Anchor);
@@ -390,30 +390,30 @@ hi_export struct graphic_path {
     {
         hi_assert(isContourOpen());
 
-        hilet r = std::abs(radius);
-        hilet P1 = currentPosition();
-        hilet P2 = position;
-        hilet Pm = midpoint(P1, P2);
+        auto const r = std::abs(radius);
+        auto const P1 = currentPosition();
+        auto const P2 = position;
+        auto const Pm = midpoint(P1, P2);
 
-        hilet Vm2 = P2 - Pm;
+        auto const Vm2 = P2 - Pm;
 
         // Calculate the half angle between vectors P0 - C and P2 - C.
-        hilet alpha = std::asin(hypot(Vm2) / r);
+        auto const alpha = std::asin(hypot(Vm2) / r);
 
         // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-        hilet C = Pm + normal(Vm2) * std::cos(alpha) * radius;
+        auto const C = Pm + normal(Vm2) * std::cos(alpha) * radius;
 
         // Calculate vectors from center to end points.
-        hilet VC1 = P1 - C;
-        hilet VC2 = P2 - C;
+        auto const VC1 = P1 - C;
+        auto const VC2 = P2 - C;
 
-        hilet q1 = squared_hypot(VC1);
-        hilet q2 = q1 + dot(VC1, VC2);
-        hilet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross(VC1, VC2);
+        auto const q1 = squared_hypot(VC1);
+        auto const q2 = q1 + dot(VC1, VC2);
+        auto const k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross(VC1, VC2);
 
         // Calculate the control points.
-        hilet C1 = point2{(C.x() + VC1.x()) - k2 * VC1.y(), (C.y() + VC1.y()) + k2 * VC1.x()};
-        hilet C2 = point2{(C.x() + VC2.x()) + k2 * VC2.y(), (C.y() + VC2.y()) - k2 * VC2.x()};
+        auto const C1 = point2{(C.x() + VC1.x()) - k2 * VC1.y(), (C.y() + VC1.y()) + k2 * VC1.x()};
+        auto const C2 = point2{(C.x() + VC2.x()) + k2 * VC2.y(), (C.y() + VC2.y()) - k2 * VC2.x()};
 
         cubicCurveTo(C1, C2, P2);
     }
@@ -427,24 +427,24 @@ hi_export struct graphic_path {
     {
         hi_assert(!isContourOpen());
 
-        hilet bl_radius = std::abs(corners.left_bottom());
-        hilet br_radius = std::abs(corners.right_bottom());
-        hilet tl_radius = std::abs(corners.left_top());
-        hilet tr_radius = std::abs(corners.right_top());
+        auto const bl_radius = std::abs(corners.left_bottom());
+        auto const br_radius = std::abs(corners.right_bottom());
+        auto const tl_radius = std::abs(corners.left_top());
+        auto const tr_radius = std::abs(corners.right_top());
 
-        hilet blc = get<0>(rectangle);
-        hilet brc = get<1>(rectangle);
-        hilet tlc = get<2>(rectangle);
-        hilet trc = get<3>(rectangle);
+        auto const blc = get<0>(rectangle);
+        auto const brc = get<1>(rectangle);
+        auto const tlc = get<2>(rectangle);
+        auto const trc = get<3>(rectangle);
 
-        hilet blc1 = blc + vector2{0.0f, bl_radius};
-        hilet blc2 = blc + vector2{bl_radius, 0.0f};
-        hilet brc1 = brc + vector2{-br_radius, 0.0f};
-        hilet brc2 = brc + vector2{0.0f, br_radius};
-        hilet tlc1 = tlc + vector2{tl_radius, 0.0f};
-        hilet tlc2 = tlc + vector2{0.0f, -tl_radius};
-        hilet trc1 = trc + vector2{0.0f, -tr_radius};
-        hilet trc2 = trc + vector2{-tr_radius, 0.0f};
+        auto const blc1 = blc + vector2{0.0f, bl_radius};
+        auto const blc2 = blc + vector2{bl_radius, 0.0f};
+        auto const brc1 = brc + vector2{-br_radius, 0.0f};
+        auto const brc2 = brc + vector2{0.0f, br_radius};
+        auto const tlc1 = tlc + vector2{tl_radius, 0.0f};
+        auto const tlc2 = tlc + vector2{0.0f, -tl_radius};
+        auto const trc1 = trc + vector2{0.0f, -tr_radius};
+        auto const trc2 = trc + vector2{-tr_radius, 0.0f};
 
         moveTo(blc1);
         if (corners.left_bottom() > 0.0) {
@@ -500,7 +500,7 @@ hi_export struct graphic_path {
     {
         hi_assert(!isContourOpen());
 
-        for (hilet& curve : contour) {
+        for (auto const& curve : contour) {
             // Don't emit the first point, the last point of the contour will wrap around.
             switch (curve.type) {
             case bezier_curve::Type::Linear:
@@ -589,12 +589,12 @@ hi_export struct graphic_path {
         float portOffset = -starboardOffset;
 
         for (int i = 0; i < numberOfContours(); i++) {
-            hilet baseContour = getBeziersOfContour(i);
+            auto const baseContour = getBeziersOfContour(i);
 
-            hilet starboardContour = makeParallelContour(baseContour, starboardOffset, line_join_style, tolerance);
+            auto const starboardContour = makeParallelContour(baseContour, starboardOffset, line_join_style, tolerance);
             r.addContour(starboardContour);
 
-            hilet portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, line_join_style, tolerance));
+            auto const portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, line_join_style, tolerance));
             r.addContour(portContour);
         }
 
@@ -613,10 +613,10 @@ hi_export struct graphic_path {
             return {};
         }
 
-        hilet scale = std::min(max_size.width() / bbox.width(), max_size.height() / bbox.height());
+        auto const scale = std::min(max_size.width() / bbox.width(), max_size.height() / bbox.height());
         bbox = scale2(scale) * bbox;
 
-        hilet offset = (point2{} - get<0>(bbox)) + (extent - bbox.size()) * 0.5;
+        auto const offset = (point2{} - get<0>(bbox)) + (extent - bbox.size()) * 0.5;
 
         return (translate2(offset) * scale2(scale, scale)) * *this;
     }
@@ -629,16 +629,16 @@ hi_export struct graphic_path {
         // Left hand layer can only be open if the right hand side contains no layers.
         hi_assert(!rhs.hasLayers() || !isLayerOpen());
 
-        hilet pointOffset = ssize(points);
-        hilet contourOffset = ssize(contourEndPoints);
+        auto const pointOffset = ssize(points);
+        auto const contourOffset = ssize(contourEndPoints);
 
         layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
-        for (hilet & [ x, fill_color ] : rhs.layerEndContours) {
+        for (auto const & [ x, fill_color ] : rhs.layerEndContours) {
             layerEndContours.emplace_back(contourOffset + x, fill_color);
         }
 
         contourEndPoints.reserve(contourEndPoints.size() + rhs.contourEndPoints.size());
-        for (hilet x : rhs.contourEndPoints) {
+        for (auto const x : rhs.contourEndPoints) {
             contourEndPoints.push_back(pointOffset + x);
         }
 

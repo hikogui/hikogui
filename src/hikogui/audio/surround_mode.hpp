@@ -240,11 +240,11 @@ hi_export [[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mo
 
 hi_export [[nodiscard]] hi_inline generator<surround_mode> enumerate_surround_modes() noexcept
 {
-    hilet begin = std::to_underlying(surround_mode::mono_1_0);
-    hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
+    auto const begin = std::to_underlying(surround_mode::mono_1_0);
+    auto const end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
 
     for (uint64_t i = begin; i != end; i <<= 1) {
-        hilet mode = static_cast<surround_mode>(i);
+        auto const mode = static_cast<surround_mode>(i);
         co_yield mode;
     }
 }
@@ -263,12 +263,12 @@ hi_export [[nodiscard]] constexpr std::string to_string(surround_mode const& mas
         return std::string{to_string_view_one(mask)};
     default:
         {
-            hilet begin = std::to_underlying(surround_mode::mono_1_0);
-            hilet end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
+            auto const begin = std::to_underlying(surround_mode::mono_1_0);
+            auto const end = std::to_underlying(surround_mode::surround_atmos_7_1_4) << 1;
 
             auto r = std::string{};
             for (uint64_t i = begin; i != end; i <<= 1) {
-                hilet mode = static_cast<surround_mode>(i);
+                auto const mode = static_cast<surround_mode>(i);
                 if (to_bool(mode & mask)) {
                     if (not r.empty()) {
                         r += ',';

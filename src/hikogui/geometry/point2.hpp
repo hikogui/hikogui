@@ -212,7 +212,7 @@ public:
      */
     [[nodiscard]] friend constexpr point2 ceil(point2 const& lhs, extent2 rhs) noexcept
     {
-        hilet rhs_ = array_type{rhs}.xy11();
+        auto const rhs_ = array_type{rhs}.xy11();
         return point2{ceil(lhs._v / rhs_) * rhs_};
     }
 
@@ -220,7 +220,7 @@ public:
      */
     [[nodiscard]] friend constexpr point2 floor(point2 const& lhs, extent2 rhs) noexcept
     {
-        hilet rhs_ = array_type{rhs}.xy11();
+        auto const rhs_ = array_type{rhs}.xy11();
         return point2{floor(lhs._v / rhs_) * rhs_};
     }
 

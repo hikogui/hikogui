@@ -171,7 +171,7 @@ hi_export struct bezier_curve {
                 return 0.0f;
             }
 
-            hilet tangent = curve->tangentAt(t);
+            auto const tangent = curve->tangentAt(t);
             if (tangent == vector2{}) {
                 // The tangent can be a zero vector if the points or control points
                 // of the curve lie to top of each other. This may happen
@@ -189,7 +189,7 @@ hi_export struct bezier_curve {
 
         [[nodiscard]] hi_force_inline float signed_distance() const noexcept
         {
-            hilet d = distance();
+            auto const d = distance();
             return orthogonality() < 0.0 ? d : -d;
         }
 
@@ -223,12 +223,12 @@ hi_export struct bezier_curve {
     {
         auto nearest = sdf_distance_result{this};
 
-        hilet ts = solveTForNormalsIntersectingPoint(P);
+        auto const ts = solveTForNormalsIntersectingPoint(P);
         for (auto t : ts) {
             t = std::clamp(t, 0.0f, 1.0f);
 
-            hilet PN = P - pointAt(t);
-            hilet sq_distance = squared_hypot(PN);
+            auto const PN = P - pointAt(t);
+            auto const sq_distance = squared_hypot(PN);
             if (sq_distance < nearest.sq_distance) {
                 nearest.t = t;
                 nearest.PN = PN;
@@ -246,14 +246,14 @@ hi_export struct bezier_curve {
      */
     [[nodiscard]] std::pair<bezier_curve, bezier_curve> cubicSplit(float const t) const noexcept
     {
-        hilet outerA = bezier_curve{P1, C1};
-        hilet outerBridge = bezier_curve{C1, C2};
-        hilet outerB = bezier_curve{C2, P2};
+        auto const outerA = bezier_curve{P1, C1};
+        auto const outerBridge = bezier_curve{C1, C2};
+        auto const outerB = bezier_curve{C2, P2};
 
-        hilet innerA = bezier_curve{outerA.pointAt(t), outerBridge.pointAt(t)};
-        hilet innerB = bezier_curve{outerBridge.pointAt(t), outerB.pointAt(t)};
+        auto const innerA = bezier_curve{outerA.pointAt(t), outerBridge.pointAt(t)};
+        auto const innerB = bezier_curve{outerBridge.pointAt(t), outerB.pointAt(t)};
 
-        hilet newPoint = bezier_curve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
+        auto const newPoint = bezier_curve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
 
         return {{P1, outerA.pointAt(t), innerA.pointAt(t), newPoint}, {newPoint, innerB.pointAt(t), outerB.pointAt(t), P2}};
     }
@@ -265,10 +265,10 @@ hi_export struct bezier_curve {
      */
     [[nodiscard]] std::pair<bezier_curve, bezier_curve> quadraticSplit(float const t) const noexcept
     {
-        hilet outerA = bezier_curve{P1, C1};
-        hilet outerB = bezier_curve{C1, P2};
+        auto const outerA = bezier_curve{P1, C1};
+        auto const outerB = bezier_curve{C1, P2};
 
-        hilet newPoint = bezier_curve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
+        auto const newPoint = bezier_curve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
 
         return {{P1, outerA.pointAt(t), newPoint}, {newPoint, outerB.pointAt(t), P2}};
     }
@@ -280,7 +280,7 @@ hi_export struct bezier_curve {
      */
     [[nodiscard]] std::pair<bezier_curve, bezier_curve> linearSplit(float const t) const noexcept
     {
-        hilet newPoint = pointAt(t);
+        auto const newPoint = pointAt(t);
 
         return {{P1, newPoint}, {newPoint, P2}};
     }
@@ -313,7 +313,7 @@ hi_export struct bezier_curve {
         if (flatness() >= minimumFlatness) {
             r.push_back(*this);
         } else {
-            hilet[a, b] = split(0.5f);
+            auto const[a, b] = split(0.5f);
             a.subdivideUntilFlat_impl(r, minimumFlatness);
             b.subdivideUntilFlat_impl(r, minimumFlatness);
         }
@@ -353,7 +353,7 @@ hi_export struct bezier_curve {
      */
     [[nodiscard]] bezier_curve toParallelLine(float const offset) const noexcept
     {
-        hilet[newP1, newP2] = parallelLine(P1, P2, offset);
+        auto const[newP1, newP2] = parallelLine(P1, P2, offset);
         return {newP1, newP2};
     }
 
@@ -394,9 +394,9 @@ namespace detail {
     std::vector<float> r;
     r.reserve(v.size());
 
-    for (hilet& curve : v) {
-        hilet xValues = curve.solveXByY(y);
-        for (hilet x : xValues) {
+    for (auto const& curve : v) {
+        auto const xValues = curve.solveXByY(y);
+        for (auto const x : xValues) {
             r.push_back(x);
         }
     }
@@ -412,7 +412,7 @@ getFillSpansAtY(std::vector<bezier_curve> const& v, float y) noexcept
     std::sort(xValues.begin(), xValues.end());
 
     // End-to-end connected curves will yield duplicate values.
-    hilet uniqueEnd = std::unique(xValues.begin(), xValues.end());
+    auto const uniqueEnd = std::unique(xValues.begin(), xValues.end());
 
     // After removing duplicates, we should end up with pairs of x values.
     std::size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
@@ -434,7 +434,7 @@ getFillSpansAtY(std::vector<bezier_curve> const& v, float y) noexcept
 
 constexpr void fillPartialPixels(std::span<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
-    hilet pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
+    auto const pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
 
     auto& pixel = row[i];
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
@@ -443,16 +443,16 @@ constexpr void fillPartialPixels(std::span<uint8_t> row, ssize_t const i, float 
 constexpr void fillFullPixels(std::span<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
 {
     if (size < 16) {
-        hilet end = start + size;
+        auto const end = start + size;
         for (ssize_t i = start; i < end; i++) {
             row[i] += 0x33;
         }
     } else {
         auto u8p = &row[start];
-        hilet u8end = u8p + size;
+        auto const u8end = u8p + size;
 
         // First add 51 to all pixels up to the alignment.
-        hilet alignedStart = hi::ceil(u8p, sizeof(uint64_t));
+        auto const alignedStart = hi::ceil(u8p, sizeof(uint64_t));
         while (u8p < alignedStart) {
             *(u8p++) += 0x33;
         }
@@ -481,12 +481,12 @@ constexpr void fillRowSpan(std::span<uint8_t> row, float const startX, float con
         return;
     }
 
-    hilet startX_int = floor_cast<std::size_t>(startX);
-    hilet endXplusOne = endX + 1.0f;
-    hilet endX_int = floor_cast<std::size_t>(endXplusOne);
-    hilet startColumn = std::max(startX_int, std::size_t{0});
-    hilet endColumn = std::min(endX_int, row.size());
-    hilet nrColumns = endColumn - startColumn;
+    auto const startX_int = floor_cast<std::size_t>(startX);
+    auto const endXplusOne = endX + 1.0f;
+    auto const endX_int = floor_cast<std::size_t>(endXplusOne);
+    auto const startColumn = std::max(startX_int, std::size_t{0});
+    auto const endColumn = std::min(endX_int, row.size());
+    auto const nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
         fillPartialPixels(row, startColumn, startX, endX);
@@ -508,9 +508,9 @@ constexpr void fillRow(std::span<uint8_t> row, std::size_t rowY, std::vector<bez
         }
 
         if (optionalSpans) {
-            hilet& spans = optionalSpans.value();
+            auto const& spans = optionalSpans.value();
 
-            for (hilet& span : spans) {
+            for (auto const& span : spans) {
                 fillRowSpan(row, span.first, span.second);
             }
         }
@@ -527,7 +527,7 @@ constexpr void fillRow(std::span<uint8_t> row, std::size_t rowY, std::vector<bez
     auto nearest = (it++)->sdf_distance(point);
 
     for (; it != curves.cend(); ++it) {
-        hilet distance = it->sdf_distance(point);
+        auto const distance = it->sdf_distance(point);
 
         if (distance < nearest) {
             nearest = distance;
@@ -548,7 +548,7 @@ constexpr void fillRow(std::span<uint8_t> row, std::size_t rowY, std::vector<bez
 [[nodiscard]] constexpr std::vector<bezier_curve>
 makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vector<bezier_point>::const_iterator end) noexcept
 {
-    hilet points = bezier_point::normalizePoints(begin, end);
+    auto const points = bezier_point::normalizePoints(begin, end);
 
     std::vector<bezier_curve> r;
 
@@ -557,7 +557,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vect
     auto C1 = point2{};
     auto C2 = point2{};
 
-    for (hilet& point : points) {
+    for (auto const& point : points) {
         switch (point.type) {
         case bezier_point::Type::Anchor:
             switch (type) {
@@ -639,8 +639,8 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vect
     float tolerance) noexcept
 {
     auto contourAtOffset = std::vector<bezier_curve>{};
-    for (hilet& curve : contour) {
-        for (hilet& flatCurve : curve.subdivideUntilFlat(tolerance)) {
+    for (auto const& curve : contour) {
+        for (auto const& flatCurve : curve.subdivideUntilFlat(tolerance)) {
             contourAtOffset.push_back(flatCurve.toParallelLine(offset));
         }
     }
@@ -649,7 +649,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vect
     // This needs to be repaired.
     std::optional<point2> intersectPoint;
     auto r = std::vector<bezier_curve>{};
-    for (hilet& curve : contourAtOffset) {
+    for (auto const& curve : contourAtOffset) {
         if (r.size() == 0) {
             r.push_back(curve);
 
@@ -704,10 +704,10 @@ constexpr void fill(pixmap_span<uint8_t> image, std::vector<bezier_curve> const&
 constexpr void fill(pixmap_span<sdf_r8> image, std::vector<bezier_curve> const& curves) noexcept
 {
     for (auto row_nr = 0_uz; row_nr != image.height(); ++row_nr) {
-        hilet row = image[row_nr];
-        hilet y = static_cast<float>(row_nr);
+        auto const row = image[row_nr];
+        auto const y = static_cast<float>(row_nr);
         for (auto column_nr = 0_uz; column_nr != image.width(); ++column_nr) {
-            hilet x = static_cast<float>(column_nr);
+            auto const x = static_cast<float>(column_nr);
             row[column_nr] = detail::generate_sdf_r8_pixel(point2(x, y), curves);
         }
     }

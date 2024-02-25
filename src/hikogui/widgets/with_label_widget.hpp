@@ -183,7 +183,7 @@ public:
         _layout = {};
 
         // Resolve as if in left-to-right mode, the grid will flip itself.
-        hilet resolved_alignment = resolve(*attributes.alignment, true);
+        auto const resolved_alignment = resolve(*attributes.alignment, true);
 
         _grid.clear();
         if (resolved_alignment == horizontal_alignment::left) {
@@ -213,9 +213,9 @@ public:
                 cell.set_constraints(_button_widget->update_constraints());
 
             } else if (cell.value == grid_cell_type::label) {
-                hilet on_label_constraints = _on_label_widget->update_constraints();
-                hilet off_label_constraints = _off_label_widget->update_constraints();
-                hilet other_label_constraints = _other_label_widget->update_constraints();
+                auto const on_label_constraints = _on_label_widget->update_constraints();
+                auto const off_label_constraints = _off_label_widget->update_constraints();
+                auto const other_label_constraints = _other_label_widget->update_constraints();
                 cell.set_constraints(max(on_label_constraints, off_label_constraints, other_label_constraints));
 
             } else {
@@ -232,7 +232,7 @@ public:
             _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
 
-        for (hilet& cell : _grid) {
+        for (auto const& cell : _grid) {
             if (cell.value == grid_cell_type::button) {
                 _button_widget->set_layout(context.transform(cell.shape, transform_command::level));
 
@@ -250,7 +250,7 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            for (hilet& cell : _grid) {
+            for (auto const& cell : _grid) {
                 if (cell.value == grid_cell_type::button) {
                     _button_widget->draw(context);
 

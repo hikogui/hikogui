@@ -42,7 +42,7 @@ hi_export namespace hi { inline namespace v1 {
         float em_scale;
     };
 
-    hilet& header = implicit_cast<header_type>(bytes);
+    auto const& header = implicit_cast<header_type>(bytes);
 
     hi_check(*header.major_version == 1 and *header.minor_version == 0, "'head' version is not 1.0");
     hi_check(*header.magic_number == 0x5f0f3cf5, "'head' magic is not 0x5f0f3cf5");
@@ -62,7 +62,7 @@ hi_export namespace hi { inline namespace v1 {
         throw parse_error("'head' index_to_loc_format must be 0 or 1.");
     }
 
-    if (hilet units_per_em = *header.units_per_em; units_per_em != 0.0) {
+    if (auto const units_per_em = *header.units_per_em; units_per_em != 0.0) {
         r.em_scale = 1.0f / units_per_em;
     } else {
         throw parse_error("'head' units_per_em must not be 0.0.");

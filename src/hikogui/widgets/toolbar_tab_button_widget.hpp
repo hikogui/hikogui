@@ -199,14 +199,14 @@ public:
         _label_constraints = max(_on_label_constraints, _off_label_constraints);
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = extent2{theme().margin<float>() * 2.0f, theme().margin<float>()};
+        auto const extra_size = extent2{theme().margin<float>() * 2.0f, theme().margin<float>()};
         return _label_constraints + extra_size;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet label_rectangle = aarectangle{
+            auto const label_rectangle = aarectangle{
                 theme().margin<float>(),
                 0.0f,
                 context.width() - theme().margin<float>() * 2.0f,
@@ -324,11 +324,11 @@ private:
     {
         // Draw the outline of the button across the clipping rectangle to clip the
         // bottom of the outline.
-        hilet offset = theme().margin<float>() + theme().border_width();
-        hilet outline_rectangle = aarectangle{0, -offset, layout().width(), layout().height() + offset};
+        auto const offset = theme().margin<float>() + theme().border_width();
+        auto const outline_rectangle = aarectangle{0, -offset, layout().width(), layout().height() + offset};
 
         // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
-        hilet button_z = focus() ? translate_z(0.6f) : translate_z(0.0f);
+        auto const button_z = focus() ? translate_z(0.6f) : translate_z(0.0f);
 
         // clang-format off
         auto button_color = (phase() == widget_phase::hover or value() == widget_value::on) ?
@@ -336,7 +336,7 @@ private:
             theme().color(semantic_color::fill, _layout.layer);
         // clang-format on
 
-        hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
+        auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
 
         context.draw_box(
             layout(),

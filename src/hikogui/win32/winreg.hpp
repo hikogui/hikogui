@@ -26,12 +26,12 @@ hi_export namespace hi { inline namespace v1 {
  */
 hi_inline win32_error win32_RegDeleteKeyValue(HKEY key, std::string_view path, std::string_view name) noexcept
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return wpath.error();
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return wname.error();
     }
@@ -46,7 +46,7 @@ hi_inline win32_error win32_RegDeleteKeyValue(HKEY key, std::string_view path, s
  */
 hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexcept
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return wpath.error();
     }
@@ -65,17 +65,17 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
  */
 [[nodiscard]] hi_inline win32_error win32_RegSetKeyValue(HKEY key, std::string_view path, std::string_view name, uint32_t value)
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return wpath.error();
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return wname.error();
     }
 
-    hilet dvalue = static_cast<DWORD>(value);
+    auto const dvalue = static_cast<DWORD>(value);
 
     return static_cast<win32_error>(::RegSetKeyValueW(key, wpath->c_str(), wname->c_str(), REG_DWORD, &dvalue, sizeof(dvalue)));
 }
@@ -91,22 +91,22 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
  */
 [[nodiscard]] hi_inline win32_error win32_RegSetKeyValue(HKEY key, std::string_view path, std::string_view name, std::string_view value)
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return wpath.error();
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return wname.error();
     }
 
-    hilet wvalue = win32_MultiByteToWideChar(value);
+    auto const wvalue = win32_MultiByteToWideChar(value);
     if (not wvalue) {
         return wvalue.error();
     }
 
-    hilet wvalue_size = static_cast<DWORD>((wvalue->size() + 1) * sizeof(wchar_t));
+    auto const wvalue_size = static_cast<DWORD>((wvalue->size() + 1) * sizeof(wchar_t));
 
     return static_cast<win32_error>(::RegSetKeyValueW(key, wpath->c_str(), wname->c_str(), REG_SZ, wvalue->c_str(), wvalue_size));
 }
@@ -116,12 +116,12 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
  */
 [[nodiscard]] hi_inline std::expected<void, win32_error> win32_RegGetValue_void(HKEY key, std::string_view path, std::string_view name)
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return std::unexpected{wpath.error()};
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return std::unexpected{wname.error()};
     }
@@ -143,12 +143,12 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
  */
 [[nodiscard]] hi_inline std::expected<uint32_t, win32_error> win32_RegGetValue_dword(HKEY key, std::string_view path, std::string_view name) noexcept
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return std::unexpected{wpath.error()};
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return std::unexpected{wname.error()};
     }
@@ -156,7 +156,7 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
     DWORD result;
     DWORD result_length = sizeof(result);
     DWORD result_type = 0;
-    hilet status = static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_ANY, &result_type, &result, &result_length));
+    auto const status = static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_ANY, &result_type, &result, &result_length));
 
     if (static_cast<bool>(status)) {
         return std::unexpected{status};
@@ -174,12 +174,12 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
  */
 [[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_RegGetValue_string(HKEY key, std::string_view path, std::string_view name) noexcept
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return std::unexpected{wpath.error()};
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return std::unexpected{wname.error()};
     }
@@ -224,12 +224,12 @@ hi_inline win32_error win32_RegDeleteKey(HKEY key, std::string_view path) noexce
 [[nodiscard]] hi_inline std::expected<std::vector<std::string>, win32_error>
 win32_RegGetValue_multi_string(HKEY key, std::string_view path, std::string_view name) noexcept
 {
-    hilet wpath = win32_MultiByteToWideChar(path);
+    auto const wpath = win32_MultiByteToWideChar(path);
     if (not wpath) {
         return std::unexpected{wpath.error()};
     }
 
-    hilet wname = win32_MultiByteToWideChar(name);
+    auto const wname = win32_MultiByteToWideChar(name);
     if (not wname) {
         return std::unexpected{wname.error()};
     }
@@ -239,7 +239,7 @@ win32_RegGetValue_multi_string(HKEY key, std::string_view path, std::string_view
 
     for (auto repeat = 0; repeat != 5; ++repeat) {
         auto result_length = static_cast<DWORD>(result.size() * sizeof(wchar_t));
-        hilet status =
+        auto const status =
             static_cast<win32_error>(::RegGetValueW(key, wpath->c_str(), wname->c_str(), RRF_RT_REG_MULTI_SZ, NULL, result.data(), &result_length));
 
         switch (status) {
@@ -281,7 +281,7 @@ template<>
 template<std::integral T>
 [[nodiscard]] hi_inline std::expected<T, win32_error> win32_RegGetValue(HKEY key, std::string_view path, std::string_view name)
 {
-    if (hilet tmp = win32_RegGetValue_dword(key, path, name)) {
+    if (auto const tmp = win32_RegGetValue_dword(key, path, name)) {
         return static_cast<T>(*tmp);
     } else {
         return std::unexpected{tmp.error()};

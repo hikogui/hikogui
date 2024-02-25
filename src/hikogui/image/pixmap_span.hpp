@@ -196,8 +196,8 @@ public:
             std::copy(src.data(), src.data() + src.width() * src.height(), dst.data());
         } else {
             for (auto y = 0_uz; y != src.height(); ++y) {
-                hilet src_line = src[y];
-                hilet dst_line = dst[y];
+                auto const src_line = src[y];
+                auto const dst_line = dst[y];
                 std::copy(src_line.begin(), src_line.end(), dst_line.begin());
             }
         }

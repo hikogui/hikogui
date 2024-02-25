@@ -56,7 +56,7 @@ hi_export hi_inline std::expected<dialog_button, std::error_code> dialog(std::st
         std::terminate();
     }
 
-    if (hilet r = win32_MessageBox(nullptr, text, title, type)) {
+    if (auto const r = win32_MessageBox(nullptr, text, title, type)) {
         switch (*r) {
         case IDABORT: return dialog_button::cancel;
         case IDCANCEL: return dialog_button::cancel;

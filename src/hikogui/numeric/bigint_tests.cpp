@@ -190,7 +190,7 @@ TEST(BigInt, Divide)
 {
     auto t = ubig128{"3689348814741910323200"};
 
-    hilet[quotient, remainder] = div(t, 93);
+    auto const[quotient, remainder] = div(t, 93);
 
     ASSERT_EQ(quotient, ubig128{"39670417362816240034"});
     ASSERT_EQ(remainder, 38);

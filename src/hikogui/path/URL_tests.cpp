@@ -16,7 +16,7 @@ using namespace hi;
 
 TEST(URL, parsing)
 {
-    hilet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
+    auto const a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
     ASSERT_EQ(a.scheme(), "scheme");
     ASSERT_EQ(a.path().absolute(), true);
@@ -29,7 +29,7 @@ TEST(URL, parsing)
 
 TEST(URL, relativePath)
 {
-    hilet a = URL("file:foo/bar.txt");
+    auto const a = URL("file:foo/bar.txt");
 
     ASSERT_EQ(a.filesystem_path(), "foo/bar.txt");
 }

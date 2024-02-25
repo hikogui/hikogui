@@ -46,7 +46,7 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
             return {};
         }
     } else {
-        for (hilet& base : locations) {
+        for (auto const& base : locations) {
             auto path = base / ref;
             if (std::filesystem::exists(path)) {
                 return path;
@@ -128,7 +128,7 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
         return std::nullopt;
     }
 
-    hilet cmake_install_start = std::string{"# Install script for directory: "};
+    auto const cmake_install_start = std::string{"# Install script for directory: "};
     if (not line.starts_with(cmake_install_start)) {
         return std::nullopt;
     }

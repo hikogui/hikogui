@@ -126,7 +126,7 @@ public:
     {
         // The first time timer() is called, make sure that the main-loop exists,
         // or even create the main-loop on the current thread.
-        [[maybe_unused]] hilet &tmp = loop::main();
+        [[maybe_unused]] auto const &tmp = loop::main();
 
         return *start_subsystem_or_terminate(_timer, nullptr, timer_init, timer_deinit);
     }
@@ -305,10 +305,10 @@ public:
      */
     int resume(std::stop_token stop_token = {}) noexcept
     {
-        hilet is_main = this == _main.load(std::memory_order::relaxed);
+        auto const is_main = this == _main.load(std::memory_order::relaxed);
 
         // Microsoft recommends an event-loop that also renders to the screen to run at above normal priority.
-        hilet thread_handle = GetCurrentThread();
+        auto const thread_handle = GetCurrentThread();
 
         int original_thread_priority = GetThreadPriority(thread_handle);
         if (original_thread_priority == THREAD_PRIORITY_ERROR_RETURN) {
@@ -369,19 +369,19 @@ public:
 
         hi_axiom(on_thread());
 
-        hilet is_main = this == _main.load(std::memory_order::relaxed);
+        auto const is_main = this == _main.load(std::memory_order::relaxed);
 
         auto current_time = std::chrono::utc_clock::now();
         auto timeout = std::chrono::duration_cast<std::chrono::milliseconds>(_function_timer.current_deadline() - current_time);
 
         timeout = std::clamp(timeout, 0ms, 100ms);
-        hilet timeout_ms = narrow_cast<DWORD>(timeout / 1ms);
+        auto const timeout_ms = narrow_cast<DWORD>(timeout / 1ms);
 
         // Only handle win32 messages when blocking.
         // Since non-blocking is called from the win32 message-pump, we do not want to re-enter the loop.
-        hilet message_mask = is_main and block ? QS_ALLINPUT : 0;
+        auto const message_mask = is_main and block ? QS_ALLINPUT : 0;
 
-        hilet wait_r =
+        auto const wait_r =
             MsgWaitForMultipleObjects(narrow_cast<DWORD>(_handles.size()), _handles.data(), FALSE, timeout_ms, message_mask);
 
         if (wait_r == WAIT_FAILED) {
@@ -401,7 +401,7 @@ public:
             ;
 
         } else if (wait_r >= WAIT_OBJECT_0 + _socket_handle_idx and wait_r < WAIT_OBJECT_0 + _handles.size()) {
-            hilet index = wait_r - WAIT_OBJECT_0;
+            auto const index = wait_r - WAIT_OBJECT_0;
 
             WSANETWORKEVENTS events;
             if (WSAEnumNetworkEvents(_sockets[index], _handles[index], &events) != 0) {
@@ -440,7 +440,7 @@ public:
             handle_gui_events();
 
         } else if (wait_r >= WAIT_ABANDONED_0 and wait_r < WAIT_ABANDONED_0 + _handles.size()) {
-            hilet index = wait_r - WAIT_ABANDONED_0;
+            auto const index = wait_r - WAIT_ABANDONED_0;
             if (index == _vsync_handle_idx) {
                 hi_log_fatal("The vsync-handle has been abandoned.");
 
@@ -640,7 +640,7 @@ struct socket_type {
             _vsync_time.store(std::chrono::utc_clock::now());
         }
 
-        hilet display_time = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
+        auto const display_time = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
 
         for (auto& render_function : _render_functions) {
             if (auto rf = render_function.lock()) {
@@ -681,9 +681,9 @@ struct socket_type {
     void handle_gui_events() noexcept
     {
         MSG msg = {};
-        hilet t1 = trace<"loop:gui-events">();
+        auto const t1 = trace<"loop:gui-events">();
         while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE | PM_NOYIELD)) {
-            hilet t2 = trace<"loop:gui-event">();
+            auto const t2 = trace<"loop:gui-event">();
 
             if (msg.message == WM_QUIT) {
                 _exit_code = narrow_cast<int>(msg.wParam);
@@ -765,11 +765,11 @@ struct socket_type {
      */
     std::chrono::nanoseconds vsync_thread_update_time(bool on_sleep)
     {
-        hilet ts = time_stamp_count(time_stamp_count::inplace_with_cpu_id{});
-        hilet new_time = time_stamp_utc::make(ts);
+        auto const ts = time_stamp_count(time_stamp_count::inplace_with_cpu_id{});
+        auto const new_time = time_stamp_utc::make(ts);
 
-        hilet was_sleeping = std::exchange(_vsync_time_from_sleep, on_sleep);
-        hilet old_time = _vsync_time.exchange(new_time, std::memory_order::acquire);
+        auto const was_sleeping = std::exchange(_vsync_time_from_sleep, on_sleep);
+        auto const old_time = _vsync_time.exchange(new_time, std::memory_order::acquire);
 
         // If old_time was caused by sleeping it can not be used to calculate how long vsync was blocking.
         return was_sleeping ? std::chrono::nanoseconds::max() : new_time - old_time;

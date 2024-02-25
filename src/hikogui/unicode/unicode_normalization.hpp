@@ -135,7 +135,7 @@ namespace detail {
 
 constexpr void unicode_decompose(char32_t code_point, unicode_normalize_config config, std::u32string& r) noexcept
 {
-    for (hilet c : config.line_separators) {
+    for (auto const c : config.line_separators) {
         if (code_point == c) {
             r += config.line_separator_character;
             if (config.line_separator_character == unicode_CR) {
@@ -145,7 +145,7 @@ constexpr void unicode_decompose(char32_t code_point, unicode_normalize_config c
         }
     }
 
-    for (hilet c : config.paragraph_separators) {
+    for (auto const c : config.paragraph_separators) {
         if (code_point == c) {
             r += config.paragraph_separator_character;
             if (config.paragraph_separator_character == unicode_CR) {
@@ -155,7 +155,7 @@ constexpr void unicode_decompose(char32_t code_point, unicode_normalize_config c
         }
     }
 
-    for (hilet c : config.drop) {
+    for (auto const c : config.drop) {
         if (code_point == c) {
             return;
         }
@@ -169,21 +169,21 @@ constexpr void unicode_decompose(char32_t code_point, unicode_normalize_config c
         return;
     }
 
-    hilet decomposition_info = ucd_get_decomposition(code_point);
+    auto const decomposition_info = ucd_get_decomposition(code_point);
     if (decomposition_info.should_decompose(config.decomposition_mask)) {
-        for (hilet c : decomposition_info.decompose()) {
+        for (auto const c : decomposition_info.decompose()) {
             unicode_decompose(c, config, r);
         }
 
     } else {
-        hilet ccc = ucd_get_canonical_combining_class(code_point);
+        auto const ccc = ucd_get_canonical_combining_class(code_point);
         r += code_point | (wide_cast<char32_t>(ccc) << 24);
     }
 }
 
 constexpr void unicode_decompose(std::u32string_view text, unicode_normalize_config config, std::u32string& r) noexcept
 {
-    for (hilet c : text) {
+    for (auto const c : text) {
         unicode_decompose(c, config, r);
     }
 }
@@ -199,10 +199,10 @@ constexpr void unicode_compose(std::u32string& text) noexcept
     auto i = 0_uz;
     auto j = 0_uz;
     while (i != text.size()) {
-        hilet code_unit = text[i++];
-        hilet code_point = code_unit & 0xff'ffff;
-        hilet combining_class = code_unit >> 24;
-        hilet first_is_starter = combining_class == 0;
+        auto const code_unit = text[i++];
+        auto const code_point = code_unit & 0xff'ffff;
+        auto const combining_class = code_unit >> 24;
+        auto const first_is_starter = combining_class == 0;
 
         if (code_unit == 0xffff'ffff) {
             // Snuffed out by compositing in this algorithm.
@@ -213,14 +213,14 @@ constexpr void unicode_compose(std::u32string& text) noexcept
             auto first_code_point = code_point;
             char32_t previous_combining_class = 0;
             for (auto k = i; k != text.size(); ++k) {
-                hilet second_code_unit = text[k];
-                hilet second_code_point = second_code_unit & 0xff'ffff;
-                hilet second_combining_class = second_code_unit >> 24;
+                auto const second_code_unit = text[k];
+                auto const second_code_point = second_code_unit & 0xff'ffff;
+                auto const second_combining_class = second_code_unit >> 24;
 
-                hilet blocking_pair = previous_combining_class != 0 and previous_combining_class >= second_combining_class;
-                hilet second_is_starter = second_combining_class == 0;
+                auto const blocking_pair = previous_combining_class != 0 and previous_combining_class >= second_combining_class;
+                auto const second_is_starter = second_combining_class == 0;
 
-                hilet composed_code_point = ucd_get_composition(first_code_point, second_code_point);
+                auto const composed_code_point = ucd_get_composition(first_code_point, second_code_point);
                 if (composed_code_point and not blocking_pair) {
                     // Found a composition.
                     first_code_point = *composed_code_point;
@@ -256,8 +256,8 @@ constexpr void unicode_reorder(std::u32string& text) noexcept
         return (a >> 24) < (b >> 24);
     };
 
-    hilet first = text.begin();
-    hilet last = text.end();
+    auto const first = text.begin();
+    auto const last = text.end();
 
     if (first == last) {
         return;
@@ -342,7 +342,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     // And that the CCC is ordered by numeric value.
     auto max_ccc = uint8_t{1};
     for (; it != last; ++it) {
-        hilet ccc = ucd_get_canonical_combining_class(*it);
+        auto const ccc = ucd_get_canonical_combining_class(*it);
         if (ccc < max_ccc) {
             return false;
         }

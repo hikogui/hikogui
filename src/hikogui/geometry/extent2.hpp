@@ -236,19 +236,19 @@ public:
     {
         constexpr std::size_t mask = 0b0011;
 
-        hilet equal = (lhs._v == rhs._v).mask() & mask;
+        auto const equal = (lhs._v == rhs._v).mask() & mask;
         if (equal == mask) {
             // Only equivalent if all elements are equal.
             return std::partial_ordering::equivalent;
         }
 
-        hilet less = (lhs._v < rhs._v).mask() & mask;
+        auto const less = (lhs._v < rhs._v).mask() & mask;
         if ((less | equal) == mask) {
             // If one or more elements is less (but none are greater) then the ordering is less.
             return std::partial_ordering::less;
         }
 
-        hilet greater = (lhs._v > rhs._v).mask() & mask;
+        auto const greater = (lhs._v > rhs._v).mask() & mask;
         if ((greater | equal) == mask) {
             // If one or more elements is greater (but none are less) then the ordering is greater.
             return std::partial_ordering::greater;

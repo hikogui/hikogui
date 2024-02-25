@@ -27,8 +27,8 @@ struct otype_name_language_entry_type {
     uint16_t language_id)
 {
     hi_axiom(language_id >= 0x8000);
-    hilet& entry = hi_check_at(language_tag_table, language_id - 0x8000);
-    hilet tag_bytes = hi_check_subspan(storage_bytes, *entry.offset, *entry.length);
+    auto const& entry = hi_check_at(language_tag_table, language_id - 0x8000);
+    auto const tag_bytes = hi_check_subspan(storage_bytes, *entry.offset, *entry.length);
     return language_tag{std::string_view{reinterpret_cast<char const *>(tag_bytes.data()), tag_bytes.size()}};
 }
 
@@ -127,39 +127,39 @@ otype_name_search(std::span<std::byte const> bytes, uint16_t name_id, language_t
     };
 
     auto offset = 0_uz;
-    hilet& header = implicit_cast<header_type_0>(offset, bytes);
+    auto const& header = implicit_cast<header_type_0>(offset, bytes);
 
-    hilet format = *header.format;
+    auto const format = *header.format;
     hi_check(format == 0 or format == 1, "'name' table must be format 0 or format 1.");
 
-    hilet storage_bytes = hi_check_subspan(bytes, *header.storage_offset);
+    auto const storage_bytes = hi_check_subspan(bytes, *header.storage_offset);
 
     auto language_tag_count = 0_uz;
     if (format == 1) {
         offset = 0_uz;
-        hilet header1 = implicit_cast<header_type_1>(offset, bytes);
+        auto const header1 = implicit_cast<header_type_1>(offset, bytes);
         language_tag_count = *header1.language_tag_count;
     }
 
-    hilet language_tag_table = implicit_cast<detail::otype_name_language_entry_type>(offset, bytes, language_tag_count);
+    auto const language_tag_table = implicit_cast<detail::otype_name_language_entry_type>(offset, bytes, language_tag_count);
 
-    hilet entries = implicit_cast<entry_type>(offset, bytes, *header.count);
-    for (hilet& entry : entries) {
+    auto const entries = implicit_cast<entry_type>(offset, bytes, *header.count);
+    for (auto const& entry : entries) {
         if (*entry.name_id != name_id) {
             continue;
         }
 
-        hilet platform_id = *entry.platform_id;
-        hilet platform_specific_id = *entry.platform_specific_id;
+        auto const platform_id = *entry.platform_id;
+        auto const platform_specific_id = *entry.platform_specific_id;
 
-        hilet name_language = detail::otype_name_get_language(
+        auto const name_language = detail::otype_name_get_language(
             storage_bytes, language_tag_table, platform_id, platform_specific_id, *entry.language_id);
 
         if (not matches(name_language, language)) {
             continue;
         }
 
-        hilet name_bytes = hi_check_subspan(storage_bytes, *entry.offset, *entry.length);
+        auto const name_bytes = hi_check_subspan(storage_bytes, *entry.offset, *entry.length);
 
         if (auto s = otype_get_string(name_bytes, platform_id, platform_specific_id)) {
             return s;

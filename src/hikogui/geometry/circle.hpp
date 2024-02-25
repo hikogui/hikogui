@@ -58,7 +58,7 @@ public:
 
     [[nodiscard]] constexpr circle(aarectangle square) noexcept
     {
-        hilet square_ = f32x4{square};
+        auto const square_ = f32x4{square};
 
         // center=(p3 + p0)/2, radius=(p3 - p0)/2
         _v = (addsub_mask<0b0011>(square_.zwzw(), square_.xyxy()) * array_type::broadcast(0.5f)).xy0w();
@@ -112,8 +112,8 @@ public:
 
     [[nodiscard]] constexpr friend aarectangle bounding_rectangle(circle const& rhs) noexcept
     {
-        hilet p = rhs._v.xyxy();
-        hilet r = neg_mask<0b0011>(rhs._v.wwww());
+        auto const p = rhs._v.xyxy();
+        auto const r = neg_mask<0b0011>(rhs._v.wwww());
         return aarectangle{p + r};
     }
 
@@ -125,7 +125,7 @@ public:
      */
     [[nodiscard]] friend constexpr circle align(aarectangle haystack, circle needle, alignment alignment) noexcept
     {
-        hilet x = [&] {
+        auto const x = [&] {
             if (alignment == horizontal_alignment::left) {
                 return haystack.left() + needle.radius();
 
@@ -140,7 +140,7 @@ public:
             }
         }();
 
-        hilet y = [&] {
+        auto const y = [&] {
             if (alignment == vertical_alignment::bottom) {
                 return haystack.bottom() + needle.radius();
 

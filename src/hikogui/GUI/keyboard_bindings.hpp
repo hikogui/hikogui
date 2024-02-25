@@ -47,7 +47,7 @@ public:
     [[nodiscard]] generator<gui_event> translate(gui_event event) const noexcept
     {
         if (event == gui_event_type::keyboard_down) {
-            hilet i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key()});
+            auto const i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key()});
             if (i != bindings.cend()) {
                 for (auto& e : i->second.get_events()) {
                     co_yield e;
@@ -70,16 +70,16 @@ public:
      */
     void load_bindings(std::filesystem::path const& path, bool system_binding = false)
     {
-        hilet data = parse_JSON(path);
+        auto const data = parse_JSON(path);
 
         try {
             hi_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
-            hilet binding_list = data["bindings"];
+            auto const binding_list = data["bindings"];
             hi_check(
                 holds_alternative<datum::vector_type>(binding_list), "Expecting array value for key 'bindings' at top level.");
 
-            for (hilet& binding : binding_list) {
+            for (auto const& binding : binding_list) {
                 hi_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
 
                 hi_check(
@@ -87,8 +87,8 @@ public:
                     "Expecting required 'key' and 'command' for a binding, got {}",
                     binding);
 
-                hilet key_name = static_cast<std::string>(binding["key"]);
-                hilet key = keyboard_key(key_name);
+                auto const key_name = static_cast<std::string>(binding["key"]);
+                auto const key = keyboard_key(key_name);
 
                 auto command_name = static_cast<std::string>(binding["command"]);
 
@@ -144,7 +144,7 @@ private:
 
         void add_system_command(gui_event_type cmd) noexcept
         {
-            hilet i = std::find(system.cbegin(), system.cend(), cmd);
+            auto const i = std::find(system.cbegin(), system.cend(), cmd);
             if (i == system.cend()) {
                 system.push_back(cmd);
                 update_cache();
@@ -153,7 +153,7 @@ private:
 
         void add_ignored_command(gui_event_type cmd) noexcept
         {
-            hilet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
+            auto const i = std::find(ignored.cbegin(), ignored.cend(), cmd);
             if (i == ignored.cend()) {
                 ignored.push_back(cmd);
                 update_cache();
@@ -162,7 +162,7 @@ private:
 
         void add_user_command(gui_event_type cmd) noexcept
         {
-            hilet i = std::find(user.cbegin(), user.cend(), cmd);
+            auto const i = std::find(user.cbegin(), user.cend(), cmd);
             if (i == user.cend()) {
                 user.push_back(cmd);
                 update_cache();
@@ -173,22 +173,22 @@ private:
         {
             cache.reserve(ssize(system) + ssize(user));
 
-            for (hilet cmd : system) {
-                hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (auto const cmd : system) {
+                auto const i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.emplace_back(cmd);
                 }
             }
 
-            for (hilet cmd : ignored) {
-                hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (auto const cmd : ignored) {
+                auto const i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i != cache.cend()) {
                     cache.erase(i);
                 }
             }
 
-            for (hilet cmd : user) {
-                hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (auto const cmd : user) {
+                auto const i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.emplace_back(cmd);
                 }

@@ -45,7 +45,7 @@ public:
     {
         try {
             hi_log_info("Parsing theme at {}", path.string());
-            hilet data = parse_JSON(path);
+            auto const data = parse_JSON(path);
             parse(data);
         } catch (std::exception const& e) {
             throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
@@ -168,7 +168,7 @@ public:
 
     [[nodiscard]] hi::color color(hi::semantic_color original_color, ssize_t nesting_level = 0) const noexcept
     {
-        hilet& shades = _colors[std::to_underlying(original_color)];
+        auto const& shades = _colors[std::to_underlying(original_color)];
         hi_assert(not shades.empty());
 
         nesting_level = std::max(ssize_t{0}, nesting_level);
@@ -244,7 +244,7 @@ private:
             throw parse_error(std::format("Missing '{}'", object_name));
         }
 
-        hilet object = data[object_name];
+        auto const object = data[object_name];
         if (auto f = get_if<double>(object)) {
             return static_cast<float>(*f);
         } else if (auto ll = get_if<long long>(object)) {
@@ -261,7 +261,7 @@ private:
             throw parse_error(std::format("Missing '{}'", object_name));
         }
 
-        hilet object = data[object_name];
+        auto const object = data[object_name];
         if (auto f = get_if<long long>(object)) {
             return static_cast<long long>(*f);
         } else {
@@ -271,7 +271,7 @@ private:
 
     [[nodiscard]] int parse_int(datum const& data, char const *object_name)
     {
-        hilet value = parse_long_long(data, object_name);
+        auto const value = parse_long_long(data, object_name);
         if (value > std::numeric_limits<int>::max() or value < std::numeric_limits<int>::min()) {
             throw parse_error(std::format("'{}' attribute is out of range, got {}.", object_name, value));
         }
@@ -284,7 +284,7 @@ private:
             throw parse_error(std::format("Missing '{}'", object_name));
         }
 
-        hilet object = data[object_name];
+        auto const object = data[object_name];
         if (!holds_alternative<bool>(object)) {
             throw parse_error(std::format("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
         }
@@ -298,7 +298,7 @@ private:
         if (!data.contains(object_name)) {
             throw parse_error(std::format("Missing '{}'", object_name));
         }
-        hilet object = data[object_name];
+        auto const object = data[object_name];
         if (!holds_alternative<std::string>(object)) {
             throw parse_error(std::format("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
         }
@@ -311,17 +311,17 @@ private:
             if (data.size() != 3 && data.size() != 4) {
                 throw parse_error(std::format("Expect 3 or 4 values for a color, got {}.", data));
             }
-            hilet r = data[0];
-            hilet g = data[1];
-            hilet b = data[2];
-            hilet a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
+            auto const r = data[0];
+            auto const g = data[1];
+            auto const b = data[2];
+            auto const a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
 
             if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
                 holds_alternative<long long>(a)) {
-                hilet r_ = get<long long>(r);
-                hilet g_ = get<long long>(g);
-                hilet b_ = get<long long>(b);
-                hilet a_ = get<long long>(a);
+                auto const r_ = get<long long>(r);
+                auto const g_ = get<long long>(g);
+                auto const b_ = get<long long>(b);
+                auto const a_ = get<long long>(a);
 
                 hi_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
                 hi_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
@@ -334,10 +334,10 @@ private:
             } else if (
                 holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
                 holds_alternative<double>(a)) {
-                hilet r_ = static_cast<float>(get<double>(r));
-                hilet g_ = static_cast<float>(get<double>(g));
-                hilet b_ = static_cast<float>(get<double>(b));
-                hilet a_ = static_cast<float>(get<double>(a));
+                auto const r_ = static_cast<float>(get<double>(r));
+                auto const g_ = static_cast<float>(get<double>(g));
+                auto const b_ = static_cast<float>(get<double>(b));
+                auto const a_ = static_cast<float>(get<double>(a));
 
                 return hi::color(r_, g_, b_, a_);
 
@@ -345,8 +345,8 @@ private:
                 throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
             }
 
-        } else if (hilet *color_name = get_if<std::string>(data)) {
-            hilet color_name_ = to_lower(*color_name);
+        } else if (auto const *color_name = get_if<std::string>(data)) {
+            auto const color_name_ = to_lower(*color_name);
             if (color_name_.starts_with("#")) {
                 return color_from_sRGB(color_name_);
 
@@ -364,7 +364,7 @@ private:
             throw parse_error(std::format("Missing color '{}'", object_name));
         }
 
-        hilet color_object = data[object_name];
+        auto const color_object = data[object_name];
 
         try {
             return parse_color_value(color_object);
@@ -384,12 +384,12 @@ private:
             throw parse_error(std::format("Missing color list '{}'", object_name));
         }
 
-        hilet color_list_object = data[object_name];
+        auto const color_list_object = data[object_name];
         if (holds_alternative<datum::vector_type>(color_list_object) and not color_list_object.empty() and
             holds_alternative<datum::vector_type>(color_list_object[0])) {
             auto r = std::vector<hi::color>{};
             ssize_t i = 0;
-            for (hilet& color : color_list_object) {
+            for (auto const& color : color_list_object) {
                 try {
                     r.push_back(parse_color_value(color));
                 } catch (parse_error const& e) {
@@ -414,8 +414,8 @@ private:
             throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
         }
 
-        hilet family_id = find_font_family(parse_string(data, "family"));
-        hilet font_size = parse_float(data, "size");
+        auto const family_id = find_font_family(parse_string(data, "family"));
+        auto const font_size = parse_float(data, "size");
 
         auto variant = font_variant{};
         if (data.contains("weight")) {
@@ -431,7 +431,7 @@ private:
         }
 
         // resolve semantic color.
-        hilet color = this->color(parse_color(data, "color"), 0);
+        auto const color = this->color(parse_color(data, "color"), 0);
 
         auto sub_styles = std::vector<text_sub_style>{};
         sub_styles.emplace_back(
@@ -445,7 +445,7 @@ private:
             throw parse_error(std::format("Missing '{}'", object_name));
         }
 
-        hilet object = data[object_name];
+        auto const object = data[object_name];
         if (auto i = get_if<long long>(object)) {
             return font_weight_from_int(*i);
         } else if (auto s = get_if<std::string>(object)) {
@@ -462,7 +462,7 @@ private:
             throw parse_error(std::format("Missing text-style '{}'", object_name));
         }
 
-        hilet textStyleObject = data[object_name];
+        auto const textStyleObject = data[object_name];
         try {
             return parse_text_style_value(textStyleObject);
         } catch (parse_error const& e) {
@@ -476,7 +476,7 @@ private:
 
         name = parse_string(data, "name");
 
-        hilet mode_name = to_lower(parse_string(data, "mode"));
+        auto const mode_name = to_lower(parse_string(data, "mode"));
         if (mode_name == "light") {
             mode = theme_mode::light;
         } else if (mode_name == "dark") {

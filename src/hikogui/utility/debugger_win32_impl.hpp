@@ -86,10 +86,10 @@ hi_inline bool launch_jit_debugger() noexcept
         return false;
     }
 
-    hilet num_arguments = count(*debugger, "%ld") + count(*debugger, "%p");
-    hilet cmd_line_fmt = replace(replace(*debugger, "%ld", "{}"), "%p", "{:x}");
+    auto const num_arguments = count(*debugger, "%ld") + count(*debugger, "%p");
+    auto const cmd_line_fmt = replace(replace(*debugger, "%ld", "{}"), "%p", "{:x}");
 
-    hilet process_id = GetCurrentProcessId();
+    auto const process_id = GetCurrentProcessId();
 
     if (num_arguments >= 2 and jit_debug_handle == NULL) {
         if (auto handle = win32_CreateEvent()) {
@@ -139,7 +139,7 @@ hi_inline bool launch_jit_debugger() noexcept
         std::terminate();
     }
 
-    hilet debugger_is_attached = [&] {
+    auto const debugger_is_attached = [&] {
         auto end_time = std::chrono::utc_clock::time_point::max();
         while (std::chrono::utc_clock::now() < end_time) {
             if (IsDebuggerPresent()) {

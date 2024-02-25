@@ -44,7 +44,7 @@ public:
         _label_constraints = super::update_constraints();
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        hilet extra_size = extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        auto const extra_size = extent2{theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
 
         auto constraints = _label_constraints + extra_size;
         constraints.margins = theme().margin();
@@ -53,7 +53,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet label_rectangle =
+            auto const label_rectangle =
                 aarectangle{theme().margin<float>(), 0.0f, context.width() - theme().margin<float>() * 2.0f, context.height()};
             _on_label_shape = _off_label_shape = _other_label_shape =
                 box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};

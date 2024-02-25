@@ -98,8 +98,8 @@ public:
         auto m = _m;
 
         // If a partial 64-bit word was already submitted, complete that word.
-        if (hilet offset = _b & 7) {
-            hilet num_bytes = std::min(8_uz - offset, size);
+        if (auto const offset = _b & 7) {
+            auto const num_bytes = std::min(8_uz - offset, size);
 
             // Accumulate remaining bytes in m.
             for (auto i = offset; i != offset + num_bytes; ++i) {
@@ -219,7 +219,7 @@ private:
 
     constexpr static void _compress(uint64_t& v0, uint64_t& v1, uint64_t& v2, uint64_t& v3, uint64_t m) noexcept
     {
-        hilet m_ = m;
+        auto const m_ = m;
 
         v3 ^= m_;
         for (auto i = 0_uz; i != C; ++i) {
@@ -291,7 +291,7 @@ template<>
 struct sip_hash24<char *> {
     [[nodiscard]] uint64_t operator()(char const *rhs) const noexcept
     {
-        hilet length = strlen(rhs);
+        auto const length = strlen(rhs);
         return _sip_hash24{}(rhs, length * sizeof(char));
     }
 };
@@ -300,7 +300,7 @@ template<>
 struct sip_hash24<wchar_t *> {
     [[nodiscard]] uint64_t operator()(wchar_t const *rhs) const noexcept
     {
-        hilet length = wcslen(rhs);
+        auto const length = wcslen(rhs);
         return _sip_hash24{}(rhs, length * sizeof(wchar_t));
     }
 };

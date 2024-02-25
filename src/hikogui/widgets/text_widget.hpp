@@ -96,10 +96,10 @@ public:
             // This is needed for handling multiple edit commands before the next frame update.
             if (_layout) {
                 auto new_layout = _layout;
-                hilet old_constraints = _constraints_cache;
+                auto const old_constraints = _constraints_cache;
 
                 // Constrain and layout according to the old layout.
-                hilet new_constraints = update_constraints();
+                auto const new_constraints = update_constraints();
                 new_layout.shape.rectangle = aarectangle{
                     new_layout.shape.x(),
                     new_layout.shape.y(),
@@ -174,15 +174,15 @@ public:
         // Make sure that the current selection fits the new text.
         _selection.resize(_text_cache.size());
 
-        hilet actual_text_style = theme().text_style(*text_style);
+        auto const actual_text_style = theme().text_style(*text_style);
 
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
         _shaped_text = text_shaper{_text_cache, actual_text_style, theme().scale, alignment_, os_settings::left_to_right()};
 
-        hilet shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
-        hilet shaped_text_size = shaped_text_rectangle.size();
+        auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
+        auto const shaped_text_size = shaped_text_rectangle.size();
 
         if (mode() == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
@@ -191,10 +191,10 @@ public:
 
         } else {
             // Allow the text to be 550.0f pixels wide.
-            hilet preferred_shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(550.0f));
-            hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
+            auto const preferred_shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(550.0f));
+            auto const preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
-            hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
+            auto const height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
             return _constraints_cache = {
                        extent2{preferred_shaped_text_size.width(), height},
                        extent2{preferred_shaped_text_size.width(), height},
@@ -321,7 +321,7 @@ public:
         case text_edit_copy:
             if (mode() >= select) {
                 reset_state("BDX");
-                if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
+                if (auto const selected_text_ = selected_text(); not selected_text_.empty()) {
                     process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text_));
                 }
                 return true;
@@ -660,7 +660,7 @@ public:
 
         case mouse_down:
             if (mode() >= select) {
-                hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
+                auto const cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
                 switch (event.mouse().click_count) {
                 case 1:
                     reset_state("BDX");
@@ -694,7 +694,7 @@ public:
 
         case mouse_drag:
             if (mode() >= select) {
-                hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
+                auto const cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
                 switch (event.mouse().click_count) {
                 case 1:
                     reset_state("BDX");
@@ -841,8 +841,8 @@ private:
     void scroll_to_show_selection() noexcept
     {
         if (mode() > widget_mode::invisible and focus()) {
-            hilet cursor = _selection.cursor();
-            hilet char_it = _shaped_text.begin() + cursor.index();
+            auto const cursor = _selection.cursor();
+            auto const char_it = _shaped_text.begin() + cursor.index();
             if (char_it < _shaped_text.end()) {
                 scroll_to_show(char_it->rectangle);
             }
@@ -893,7 +893,7 @@ private:
 
     [[nodiscard]] gstring_view selected_text() const noexcept
     {
-        hilet[first, last] = _selection.selection_indices();
+        auto const[first, last] = _selection.selection_indices();
 
         return gstring_view{_text_cache}.substr(first, last - first);
     }
@@ -906,7 +906,7 @@ private:
     void undo() noexcept
     {
         if (_undo_stack.can_undo()) {
-            hilet & [ text, selection ] = _undo_stack.undo(_text_cache, _selection);
+            auto const & [ text, selection ] = _undo_stack.undo(_text_cache, _selection);
 
             delegate->write(*this, text);
             _selection = selection;
@@ -916,7 +916,7 @@ private:
     void redo() noexcept
     {
         if (_undo_stack.can_redo()) {
-            hilet & [ text, selection ] = _undo_stack.redo();
+            auto const & [ text, selection ] = _undo_stack.redo();
 
             delegate->write(*this, text);
             _selection = selection;
@@ -958,7 +958,7 @@ private:
      */
     void fix_cursor_position() noexcept
     {
-        hilet size = _text_cache.size();
+        auto const size = _text_cache.size();
         if (_overwrite_mode and _selection.empty() and _selection.cursor().after()) {
             _selection = _selection.cursor().before_neighbor(size);
         }
@@ -971,7 +971,7 @@ private:
     {
         undo_push();
 
-        hilet[first, last] = _selection.selection_indices();
+        auto const[first, last] = _selection.selection_indices();
 
         auto text = _text_cache;
         text.replace(first, last - first, replacement);
@@ -988,13 +988,13 @@ private:
      */
     void add_character(grapheme c, add_type keyboard_mode) noexcept
     {
-        hilet[start_selection, end_selection] = _selection.selection(_text_cache.size());
+        auto const[start_selection, end_selection] = _selection.selection(_text_cache.size());
         auto original_grapheme = grapheme{char32_t{0xffff}};
 
         if (_selection.empty() and _overwrite_mode and start_selection.before()) {
             original_grapheme = _text_cache[start_selection.index()];
 
-            hilet[first, last] = _shaped_text.select_char(start_selection);
+            auto const[first, last] = _shaped_text.select_char(start_selection);
             _selection.drag_selection(last);
         }
         replace_selection(gstring{c});
@@ -1034,7 +1034,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.before_neighbor(_shaped_text.size());
 
-            hilet[first, last] = _shaped_text.select_char(cursor);
+            auto const[first, last] = _shaped_text.select_char(cursor);
             _selection.drag_selection(last);
         }
 
@@ -1047,7 +1047,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.after_neighbor(_shaped_text.size());
 
-            hilet[first, last] = _shaped_text.select_char(cursor);
+            auto const[first, last] = _shaped_text.select_char(cursor);
             _selection.drag_selection(first);
         }
 
@@ -1060,7 +1060,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.before_neighbor(_shaped_text.size());
 
-            hilet[first, last] = _shaped_text.select_word(cursor);
+            auto const[first, last] = _shaped_text.select_word(cursor);
             _selection.drag_selection(last);
         }
 
@@ -1073,7 +1073,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.after_neighbor(_shaped_text.size());
 
-            hilet[first, last] = _shaped_text.select_word(cursor);
+            auto const[first, last] = _shaped_text.select_word(cursor);
             _selection.drag_selection(first);
         }
 

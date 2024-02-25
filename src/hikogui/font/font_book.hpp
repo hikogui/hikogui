@@ -110,7 +110,7 @@ public:
 
         hi_log_info("Parsed font {}: {}", path.string(), to_string(*font));
 
-        hilet font_family_id = register_family(font->family_name);
+        auto const font_family_id = register_family(font->family_name);
         _font_variants[*font_family_id][font->font_variant()] = font_ptr;
 
         _fonts.emplace_back(std::move(font));
@@ -129,9 +129,9 @@ public:
      */
     void register_font_directory(std::filesystem::path const& path, bool post_process = true)
     {
-        hilet font_directory_glob = path / "**" / "*.ttf";
-        for (hilet& font_path : glob(font_directory_glob)) {
-            hilet t = trace<"font_scan">{};
+        auto const font_directory_glob = path / "**" / "*.ttf";
+        for (auto const& font_path : glob(font_directory_glob)) {
+            auto const t = trace<"font_scan">{};
 
             try {
                 register_font_file(font_path, false);
@@ -153,13 +153,13 @@ public:
     void post_process() noexcept
     {
         // Sort the list of fonts based on the amount of unicode code points it supports.
-        std::sort(begin(_font_ptrs), end(_font_ptrs), [](hilet& lhs, hilet& rhs) {
+        std::sort(begin(_font_ptrs), end(_font_ptrs), [](auto const& lhs, auto const& rhs) {
             return lhs->char_map.count() > rhs->char_map.count();
         });
 
-        hilet regular_fallback_chain = make_fallback_chain(font_weight::regular, font_style::normal);
-        hilet bold_fallback_chain = make_fallback_chain(font_weight::bold, font_style::normal);
-        hilet italic_fallback_chain = make_fallback_chain(font_weight::regular, font_style::italic);
+        auto const regular_fallback_chain = make_fallback_chain(font_weight::regular, font_style::normal);
+        auto const bold_fallback_chain = make_fallback_chain(font_weight::bold, font_style::normal);
+        auto const italic_fallback_chain = make_fallback_chain(font_weight::regular, font_style::italic);
 
         hi_log_info(
             "Post processing fonts number={}, regular-fallback={}, bold-fallback={}, italic-fallback={}",
@@ -169,11 +169,11 @@ public:
             size(italic_fallback_chain));
 
         // For each font, find fallback list.
-        for (hilet& font : _font_ptrs) {
+        for (auto const& font : _font_ptrs) {
             auto fallback_chain = std::vector<hi::font *>{};
 
             // Put the fonts from the same family, italic and weight first.
-            for (hilet& fallback : _font_ptrs) {
+            for (auto const& fallback : _font_ptrs) {
                 // clang-format off
             if (
                 (fallback != font) and
@@ -220,7 +220,7 @@ public:
 
         auto it = _family_names.find(name);
         if (it == _family_names.end()) {
-            hilet family_id = font_family_id(_font_variants.size());
+            auto const family_id = font_family_id(_font_variants.size());
             _font_variants.emplace_back();
             _family_names[name] = family_id;
             return family_id;
@@ -241,7 +241,7 @@ public:
         hi_assert(family_id);
         hi_assert_bounds(*family_id, _font_variants);
 
-        hilet& variants = _font_variants[*family_id];
+        auto const& variants = _font_variants[*family_id];
         for (auto alternative_variant : alternatives(variant)) {
             if (auto font = variants[alternative_variant]) {
                 return *font;
@@ -262,7 +262,7 @@ public:
      */
     [[nodiscard]] font const *find_font(std::string const& family_name, font_variant variant) const noexcept
     {
-        if (hilet family_id = find_family(family_name)) {
+        if (auto const family_id = find_family(family_name)) {
             return &find_font(family_id, variant);
         } else {
             return nullptr;
@@ -280,14 +280,14 @@ public:
     [[nodiscard]] font_glyphs_type find_glyph(font const& font, hi::grapheme grapheme) const noexcept
     {
         // First try the selected font.
-        if (hilet glyph_ids = font.find_glyph(grapheme); not glyph_ids.empty()) {
+        if (auto const glyph_ids = font.find_glyph(grapheme); not glyph_ids.empty()) {
             return {font, std::move(glyph_ids)};
         }
 
         // Scan fonts which are fallback to this.
-        for (hilet fallback : font.fallback_chain) {
+        for (auto const fallback : font.fallback_chain) {
             hi_axiom_not_null(fallback);
-            if (hilet glyph_ids = fallback->find_glyph(grapheme); not glyph_ids.empty()) {
+            if (auto const glyph_ids = fallback->find_glyph(grapheme); not glyph_ids.empty()) {
                 return {*fallback, std::move(glyph_ids)};
             }
         }
@@ -307,14 +307,14 @@ public:
     [[nodiscard]] font_glyph_type find_glyph(font const& font, char32_t code_point) const noexcept
     {
         // First try the selected font.
-        if (hilet glyph_id = font.find_glyph(code_point)) {
+        if (auto const glyph_id = font.find_glyph(code_point)) {
             return {font, glyph_id};
         }
 
         // Scan fonts which are fallback to this.
-        for (hilet fallback : font.fallback_chain) {
+        for (auto const fallback : font.fallback_chain) {
             hi_axiom_not_null(fallback);
-            if (hilet glyph_id = fallback->find_glyph(code_point)) {
+            if (auto const glyph_id = fallback->find_glyph(code_point)) {
                 return {*fallback, glyph_id};
             }
         }
@@ -339,7 +339,7 @@ private:
     {
         auto r = _font_ptrs;
 
-        std::stable_partition(begin(r), end(r), [weight, style](hilet& item) {
+        std::stable_partition(begin(r), end(r), [weight, style](auto const& item) {
             return (item->style == style) and almost_equal(item->weight, weight);
         });
 
@@ -457,14 +457,14 @@ hi_export [[nodiscard]] hi_inline auto find_glyph(font const& font, char32_t cod
 
 hi_export [[nodiscard]] hi_inline auto find_glyph(elusive_icon rhs) noexcept
 {
-    hilet *font = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
+    auto const *font = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
     hi_assert_not_null(font, "Could not find Elusive icon font");
     return find_glyph(*font, std::to_underlying(rhs));
 }
 
 hi_export [[nodiscard]] hi_inline auto find_glyph(hikogui_icon rhs) noexcept
 {
-    hilet *font = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
+    auto const *font = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
     hi_assert_not_null(font, "Could not find HikoGUI icon font");
     return find_glyph(*font, std::to_underlying(rhs));
 }

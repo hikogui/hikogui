@@ -90,9 +90,9 @@ struct half {
 
     //[[nodiscard]] constexpr friend half operator%(half const& lhs, half const& rhs) noexcept
     //{
-    //    hilet lhs_ = static_cast<float>(lhs);
-    //    hilet rhs_ = static_cast<float>(rhs);
-    //    hilet div_result = std::floor(lhs_ / rhs_);
+    //    auto const lhs_ = static_cast<float>(lhs);
+    //    auto const rhs_ = static_cast<float>(rhs);
+    //    auto const div_result = std::floor(lhs_ / rhs_);
     //    return half{lhs_ - (div_result * rhs_)};
     //}
 

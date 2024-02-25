@@ -120,7 +120,7 @@ constexpr void parse_po_header(po_translations& r, std::string_view header)
 {
     using namespace std::literals;
 
-    for (hilet line : std::views::split(header, "\\n"sv)) {
+    for (auto const line : std::views::split(header, "\\n"sv)) {
         if (line.empty()) {
             // Skip empty header lines.
             continue;
@@ -131,9 +131,9 @@ constexpr void parse_po_header(po_translations& r, std::string_view header)
             throw parse_error(std::format("Unknown header '{}'", std::string_view{line}));
         }
 
-        hilet name = to_lower(strip(split_line.front()));
+        auto const name = to_lower(strip(split_line.front()));
         split_line.erase(split_line.begin());
-        hilet value = strip(join(split_line, ":"));
+        auto const value = strip(join(split_line, ":"));
 
         if (name == "language") {
             r.language = language_tag{value};

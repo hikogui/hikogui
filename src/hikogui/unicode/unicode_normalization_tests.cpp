@@ -59,7 +59,7 @@ std::u32string parseNormalizationTest_column(std::string_view column)
     std::u32string r;
 
     auto codePointStrings = split_view(column);
-    for (hilet codePointString : codePointStrings) {
+    for (auto const codePointString : codePointStrings) {
         r += char_cast<char32_t>(from_string<uint32_t>(codePointString, 16));
     }
     return r;
@@ -69,11 +69,11 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 {
     auto r = std::optional<NormalizationTest>{};
 
-    hilet split_line = split_view(line, '#');
+    auto const split_line = split_view(line, '#');
     if (split_line.size() < 2) {
         return r;
     }
-    hilet columns = split_view(split_line[0], ';');
+    auto const columns = split_view(split_line[0], ';');
     if (columns.size() < 6) {
         return r;
     }
@@ -92,12 +92,12 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 
 generator<NormalizationTest> parseNormalizationTests()
 {
-    hilet view = file_view(library_source_dir() / "tests" / "data" / "NormalizationTest.txt");
-    hilet test_data = as_string_view(view);
+    auto const view = file_view(library_source_dir() / "tests" / "data" / "NormalizationTest.txt");
+    auto const test_data = as_string_view(view);
 
     size_t line_nr = 0;
-    for (hilet line : split_view(test_data, '\n')) {
-        if (hilet optionalTest = parseNormalizationTest_line(line, ++line_nr)) {
+    for (auto const line : split_view(test_data, '\n')) {
+        if (auto const optionalTest = parseNormalizationTest_line(line, ++line_nr)) {
             co_yield *optionalTest;
         }
     }
@@ -134,7 +134,7 @@ TEST(unicode_normalization, unicode_NFC_colon)
 
 TEST(unicode_normalization, NFC)
 {
-    for (hilet& test : parseNormalizationTests()) {
+    for (auto const& test : parseNormalizationTests()) {
         ASSERT_EQ(unicode_normalize(test.c1), test.c2) << test.comment;
         ASSERT_EQ(unicode_normalize(test.c2), test.c2) << test.comment;
         ASSERT_EQ(unicode_normalize(test.c3), test.c2) << test.comment;
@@ -145,7 +145,7 @@ TEST(unicode_normalization, NFC)
 
 TEST(unicode_normalization, NFKC)
 {
-    for (hilet& test : parseNormalizationTests()) {
+    for (auto const& test : parseNormalizationTests()) {
         ASSERT_TRUE(unicode_normalize(test.c1, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
         ASSERT_TRUE(unicode_normalize(test.c2, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
         ASSERT_TRUE(unicode_normalize(test.c3, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
@@ -156,7 +156,7 @@ TEST(unicode_normalization, NFKC)
 
 TEST(unicode_normalization, NFD)
 {
-    for (hilet& test : parseNormalizationTests()) {
+    for (auto const& test : parseNormalizationTests()) {
         ASSERT_TRUE(unicode_decompose(test.c1) == test.c3) << test.comment;
         ASSERT_TRUE(unicode_decompose(test.c2) == test.c3) << test.comment;
         ASSERT_TRUE(unicode_decompose(test.c3) == test.c3) << test.comment;
@@ -167,7 +167,7 @@ TEST(unicode_normalization, NFD)
 
 TEST(unicode_normalization, NFKD)
 {
-    for (hilet& test : parseNormalizationTests()) {
+    for (auto const& test : parseNormalizationTests()) {
         ASSERT_TRUE(unicode_decompose(test.c1, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
         ASSERT_TRUE(unicode_decompose(test.c2, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
         ASSERT_TRUE(unicode_decompose(test.c3, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
@@ -181,27 +181,27 @@ TEST(unicode_normalization, NFKD)
 TEST(unicode_normalization, Invariant)
 {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
-    for (hilet& test : parseNormalizationTests()) {
-        for (hilet& c : test.c1) {
+    for (auto const& test : parseNormalizationTests()) {
+        for (auto const& c : test.c1) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (hilet& c : test.c2) {
+        for (auto const& c : test.c2) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (hilet& c : test.c3) {
+        for (auto const& c : test.c3) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (hilet& c : test.c4) {
+        for (auto const& c : test.c4) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (hilet& c : test.c5) {
+        for (auto const& c : test.c5) {
             previouslyTestedCodePoints[c] = true;
         }
     }
 
     for (char32_t i = 0; i < previouslyTestedCodePoints.size(); i++) {
         if (!previouslyTestedCodePoints[i]) {
-            hilet str = std::u32string(1, i);
+            auto const str = std::u32string(1, i);
 
             ASSERT_TRUE(unicode_decompose(str) == str) << "NFD code-point: " << static_cast<int>(i);
             ASSERT_TRUE(unicode_normalize(str) == str) << "NFC code-point: " << static_cast<int>(i);

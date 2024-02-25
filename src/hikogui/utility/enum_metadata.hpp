@@ -89,11 +89,11 @@ public:
         static_assert(sizeof...(Args) == N * 2);
         add_value_name<0>(args...);
 
-        std::sort(_by_name.begin(), _by_name.end(), [](hilet& a, hilet& b) {
+        std::sort(_by_name.begin(), _by_name.end(), [](auto const& a, auto const& b) {
             return a.name < b.name;
         });
 
-        std::sort(_by_value.begin(), _by_value.end(), [](hilet& a, hilet& b) {
+        std::sort(_by_value.begin(), _by_value.end(), [](auto const& a, auto const& b) {
             return std::to_underlying(a.value) < std::to_underlying(b.value);
         });
 
@@ -130,7 +130,7 @@ public:
     template<std::convertible_to<name_type> Name>
     [[nodiscard]] constexpr value_type at(Name&& name) const
     {
-        if (hilet *value = find(name_type{std::forward<Name>(name)})) {
+        if (auto const *value = find(name_type{std::forward<Name>(name)})) {
             return *value;
         } else {
             throw std::out_of_range{"enum_metadata::at"};
@@ -145,7 +145,7 @@ public:
      */
     [[nodiscard]] constexpr name_type const& at(value_type value) const
     {
-        if (hilet *name = find(value)) {
+        if (auto const *name = find(value)) {
             return *name;
         } else {
             throw std::out_of_range{"enum_metadata::at"};
@@ -160,7 +160,7 @@ public:
     template<std::convertible_to<name_type> Name>
     [[nodiscard]] constexpr std::optional<value_type> at_if(Name&& name) const noexcept
     {
-        if (hilet *value = find(name_type{std::forward<Name>(name)})) {
+        if (auto const *value = find(name_type{std::forward<Name>(name)})) {
             return *value;
         } else {
             return std::nullopt;
@@ -176,7 +176,7 @@ public:
     template<std::convertible_to<name_type> Name>
     [[nodiscard]] constexpr value_type at(Name&& name, value_type default_value) const noexcept
     {
-        if (hilet *value = find(name_type{std::forward<Name>(name)})) {
+        if (auto const *value = find(name_type{std::forward<Name>(name)})) {
             return *value;
         } else {
             return default_value;
@@ -192,7 +192,7 @@ public:
     template<std::convertible_to<name_type> Name>
     [[nodiscard]] constexpr name_type at(value_type value, Name&& default_name) const noexcept
     {
-        if (hilet *name = find(value)) {
+        if (auto const *name = find(value)) {
             return *name;
         } else {
             return std::forward<Name>(default_name);
@@ -242,13 +242,13 @@ private:
     {
         if (values_are_continues) {
             // If the enum values are continues we can do an associative lookup.
-            hilet it = _by_value.begin();
-            hilet offset = std::to_underlying(it->value);
-            hilet i = std::to_underlying(value) - offset;
+            auto const it = _by_value.begin();
+            auto const offset = std::to_underlying(it->value);
+            auto const i = std::to_underlying(value) - offset;
             return (i >= 0 and i < N) ? &(it + i)->name : nullptr;
 
         } else {
-            hilet it = std::lower_bound(_by_value.begin(), _by_value.end(), value, [](hilet& item, hilet& key) {
+            auto const it = std::lower_bound(_by_value.begin(), _by_value.end(), value, [](auto const& item, auto const& key) {
                 return item.value < key;
             });
 
@@ -258,7 +258,7 @@ private:
 
     [[nodiscard]] constexpr value_type const *find(name_type const& name) const noexcept
     {
-        hilet it = std::lower_bound(_by_name.begin(), _by_name.end(), name, [](hilet& item, hilet& key) {
+        auto const it = std::lower_bound(_by_name.begin(), _by_name.end(), name, [](auto const& item, auto const& key) {
             return item.name < key;
         });
 
@@ -289,7 +289,7 @@ private:
     [[nodiscard]] constexpr bool check_values_are_continues() const noexcept
     {
         auto check_value = std::to_underlying(minimum());
-        for (hilet& item : _by_value) {
+        for (auto const& item : _by_value) {
             if (std::to_underlying(item.value) != check_value++) {
                 return false;
             }

@@ -18,13 +18,13 @@ TEST(URI, percent_decode)
 
 TEST(URI, scheme_only)
 {
-    hilet u = URI("file:");
+    auto const u = URI("file:");
     ASSERT_EQ(u.scheme(), "file");
 }
 
 TEST(URI, file_absolute_dir)
 {
-    hilet u = URI("file:///C:/Program%20Files/RenderDoc/");
+    auto const u = URI("file:///C:/Program%20Files/RenderDoc/");
     ASSERT_EQ(u.scheme(), "file");
     ASSERT_TRUE(u.authority());
     ASSERT_EQ(u.authority()->host(), "");
@@ -40,7 +40,7 @@ TEST(URI, file_absolute_dir)
 
 TEST(URI, file_absolute_dir_file)
 {
-    hilet u = URI("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
+    auto const u = URI("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_EQ(u.scheme(), "file");
     ASSERT_TRUE(u.authority());
     ASSERT_EQ(u.authority()->host(), "");
@@ -56,7 +56,7 @@ TEST(URI, file_absolute_dir_file)
 
 TEST(URI, file_relative_dir)
 {
-    hilet u = URI("file:C:/Program%20Files/RenderDoc/");
+    auto const u = URI("file:C:/Program%20Files/RenderDoc/");
     ASSERT_EQ(u.scheme(), "file");
     ASSERT_FALSE(u.authority());
     auto path = u.path();
@@ -70,7 +70,7 @@ TEST(URI, file_relative_dir)
 
 TEST(URI, file_relative_dir_file)
 {
-    hilet u = URI("file:C:/Program%20Files/RenderDoc/renderdoc.dll");
+    auto const u = URI("file:C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_EQ(u.scheme(), "file");
     ASSERT_FALSE(u.authority());
     auto path = u.path();
@@ -85,7 +85,7 @@ TEST(URI, file_relative_dir_file)
 TEST(URI, reference_resolution_normal)
 {
     // RFC-3986 Chapter 5.4.1.
-    hilet base = URI("http://a/b/c/d;p?q");
+    auto const base = URI("http://a/b/c/d;p?q");
 
     ASSERT_EQ(base / "g:h", "g:h");
     ASSERT_EQ(base / "g", "http://a/b/c/g");
@@ -115,7 +115,7 @@ TEST(URI, reference_resolution_normal)
 TEST(URI, reference_resolution_abnormal)
 {
     // RFC-3986 Chapter 5.4.2.
-    hilet base = URI("http://a/b/c/d;p?q");
+    auto const base = URI("http://a/b/c/d;p?q");
 
     ASSERT_EQ(base / "../../../g", "http://a/g");
     ASSERT_EQ(base / "../../../../g", "http://a/g");

@@ -80,7 +80,7 @@ public:
             _glyph = {};
             _pixmap_backing = {};
 
-            if (hilet pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
+            if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
                 _icon_type = icon_type::pixmap;
                 _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
@@ -91,19 +91,19 @@ public:
                     process_event({gui_event_type::window_reconstrain});
                 }
 
-            } else if (hilet g1 = std::get_if<font_book::font_glyph_type>(&icon)) {
+            } else if (auto const g1 = std::get_if<font_book::font_glyph_type>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size =
                     _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
-            } else if (hilet g2 = std::get_if<elusive_icon>(&icon)) {
+            } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size =
                     _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
-            } else if (hilet g3 = std::get_if<hikogui_icon>(&icon)) {
+            } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size =
@@ -111,8 +111,8 @@ public:
             }
         }
 
-        hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
-        hilet icon_constraints = box_constraints{
+        auto const resolved_alignment = resolve(*alignment, os_settings::left_to_right());
+        auto const icon_constraints = box_constraints{
             extent2{0, 0},
             narrow_cast<extent2>(_icon_size),
             narrow_cast<extent2>(_icon_size),
@@ -126,12 +126,12 @@ public:
             if (_icon_type == icon_type::no or not _icon_size) {
                 _icon_rectangle = {};
             } else {
-                hilet width = std::clamp(context.shape.width(), minimum->width(), maximum->width());
-                hilet height = std::clamp(context.shape.height(), minimum->height(), maximum->height());
+                auto const width = std::clamp(context.shape.width(), minimum->width(), maximum->width());
+                auto const height = std::clamp(context.shape.height(), minimum->height(), maximum->height());
 
-                hilet icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
-                hilet new_icon_size = narrow_cast<extent2>(icon_scale * _icon_size);
-                hilet resolved_alignment = resolve(*alignment, os_settings::left_to_right());
+                auto const icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
+                auto const new_icon_size = narrow_cast<extent2>(icon_scale * _icon_size);
+                auto const resolved_alignment = resolve(*alignment, os_settings::left_to_right());
                 _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
             }
         }

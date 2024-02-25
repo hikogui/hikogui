@@ -98,9 +98,9 @@ TEST(char_maps_utf_16, identity_copy)
 
 TEST(char_maps_utf_16, identity_invalid_chars)
 {
-    hilet invalid_tst = std::u16string{
+    auto const invalid_tst = std::u16string{
         u"abcdefghijklmnopqrstuvwxy\xd800zA\U00012345BCD\xd800\U00012345E\xdc00\U00012345FGHIJKLMNOPQRSTUVWXY\xdc00Z0123456789"};
-    hilet invalid_exp = std::u16string{
+    auto const invalid_exp = std::u16string{
         u"abcdefghijklmnopqrstuvwxy\ufffdzA\U00012345BCD\ufffd\U00012345E\ufffd\U00012345FGHIJKLMNOPQRSTUVWXY\ufffdZ0123456789"};
 
     for (auto i = 0_uz; i != invalid_tst.size(); ++i) {

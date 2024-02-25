@@ -111,9 +111,9 @@ public:
         }
 
         auto r = std::string{};
-        hilet& p = path();
-        hilet first = p.begin();
-        hilet last = p.end();
+        auto const& p = path();
+        auto const first = p.begin();
+        auto const last = p.end();
         auto it = first;
 
         auto has_root_name = false;
@@ -218,7 +218,7 @@ public:
         if (auto scheme_ = scheme()) {
             if (scheme_ == "resource") {
                 // Always used std::u8string with std::filesystem::path.
-                hilet ref = std::filesystem::path{filesystem_path_generic_u8string(false)};
+                auto const ref = std::filesystem::path{filesystem_path_generic_u8string(false)};
                 if (auto path = find_path(resource_dirs(), ref)) {
                     return *path;
                 } else {
@@ -283,7 +283,7 @@ private:
     {
         auto r = std::u8string{};
 
-        hilet root_name = path.root_name().generic_u8string();
+        auto const root_name = path.root_name().generic_u8string();
         if (root_name.empty()) {
             // No root-name.
             if (not path.root_directory().empty()) {
@@ -294,7 +294,7 @@ private:
                 ;
             }
 
-        } else if (hilet i = root_name.find(':'); i != std::string::npos) {
+        } else if (auto const i = root_name.find(':'); i != std::string::npos) {
             if (i == 1) {
                 // Root name is a drive-letter, followed by potentially a relative path.
                 r += u8"file:///" + root_name + path.root_directory().generic_u8string();

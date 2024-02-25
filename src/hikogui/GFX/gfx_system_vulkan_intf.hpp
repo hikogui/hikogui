@@ -82,7 +82,7 @@ public:
 #endif
 
 #ifndef NDEBUG
-        hilet requested_layers = std::vector<char const *>{
+        auto const requested_layers = std::vector<char const *>{
             "VK_LAYER_KHRONOS_validation", "VK_LAYER_KHRONOS_synchronization2"
             //"VK_LAYER_LUNARG_api_dump"
         };
@@ -127,7 +127,7 @@ public:
 
     void log_memory_usage() const noexcept
     {
-        for (hilet& device : devices) {
+        for (auto const& device : devices) {
             device->log_memory_usage();
         }
     }
@@ -137,13 +137,13 @@ public:
     {
         enumerate_devices();
 
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
 
         int best_score = -1;
         gfx_device *best_device = nullptr;
 
-        for (hilet& device : devices) {
-            hilet score = device->score(surface);
+        for (auto const& device : devices) {
+            auto const score = device->score(surface);
             if (score >= best_score) {
                 best_score = score;
                 best_device = device.get();
@@ -179,7 +179,7 @@ private:
 
     void enumerate_devices() noexcept
     {
-        hilet lock = std::scoped_lock(gfx_system_mutex);
+        auto const lock = std::scoped_lock(gfx_system_mutex);
 
         if (not devices.empty()) {
             return;
@@ -240,10 +240,10 @@ private:
 
         hi_log_info("Available vulkan layers:");
         auto r = std::vector<const char *>{};
-        for (hilet& available_layer : available_layers) {
-            hilet layer_name = std::string{available_layer.layerName.data()};
+        for (auto const& available_layer : available_layers) {
+            auto const layer_name = std::string{available_layer.layerName.data()};
 
-            hilet it = std::find(begin(requested_layers), end(requested_layers), layer_name);
+            auto const it = std::find(begin(requested_layers), end(requested_layers), layer_name);
 
             if (it != end(requested_layers)) {
                 // Use the *it, because the lifetime of its `char const *` is still available after the function call.

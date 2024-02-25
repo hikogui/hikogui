@@ -13,8 +13,8 @@ using namespace hi;
 
 TEST(String, Split)
 {
-    hilet result = split("path1/path2", '/');
-    hilet check_value = std::vector<std::string>{"path1", "path2"};
+    auto const result = split("path1/path2", '/');
+    auto const check_value = std::vector<std::string>{"path1", "path2"};
     ASSERT_EQ(result, check_value);
 }
 

@@ -153,10 +153,10 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet toolbar_height = _toolbar_constraints.preferred.height();
-            hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
+            auto const toolbar_height = _toolbar_constraints.preferred.height();
+            auto const between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
-            hilet toolbar_rectangle = aarectangle{
+            auto const toolbar_rectangle = aarectangle{
                 point2{
                     _toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
                 point2{
@@ -164,7 +164,7 @@ public:
                     context.height() - _toolbar_constraints.margins.top()}};
             _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment()};
 
-            hilet content_rectangle = aarectangle{
+            auto const content_rectangle = aarectangle{
                 point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
                 point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
             _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
@@ -190,10 +190,10 @@ public:
         auto r = _toolbar->hitbox_test_from_parent(position);
         r = _content->hitbox_test_from_parent(position, r);
 
-        hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
-        hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
-        hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
-        hilet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
+        auto const is_on_l_edge = position.x() <= BORDER_WIDTH;
+        auto const is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
+        auto const is_on_b_edge = position.y() <= BORDER_WIDTH;
+        auto const is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
         // Corner resize has always priority.
         if (is_on_l_edge and is_on_b_edge) {

@@ -21,10 +21,10 @@ double maxAbsDiff(hi::lean_vector<T> const &lhs, hi::lean_vector<U> const &rhs)
     }
 
     double max_diff = 0.0;
-    for (hilet lhs_value: lhs) {
+    for (auto const lhs_value: lhs) {
         // Compare with the closest value in rhs.
         double min_diff = std::numeric_limits<double>::infinity();
-        for (hilet rhs_value: rhs) {
+        for (auto const rhs_value: rhs) {
             hi::inplace_min(min_diff, std::abs(lhs_value - rhs_value));
         }
 
@@ -42,7 +42,7 @@ testing::AssertionResult ResultsNearPredFormat(
     hi::lean_vector<U> val2,
     double abs_error)
 {
-    hilet diff = maxAbsDiff(val1, val2);
+    auto const diff = maxAbsDiff(val1, val2);
     if (diff <= abs_error)
         return testing::AssertionSuccess();
 

@@ -69,10 +69,10 @@ hi_inline int gfx_device::score(vk::SurfaceKHR surface) const
     bool device_has_present = false;
     bool device_has_compute = false;
     bool device_shares_graphics_and_present = false;
-    for (hilet& queue : _queues) {
-        hilet has_present = to_bool(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface));
-        hilet has_graphics = to_bool(queue.flags & vk::QueueFlagBits::eGraphics);
-        hilet has_compute = to_bool(queue.flags & vk::QueueFlagBits::eCompute);
+    for (auto const& queue : _queues) {
+        auto const has_present = to_bool(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface));
+        auto const has_graphics = to_bool(queue.flags & vk::QueueFlagBits::eGraphics);
+        auto const has_compute = to_bool(queue.flags & vk::QueueFlagBits::eCompute);
 
         device_has_graphics |= has_graphics;
         device_has_present |= has_present;
@@ -122,7 +122,7 @@ hi_inline int gfx_device::score(vk::SurfaceKHR surface) const
 
     // Give score based on the performance of the device.
     auto device_type_score = 0;
-    hilet properties = physicalIntrinsic.getProperties();
+    auto const properties = physicalIntrinsic.getProperties();
     switch (properties.deviceType) {
     case vk::PhysicalDeviceType::eCpu:
         device_type_score = 1;
@@ -149,9 +149,9 @@ hi_inline int gfx_device::score(vk::SurfaceKHR surface) const
 
 hi_inline void gfx_device::initialize_device()
 {
-    hilet device_queue_create_infos = make_device_queue_create_infos();
+    auto const device_queue_create_infos = make_device_queue_create_infos();
 
-    hilet available_device_features = physicalIntrinsic.getFeatures();
+    auto const available_device_features = physicalIntrinsic.getFeatures();
 
     // Enable optional features.
     device_features = gfx_system::global().requiredFeatures;

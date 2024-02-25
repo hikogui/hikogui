@@ -16,18 +16,18 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline std::pair<size_t, size_t> otype_loca16_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)
 {
-    hilet entries = implicit_cast<big_uint16_buf_t>(bytes, bytes.size() / sizeof(big_uint16_buf_t));
-    hilet first = wide_cast<size_t>(*hi_check_at(entries, *glyph_id)) * 2;
-    hilet last = wide_cast<size_t>(*hi_check_at(entries, *glyph_id + 1)) * 2;
+    auto const entries = implicit_cast<big_uint16_buf_t>(bytes, bytes.size() / sizeof(big_uint16_buf_t));
+    auto const first = wide_cast<size_t>(*hi_check_at(entries, *glyph_id)) * 2;
+    auto const last = wide_cast<size_t>(*hi_check_at(entries, *glyph_id + 1)) * 2;
     hi_check(first <= last, "'loca' table has invalid entries.");
     return {first, last};
 }
 
 [[nodiscard]] hi_inline std::pair<size_t, size_t> otype_loca32_get(std::span<std::byte const> bytes, hi::glyph_id glyph_id)
 {
-    hilet entries = implicit_cast<big_uint32_buf_t>(bytes, bytes.size() / sizeof(big_uint32_buf_t));
-    hilet first = wide_cast<size_t>(*hi_check_at(entries, *glyph_id));
-    hilet last = wide_cast<size_t>(*hi_check_at(entries, *glyph_id + 1));
+    auto const entries = implicit_cast<big_uint32_buf_t>(bytes, bytes.size() / sizeof(big_uint32_buf_t));
+    auto const first = wide_cast<size_t>(*hi_check_at(entries, *glyph_id));
+    auto const last = wide_cast<size_t>(*hi_check_at(entries, *glyph_id + 1));
     hi_check(first <= last, "'loca' table has invalid entries.");
     return {first, last};
 }
@@ -48,8 +48,8 @@ otype_loca_get(std::span<std::byte const> loca_bytes, hi::glyph_id glyph_id, boo
     hi::glyph_id glyph_id,
     bool loca_is_offset32)
 {
-    hilet[first, last] = otype_loca_get(loca_bytes, glyph_id, loca_is_offset32);
-    hilet size = last - first;
+    auto const[first, last] = otype_loca_get(loca_bytes, glyph_id, loca_is_offset32);
+    auto const size = last - first;
     return hi_check_subspan(glyf_bytes, first, size);
 }
 

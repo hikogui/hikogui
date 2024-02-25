@@ -171,8 +171,8 @@ public:
         _layout = {};
         _scroll_constraints = _scroll_widget->update_constraints();
 
-        hilet scroll_width = 100;
-        hilet box_size = extent2{
+        auto const scroll_width = 100;
+        auto const box_size = extent2{
             _scroll_constraints.margins.left() + scroll_width + _scroll_constraints.margins.right(),
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
@@ -193,23 +193,23 @@ public:
         }
 
         // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
-        hilet resolved_alignment = resolve_mirror(*alignment, os_settings::left_to_right());
+        auto const resolved_alignment = resolve_mirror(*alignment, os_settings::left_to_right());
 
         return {size, size, size, resolved_alignment, margins};
     }
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet scroll_size = extent2{
+            auto const scroll_size = extent2{
                 context.width(),
                 _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() +
                     _scroll_constraints.margins.bottom()};
 
-            hilet scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
+            auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
             _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment()};
 
             if (_error_label_widget->mode() > widget_mode::invisible) {
-                hilet error_label_rectangle =
+                auto const error_label_rectangle =
                     aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment()};
             }
@@ -356,12 +356,12 @@ private:
     }
     void draw_background_box(draw_context const& context) const noexcept
     {
-        hilet outline = _scroll_shape.rectangle;
+        auto const outline = _scroll_shape.rectangle;
 
-        hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
+        auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
         context.draw_box(layout(), outline, background_color(), corner_radii);
 
-        hilet line = line_segment(get<0>(outline), get<1>(outline));
+        auto const line = line_segment(get<0>(outline), get<1>(outline));
         context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width(), focus_color());
     }
 };

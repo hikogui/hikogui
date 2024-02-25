@@ -67,7 +67,7 @@ public:
     constexpr size_t update_mask(std::bitset<0x11'0000>& mask) const noexcept
     {
         auto r = 0_uz;
-        for (hilet& entry : _map) {
+        for (auto const& entry : _map) {
             // Make sure this loop is inclusive.
             for (auto cp = entry.start_code_point(); cp <= entry.end_code_point; ++cp) {
                 if (not mask.test(cp)) {
@@ -96,7 +96,7 @@ public:
         hi_axiom(start_glyph + todo < 0xffff, "Only glyph-ids 0 through 0xfffe are valid");
 
         while (todo != 0) {
-            hilet doing = std::min(todo, entry_type::max_count);
+            auto const doing = std::min(todo, entry_type::max_count);
             hi_axiom(doing != 0);
 
             _map.emplace_back(start_code_point, char_cast<char32_t>(start_code_point + doing - 1), start_glyph);
@@ -119,7 +119,7 @@ public:
         }
 
         // Sort the entries in reverse order so that the lower_bound search becomes upper_bound.
-        std::sort(_map.begin(), _map.end(), [](hilet& a, hilet& b) {
+        std::sort(_map.begin(), _map.end(), [](auto const& a, auto const& b) {
             return a.end_code_point < b.end_code_point;
         });
 
@@ -129,8 +129,8 @@ public:
             hi_axiom(prev_it->end_code_point < it->start_code_point());
 
             if (mergable(*prev_it, *it)) {
-                hilet merged_count = std::min(prev_it->count() + it->count(), entry_type::max_count);
-                hilet move_count = merged_count - prev_it->count();
+                auto const merged_count = std::min(prev_it->count() + it->count(), entry_type::max_count);
+                auto const move_count = merged_count - prev_it->count();
                 hi_axiom(move_count <= entry_type::max_count);
 
                 prev_it->end_code_point += narrow_cast<char32_t>(move_count);
@@ -169,7 +169,7 @@ public:
         hi_assert(_prepared);
 #endif
 
-        if (hilet item_ptr = fast_lower_bound(std::span{_map}, char_cast<uint32_t>(code_point))) {
+        if (auto const item_ptr = fast_lower_bound(std::span{_map}, char_cast<uint32_t>(code_point))) {
             return item_ptr->get(code_point);
         }
         return {};

@@ -30,7 +30,7 @@ public:
     {
         std::size_t offset = 0;
 
-        hilet bytes = as_bstring_view(_view);
+        auto const bytes = as_bstring_view(_view);
         read_header(bytes, offset);
         read_chunks(bytes, offset);
     }
@@ -50,7 +50,7 @@ public:
     void decode_image(pixmap_span<sfloat_rgba16> image) const
     {
         // There is a filter selection byte in front of every line.
-        hilet image_data_size = _stride * _height;
+        auto const image_data_size = _stride * _height;
 
         auto image_data = decompress_IDATs(image_data_size);
         hi_check(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
@@ -62,7 +62,7 @@ public:
 
     [[nodiscard]] static pixmap<sfloat_rgba16> load(std::filesystem::path const& path)
     {
-        hilet png_data = png(file_view{path});
+        auto const png_data = png(file_view{path});
         auto image = pixmap<sfloat_rgba16>{png_data.width(), png_data.height()};
         png_data.decode_image(image);
         return image;
@@ -146,7 +146,7 @@ private:
         std::string r;
 
         for (ssize_t i = 0; i != ssize(bytes); ++i) {
-            hilet c = static_cast<char>(bytes[i]);
+            auto const c = static_cast<char>(bytes[i]);
             if (c == 0) {
                 return r;
             } else {
@@ -158,14 +158,14 @@ private:
 
     static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept
     {
-        hilet a = static_cast<int>(_a);
-        hilet b = static_cast<int>(_b);
-        hilet c = static_cast<int>(_c);
+        auto const a = static_cast<int>(_a);
+        auto const b = static_cast<int>(_b);
+        auto const c = static_cast<int>(_c);
 
-        hilet p = a + b - c;
-        hilet pa = std::abs(p - a);
-        hilet pb = std::abs(p - b);
-        hilet pc = std::abs(p - c);
+        auto const p = a + b - c;
+        auto const pa = std::abs(p - a);
+        auto const pb = std::abs(p - b);
+        auto const pc = std::abs(p - c);
 
         if (pa <= pb && pa <= pc) {
             return narrow_cast<uint8_t>(a);
@@ -188,9 +188,9 @@ private:
 
     void read_header(std::span<std::byte const> bytes, std::size_t& offset)
     {
-        hilet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
+        auto const png_header = make_placement_ptr<PNGHeader>(bytes, offset);
 
-        hilet valid_signature = png_header->signature[0] == 137 && png_header->signature[1] == 80 &&
+        auto const valid_signature = png_header->signature[0] == 137 && png_header->signature[1] == 80 &&
             png_header->signature[2] == 78 && png_header->signature[3] == 71 && png_header->signature[4] == 13 &&
             png_header->signature[5] == 10 && png_header->signature[6] == 26 && png_header->signature[7] == 10;
 
@@ -207,8 +207,8 @@ private:
         bool has_IEND = false;
 
         while (!has_IEND) {
-            hilet header = make_placement_ptr<ChunkHeader>(bytes, offset);
-            hilet length = narrow_cast<ssize_t>(*header->length);
+            auto const header = make_placement_ptr<ChunkHeader>(bytes, offset);
+            auto const length = narrow_cast<ssize_t>(*header->length);
             hi_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
             hi_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
 
@@ -246,7 +246,7 @@ private:
 
             // Skip over the data, and extract the crc32.
             offset += length;
-            [[maybe_unused]] hilet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
+            [[maybe_unused]] auto const crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
         }
 
         hi_check(!IHDR_bytes.empty(), "Missing IHDR chunk.");
@@ -271,7 +271,7 @@ private:
 
     void read_IHDR(std::span<std::byte const> bytes)
     {
-        hilet ihdr = make_placement_ptr<IHDR>(bytes);
+        auto const ihdr = make_placement_ptr<IHDR>(bytes);
 
         _width = *ihdr->width;
         _height = *ihdr->height;
@@ -311,9 +311,9 @@ private:
 
     void read_cHRM(std::span<std::byte const> bytes)
     {
-        hilet chrm = make_placement_ptr<cHRM>(bytes);
+        auto const chrm = make_placement_ptr<cHRM>(bytes);
 
-        hilet color_to_XYZ = color_primaries_to_RGBtoXYZ(
+        auto const color_to_XYZ = color_primaries_to_RGBtoXYZ(
             narrow_cast<float>(*chrm->white_point_x) / 100'000.0f,
             narrow_cast<float>(*chrm->white_point_y) / 100'000.0f,
             narrow_cast<float>(*chrm->red_x) / 100'000.0f,
@@ -328,8 +328,8 @@ private:
 
     void read_gAMA(std::span<std::byte const> bytes)
     {
-        hilet gama = make_placement_ptr<gAMA>(bytes);
-        hilet gamma = narrow_cast<float>(*gama->gamma) / 100'000.0f;
+        auto const gama = make_placement_ptr<gAMA>(bytes);
+        auto const gamma = narrow_cast<float>(*gama->gamma) / 100'000.0f;
         hi_check(gamma != 0.0f, "Gamma value can not be zero");
 
         generate_gamma_transfer_function(1.0f / gamma);
@@ -351,8 +351,8 @@ private:
 
     void read_sRGB(std::span<std::byte const> bytes)
     {
-        hilet srgb = make_placement_ptr<sRGB>(bytes);
-        hilet rendering_intent = srgb->rendering_intent;
+        auto const srgb = make_placement_ptr<sRGB>(bytes);
+        auto const rendering_intent = srgb->rendering_intent;
         hi_check(rendering_intent <= 3, "Invalid rendering intent");
 
         _color_to_sRGB = {};
@@ -361,8 +361,8 @@ private:
 
     void generate_sRGB_transfer_function() noexcept
     {
-        hilet value_range = _bit_depth == 8 ? 256 : 65536;
-        hilet value_range_f = narrow_cast<float>(value_range);
+        auto const value_range = _bit_depth == 8 ? 256 : 65536;
+        auto const value_range_f = narrow_cast<float>(value_range);
         for (int i = 0; i != value_range; ++i) {
             auto u = narrow_cast<float>(i) / value_range_f;
             _transfer_function.push_back(sRGB_gamma_to_linear(u));
@@ -374,8 +374,8 @@ private:
         // SDR brightness is 80 cd/m2. Rec2100/PQ brightness is 10,000 cd/m2.
         constexpr float hdr_multiplier = 10'000.0f / 80.0f;
 
-        hilet value_range = _bit_depth == 8 ? 256 : 65536;
-        hilet value_range_f = narrow_cast<float>(value_range);
+        auto const value_range = _bit_depth == 8 ? 256 : 65536;
+        auto const value_range_f = narrow_cast<float>(value_range);
         for (int i = 0; i != value_range; ++i) {
             auto u = narrow_cast<float>(i) / value_range_f;
             _transfer_function.push_back(Rec2100_gamma_to_linear(u) * hdr_multiplier);
@@ -384,8 +384,8 @@ private:
 
     void generate_gamma_transfer_function(float gamma) noexcept
     {
-        hilet value_range = _bit_depth == 8 ? 256 : 65536;
-        hilet value_range_f = narrow_cast<float>(value_range);
+        auto const value_range = _bit_depth == 8 ? 256 : 65536;
+        auto const value_range_f = narrow_cast<float>(value_range);
         for (int i = 0; i != value_range; ++i) {
             auto u = narrow_cast<float>(i) / value_range_f;
             _transfer_function.push_back(powf(u, gamma));
@@ -398,14 +398,14 @@ private:
             return zlib_decompress(_idat_chunk_data[0], image_data_size);
         } else {
             // Merge all idat chunks together.
-            hilet compressed_data_size =
-                std::accumulate(_idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0}, [](hilet& a, hilet& b) {
+            auto const compressed_data_size =
+                std::accumulate(_idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0}, [](auto const& a, auto const& b) {
                     return a + ssize(b);
                 });
 
             bstring compressed_data;
             compressed_data.reserve(compressed_data_size);
-            for (hilet chunk_data : _idat_chunk_data) {
+            for (auto const chunk_data : _idat_chunk_data) {
                 std::copy(chunk_data.begin(), chunk_data.end(), std::back_inserter(compressed_data));
             }
 
@@ -415,12 +415,12 @@ private:
 
     void unfilter_lines(bstring& image_data) const
     {
-        hilet image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), image_data.size());
+        auto const image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), image_data.size());
         auto zero_line = std::vector<uint8_t>(_bytes_per_line, uint8_t{0});
 
         auto prev_line = std::span(zero_line.data(), zero_line.size());
         for (auto y = 0_uz; y != _height; ++y) {
-            hilet line = image_bytes.subspan(y * _stride, _stride);
+            auto const line = image_bytes.subspan(y * _stride, _stride);
             unfilter_line(line, prev_line);
             prev_line = line.subspan(1, _bytes_per_line);
         }
@@ -447,7 +447,7 @@ private:
     void unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
     {
         for (int i = 0; i != _bytes_per_line; ++i) {
-            hilet j = i - _bytes_per_pixel;
+            auto const j = i - _bytes_per_pixel;
 
             uint8_t prev_raw = j >= 0 ? line[j] : 0;
             line[i] += prev_raw;
@@ -464,7 +464,7 @@ private:
     void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
     {
         for (int i = 0; i != _bytes_per_line; ++i) {
-            hilet j = i - _bytes_per_pixel;
+            auto const j = i - _bytes_per_pixel;
 
             uint8_t prev_raw = j >= 0 ? line[j] : 0;
             line[i] += (prev_raw + prev_line[i]) / 2;
@@ -474,7 +474,7 @@ private:
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
     {
         for (int i = 0; i != _bytes_per_line; ++i) {
-            hilet j = i - _bytes_per_pixel;
+            auto const j = i - _bytes_per_pixel;
 
             uint8_t const up = prev_line[i];
             uint8_t const left = j >= 0 ? line[j] : 0;
@@ -498,15 +498,15 @@ private:
 
     void data_to_image_line(std::span<std::byte const> bytes, std::span<sfloat_rgba16> line) const noexcept
     {
-        hilet alpha_mul = _bit_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
+        auto const alpha_mul = _bit_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
         for (int x = 0; x != _width; ++x) {
-            hilet value = extract_pixel_from_line(bytes, x);
+            auto const value = extract_pixel_from_line(bytes, x);
 
-            hilet linear_RGB =
+            auto const linear_RGB =
                 f32x4{_transfer_function[value.x()], _transfer_function[value.y()], _transfer_function[value.z()], 1.0f};
 
-            hilet linear_sRGB_color = _color_to_sRGB * linear_RGB;
-            hilet alpha = static_cast<float>(value.w()) * alpha_mul;
+            auto const linear_sRGB_color = _color_to_sRGB * linear_RGB;
+            auto const alpha = static_cast<float>(value.w()) * alpha_mul;
 
             // pre-multiply the alpha for use in texture-maps.
             line[x] = linear_sRGB_color * f32x4::broadcast(alpha);

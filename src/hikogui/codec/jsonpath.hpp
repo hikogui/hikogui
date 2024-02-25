@@ -85,7 +85,7 @@ public:
         {
             auto r = std::string{"["};
             auto first = true;
-            for (hilet& name : *this) {
+            for (auto const& name : *this) {
                 if (not first) {
                     r += ',';
                 }
@@ -116,7 +116,7 @@ public:
         {
             auto r = std::string{"["};
             auto first = true;
-            for (hilet index : *this) {
+            for (auto const index : *this) {
                 if (not first) {
                     r += ',';
                 }
@@ -130,10 +130,10 @@ public:
 
         [[nodiscard]] generator<std::size_t> filter(std::size_t size) const noexcept
         {
-            hilet size_ = narrow_cast<ptrdiff_t>(size);
+            auto const size_ = narrow_cast<ptrdiff_t>(size);
 
-            for (hilet index : *this) {
-                hilet index_ = index >= 0 ? index : size_ + index;
+            for (auto const index : *this) {
+                auto const index_ = index >= 0 ? index : size_ + index;
                 if (index_ >= 0 and index_ < size_) {
                     co_yield narrow_cast<std::size_t>(index_);
                 }
@@ -170,8 +170,8 @@ public:
          */
         [[nodiscard]] constexpr std::size_t begin(std::size_t size) const noexcept
         {
-            hilet size_ = narrow_cast<ptrdiff_t>(size);
-            hilet begin = first >= 0 ? first : size_ + first;
+            auto const size_ = narrow_cast<ptrdiff_t>(size);
+            auto const begin = first >= 0 ? first : size_ + first;
             return narrow_cast<std::size_t>(std::clamp(begin, 0_z, size_));
         }
 
@@ -189,13 +189,13 @@ public:
                 return size;
 
             } else {
-                hilet size_ = narrow_cast<ptrdiff_t>(size);
-                hilet end = last >= 0 ? last : size_ + last;
-                hilet last_ = std::clamp(end, 0_z, size_);
+                auto const size_ = narrow_cast<ptrdiff_t>(size);
+                auto const end = last >= 0 ? last : size_ + last;
+                auto const last_ = std::clamp(end, 0_z, size_);
 
-                hilet first_ = begin(size);
-                hilet distance = last_ - first_;
-                hilet steps = distance / step;
+                auto const first_ = begin(size);
+                auto const distance = last_ - first_;
+                auto const steps = distance / step;
                 return narrow_cast<std::size_t>(first_ + steps * step);
             }
         }
@@ -267,9 +267,9 @@ public:
     [[nodiscard]] constexpr bool is_singular() const noexcept
     {
         auto r = true;
-        for (hilet& node : _nodes) {
+        for (auto const& node : _nodes) {
             r &= std::visit(
-                [](hilet& node_) {
+                [](auto const& node_) {
                     return node_.is_singular();
                 },
                 node);
@@ -315,9 +315,9 @@ public:
     [[nodiscard]] constexpr friend std::string to_string(jsonpath const& path) noexcept
     {
         auto r = std::string{};
-        for (hilet& node : path._nodes) {
+        for (auto const& node : path._nodes) {
             r += std::visit(
-                [](hilet& node_) {
+                [](auto const& node_) {
                     return node_.string();
                 },
                 node);

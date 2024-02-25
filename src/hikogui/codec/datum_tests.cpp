@@ -15,7 +15,7 @@ using namespace hi;
 
 TEST(datum, IntOperations)
 {
-    hilet v = datum{42};
+    auto const v = datum{42};
 
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
@@ -37,11 +37,11 @@ TEST(datum, IntOperations)
     ASSERT_EQ(v < 41.0, false);
     ASSERT_EQ(v < 43.0, true);
 
-    hilet a = v + 3;
+    auto const a = v + 3;
     ASSERT_EQ(holds_alternative<long long>(a), true);
     ASSERT_EQ(a == 45, true);
 
-    hilet b = v + 3.0;
+    auto const b = v + 3.0;
     ASSERT_EQ(holds_alternative<double>(b), true);
     ASSERT_EQ(b == 45.0, true);
 
@@ -64,7 +64,7 @@ TEST(datum, IntOperations)
 
 TEST(datum, NegativeIntOperations)
 {
-    hilet v = datum{-1};
+    auto const v = datum{-1};
 
     ASSERT_EQ(static_cast<int>(v), -1);
     ASSERT_EQ(static_cast<std::string>(v), "-1"s);
@@ -72,7 +72,7 @@ TEST(datum, NegativeIntOperations)
 
 TEST(datum, FloatOperations)
 {
-    hilet v = datum{42.0};
+    auto const v = datum{42.0};
 
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
@@ -92,25 +92,25 @@ TEST(datum, FloatOperations)
     ASSERT_EQ(v < 41, false);
     ASSERT_EQ(v < 43, true);
 
-    hilet a = v + 3;
+    auto const a = v + 3;
     ASSERT_EQ(holds_alternative<double>(a), true);
     ASSERT_EQ(a == 45.0, true);
 
-    hilet b = v + 3.0;
+    auto const b = v + 3.0;
     ASSERT_EQ(holds_alternative<double>(b), true);
     ASSERT_EQ(b == 45.0, true);
 }
 
 TEST(datum, StringOperations)
 {
-    hilet v = datum{"Hello World"};
+    auto const v = datum{"Hello World"};
 
     ASSERT_EQ(static_cast<std::string>(v), "Hello World"s);
 }
 
 TEST(datum, ArrayOperations)
 {
-    hilet v = datum::make_vector(11, 12, 13, 14, 15);
+    auto const v = datum::make_vector(11, 12, 13, 14, 15);
 
     ASSERT_EQ(v[0], 11);
     ASSERT_EQ(v[1], 12);

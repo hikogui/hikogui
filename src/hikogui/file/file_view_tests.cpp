@@ -17,7 +17,7 @@ using namespace hi;
 
 TEST(file_view, read)
 {
-    hilet view = file_view{library_source_dir() / "tests" / "data" / "file_view.txt"};
+    auto const view = file_view{library_source_dir() / "tests" / "data" / "file_view.txt"};
 
     ASSERT_EQ(as_string_view(view), "The quick brown fox jumps over the lazy dog.");
 }
