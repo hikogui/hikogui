@@ -88,12 +88,12 @@ hi_target("sse,sse2,f16c")
 [[nodiscard]] inline std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> a) noexcept
 {
     auto const a_ = _mm_loadu_ps(a.data());
-    auto const r = _mm_cvtps_ph(a_, _MM_FROUND_CUR_DIRECTION);
+    auto const r = _mm_cvtps_ph(a_, _MM_FROUND_TO_ZERO);
     return std::bit_cast<std::array<uint16_t,4>>(_mm_cvtsi128_si64(r));
 }
 
 hi_target("sse,sse2,f16c")
-[[nodiscard]] inline uint16_t float_to_half_f16c(float a) noexcept
+[[nodiscard]] hi_no_inline inline uint16_t float_to_half_f16c(float a) noexcept
 {
     auto a_ = std::array<float, 4>{};
     std::get<0>(a_) = a;
@@ -107,6 +107,9 @@ hi_target("sse,sse2,f16c")
 hi_target("sse,sse2")
 [[nodiscard]] inline std::array<uint16_t,4> float_to_half_sse2(std::array<float,4> a) noexcept
 {
+    auto const unknown_value = _mm_undefined_si128();
+    auto const ffffffff = _mm_cmpeq_epi32(unknown_value, unknown_value);
+
     auto r = _mm_castps_si128(_mm_loadu_ps(a.data()));
 
     // Extract the sign into bit 15.
@@ -115,18 +118,21 @@ hi_target("sse,sse2")
     // Strip off the sign.
     r = _mm_srli_epi32(_mm_slli_epi32(r, 1), 1);
 
-    auto const is_nan = _mm_cmpgt_epi32(r, _mm_set1_epi32(0x7f80'0000));
+    auto const infinite_f32 = _mm_slli_epi32(_mm_srli_epi32(ffffffff, 24), 23);
+    auto const is_nan = _mm_cmpgt_epi32(r, infinite_f32);
     if (_mm_movemask_epi8(is_nan) != 0) {
         return float_to_half_generic(a);
     }
 
     auto const is_zero = _mm_cmpeq_epi32(r, _mm_setzero_si128());
 
-    // Adjust exponent.
-    r = _mm_sub_epi32(r, _mm_set1_epi32(112 * 0x0040'0000));
+    // Subtract 112 from the exponent.
+    auto const exponent_adjust = _mm_slli_epi32(_mm_srli_epi32(ffffffff, 29), 27);
+    r = _mm_sub_epi32(r, exponent_adjust);
 
     // If after adjustment the exponent is zero or less, then it is a denormal.
-    auto const is_denorm = _mm_andnot_si128(is_zero, _mm_cmpgt_epi32(_mm_setzero_si128(), r));
+    auto const max_denormal = _mm_srli_epi32(ffffffff, 9);
+    auto const is_denorm = _mm_andnot_si128(is_zero, _mm_cmpgt_epi32(max_denormal, r));
     if (_mm_movemask_epi8(is_denorm) != 0) {
         return float_to_half_generic(a);
     }
@@ -136,10 +142,10 @@ hi_target("sse,sse2")
 
     // If after adjustment the exponent is greater or equal to 0x1f then the value is infinite.
     // Then make the value not go over infinite.
-    auto const inf_value = _mm_set1_epi32(0x0f80'0000);
-    auto const is_inf = _mm_cmpgt_epi32(r, inf_value);
+    auto const infinite_f16_in_f32 = _mm_slli_epi32(_mm_srli_epi32(ffffffff, 27), 23);
+    auto const is_inf = _mm_cmpgt_epi32(r, infinite_f16_in_f32);
     r = _mm_andnot_si128(is_inf, r);
-    r = _mm_or_si128(r, _mm_and_si128(is_inf, inf_value));
+    r = _mm_or_si128(r, _mm_and_si128(is_inf, infinite_f16_in_f32));
 
     // Shift to fit inside 16-bits.
     r = _mm_srli_epi32(r, 13);
@@ -155,7 +161,7 @@ hi_target("sse,sse2")
 }
 
 hi_target("sse,sse2")
-[[nodiscard]] inline uint16_t float_to_half_sse2(float a) noexcept
+[[nodiscard]] hi_no_inline inline uint16_t float_to_half_sse2(float a) noexcept
 {
     auto a_ = std::array<float, 4>{};
     std::get<0>(a_) = a;
