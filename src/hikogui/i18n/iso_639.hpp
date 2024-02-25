@@ -109,7 +109,7 @@ public:
         }
     }
 
-    constexpr iso_639(intrinsic_t, uint16_t v) noexcept : _v(v) {}
+    constexpr iso_639(std::in_place_t, uint16_t v) noexcept : _v(v) {}
 
     [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
     {

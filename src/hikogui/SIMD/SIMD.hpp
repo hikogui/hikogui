@@ -10,5 +10,13 @@
 #endif
 #include "array_intrinsic.hpp" // export
 #include "simd_intf.hpp" // export
+#if defined(HI_HAS_X86)
+#include "cpu_id_x86.hpp" // export
+#else
+#include "cpu_id_generic.hpp" // export
+#endif
+#include "half.hpp" // export
+#include "half_to_float.hpp" // export
+#include "float_to_half.hpp" // export
 
 hi_export_module(hikogui.SIMD);

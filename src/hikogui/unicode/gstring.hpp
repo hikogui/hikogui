@@ -125,7 +125,7 @@ struct char_traits<hi::grapheme> {
 
     constexpr static char_type to_char_type(int_type c) noexcept
     {
-        return c < 0 ? char_type{U'\ufffd'} : char_type{hi::intrinsic_t{}, hi::char_cast<char_type::value_type>(c)};
+        return c < 0 ? char_type{U'\ufffd'} : char_type{std::in_place, hi::char_cast<char_type::value_type>(c)};
     }
 
     constexpr static int_type to_int_type(char_type c) noexcept

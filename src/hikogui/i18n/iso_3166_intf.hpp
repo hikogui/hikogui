@@ -34,7 +34,7 @@ public:
 
     constexpr iso_3166(std::string_view str);
 
-    constexpr iso_3166(intrinsic_t, uint16_t v) noexcept : _v(v)
+    constexpr iso_3166(std::in_place_t, uint16_t v) noexcept : _v(v)
     {
         hi_axiom(_v < 1000);
     }

@@ -84,7 +84,7 @@ namespace detail {
     std::array<uint8_t, 65536> r{};
 
     for (int i = 0; i != 65536; ++i) {
-        auto f = static_cast<float>(half(intrinsic, narrow_cast<uint16_t>(i)));
+        auto f = static_cast<float>(half(std::in_place, narrow_cast<uint16_t>(i)));
         if (f != f) {
             f = 0.0f;
         }

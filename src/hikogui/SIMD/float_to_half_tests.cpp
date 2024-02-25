@@ -333,173 +333,166 @@ TEST_CASE(f16c_test)
 }
 #endif
 
-#if HI_HAS_AVX2
-[[nodiscard]] uint16_t float_to_half_sse4_1(float v) noexcept
-{
-    auto v_ = std::array<float, 4>{v, v, v, v};
-    auto r = hi::float_to_half_sse4_1(v_);
-    return std::get<0>(r);
-}
-
-TEST_CASE(sse4_1_test)
+#if HI_HAS_SSE2
+TEST_CASE(sse2_test)
 {
     // Thanks to https://github.com/ecorm for the list of test vectors.
 
     // (-) minus infinity
-    REQUIRE(float_to_half_sse4_1(-std::numeric_limits<float>::infinity()) == 0xfc00);
+    REQUIRE(hi::float_to_half_sse2(-std::numeric_limits<float>::infinity()) == 0xfc00);
 
     // infinity
-    REQUIRE(float_to_half_sse4_1(std::numeric_limits<float>::infinity()) == 0x7c00);
+    REQUIRE(hi::float_to_half_sse2(std::numeric_limits<float>::infinity()) == 0x7c00);
 
     // 65520
-    REQUIRE(float_to_half_sse4_1(65520.0f) == 0x7BFF);
+    REQUIRE(hi::float_to_half_sse2(65520.0f) == 0x7BFF);
 
     // 65520-
-    REQUIRE(float_to_half_sse4_1(65519.996f) == 0x7BFF);
+    REQUIRE(hi::float_to_half_sse2(65519.996f) == 0x7BFF);
 
     // 65504+
-    REQUIRE(float_to_half_sse4_1(65504.004f) == 0x7BFF);
+    REQUIRE(hi::float_to_half_sse2(65504.004f) == 0x7BFF);
 
     // 65504-
-    REQUIRE(float_to_half_sse4_1(65503.996f) == 0x7BFE);
+    REQUIRE(hi::float_to_half_sse2(65503.996f) == 0x7BFE);
 
     // 2^15+
-    REQUIRE(float_to_half_sse4_1(32768.002f) == 0x7800);
+    REQUIRE(hi::float_to_half_sse2(32768.002f) == 0x7800);
 
     // 2^15-
-    REQUIRE(float_to_half_sse4_1(32767.998f) == 0x77FF);
+    REQUIRE(hi::float_to_half_sse2(32767.998f) == 0x77FF);
 
     // 32760+
-    REQUIRE(float_to_half_sse4_1(32760.002f) == 0x77FF);
+    REQUIRE(hi::float_to_half_sse2(32760.002f) == 0x77FF);
 
     // 32760
-    REQUIRE(float_to_half_sse4_1(32760.0f) == 0x77FF);
+    REQUIRE(hi::float_to_half_sse2(32760.0f) == 0x77FF);
 
     // 32760-
-    REQUIRE(float_to_half_sse4_1(32759.998f) == 0x77FF);
+    REQUIRE(hi::float_to_half_sse2(32759.998f) == 0x77FF);
 
     // 32752+
-    REQUIRE(float_to_half_sse4_1(32752.002f) == 0x77FF);
+    REQUIRE(hi::float_to_half_sse2(32752.002f) == 0x77FF);
 
     // 32752-
-    REQUIRE(float_to_half_sse4_1(32751.998f) == 0x77FE);
+    REQUIRE(hi::float_to_half_sse2(32751.998f) == 0x77FE);
 
     // 1027.5+
-    REQUIRE(float_to_half_sse4_1(1027.50012f) == 0x6403);
+    REQUIRE(hi::float_to_half_sse2(1027.50012f) == 0x6403);
 
     // 1027.5
-    REQUIRE(float_to_half_sse4_1(1027.5f) == 0x6403);
+    REQUIRE(hi::float_to_half_sse2(1027.5f) == 0x6403);
 
     // 1027.5-
-    REQUIRE(float_to_half_sse4_1(1027.49988f) == 0x6403);
+    REQUIRE(hi::float_to_half_sse2(1027.49988f) == 0x6403);
 
     // pi
-    REQUIRE(float_to_half_sse4_1(3.1415927f) == 0x4248);
+    REQUIRE(hi::float_to_half_sse2(3.1415927f) == 0x4248);
 
     // e
-    REQUIRE(float_to_half_sse4_1(2.7182818f) == 0x416F);
+    REQUIRE(hi::float_to_half_sse2(2.7182818f) == 0x416F);
 
     // subnormal+
-    REQUIRE(float_to_half_sse4_1(3.07261980e-05f) == 0x0203);
+    REQUIRE(hi::float_to_half_sse2(3.07261980e-05f) == 0x0203);
 
     // subnormal
-    REQUIRE(float_to_half_sse4_1(3.07261944e-05f) == 0x0203);
+    REQUIRE(hi::float_to_half_sse2(3.07261944e-05f) == 0x0203);
 
     // subnormal-
-    REQUIRE(float_to_half_sse4_1(3.07261907e-05f) == 0x0203);
+    REQUIRE(hi::float_to_half_sse2(3.07261907e-05f) == 0x0203);
 
     // 1/3
-    REQUIRE(float_to_half_sse4_1(0.3333333f) == 0x3555);
+    REQUIRE(hi::float_to_half_sse2(0.3333333f) == 0x3555);
 
     // 0.3
-    REQUIRE(float_to_half_sse4_1(0.3f) == 0x34CC);
+    REQUIRE(hi::float_to_half_sse2(0.3f) == 0x34CC);
 
     // min_subnormal-
-    REQUIRE(float_to_half_sse4_1(5.9604641e-08f) == 0x0000);
+    REQUIRE(hi::float_to_half_sse2(5.9604641e-08f) == 0x0000);
 
     // (min_subnormal/2)+
-    REQUIRE(float_to_half_sse4_1(2.9802325e-08f) == 0x0000);
+    REQUIRE(hi::float_to_half_sse2(2.9802325e-08f) == 0x0000);
 
     // min_subnormal/2
-    REQUIRE(float_to_half_sse4_1(2.9802322e-08f) == 0x0000);
+    REQUIRE(hi::float_to_half_sse2(2.9802322e-08f) == 0x0000);
 
     // epsilon
-    REQUIRE(float_to_half_sse4_1(0.0f) == 0x0000);
+    REQUIRE(hi::float_to_half_sse2(0.0f) == 0x0000);
 
     // -epsilon
-    REQUIRE(float_to_half_sse4_1(-0.0f) == 0x8000);
+    REQUIRE(hi::float_to_half_sse2(-0.0f) == 0x8000);
 
     // -min_subnormal/2
-    REQUIRE(float_to_half_sse4_1(-2.9802322e-08f) == 0x8000);
+    REQUIRE(hi::float_to_half_sse2(-2.9802322e-08f) == 0x8000);
 
     // -(min_subnorm/2)-
-    REQUIRE(float_to_half_sse4_1(-2.9802325e-08f) == 0x8000);
+    REQUIRE(hi::float_to_half_sse2(-2.9802325e-08f) == 0x8000);
 
     // -min_subnormal+
-    REQUIRE(float_to_half_sse4_1(-5.9604641e-08f) == 0x8000);
+    REQUIRE(hi::float_to_half_sse2(-5.9604641e-08f) == 0x8000);
 
     // -0.3
-    REQUIRE(float_to_half_sse4_1(-0.3f) == 0xB4CC);
+    REQUIRE(hi::float_to_half_sse2(-0.3f) == 0xB4CC);
 
     // -1/3
-    REQUIRE(float_to_half_sse4_1(-0.3333333f) == 0xB555);
+    REQUIRE(hi::float_to_half_sse2(-0.3333333f) == 0xB555);
 
     // neg subnormal+
-    REQUIRE(float_to_half_sse4_1(-3.07261907e-05f) == 0x8203);
+    REQUIRE(hi::float_to_half_sse2(-3.07261907e-05f) == 0x8203);
 
     // neg subnormal
-    REQUIRE(float_to_half_sse4_1(-3.07261944e-05f) == 0x8203);
+    REQUIRE(hi::float_to_half_sse2(-3.07261944e-05f) == 0x8203);
 
     // neg subnormal-
-    REQUIRE(float_to_half_sse4_1(-3.07261980e-05f) == 0x8203);
+    REQUIRE(hi::float_to_half_sse2(-3.07261980e-05f) == 0x8203);
 
     // -e
-    REQUIRE(float_to_half_sse4_1(-2.7182818f) == 0xC16F);
+    REQUIRE(hi::float_to_half_sse2(-2.7182818f) == 0xC16F);
 
     // -pi
-    REQUIRE(float_to_half_sse4_1(-3.1415927f) == 0xC248);
+    REQUIRE(hi::float_to_half_sse2(-3.1415927f) == 0xC248);
 
     // -1027.5+
-    REQUIRE(float_to_half_sse4_1(-1027.49988f) == 0xE403);
+    REQUIRE(hi::float_to_half_sse2(-1027.49988f) == 0xE403);
 
     // -1027.5
-    REQUIRE(float_to_half_sse4_1(-1027.5f) == 0xE403);
+    REQUIRE(hi::float_to_half_sse2(-1027.5f) == 0xE403);
 
     // -1027.5-
-    REQUIRE(float_to_half_sse4_1(-1027.50012f) == 0xE403);
+    REQUIRE(hi::float_to_half_sse2(-1027.50012f) == 0xE403);
 
     // -32752+
-    REQUIRE(float_to_half_sse4_1(-32751.998f) == 0xF7FE);
+    REQUIRE(hi::float_to_half_sse2(-32751.998f) == 0xF7FE);
 
     // -32752-
-    REQUIRE(float_to_half_sse4_1(-32752.002f) == 0xF7FF);
+    REQUIRE(hi::float_to_half_sse2(-32752.002f) == 0xF7FF);
 
     // -32760+
-    REQUIRE(float_to_half_sse4_1(-32759.998f) == 0xF7FF);
+    REQUIRE(hi::float_to_half_sse2(-32759.998f) == 0xF7FF);
 
     // -32760
-    REQUIRE(float_to_half_sse4_1(-32760.0f) == 0xF7FF);
+    REQUIRE(hi::float_to_half_sse2(-32760.0f) == 0xF7FF);
 
     // -32760-
-    REQUIRE(float_to_half_sse4_1(-32760.002f) == 0xF7FF);
+    REQUIRE(hi::float_to_half_sse2(-32760.002f) == 0xF7FF);
 
     // -2^15+
-    REQUIRE(float_to_half_sse4_1(-32767.998f) == 0xF7FF);
+    REQUIRE(hi::float_to_half_sse2(-32767.998f) == 0xF7FF);
 
     // -2^15-
-    REQUIRE(float_to_half_sse4_1(-32768.002f) == 0xF800);
+    REQUIRE(hi::float_to_half_sse2(-32768.002f) == 0xF800);
 
     // -65504+
-    REQUIRE(float_to_half_sse4_1(-65503.996f) == 0xFBFE);
+    REQUIRE(hi::float_to_half_sse2(-65503.996f) == 0xFBFE);
 
     // -65504-
-    REQUIRE(float_to_half_sse4_1(-65504.004f) == 0xFBFF);
+    REQUIRE(hi::float_to_half_sse2(-65504.004f) == 0xFBFF);
 
     // -65520+
-    REQUIRE(float_to_half_sse4_1(-65519.996f) == 0xFBFF);
+    REQUIRE(hi::float_to_half_sse2(-65519.996f) == 0xFBFF);
 
     // -65520
-    REQUIRE(float_to_half_sse4_1(-65520.0f) == 0xFBFF);
+    REQUIRE(hi::float_to_half_sse2(-65520.0f) == 0xFBFF);
 }
 #endif
 

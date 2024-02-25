@@ -30,7 +30,7 @@ struct box_shape {
     constexpr box_shape(extent2 size) noexcept : rectangle(size), baseline(), centerline() {}
 
     constexpr box_shape(
-        override_t,
+        std::in_place_t,
         box_constraints const& constraints,
         aarectangle const& rectangle,
         float baseline_adjustment) noexcept :
@@ -48,7 +48,7 @@ struct box_shape {
     }
 
     constexpr box_shape(box_constraints const& constraints, aarectangle rectangle, float baseline_adjustment) noexcept :
-        box_shape(override_t{}, constraints, rectangle, baseline_adjustment)
+        box_shape(std::in_place, constraints, rectangle, baseline_adjustment)
     {
         hi_axiom(rectangle.size() >= constraints.minimum);
     }

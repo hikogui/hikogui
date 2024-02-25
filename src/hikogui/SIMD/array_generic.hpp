@@ -31,6 +31,7 @@ struct array_generic {
     using value_type = T;
     using array_type = std::array<T, N>;
     using intrinsic_type = array_intrinsic<T, N>;
+
     // clang-format off
     using mask_type =
         std::conditional_t<sizeof(T) * CHAR_BIT == 8, uint8_t,

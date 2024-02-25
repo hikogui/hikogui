@@ -10,7 +10,6 @@
 #else
 #include "cpu_id_generic.hpp"
 #endif
-#include "misc.hpp"
 #include <cstdint>
 #include <bit>
 #include <type_traits>
@@ -75,7 +74,7 @@ namespace detail {
 {
     auto r = std::array<float, 65536>{};
 
-    for (auto i = 0_uz; i != 65536; ++i) {
+    for (size_t i = 0; i != 65536; ++i) {
         r[i] = half_to_float_generic(static_cast<uint16_t>(i));
     }
 
@@ -87,38 +86,21 @@ constexpr auto half_to_float_table = half_to_float_table_init();
 }
 
 #if HI_HAS_X86
-hi_target("sse,sse2,sse4.1,f16c") [[nodiscard]] hi_inline std::array<float, 4> half_to_float_f16c(std::array<uint16_t, 4> v) noexcept
+hi_target("sse,sse2,f16c") [[nodiscard]] hi_inline std::array<float, 4> half_to_float_f16c(std::array<uint16_t, 4> v) noexcept
 {
-    hilet t1 = std::bit_cast<int64_t>(v);
-    hilet t2 = _mm_set1_epi64x(t1);
-    hilet t3 = _mm_cvtph_ps(t2);
+    auto const r = _mm_cvtph_ps(_mm_set1_epi64x(std::bit_cast<int64_t>(v)));
 
-    auto r = std::array<float, 4>{};
-    _mm_storeu_ps(r.data(), t3);
-    return r;
+    auto r_ = std::array<float, 4>{};
+    _mm_storeu_ps(r_.data(), r);
+    return r_;
 }
-#endif
 
-#if HI_HAS_X86
-hi_target("sse2,sse4.1,f16c")
-[[nodiscard]] hi_inline float half_to_float_f16c(uint16_t v) noexcept
+[[nodiscard]] inline float half_to_float_f16c(uint16_t v) noexcept
 {
-    return std::bit_cast<float>(_mm_extract_ps(_mm_cvtph_ps(_mm_set1_epi16(static_cast<short>(v))), 0));
-}
-#endif
-
-#if HI_HAS_X86
-hi_target("sse,sse2,sse4.1,avx2")
-[[nodiscard]] hi_inline std::array<float, 4> half_to_float_avx2(std::array<uint16_t, 4> v) noexcept
-{
-    hilet t1 = std::bit_cast<int64_t>(v);
-    hilet t2 = _mm_set1_epi64x(t1);
-    hilet t3 = _mm_cvtepu16_epi32(t2);
-    hilet t4 = _mm_i32gather_ps(detail::half_to_float_table.data(), t3, sizeof(float));
-
-    auto r = std::array<float, 4>{};
-    _mm_storeu_ps(r.data(), t4);
-    return r;
+    auto v_ = std::array<uint16_t, 4>{};
+    std::get<0>(v_) = v;
+    auto const r = half_to_float_f16c(v_);
+    return std::get<0>(r);
 }
 #endif
 
@@ -129,14 +111,11 @@ hi_target("sse,sse2,sse4.1,avx2")
         if (has_f16c()) {
             return half_to_float_f16c(v);
         }
-        if (has_avx2()) {
-            return half_to_float_avx2(v);
-        }
 #endif
     }
 
     auto r = std::array<float, 4>{};
-    for (auto i = 0_uz; i != 4; ++i) {
+    for (size_t i = 0; i != 4; ++i) {
         r[i] = detail::half_to_float_table[v[i]];
     }
     return r;
@@ -147,7 +126,9 @@ hi_target("sse,sse2,sse4.1,avx2")
     if (not std::is_constant_evaluated()) {
 #if HI_HAS_X86
         if (has_f16c()) {
-            return half_to_float_f16c(v);
+            auto const v_ = std::array<uint16_t,4>{v, 0, 0, 0};
+            auto const r = half_to_float_f16c(v_);
+            return std::get<0>(r);
         }
 #endif
     }

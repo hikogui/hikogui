@@ -38,9 +38,11 @@ if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     add_custom_command(TARGET hikogui_htests PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_htests>)
 
-    target_compile_definitions(hikogui_htests PRIVATE "_DISABLE_VECTOR_ANNOTATION")
-    target_compile_definitions(hikogui_htests PRIVATE "_DISABLE_STRING_ANNOTATION")
-    target_compile_options(hikogui_htests PRIVATE -fsanitize=address)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_compile_definitions(hikogui_htests PRIVATE "_DISABLE_VECTOR_ANNOTATION")
+        target_compile_definitions(hikogui_htests PRIVATE "_DISABLE_STRING_ANNOTATION")
+        target_compile_options(hikogui_htests PRIVATE -fsanitize=address)
+    endif()
 
 elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -128,7 +130,6 @@ target_sources(hikogui_gtests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exceptions_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null_tests.cpp
@@ -159,8 +160,9 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector3_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/float_to_half_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/half_to_float_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float_to_half_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_to_float_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_tests.cpp
 )
 
 show_build_target_properties(hikogui_gtests)

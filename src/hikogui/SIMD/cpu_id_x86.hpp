@@ -4,12 +4,12 @@
 
 #pragma once
 
-
-#include "terminate.hpp"
-#include "cast.hpp"
-#include "enum_metadata.hpp"
-#include "console_win32.hpp"
 #include "../macros.hpp"
+
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 #include <array>
 #include <utility>
 #include <cstdint>
@@ -41,13 +41,13 @@
  *  - MSVC: `/arch:`
  *  - clang and gcc: `-march=`, `-mcpu=` and other `-m*` arguments.
  *
- * The `hi::has_*()` functions are constexpr true if the corrosponding
+ * The `hi::has_*()` functions are constexpr true if the corresponding
  * `HI_HAS_*` macro is set. The other `hi::has_*()` functions determine
- * the existance of that CPU feature based on the cached result of the cpu-id
+ * the existence of that CPU feature based on the cached result of the cpu-id
  * instruction.
  *
  * Clang and gcc require that `-march=` and `-m*` command line arguments
- * are set to be able to use a corrosponding compiler intrinsic. For
+ * are set to be able to use a corresponding compiler intrinsic. For
  * example: if you want to use the `_mm_cvtph_ps()` intrinsic than the
  * `-mf16c` must be passed as the compile time argument.
  *
@@ -59,8 +59,7 @@
  */
 hi_export_module(hikogui.utility.cpu_id);
 
-namespace hi {
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** Possible features of x86 CPUs.
  *
@@ -74,7 +73,7 @@ inline namespace v1 {
  * Plus some optional features that are used by HikoGUI.
  *
  */
-enum class cpu_feature {
+enum class cpu_feature : uint8_t {
     // x86-64-v1
     cmov,
     cx8,
@@ -119,65 +118,75 @@ enum class cpu_feature {
     rdseed,
 };
 
-// clang-format off
-constexpr auto cpu_feature_metadata = enum_metadata{
-    cpu_feature::cmov, "CMOV",
-    cpu_feature::cx8, "CX8",
-    cpu_feature::fpu, "FPU",
-    cpu_feature::fxsr, "FXSR",
-    cpu_feature::mmx, "MMX",
-    cpu_feature::osfxsr, "OSDXSR",
-    cpu_feature::sce, "SCE",
-    cpu_feature::sse, "SSE",
-    cpu_feature::sse2, "SSE2",
-    cpu_feature::cx16, "CX16",
-    cpu_feature::lahf, "LAHF",
-    cpu_feature::popcnt, "POPCNT",
-    cpu_feature::sse3, "SSE3",
-    cpu_feature::sse4_1, "SSE4.1",
-    cpu_feature::sse4_2, "SSE4.2",
-    cpu_feature::ssse3, "SSSE3",
-    cpu_feature::avx, "AVX",
-    cpu_feature::avx2, "AVX2",
-    cpu_feature::bmi1, "BMI1",
-    cpu_feature::bmi2, "BMI2",
-    cpu_feature::f16c, "F16C",
-    cpu_feature::fma, "FMA",
-    cpu_feature::lzcnt, "LZCNT",
-    cpu_feature::movbe, "MOVBE",
-    cpu_feature::osxsave, "OSXSAVE",
-    cpu_feature::avx512f, "AVX512F",
-    cpu_feature::avx512bw, "AVX512BW",
-    cpu_feature::avx512cd, "AVX512CD",
-    cpu_feature::avx512dq, "AVX512DQ",
-    cpu_feature::avx512vl, "AVX512VL",
-    cpu_feature::avx512pf, "AVX512PF",
-    cpu_feature::avx512er, "AVX512ER",
-    cpu_feature::sha, "SHA",
-    cpu_feature::aes, "AES",
-    cpu_feature::pclmul, "PCLMUL",
-    cpu_feature::rdrnd, "RDRND",
-    cpu_feature::rdseed, "RDSEED"
-};
-// clang-format on
+constexpr auto cpu_feature_metadata_init() noexcept
+{
+    // At most 64 cpu_feature flags are allowed.
+    auto r = std::array<std::string_view, 64>{};
 
-}}
+    r[std::to_underlying(cpu_feature::cmov)] = "CMOV";
+    r[std::to_underlying(cpu_feature::cx8)] = "CX8";
+    r[std::to_underlying(cpu_feature::fpu)] = "FPU";
+    r[std::to_underlying(cpu_feature::fxsr)] = "FXSR";
+    r[std::to_underlying(cpu_feature::mmx)] = "MMX";
+    r[std::to_underlying(cpu_feature::osfxsr)] = "OSDXSR";
+    r[std::to_underlying(cpu_feature::sce)] = "SCE";
+    r[std::to_underlying(cpu_feature::sse)] = "SSE";
+    r[std::to_underlying(cpu_feature::sse2)] = "SSE2";
+    r[std::to_underlying(cpu_feature::cx16)] = "CX16";
+    r[std::to_underlying(cpu_feature::lahf)] = "LAHF";
+    r[std::to_underlying(cpu_feature::popcnt)] = "POPCNT";
+    r[std::to_underlying(cpu_feature::sse3)] = "SSE3";
+    r[std::to_underlying(cpu_feature::sse4_1)] = "SSE4.1";
+    r[std::to_underlying(cpu_feature::sse4_2)] = "SSE4.2";
+    r[std::to_underlying(cpu_feature::ssse3)] = "SSSE3";
+    r[std::to_underlying(cpu_feature::avx)] = "AVX";
+    r[std::to_underlying(cpu_feature::avx2)] = "AVX2";
+    r[std::to_underlying(cpu_feature::bmi1)] = "BMI1";
+    r[std::to_underlying(cpu_feature::bmi2)] = "BMI2";
+    r[std::to_underlying(cpu_feature::f16c)] = "F16C";
+    r[std::to_underlying(cpu_feature::fma)] = "FMA";
+    r[std::to_underlying(cpu_feature::lzcnt)] = "LZCNT";
+    r[std::to_underlying(cpu_feature::movbe)] = "MOVBE";
+    r[std::to_underlying(cpu_feature::osxsave)] = "OSXSAVE";
+    r[std::to_underlying(cpu_feature::avx512f)] = "AVX512F";
+    r[std::to_underlying(cpu_feature::avx512bw)] = "AVX512BW";
+    r[std::to_underlying(cpu_feature::avx512cd)] = "AVX512CD";
+    r[std::to_underlying(cpu_feature::avx512dq)] = "AVX512DQ";
+    r[std::to_underlying(cpu_feature::avx512vl)] = "AVX512VL";
+    r[std::to_underlying(cpu_feature::avx512pf)] = "AVX512PF";
+    r[std::to_underlying(cpu_feature::avx512er)] = "AVX512ER";
+    r[std::to_underlying(cpu_feature::sha)] = "SHA";
+    r[std::to_underlying(cpu_feature::aes)] = "AES";
+    r[std::to_underlying(cpu_feature::pclmul)] = "PCLMUL";
+    r[std::to_underlying(cpu_feature::rdrnd)] = "RDRND";
+    r[std::to_underlying(cpu_feature::rdseed)] = "RDSEED";
+    return r;
+}
+
+constexpr auto cpu_feature_metadata = cpu_feature_metadata_init();
+
+}} // namespace hi::v1
 
 hi_export template<>
 struct std::formatter<::hi::cpu_feature, char> : std::formatter<std::string_view, char> {
     auto format(::hi::cpu_feature const& t, auto& fc) const
     {
-        return std::formatter<std::string_view, char>::format(::hi::cpu_feature_metadata[t], fc);
+        return std::formatter<std::string_view, char>::format(::hi::cpu_feature_metadata[std::to_underlying(t)], fc);
     }
 };
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<std::integral Lhs>
-[[nodiscard]] constexpr unsigned long long operator<<(Lhs const &lhs, cpu_feature const &rhs) noexcept
+[[nodiscard]] constexpr unsigned long long operator<<(Lhs const& lhs, cpu_feature const& rhs)
 {
-    hi_assert(std::cmp_equal(lhs, 1));
-    hi_assert(std::cmp_less(std::to_underlying(rhs), 64));
+    if (not std::cmp_equal(lhs, 1)) {
+        throw std::logic_error("lhs of a cpu_feature shift must be 1.");
+    }
+    if (not std::cmp_less(std::to_underlying(rhs), 64)) {
+        throw std::logic_error("cpu_feature is not allowed the have a value beyond 63");
+    }
 
     return static_cast<unsigned long long>(lhs) << std::to_underlying(rhs);
 }
@@ -187,100 +196,101 @@ template<std::integral Lhs>
  * Currently this implementation can handle up to 64 features.
  */
 enum class cpu_feature_mask : uint64_t {
-    none       = 0,
+    none = 0,
 
-    cmov       = 1 << cpu_feature::cmov,
-    cx8        = 1 << cpu_feature::cx8,
-    fpu        = 1 << cpu_feature::fpu,
-    fxsr       = 1 << cpu_feature::fxsr,
-    mmx        = 1 << cpu_feature::mmx,
-    osfxsr     = 1 << cpu_feature::osfxsr,
-    sce        = 1 << cpu_feature::sce,
-    sse        = 1 << cpu_feature::sse,
-    sse2       = 1 << cpu_feature::sse2,
-    x86_64_v1  = cmov | cx8 | fpu | fxsr | mmx | osfxsr | sce | sse | sse2,
+    cmov = 1 << cpu_feature::cmov,
+    cx8 = 1 << cpu_feature::cx8,
+    fpu = 1 << cpu_feature::fpu,
+    fxsr = 1 << cpu_feature::fxsr,
+    mmx = 1 << cpu_feature::mmx,
+    osfxsr = 1 << cpu_feature::osfxsr,
+    sce = 1 << cpu_feature::sce,
+    sse = 1 << cpu_feature::sse,
+    sse2 = 1 << cpu_feature::sse2,
+    x86_64_v1 = cmov | cx8 | fpu | fxsr | mmx | osfxsr | sce | sse | sse2,
 
-    cx16       = 1 << cpu_feature::cx16,
-    lahf       = 1 << cpu_feature::lahf,
-    popcnt     = 1 << cpu_feature::popcnt,
-    sse3       = 1 << cpu_feature::sse3,
-    sse4_1     = 1 << cpu_feature::sse4_1,
-    sse4_2     = 1 << cpu_feature::sse4_2,
-    ssse3      = 1 << cpu_feature::ssse3,
-    x86_64_v2  = x86_64_v1 | cx16 | lahf | popcnt | sse3 | sse4_1 | sse4_2 | ssse3,
+    cx16 = 1 << cpu_feature::cx16,
+    lahf = 1 << cpu_feature::lahf,
+    popcnt = 1 << cpu_feature::popcnt,
+    sse3 = 1 << cpu_feature::sse3,
+    sse4_1 = 1 << cpu_feature::sse4_1,
+    sse4_2 = 1 << cpu_feature::sse4_2,
+    ssse3 = 1 << cpu_feature::ssse3,
+    x86_64_v2 = x86_64_v1 | cx16 | lahf | popcnt | sse3 | sse4_1 | sse4_2 | ssse3,
 
-    avx        = 1 << cpu_feature::avx,
-    avx2       = 1 << cpu_feature::avx2,
-    bmi1       = 1 << cpu_feature::bmi1,
-    bmi2       = 1 << cpu_feature::bmi2,
-    f16c       = 1 << cpu_feature::f16c,
-    fma        = 1 << cpu_feature::fma,
-    lzcnt      = 1 << cpu_feature::lzcnt,
-    movbe      = 1 << cpu_feature::movbe,
-    osxsave    = 1 << cpu_feature::osxsave,
-    x86_64_v3  = x86_64_v2 | avx | avx2 | bmi1 | bmi2 | f16c | fma | lzcnt | movbe | osxsave,
+    avx = 1 << cpu_feature::avx,
+    avx2 = 1 << cpu_feature::avx2,
+    bmi1 = 1 << cpu_feature::bmi1,
+    bmi2 = 1 << cpu_feature::bmi2,
+    f16c = 1 << cpu_feature::f16c,
+    fma = 1 << cpu_feature::fma,
+    lzcnt = 1 << cpu_feature::lzcnt,
+    movbe = 1 << cpu_feature::movbe,
+    osxsave = 1 << cpu_feature::osxsave,
+    x86_64_v3 = x86_64_v2 | avx | avx2 | bmi1 | bmi2 | f16c | fma | lzcnt | movbe | osxsave,
 
-    avx512f    = 1 << cpu_feature::avx512f,
-    avx512bw   = 1 << cpu_feature::avx512bw,
-    avx512cd   = 1 << cpu_feature::avx512cd,
-    avx512dq   = 1 << cpu_feature::avx512dq,
-    avx512vl   = 1 << cpu_feature::avx512vl,
-    x86_64_v4  = x86_64_v3 | avx512f | avx512bw | avx512cd | avx512dq | avx512vl,
+    avx512f = 1 << cpu_feature::avx512f,
+    avx512bw = 1 << cpu_feature::avx512bw,
+    avx512cd = 1 << cpu_feature::avx512cd,
+    avx512dq = 1 << cpu_feature::avx512dq,
+    avx512vl = 1 << cpu_feature::avx512vl,
+    x86_64_v4 = x86_64_v3 | avx512f | avx512bw | avx512cd | avx512dq | avx512vl,
 
-    avx512pf   = 1 << cpu_feature::avx512pf,
-    avx512er   = 1 << cpu_feature::avx512er,
-    sha        = 1 << cpu_feature::sha,
-    aes        = 1 << cpu_feature::aes,
-    pclmul     = 1 << cpu_feature::pclmul,
-    rdrnd      = 1 << cpu_feature::rdrnd,
-    rdseed     = 1 << cpu_feature::rdseed,
+    avx512pf = 1 << cpu_feature::avx512pf,
+    avx512er = 1 << cpu_feature::avx512er,
+    sha = 1 << cpu_feature::sha,
+    aes = 1 << cpu_feature::aes,
+    pclmul = 1 << cpu_feature::pclmul,
+    rdrnd = 1 << cpu_feature::rdrnd,
+    rdseed = 1 << cpu_feature::rdseed,
 };
 
-[[nodiscard]] constexpr cpu_feature_mask operator|(cpu_feature_mask const &lhs, cpu_feature_mask const &rhs) noexcept
+[[nodiscard]] constexpr cpu_feature_mask operator|(cpu_feature_mask const& lhs, cpu_feature_mask const& rhs) noexcept
 {
     return static_cast<cpu_feature_mask>(std::to_underlying(lhs) | std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr cpu_feature_mask operator&(cpu_feature_mask const &lhs, cpu_feature_mask const &rhs) noexcept
+[[nodiscard]] constexpr cpu_feature_mask operator&(cpu_feature_mask const& lhs, cpu_feature_mask const& rhs) noexcept
 {
     return static_cast<cpu_feature_mask>(std::to_underlying(lhs) & std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr cpu_feature_mask operator-(cpu_feature_mask const &lhs, cpu_feature_mask const &rhs) noexcept
+[[nodiscard]] constexpr cpu_feature_mask operator-(cpu_feature_mask const& lhs, cpu_feature_mask const& rhs) noexcept
 {
     return static_cast<cpu_feature_mask>(std::to_underlying(lhs) & ~std::to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool to_bool(cpu_feature_mask const &rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(cpu_feature_mask const& rhs) noexcept
 {
     return std::to_underlying(rhs) != 0;
 }
 
-[[nodiscard]] constexpr cpu_feature_mask operator|(cpu_feature_mask const &lhs, cpu_feature const &rhs) noexcept
+[[nodiscard]] constexpr cpu_feature_mask operator|(cpu_feature_mask const& lhs, cpu_feature const& rhs) noexcept
 {
     hilet rhs_ = static_cast<cpu_feature_mask>(1 << rhs);
     return lhs | rhs_;
 }
 
-[[nodiscard]] constexpr cpu_feature_mask operator&(cpu_feature_mask const &lhs, cpu_feature const &rhs) noexcept
+[[nodiscard]] constexpr cpu_feature_mask operator&(cpu_feature_mask const& lhs, cpu_feature const& rhs) noexcept
 {
     hilet rhs_ = static_cast<cpu_feature_mask>(1 << rhs);
     return lhs & rhs_;
 }
 
-constexpr cpu_feature_mask &operator|=(cpu_feature_mask &lhs, cpu_feature const &rhs) noexcept
+constexpr cpu_feature_mask& operator|=(cpu_feature_mask& lhs, cpu_feature const& rhs) noexcept
 {
     return lhs = lhs | rhs;
 }
 
-}}
+} // namespace v1
+}
 
 hi_export template<>
 struct std::formatter<::hi::cpu_feature_mask, char> : std::formatter<std::string, char> {
     auto format(::hi::cpu_feature_mask const& t, auto& fc) const
     {
         using mask_type = std::underlying_type_t<::hi::cpu_feature_mask>;
-        
+
         auto str = std::string{};
         for (mask_type mask = 1; mask != 0; mask <<= 1) {
             if ((std::to_underlying(t) & mask) != 0) {
@@ -298,7 +308,8 @@ struct std::formatter<::hi::cpu_feature_mask, char> : std::formatter<std::string
     }
 };
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 struct cpu_id_result {
     uint32_t eax;
@@ -308,22 +319,22 @@ struct cpu_id_result {
 
     [[nodiscard]] bool eax_bit(int bit_nr) const noexcept
     {
-        return to_bool(eax & (1U << bit_nr));
+        return (eax & (1U << bit_nr)) != 0;
     }
 
     [[nodiscard]] bool ebx_bit(int bit_nr) const noexcept
     {
-        return to_bool(ebx & (1U << bit_nr));
+        return (ebx & (1U << bit_nr)) != 0;
     }
 
     [[nodiscard]] bool ecx_bit(int bit_nr) const noexcept
     {
-        return to_bool(ecx & (1U << bit_nr));
+        return (ecx & (1U << bit_nr)) != 0;
     }
 
     [[nodiscard]] bool edx_bit(int bit_nr) const noexcept
     {
-        return to_bool(edx & (1U << bit_nr));
+        return (edx & (1U << bit_nr)) != 0;
     }
 };
 
@@ -550,11 +561,24 @@ namespace detail {
         // even if they where started from the console. start_console() will
         // attach to the console if one exists, so that std::print() will work
         // correctly.
-        start_console();
+        //start_console();
 
-        std::print(std::cerr, "This executable is incompatible with the CPU in this computer.\n");
-        std::print(std::cerr, "The CPU is missing the following features:\n");
-        std::print(std::cerr, "    {}\n", missing_features);
+        auto const error_message = std::format(
+            "This executable is incompatible with the CPU in this computer.\n"
+            "The CPU is missing the following features:\n"
+            "    {}",
+            missing_features);
+
+#if defined(_WIN32)
+        if (GetStdHandle(STD_ERROR_HANDLE) == NULL) {
+            // The application is not attached to the console, so probably a
+            // GUI application. Lets hope that ANSI code-page is set to UTF-8.
+            MessageBoxA(NULL, error_message.c_str(), NULL, MB_OK | MB_ICONERROR);
+            std::terminate();
+        }
+#endif
+
+        std::println(std::cerr, "{}", error_message);
         std::terminate();
     }
 
@@ -906,5 +930,5 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 
 // clang-format on
 
-}}
-
+} // namespace v1
+}
