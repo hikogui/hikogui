@@ -69,18 +69,8 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
 endif()
 
 target_sources(hikogui_gtests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/ranges_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/strings_tests.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_packer_tests.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_unpacker_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/ascii_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/char_converter_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/cp_1252_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/iso_8859_1_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_16_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_32_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_8_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/base_n_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/BON8_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/datum_tests.cpp
@@ -140,6 +130,15 @@ target_sources(hikogui_gtests PRIVATE
 )
 
 target_sources(hikogui_htests PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/strings_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/ascii_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/char_converter_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/cp_1252_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/iso_8859_1_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_16_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_32_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/utf_8_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp

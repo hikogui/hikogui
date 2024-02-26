@@ -181,7 +181,7 @@ template<typename T>
  * @return The string representation.
  */
 template<typename Arg>
-[[nodiscard]] std::string operand_to_string(Arg const& arg) noexcept
+[[nodiscard]] std::string value_to_string(Arg const& arg) noexcept
 {
     std::stringbuf buf;
 
@@ -217,6 +217,17 @@ template<typename Arg>
     }
 }
 
+/** Make a string representation of a value.
+ *
+ * @param arg The value to convert to a represenation.
+ * @return The string representation.
+ */
+template<typename Arg>
+[[nodiscard]] std::string operand_to_string(std::string_view operand_name, Arg const& arg) noexcept
+{
+    return std::format("\n  {} is: {}", operand_name, value_to_string(arg));
+}
+
 /** The class of comparison error.
  */
 enum class error_class {
@@ -235,33 +246,88 @@ enum class error_class {
 
 /** The comparison error.
  *
- * The comparison error will apear on the right side of the
+ * The comparison error will appear on the right side of the
  * spaceship operator.
  *
  * This error will bind to the right hand side operand of a comparison.
  */
-template<error_class ErrorClass = error_class::exact>
-struct error {
-    double v = 0.0;
+template<::test::error_class ErrorClass>
+class error {
+public:
+    constexpr static ::test::error_class error_class = ErrorClass;
+
+    constexpr error(error const&) noexcept = default;
+    constexpr error(error&&) noexcept = default;
+    constexpr error& operator=(error const&) noexcept = default;
+    constexpr error& operator=(error&&) noexcept = default;
+
+    constexpr error() noexcept = default;
+    constexpr error(std::string extra_message) noexcept : _extra_message(extra_message) {}
+    constexpr error(std::string_view extra_message) noexcept : _extra_message(extra_message) {}
+    constexpr error(char const* extra_message) noexcept : _extra_message(extra_message) {}
+
+    constexpr error(double error_value) noexcept : _error_value(std::abs(error_value)) {}
+
+    constexpr error(double error_value, std::string extra_message) noexcept :
+        _error_value(std::abs(error_value)), _extra_message(extra_message)
+    {
+    }
+
+    constexpr error(double error_value, std::string_view extra_message) noexcept :
+        _error_value(std::abs(error_value)), _extra_message(extra_message)
+    {
+    }
+
+    constexpr error(double error_value, char const* extra_message) noexcept :
+        _error_value(std::abs(error_value)), _extra_message(extra_message)
+    {
+    }
 
     /** Get the error value as a positive number.
      */
     [[nodiscard]] constexpr double operator+() const noexcept
     {
-        return v;
+        return +_error_value;
     }
 
     /** Get the error value as a negative  number.
      */
     [[nodiscard]] constexpr double operator-() const noexcept
     {
-        return -v;
+        return -_error_value;
     }
+
+    [[nodiscard]] std::string message() const noexcept
+    {
+        auto r = std::string{};
+
+        if constexpr (error_class == ::test::error_class::absolute) {
+            r += std::format("\n  values where compared with an absolute error value of +- {}.", _error_value);
+        } else if constexpr (error_class == ::test::error_class::relative) {
+            r += std::format("\n  values where compared with an relative error value of +- {:.1f} %.", _error_value * 100.0);
+        }
+
+        if (not _extra_message.empty()) {
+            r += std::format("\n  {}", _extra_message);
+        }
+
+        return r;
+    }
+
+private:
+    double _error_value = 0.0;
+    std::string _extra_message = {};
 };
 
-/** By default an error with a value is an absolute-error.
- */
+error() -> error<error_class::exact>;
+error(std::string) -> error<error_class::exact>;
+error(std::string_view) -> error<error_class::exact>;
+error(char const*) -> error<error_class::exact>;
+
 error(double) -> error<error_class::absolute>;
+error(double, std::string) -> error<error_class::absolute>;
+error(double, std::string_view) -> error<error_class::absolute>;
+error(double, char const*) -> error<error_class::absolute>;
 
 /** Operand of a comparison, bound to an error-value.
  *
@@ -270,36 +336,22 @@ error(double) -> error<error_class::absolute>;
  *    (the operand becomes the rhs of the comparison operator).
  *  - rhs: Any `error<>` value.
  */
-template<error_class ErrorClass, typename T>
+template<::test::error_class ErrorClass, typename T>
 struct operand {
+    constexpr static ::test::error_class error_class = ErrorClass;
     using value_type = T;
 
     ::test::error<ErrorClass> e;
     value_type const& v;
 
-    operand(error<ErrorClass> error, value_type const &value) noexcept : e(error), v(value) {}
-
-};
-
-/** Result of the boolean expression.
- *
- * The `operand` is the result of a spaceship-operator between:
- *  - lhs: A boolean expression.
- *  - rhs: An `error<error_class::exact>` value.
- */
-template<>
-struct operand<error_class::exact, bool> {
-    using value_type = bool;
-
-    value_type const& v;
-
-    operand(error<error_class::exact>, value_type const &value) noexcept : v(value) {}
+    operand(error<ErrorClass> error, value_type const& value) noexcept : e(error), v(value) {}
 
     /** Convert the boolean result as an std::expected.
      *
      * This allows an expression to be directly used as an argument to `check()`.
      */
     operator std::expected<void, std::string>() const noexcept
+        requires(error_class == ::test::error_class::exact and std::is_same_v<value_type, bool>)
     {
         if (v) {
             return {};
@@ -308,7 +360,6 @@ struct operand<error_class::exact, bool> {
         }
     }
 };
-
 
 /** The spaceship operator is used to split a comparison-expression.
  *
@@ -341,7 +392,7 @@ operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+                std::format("Expected equality of these values:{}{}{}", operand_to_string("left-hand-side", lhs), operand_to_string("right-hand-side", rhs.v), rhs.e.message())};
         }
 
     } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
@@ -349,7 +400,7 @@ operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+                std::format("Expected equality of these values:{}{}{}", operand_to_string("left-hand-side", lhs), operand_to_string("right-hand-side", rhs.v), rhs.e.message())};
         }
 
     } else if constexpr (requires { std::ranges::equal(lhs, rhs.v); }) {
@@ -357,7 +408,7 @@ operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected equality of these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+                std::format("Expected equality of these values:{}{}{}", operand_to_string("left-hand-side", lhs), operand_to_string("right-hand-side", rhs.v), rhs.e.message())};
         }
 
     } else {
@@ -378,7 +429,10 @@ operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+                std::format("Expected inequality between these values:{}{}{}",
+                    operand_to_string("left-hand-side", lhs),
+                    operand_to_string("right-hand-side", rhs.v),
+                    rhs.e.message())};
         }
 
     } else if constexpr (requires { std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
@@ -386,7 +440,10 @@ operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+                std::format("Expected inequality between these values:{}{}{}",
+                operand_to_string("left-hand-side", lhs),
+                operand_to_string("right-hand-side", rhs.v),
+                rhs.e.message())};
         }
 
     } else if constexpr (requires { not std::ranges::equal(lhs, rhs.v); }) {
@@ -394,7 +451,10 @@ operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
             return {};
         } else {
             return std::unexpected{
-                std::format("Expected inequality between these values:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+                std::format("Expected inequality between these values:{}{}{}",
+                    operand_to_string("left-hand-side", lhs),
+                    operand_to_string("right-hand-side", rhs.v),
+                    rhs.e.message())};
         }
 
     } else {
@@ -425,10 +485,10 @@ operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexc
         return {};
     } else {
         return std::unexpected{std::format(
-            "Expected equality within {} of these values:\n  {}\n  {}",
-            +rhs.e,
-            operand_to_string(lhs),
-            operand_to_string(rhs.v))};
+            "Expected equality of these values:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
     }
 }
 
@@ -447,10 +507,10 @@ operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexc
         auto const diff = *lit - *rit;
         if (diff < -rhs.e or diff > +rhs.e) {
             return std::unexpected{std::format(
-                "Expected equality within {} of these values:\n  {}\n  {}",
-                +rhs.e,
-                operand_to_string(lhs),
-                operand_to_string(rhs.v))};
+                "Expected equality of these values:{}{}{}",
+                operand_to_string("left-hand-side", lhs),
+                operand_to_string("right-hand-side", rhs.v),
+                rhs.e.message())};
         }
 
         ++lit;
@@ -459,7 +519,10 @@ operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexc
 
     if (lit != lend or rit != rend) {
         return std::unexpected{std::format(
-            "Expected both range-values to the same size:\n  {}\n  {}", operand_to_string(lhs), operand_to_string(rhs.v))};
+            "Expected both range-values to the same size:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
     }
 
     return {};

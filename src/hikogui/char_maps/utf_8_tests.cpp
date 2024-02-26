@@ -4,30 +4,26 @@
 
 #include "utf_8.hpp"
 #include "random_char.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <format>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace hi;
+TEST_SUITE(char_maps_utf_8_suite) {
 
 static void push_utf_8(char32_t code_point, std::u8string& str) noexcept
 {
     if (code_point < 0x80) {
-        str += char_cast<char8_t>(code_point);
+        str += hi::char_cast<char8_t>(code_point);
     } else if (code_point < 0x800) {
-        str += char_cast<char8_t>(0xc0 + (code_point >> 6));
-        str += char_cast<char8_t>(0x80 + (code_point & 0x3f));
+        str += hi::char_cast<char8_t>(0xc0 + (code_point >> 6));
+        str += hi::char_cast<char8_t>(0x80 + (code_point & 0x3f));
     } else if (code_point < 0x01'0000) {
-        str += char_cast<char8_t>(0xe0 + (code_point >> 12));
-        str += char_cast<char8_t>(0x80 + ((code_point >> 6) & 0x3f));
-        str += char_cast<char8_t>(0x80 + (code_point & 0x3f));
+        str += hi::char_cast<char8_t>(0xe0 + (code_point >> 12));
+        str += hi::char_cast<char8_t>(0x80 + ((code_point >> 6) & 0x3f));
+        str += hi::char_cast<char8_t>(0x80 + (code_point & 0x3f));
     } else {
-        str += char_cast<char8_t>(0xf0 + (code_point >> 18));
-        str += char_cast<char8_t>(0x80 + ((code_point >> 12) & 0x3f));
-        str += char_cast<char8_t>(0x80 + ((code_point >> 6) & 0x3f));
-        str += char_cast<char8_t>(0x80 + (code_point & 0x3f));
+        str += hi::char_cast<char8_t>(0xf0 + (code_point >> 18));
+        str += hi::char_cast<char8_t>(0x80 + ((code_point >> 12) & 0x3f));
+        str += hi::char_cast<char8_t>(0x80 + ((code_point >> 6) & 0x3f));
+        str += hi::char_cast<char8_t>(0x80 + (code_point & 0x3f));
     }
 }
 
@@ -44,59 +40,59 @@ static bool valid_split(std::u8string_view str)
     }
 }
 
-TEST(char_maps_utf_8, identity_move)
+TEST_CASE(identity_move)
 {
     auto identity_tst = std::u8string{};
-    for (auto i = 0_uz; i != 100; ++i) {
-        push_utf_8(random_char(), identity_tst);
+    for (size_t i = 0; i != 100; ++i) {
+        push_utf_8(hi::random_char(), identity_tst);
     }
 
-    for (auto i = 0_uz; i != identity_tst.size(); ++i) {
-        for (auto j = i; j != identity_tst.size(); ++j) {
+    for (size_t i = 0; i != identity_tst.size(); ++i) {
+        for (size_t j = i; j != identity_tst.size(); ++j) {
             auto original = identity_tst.substr(i, j - i);
             if (not valid_split(original)) {
                 continue;
             }
 
             auto test = original;
-            auto *test_ptr = test.data();
-            auto result = char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(std::move(test));
-            auto *result_ptr = result.data();
+            auto* test_ptr = test.data();
+            auto result = hi::char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(std::move(test));
+            auto* result_ptr = result.data();
 
             // Check for short-string-optimization.
             if (original.size() > sizeof(std::string)) {
                 // Check if the string was properly moved.
-                ASSERT_EQ(test_ptr, result_ptr) << i << j;
+                REQUIRE(static_cast<void *>(test_ptr) == static_cast<void *>(result_ptr), std::format("i = {}, j = {}", i, j));
             } else {
-                ASSERT_EQ(original, result);
+                REQUIRE(original == result);
             }
         }
     }
 }
 
-TEST(char_maps_utf_8, identity_copy)
+TEST_CASE(identity_copy)
 {
     auto identity_tst = std::u8string{};
-    for (auto i = 0_uz; i != 100; ++i) {
-        push_utf_8(random_char(), identity_tst);
+    for (size_t i = 0; i != 100; ++i) {
+        push_utf_8(hi::random_char(), identity_tst);
     }
 
-    for (auto i = 0_uz; i != identity_tst.size(); ++i) {
-        for (auto j = i; j != identity_tst.size(); ++j) {
+    for (size_t i = 0; i != identity_tst.size(); ++i) {
+        for (size_t j = i; j != identity_tst.size(); ++j) {
             auto test = identity_tst.substr(i, j - i);
             if (not valid_split(test)) {
                 continue;
             }
 
-            auto result = char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(test);
+            auto result = hi::char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(test);
 
             // Check for short-string-optimization.
-            ASSERT_EQ(test, result);
+            REQUIRE(test == result);
         }
     }
 }
 
-TEST(char_maps_utf_8, identity_invalid_chars)
+TEST_CASE(identity_invalid_chars)
 {
     //                                   ascii                 invalid overlong    surrogate       short   short
     auto const invalid_tst_ = std::string{"abcdefghijklmnopqrstuvwxy\xfezAG\xe0\x80\x80H\xed\xa0\xadIJK\xe0LMNO\xe0\x80P"};
@@ -106,20 +102,21 @@ TEST(char_maps_utf_8, identity_invalid_chars)
     // MSVC bug: https://developercommunity.visualstudio.com/t/escape-sequences-in-unicode-string-literals-are-ov/260684
     // hex-escape are treated as code-points (wrong) instead of code-units (correct)
     auto invalid_tst = std::u8string{};
-    for (auto i = 0_uz; i != invalid_tst_.size(); ++i) {
-        invalid_tst += char_cast<char8_t>(invalid_tst_[i]);
+    for (size_t i = 0; i != invalid_tst_.size(); ++i) {
+        invalid_tst += hi::char_cast<char8_t>(invalid_tst_[i]);
     }
 
-    for (auto i = 0_uz; i != invalid_tst.size(); ++i) {
+    for (size_t i = 0; i != invalid_tst.size(); ++i) {
         auto test = invalid_tst.substr(0, i);
         if (not valid_split(test)) {
             continue;
         }
 
-        auto result = char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(test);
+        auto result = hi::char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(test);
         auto expected = invalid_exp.substr(0, result.size());
 
         // Check for short-string-optimization.
-        ASSERT_EQ(expected, result);
+        REQUIRE(expected == result);
     }
 }
+}; // TEST_SUITE(char_maps_utf_8_suite)

@@ -3,57 +3,53 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "cp_1252.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <format>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace hi;
+TEST_SUITE(char_maps_cp_1252_suite) {
 
-TEST(char_maps_cp_1252, identity_move)
+TEST_CASE(identity_move)
 {
     auto identity_tst = std::string{};
-    for (auto i = 0_uz; i != 256; ++i) {
-        identity_tst += char_cast<char>(i);
+    for (size_t i = 0; i != 256; ++i) {
+        identity_tst += hi::char_cast<char>(i);
     }
 
-    for (auto i = 0_uz; i != identity_tst.size(); ++i) {
+    for (size_t i = 0; i != identity_tst.size(); ++i) {
         for (auto j = i; j != identity_tst.size(); ++j) {
             auto original = identity_tst.substr(i, j - i);
 
             auto test = original;
-            auto *test_ptr = test.data();
-            auto result = char_converter<"cp-1252", "cp-1252">{}(std::move(test));
-            auto *result_ptr = result.data();
+            auto* test_ptr = test.data();
+            auto result = hi::char_converter<"cp-1252", "cp-1252">{}(std::move(test));
+            auto* result_ptr = result.data();
 
             // Check for short-string-optimization.
             if (original.size() > sizeof(std::string)) {
                 // Check if the string was properly moved.
-                ASSERT_EQ(test_ptr, result_ptr) << std::format("original = '{}', result = '{}'", original, result);
+                REQUIRE(static_cast<void*>(test_ptr) == static_cast<void*>(result_ptr), std::format("i = {}, j = {}", i, j));
             } else {
-                ASSERT_EQ(original, result);
+                REQUIRE(original == result);
             }
         }
     }
 }
 
-TEST(char_maps_cp_1252, identity_copy)
+TEST_CASE(identity_copy)
 {
     auto identity_tst = std::string{};
-    for (auto i = 0_uz; i != 256; ++i) {
-        identity_tst += char_cast<char>(i);
+    for (size_t i = 0; i != 256; ++i) {
+        identity_tst += hi::char_cast<char>(i);
     }
 
-    for (auto i = 0_uz; i != identity_tst.size(); ++i) {
-        for (auto j = i; j != identity_tst.size(); ++j) {
+    for (size_t i = 0; i != identity_tst.size(); ++i) {
+        for (size_t j = i; j != identity_tst.size(); ++j) {
             auto test = identity_tst.substr(i, j - i);
 
-            auto result = char_converter<"cp-1252", "cp-1252">{}(test);
+            auto result = hi::char_converter<"cp-1252", "cp-1252">{}(test);
 
             // Check for short-string-optimization.
-            ASSERT_EQ(test, result);
+            REQUIRE(test == result);
         }
     }
 }
-
+}; // TEST_SUITE(char_maps_cp_1252_suite)
