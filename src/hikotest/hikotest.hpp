@@ -335,6 +335,9 @@ error(double, char const*) -> error<error_class::absolute>;
  *  - lhs: The rhs of a comparison operator.
  *    (the operand becomes the rhs of the comparison operator).
  *  - rhs: Any `error<>` value.
+ * 
+ * We copy the value if the RHS is a rvalue reference.
+ * We take a reference of the value if the RHS is a lvalue reference.
  */
 template<::test::error_class ErrorClass, typename T>
 struct operand {
@@ -342,16 +345,17 @@ struct operand {
     using value_type = T;
 
     ::test::error<ErrorClass> e;
-    value_type const& v;
+    value_type v;
 
-    operand(error<ErrorClass> error, value_type const& value) noexcept : e(error), v(value) {}
+    template<typename Arg>
+    operand(error<ErrorClass> error, Arg&& arg) noexcept : e(error), v(std::forward<Arg>(arg)) {}
 
     /** Convert the boolean result as an std::expected.
      *
      * This allows an expression to be directly used as an argument to `check()`.
      */
     operator std::expected<void, std::string>() const noexcept
-        requires(error_class == ::test::error_class::exact and std::is_same_v<value_type, bool>)
+        requires(error_class == ::test::error_class::exact and std::same_as<std::remove_cvref_t<value_type>, bool>)
     {
         if (v) {
             return {};
@@ -377,10 +381,17 @@ struct operand {
  * @return The wrapped left-hand-side operand.
  */
 template<typename RHS, error_class ErrorClass>
-[[nodiscard]] constexpr operand<ErrorClass, RHS> operator<=>(RHS const& rhs, error<ErrorClass> e) noexcept
+[[nodiscard]] constexpr operand<ErrorClass, RHS> operator<=>(RHS&& rhs, error<ErrorClass> e) noexcept
+{
+    return {e, std::forward<RHS>(rhs)};
+}
+
+template<error_class ErrorClass>
+[[nodiscard]] constexpr operand<ErrorClass, char const*> operator<=>(char const* rhs, error<ErrorClass> e) noexcept
 {
     return {e, rhs};
 }
+
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::expected<void, std::string>
