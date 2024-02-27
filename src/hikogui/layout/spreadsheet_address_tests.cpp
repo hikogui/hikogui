@@ -3,37 +3,37 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "spreadsheet_address.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
+#include <hikotest/hikotest.hpp>
+#include <cstddef>
 
-using namespace std;
-using namespace hi;
+TEST_SUITE(spreadsheet_address) {
 
-TEST(spreadsheet_address, parse_absolute_spreadsheet_address)
+TEST_CASE(parse_absolute_spreadsheet_address)
 {
-    ASSERT_EQ(parse_spreadsheet_address("A1"), std::pair(0_uz, 0_uz));
-    ASSERT_EQ(parse_spreadsheet_address("A9"), std::pair(0_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("A09"), std::pair(0_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("A10"), std::pair(0_uz, 9_uz));
+    REQUIRE(hi::parse_spreadsheet_address("A1") == std::pair(size_t{0}, size_t{0}));
+    REQUIRE(hi::parse_spreadsheet_address("A9") == std::pair(size_t{0}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("A09") == std::pair(size_t{0}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("A10") == std::pair(size_t{0}, size_t{9}));
 
-    ASSERT_EQ(parse_spreadsheet_address("a1"), std::pair(0_uz, 0_uz));
-    ASSERT_EQ(parse_spreadsheet_address("a9"), std::pair(0_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("a09"), std::pair(0_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("a10"), std::pair(0_uz, 9_uz));
+    REQUIRE(hi::parse_spreadsheet_address("a1") == std::pair(size_t{0}, size_t{0}));
+    REQUIRE(hi::parse_spreadsheet_address("a9") == std::pair(size_t{0}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("a09") == std::pair(size_t{0}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("a10") == std::pair(size_t{0}, size_t{9}));
 
-    ASSERT_EQ(parse_spreadsheet_address("B1"), std::pair(1_uz, 0_uz));
-    ASSERT_EQ(parse_spreadsheet_address("B9"), std::pair(1_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("B09"), std::pair(1_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("B10"), std::pair(1_uz, 9_uz));
+    REQUIRE(hi::parse_spreadsheet_address("B1") == std::pair(size_t{1}, size_t{0}));
+    REQUIRE(hi::parse_spreadsheet_address("B9") == std::pair(size_t{1}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("B09") == std::pair(size_t{1}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("B10") == std::pair(size_t{1}, size_t{9}));
 
-    ASSERT_EQ(parse_spreadsheet_address("Z1"), std::pair(25_uz, 0_uz));
-    ASSERT_EQ(parse_spreadsheet_address("Z9"), std::pair(25_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("Z09"), std::pair(25_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("Z10"), std::pair(25_uz, 9_uz));
+    REQUIRE(hi::parse_spreadsheet_address("Z1") == std::pair(size_t{25}, size_t{0}));
+    REQUIRE(hi::parse_spreadsheet_address("Z9") == std::pair(size_t{25}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("Z09") == std::pair(size_t{25}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("Z10") == std::pair(size_t{25}, size_t{9}));
 
-    ASSERT_EQ(parse_spreadsheet_address("AA1"), std::pair(26_uz, 0_uz));
-    ASSERT_EQ(parse_spreadsheet_address("AA9"), std::pair(26_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("AA09"), std::pair(26_uz, 8_uz));
-    ASSERT_EQ(parse_spreadsheet_address("AA10"), std::pair(26_uz, 9_uz));
+    REQUIRE(hi::parse_spreadsheet_address("AA1") == std::pair(size_t{26}, size_t{0}));
+    REQUIRE(hi::parse_spreadsheet_address("AA9") == std::pair(size_t{26}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("AA09") == std::pair(size_t{26}, size_t{8}));
+    REQUIRE(hi::parse_spreadsheet_address("AA10") == std::pair(size_t{26}, size_t{9}));
 }
+
+};

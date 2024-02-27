@@ -103,14 +103,19 @@ hi_inline bool launch_jit_debugger() noexcept
 
     auto cmd_line = [&] {
         try {
-            switch (num_arguments) {
-            case 1:
+            if (num_arguments == 1) {
                 return std::vformat(cmd_line_fmt, std::make_format_args(process_id));
-            case 2:
-                return std::vformat(cmd_line_fmt, std::make_format_args(process_id, win32_HANDLE_to_int(jit_debug_handle)));
-            case 3:
-                return std::vformat(cmd_line_fmt, std::make_format_args(process_id, win32_HANDLE_to_int(jit_debug_handle), std::bit_cast<uintptr_t>(&jit_debug_info)));
-            default:
+
+            } else if (num_arguments == 2) {
+                auto const jit_debug_handle_ = win32_HANDLE_to_int(jit_debug_handle);
+                return std::vformat(cmd_line_fmt, std::make_format_args(process_id, jit_debug_handle_));
+
+            } else if (num_arguments == 3) {
+                auto const jit_debug_handle_ = win32_HANDLE_to_int(jit_debug_handle);
+                auto const jit_debug_info_ = std::bit_cast<uintptr_t>(&jit_debug_info);
+                return std::vformat(cmd_line_fmt, std::make_format_args(process_id, jit_debug_handle_, jit_debug_info_));
+
+            } else {
                 set_debug_message("JIT debugger accepts an invalid number of arguments.");
                 std::terminate();
             }

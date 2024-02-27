@@ -10,17 +10,14 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "lean_vector.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-
-using namespace hi;
+#include <hikotest/hikotest.hpp>
 
 hi_warning_push();
 // C26439: This kind of function should not throw. Declare it 'noexcept' (f.6)
 // These test are required to test for throwing move constructor/operators.
-hi_warning_ignore_msvc(26439)
+hi_warning_ignore_msvc(26439);
 
-namespace lean_vector_detail {
+TEST_SUITE(lean_vector_suite) {
 
 class Copyable {
 public:
@@ -154,7 +151,7 @@ struct Throws {
     int v_;
     inline static bool sThrows = false;
 
-    friend bool operator==(Throws const &, Throws const &) noexcept = default;
+    friend bool operator==(Throws const&, Throws const&) noexcept = default;
 };
 
 template<class It, class ItTraits = It>
@@ -205,30 +202,20 @@ public:
         return tmp;
     }
 
-    friend bool operator==(const input_iterator& x, const input_iterator& y)
+    bool operator==(const input_iterator& y) const
     {
-        return x.it_ == y.it_;
+        return it_ == y.it_;
     }
-    friend bool operator!=(const input_iterator& x, const input_iterator& y)
+
+    template<class U, class UV>
+    bool operator==(const input_iterator<U, UV>& y) const requires(not std::same_as<It, U> or not std::same_as<ItTraits, UV>)
     {
-        return !(x == y);
+        return base() == y.base();
     }
 
     template<class T>
     void operator,(T const&) = delete;
 };
-
-template<class T, class TV, class U, class UV>
-inline bool operator==(const input_iterator<T, TV>& x, const input_iterator<U, UV>& y)
-{
-    return x.base() == y.base();
-}
-
-template<class T, class TV, class U, class UV>
-inline bool operator!=(const input_iterator<T, TV>& x, const input_iterator<U, UV>& y)
-{
-    return !(x == y);
-}
 
 template<class It>
 class forward_iterator {
@@ -277,32 +264,20 @@ public:
         return tmp;
     }
 
-    friend bool operator==(const forward_iterator& x, const forward_iterator& y)
+    bool operator==(const forward_iterator& y) const
     {
-        return x.it_ == y.it_;
+        return it_ == y.it_;
     }
-    friend bool operator!=(const forward_iterator& x, const forward_iterator& y)
+
+    template<class U>
+    bool operator==(const forward_iterator<U>& y) const requires(not std::same_as<It, U>)
     {
-        return !(x == y);
+        return base() == y.base();
     }
 
     template<class T>
     void operator,(T const&) = delete;
 };
-
-template<class T, class U>
-inline bool operator==(const forward_iterator<T>& x, const forward_iterator<U>& y)
-{
-    return x.base() == y.base();
-}
-
-template<class T, class U>
-inline bool operator!=(const forward_iterator<T>& x, const forward_iterator<U>& y)
-{
-    return !(x == y);
-}
-
-} // namespace lean_vector_detail
 
 template<typename C>
 [[nodiscard]] static C access_make(int size, int start = 0)
@@ -316,9 +291,9 @@ template<typename C>
     return c;
 }
 
-TEST(lean_vector, access)
+TEST_CASE(access)
 {
-    using C = lean_vector<int>;
+    using C = hi::lean_vector<int>;
     C c = access_make<C>(10);
 
     static_assert(noexcept(c[0]));
@@ -332,18 +307,18 @@ TEST(lean_vector, access)
     static_assert(std::is_same_v<C::reference, decltype(c.back())>);
 
     for (int i = 0; i < 10; ++i) {
-        ASSERT_EQ(c[i], i);
+        REQUIRE(c[i] == i);
     }
     for (int i = 0; i < 10; ++i) {
-        ASSERT_EQ(c.at(i), i);
+        REQUIRE(c.at(i) == i);
     }
-    ASSERT_EQ(c.front(), 0);
-    ASSERT_EQ(c.back(), 9);
+    REQUIRE(c.front() == 0);
+    REQUIRE(c.back() == 9);
 }
 
-TEST(lean_vector, access_const)
+TEST_CASE(access_const)
 {
-    using C = lean_vector<int>;
+    using C = hi::lean_vector<int>;
     const int N = 5;
     const C c = access_make<C>(10, N);
 
@@ -358,107 +333,107 @@ TEST(lean_vector, access_const)
     static_assert(std::is_same_v<C::const_reference, decltype(c.back())>);
 
     for (int i = 0; i < 10; ++i) {
-        ASSERT_EQ(c[i], N + i);
+        REQUIRE(c[i] == N + i);
     }
     for (int i = 0; i < 10; ++i) {
-        ASSERT_EQ(c.at(i), N + i);
+        REQUIRE(c.at(i) == N + i);
     }
-    ASSERT_EQ(c.front(), N);
-    ASSERT_EQ(c.back(), N + 9);
+    REQUIRE(c.front() == N);
+    REQUIRE(c.back() == N + 9);
 }
 
-TEST(lean_vector, contiguous)
+TEST_CASE(contiguous)
 {
-    using C = lean_vector<int>;
+    using C = hi::lean_vector<int>;
     const C c = C(3, 5);
 
     for (size_t i = 0; i < c.size(); ++i) {
-        ASSERT_EQ(*(c.begin() + static_cast<typename C::difference_type>(i)), *(std::addressof(*c.begin()) + i));
+        REQUIRE(*(c.begin() + static_cast<typename C::difference_type>(i)) == *(std::addressof(*c.begin()) + i));
     }
 }
 
-TEST(lean_vector, iterators)
+TEST_CASE(iterators)
 {
     typedef int T;
-    typedef lean_vector<T> C;
+    typedef hi::lean_vector<T> C;
     C c;
     C::iterator i = c.begin();
     C::iterator j = c.end();
-    ASSERT_EQ(std::distance(i, j), 0);
-    ASSERT_EQ(i, j);
+    REQUIRE(std::distance(i, j) == 0);
+    REQUIRE(i == j);
 }
 
-TEST(lean_vector, const_iterators)
+TEST_CASE(const_iterators)
 {
     typedef int T;
-    typedef lean_vector<T> C;
+    typedef hi::lean_vector<T> C;
     const C c;
     C::const_iterator i = c.begin();
     C::const_iterator j = c.end();
-    ASSERT_EQ(std::distance(i, j), 0);
-    ASSERT_EQ(i, j);
+    REQUIRE(std::distance(i, j) == 0);
+    REQUIRE(i == j);
 }
 
-TEST(lean_vector, const_iterators2)
+TEST_CASE(const_iterators2)
 {
     typedef int T;
-    typedef lean_vector<T> C;
+    typedef hi::lean_vector<T> C;
     C c;
     C::const_iterator i = c.cbegin();
     C::const_iterator j = c.cend();
-    ASSERT_EQ(std::distance(i, j), 0);
-    ASSERT_EQ(i, j);
-    ASSERT_EQ(i, c.end());
+    REQUIRE(std::distance(i, j) == 0);
+    REQUIRE(i == j);
+    REQUIRE(i == c.end());
 }
 
-TEST(lean_vector, iterators_construction)
+TEST_CASE(iterators_construction)
 {
     typedef int T;
-    typedef lean_vector<T> C;
+    typedef hi::lean_vector<T> C;
     const T t[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     C c(std::begin(t), std::end(t));
     C::iterator i = c.begin();
     hi_assert_not_null(i);
 
-    ASSERT_EQ(*i, 0);
+    REQUIRE(*i == 0);
     ++i;
-    ASSERT_EQ(*i, 1);
+    REQUIRE(*i == 1);
     *i = 10;
-    ASSERT_EQ(*i, 10);
-    ASSERT_EQ(std::distance(c.begin(), c.end()), 10);
+    REQUIRE(*i == 10);
+    REQUIRE(std::distance(c.begin(), c.end()) == 10);
 }
 
-TEST(lean_vector, iterators_N3644)
+TEST_CASE(iterators_N3644)
 {
-    typedef lean_vector<int> C;
+    typedef hi::lean_vector<int> C;
     C::iterator ii1{}, ii2{};
     C::iterator ii4 = ii1;
     C::const_iterator cii{};
-    ASSERT_TRUE(ii1 == ii2);
-    ASSERT_TRUE(ii1 == ii4);
+    REQUIRE(ii1 == ii2);
+    REQUIRE(ii1 == ii4);
 
-    ASSERT_TRUE(!(ii1 != ii2));
+    REQUIRE(!(ii1 != ii2));
 
-    ASSERT_TRUE((ii1 == cii));
-    ASSERT_TRUE((cii == ii1));
-    ASSERT_TRUE(!(ii1 != cii));
-    ASSERT_TRUE(!(cii != ii1));
-    ASSERT_TRUE(!(ii1 < cii));
-    ASSERT_TRUE(!(cii < ii1));
-    ASSERT_TRUE((ii1 <= cii));
-    ASSERT_TRUE((cii <= ii1));
-    ASSERT_TRUE(!(ii1 > cii));
-    ASSERT_TRUE(!(cii > ii1));
-    ASSERT_TRUE((ii1 >= cii));
-    ASSERT_TRUE((cii >= ii1));
-    ASSERT_TRUE(cii - ii1 == 0);
-    ASSERT_TRUE(ii1 - cii == 0);
+    REQUIRE((ii1 == cii));
+    REQUIRE((cii == ii1));
+    REQUIRE(!(ii1 != cii));
+    REQUIRE(!(cii != ii1));
+    REQUIRE(!(ii1 < cii));
+    REQUIRE(!(cii < ii1));
+    REQUIRE((ii1 <= cii));
+    REQUIRE((cii <= ii1));
+    REQUIRE(!(ii1 > cii));
+    REQUIRE(!(cii > ii1));
+    REQUIRE((ii1 >= cii));
+    REQUIRE((cii >= ii1));
+    REQUIRE(cii - ii1 == 0);
+    REQUIRE(ii1 - cii == 0);
 }
 
 template<typename T>
 static void types_test()
 {
-    typedef lean_vector<T> C;
+    typedef hi::lean_vector<T> C;
 
     //  TODO: These tests should use allocator_traits to get stuff, rather than
     //  blindly pulling typedefs out of the allocator. This is why we can't call
@@ -478,176 +453,176 @@ static void types_test()
     static_assert((std::is_same<typename C::const_reverse_iterator, std::reverse_iterator<typename C::const_iterator>>::value));
 }
 
-TEST(lean_vector, types)
+TEST_CASE(types)
 {
     types_test<int>();
-    types_test<int *>();
-    types_test<lean_vector_detail::Copyable>();
-    static_assert((std::is_same<lean_vector<char>::allocator_type, std::allocator<char>>::value), "");
+    types_test<int*>();
+    types_test<Copyable>();
+    static_assert((std::is_same<hi::lean_vector<char>::allocator_type, std::allocator<char>>::value), "");
 }
 
-TEST(lean_vector, capacity_empty)
+TEST_CASE(capacity_empty)
 {
-    lean_vector<int> v;
-    ASSERT_EQ(v.capacity(), v.short_capacity());
+    hi::lean_vector<int> v;
+    REQUIRE(v.capacity() == v.short_capacity());
 }
 
-TEST(lean_vector, capacity_100)
+TEST_CASE(capacity_100)
 {
-    lean_vector<int> v(100);
-    ASSERT_EQ(v.capacity(), 100);
+    hi::lean_vector<int> v(100);
+    REQUIRE(v.capacity() == 100);
     v.push_back(0);
-    ASSERT_GT(v.capacity(), 101);
+    REQUIRE(v.capacity() > 100);
 }
 
-TEST(lean_vector, empty)
+TEST_CASE(empty)
 {
-    typedef lean_vector<int> C;
+    typedef hi::lean_vector<int> C;
     C c;
     static_assert(noexcept(c.empty()));
-    ASSERT_TRUE(c.empty());
+    REQUIRE(c.empty());
     c.push_back(C::value_type(1));
-    ASSERT_FALSE(c.empty());
+    REQUIRE(not c.empty());
     c.clear();
-    ASSERT_TRUE(c.empty());
+    REQUIRE(c.empty());
 }
 
-TEST(lean_vector, reserve_10)
+TEST_CASE(reserve_10)
 {
-    lean_vector<int> v;
+    hi::lean_vector<int> v;
     v.reserve(10);
-    ASSERT_GE(v.capacity(), 10);
+    REQUIRE(v.capacity() >= 10);
 }
 
-TEST(lean_vector, reserve_100)
+TEST_CASE(reserve_100)
 {
-    lean_vector<int> v(100);
-    ASSERT_EQ(v.size(), 100);
-    ASSERT_EQ(v.capacity(), 100);
+    hi::lean_vector<int> v(100);
+    REQUIRE(v.size() == 100);
+    REQUIRE(v.capacity() == 100);
     v.reserve(50);
-    ASSERT_EQ(v.size(), 100);
-    ASSERT_EQ(v.capacity(), 100);
+    REQUIRE(v.size() == 100);
+    REQUIRE(v.capacity() == 100);
     v.reserve(150);
-    ASSERT_EQ(v.size(), 100);
-    ASSERT_EQ(v.capacity(), 150);
+    REQUIRE(v.size() == 100);
+    REQUIRE(v.capacity() == 150);
 }
 
-TEST(lean_vector, resize_size)
+TEST_CASE(resize_size)
 {
-    lean_vector<int> v(100);
+    hi::lean_vector<int> v(100);
     v.resize(50);
-    ASSERT_EQ(v.size(), 50);
-    ASSERT_EQ(v.capacity(), 100);
+    REQUIRE(v.size() == 50);
+    REQUIRE(v.capacity() == 100);
     v.resize(200);
-    ASSERT_EQ(v.size(), 200);
-    ASSERT_GE(v.capacity(), 200);
+    REQUIRE(v.size() == 200);
+    REQUIRE(v.capacity() >= 200);
 }
 
-TEST(lean_vector, resize_size_value)
+TEST_CASE(resize_size_value)
 {
-    lean_vector<int> v(100);
+    hi::lean_vector<int> v(100);
     v.resize(50, 1);
-    ASSERT_EQ(v.size(), 50);
-    ASSERT_EQ(v.capacity(), 100);
-    ASSERT_EQ(v, lean_vector<int>(50));
+    REQUIRE(v.size() == 50);
+    REQUIRE(v.capacity() == 100);
+    REQUIRE(v == hi::lean_vector<int>(50));
     v.resize(200, 1);
-    ASSERT_EQ(v.size(), 200);
-    ASSERT_GE(v.capacity(), 200);
+    REQUIRE(v.size() == 200);
+    REQUIRE(v.capacity() >= 200);
     for (unsigned i = 0; i < 50; ++i) {
-        ASSERT_EQ(v[i], 0);
+        REQUIRE(v[i] == 0);
     }
     for (unsigned i = 50; i < 200; ++i) {
-        ASSERT_EQ(v[i], 1);
+        REQUIRE(v[i] == 1);
     }
 }
 
-TEST(lean_vector, shrink_to_fit)
+TEST_CASE(shrink_to_fit)
 {
-    lean_vector<int> v(100);
+    hi::lean_vector<int> v(100);
     v.push_back(1);
     v.shrink_to_fit();
-    ASSERT_EQ(v.capacity(), 101);
-    ASSERT_EQ(v.size(), 101);
+    REQUIRE(v.capacity() == 101);
+    REQUIRE(v.size() == 101);
 }
 
-TEST(lean_vector, size)
+TEST_CASE(size)
 {
-    typedef lean_vector<int> C;
+    typedef hi::lean_vector<int> C;
     C c;
     static_assert(noexcept(c.size()));
-    ASSERT_EQ(c.size(), 0);
+    REQUIRE(c.size() == 0);
     c.push_back(C::value_type(2));
-    ASSERT_EQ(c.size(), 1);
+    REQUIRE(c.size() == 1);
     c.push_back(C::value_type(1));
-    ASSERT_EQ(c.size(), 2);
+    REQUIRE(c.size() == 2);
     c.push_back(C::value_type(3));
-    ASSERT_EQ(c.size(), 3);
+    REQUIRE(c.size() == 3);
     c.erase(c.begin());
-    ASSERT_EQ(c.size(), 2);
+    REQUIRE(c.size() == 2);
     c.erase(c.begin());
-    ASSERT_EQ(c.size(), 1);
+    REQUIRE(c.size() == 1);
     c.erase(c.begin());
-    ASSERT_EQ(c.size(), 0);
+    REQUIRE(c.size() == 0);
 }
 
-TEST(lean_vector, swap_short_short)
+TEST_CASE(swap_short_short)
 {
-    lean_vector<int> v1(3);
-    lean_vector<int> v2(5);
+    hi::lean_vector<int> v1(3);
+    hi::lean_vector<int> v2(5);
     v1.swap(v2);
-    ASSERT_EQ(v1.size(), 5);
-    ASSERT_EQ(v1.capacity(), v1.short_capacity());
-    ASSERT_EQ(v2.size(), 3);
-    ASSERT_EQ(v2.capacity(), v2.short_capacity());
+    REQUIRE(v1.size() == 5);
+    REQUIRE(v1.capacity() == v1.short_capacity());
+    REQUIRE(v2.size() == 3);
+    REQUIRE(v2.capacity() == v2.short_capacity());
 }
 
-TEST(lean_vector, swap_short_long)
+TEST_CASE(swap_short_long)
 {
-    lean_vector<int> v1(3);
-    lean_vector<int> v2(200);
+    hi::lean_vector<int> v1(3);
+    hi::lean_vector<int> v2(200);
     v1.swap(v2);
-    ASSERT_EQ(v1.size(), 200);
-    ASSERT_EQ(v1.capacity(), 200);
-    ASSERT_EQ(v2.size(), 3);
-    ASSERT_EQ(v2.capacity(), v2.short_capacity());
+    REQUIRE(v1.size() == 200);
+    REQUIRE(v1.capacity() == 200);
+    REQUIRE(v2.size() == 3);
+    REQUIRE(v2.capacity() == v2.short_capacity());
 }
 
-TEST(lean_vector, swap_long_short)
+TEST_CASE(swap_long_short)
 {
-    lean_vector<int> v1(100);
-    lean_vector<int> v2(5);
+    hi::lean_vector<int> v1(100);
+    hi::lean_vector<int> v2(5);
     v1.swap(v2);
-    ASSERT_EQ(v1.size(), 5);
-    ASSERT_EQ(v1.capacity(), v1.short_capacity());
-    ASSERT_EQ(v2.size(), 100);
-    ASSERT_EQ(v2.capacity(), 100);
+    REQUIRE(v1.size() == 5);
+    REQUIRE(v1.capacity() == v1.short_capacity());
+    REQUIRE(v2.size() == 100);
+    REQUIRE(v2.capacity() == 100);
 }
 
-TEST(lean_vector, swap_long_long)
+TEST_CASE(swap_long_long)
 {
-    lean_vector<int> v1(100);
-    lean_vector<int> v2(200);
+    hi::lean_vector<int> v1(100);
+    hi::lean_vector<int> v2(200);
     v1.swap(v2);
-    ASSERT_EQ(v1.size(), 200);
-    ASSERT_EQ(v1.capacity(), 200);
-    ASSERT_EQ(v2.size(), 100);
-    ASSERT_EQ(v2.capacity(), 100);
+    REQUIRE(v1.size() == 200);
+    REQUIRE(v1.capacity() == 200);
+    REQUIRE(v2.size() == 100);
+    REQUIRE(v2.capacity() == 100);
 }
 
 template<typename Vec>
 static void assign_initializer_list_test(Vec& v)
 {
     v.assign({3, 4, 5, 6});
-    ASSERT_EQ(v.size(), 4);
-    ASSERT_EQ(v[0], 3);
-    ASSERT_EQ(v[1], 4);
-    ASSERT_EQ(v[2], 5);
-    ASSERT_EQ(v[3], 6);
+    REQUIRE(v.size() == 4);
+    REQUIRE(v[0] == 3);
+    REQUIRE(v[1] == 4);
+    REQUIRE(v[2] == 5);
+    REQUIRE(v[3] == 6);
 }
 
-TEST(lean_vector, assign_initializer_list)
+TEST_CASE(assign_initializer_list)
 {
-    typedef lean_vector<int> V;
+    typedef hi::lean_vector<int> V;
     V d1;
     V d2;
     d2.reserve(10); // no reallocation during assign.
@@ -655,60 +630,60 @@ TEST(lean_vector, assign_initializer_list)
     assign_initializer_list_test(d2);
 }
 
-TEST(lean_vector, assign_forward_iter_iter)
+TEST_CASE(assign_forward_iter_iter)
 {
     int arr1[] = {42};
     int arr2[] = {1, 101, 42};
-    using T = lean_vector_detail::EmplaceConstructibleMoveableAndAssignable<int>;
-    using It = lean_vector_detail::forward_iterator<int *>;
+    using T = EmplaceConstructibleMoveableAndAssignable<int>;
+    using It = forward_iterator<int*>;
     {
-        lean_vector<T> v;
+        hi::lean_vector<T> v;
         v.assign(It(arr1), It(std::end(arr1)));
-        ASSERT_EQ(v[0].value, 42);
+        REQUIRE(v[0].value == 42);
     }
     {
-        lean_vector<T> v;
+        hi::lean_vector<T> v;
         v.assign(It(arr2), It(std::end(arr2)));
-        ASSERT_EQ(v[0].value, 1);
-        ASSERT_EQ(v[1].value, 101);
-        ASSERT_EQ(v[2].value, 42);
+        REQUIRE(v[0].value == 1);
+        REQUIRE(v[1].value == 101);
+        REQUIRE(v[2].value == 42);
     }
 }
 
-TEST(lean_vector, assign_input_iter_iter)
+TEST_CASE(assign_input_iter_iter)
 {
     int arr1[] = {42};
     int arr2[] = {1, 101, 42};
-    using T = lean_vector_detail::EmplaceConstructibleMoveableAndAssignable<int>;
-    using It = lean_vector_detail::input_iterator<int *>;
+    using T = EmplaceConstructibleMoveableAndAssignable<int>;
+    using It = input_iterator<int*>;
     {
-        lean_vector<T> v;
+        hi::lean_vector<T> v;
         v.assign(It(arr1), It(std::end(arr1)));
-        ASSERT_EQ(v[0].copied, 0);
-        ASSERT_EQ(v[0].value, 42);
+        REQUIRE(v[0].copied == 0);
+        REQUIRE(v[0].value == 42);
     }
     {
-        lean_vector<T> v;
+        hi::lean_vector<T> v;
         v.assign(It(arr2), It(std::end(arr2)));
-        ASSERT_EQ(v[0].value, 1);
-        ASSERT_EQ(v[1].value, 101);
-        ASSERT_EQ(v[2].copied, 0);
-        ASSERT_EQ(v[2].value, 42);
+        REQUIRE(v[0].value == 1);
+        REQUIRE(v[1].value == 101);
+        REQUIRE(v[2].copied == 0);
+        REQUIRE(v[2].value == 42);
     }
 }
 
 static void assign_size_value_test(auto& v)
 {
     v.assign(5, 6);
-    ASSERT_EQ(v.size(), 5);
+    REQUIRE(v.size() == 5);
     for (auto i = 0; i != 5; ++i) {
-        ASSERT_EQ(v[i], 6);
+        REQUIRE(v[i] == 6);
     }
 }
 
-TEST(lean_vector, assign_size_value)
+TEST_CASE(assign_size_value)
 {
-    typedef lean_vector<int> V;
+    typedef hi::lean_vector<int> V;
     V d1;
     V d2;
     d2.reserve(10); // no reallocation during assign.
@@ -716,49 +691,49 @@ TEST(lean_vector, assign_size_value)
     assign_size_value_test(d2);
 }
 
-TEST(lean_vector, construct_size)
+TEST_CASE(construct_size)
 {
-    typedef lean_vector<int> V;
+    typedef hi::lean_vector<int> V;
 
     V v(50);
-    ASSERT_EQ(v.size(), 50);
+    REQUIRE(v.size() == 50);
     for (auto it = v.cbegin(); it != v.cend(); ++it) {
-        ASSERT_EQ(*it, V::value_type{});
+        REQUIRE(*it == V::value_type{});
     }
 }
 
-TEST(lean_vector, construct_size_value)
+TEST_CASE(construct_size_value)
 {
-    typedef lean_vector<int> V;
+    typedef hi::lean_vector<int> V;
 
     V v(50, 3);
-    ASSERT_EQ(v.size(), 50);
+    REQUIRE(v.size() == 50);
     for (auto it = v.cbegin(); it != v.cend(); ++it) {
-        ASSERT_EQ(*it, 3);
+        REQUIRE(*it == 3);
     }
 }
 
-TEST(lean_vector, construct_copy)
+TEST_CASE(construct_copy)
 {
-    typedef lean_vector<int> V;
+    typedef hi::lean_vector<int> V;
 
     int a[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 1, 0};
-    int *an = a + sizeof(a) / sizeof(a[0]);
+    int* an = a + sizeof(a) / sizeof(a[0]);
     V x(a, an);
     V c(x);
-    ASSERT_EQ(x.size(), c.size());
-    ASSERT_EQ(x, c);
+    REQUIRE(x.size() == c.size());
+    REQUIRE(x == c);
 }
 
-TEST(lean_vector, construct_deduction)
+TEST_CASE(construct_deduction)
 {
     //  Test the explicit deduction guides
     {
         const int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        lean_vector vec(std::begin(arr), std::end(arr));
+        hi::lean_vector vec(std::begin(arr), std::end(arr));
 
-        static_assert(std::is_same_v<decltype(vec), lean_vector<int>>);
-        ASSERT_TRUE(std::equal(vec.begin(), vec.end(), std::begin(arr), std::end(arr)));
+        static_assert(std::is_same_v<decltype(vec), hi::lean_vector<int>>);
+        REQUIRE(vec == arr);
     }
 
     //  Test the implicit deduction guides
@@ -769,123 +744,125 @@ TEST(lean_vector, construct_deduction)
     }
 
     {
-        lean_vector vec(1, lean_vector_detail::Copyable{}); // vector (size_type, T)
-        static_assert(std::is_same_v<decltype(vec)::value_type, lean_vector_detail::Copyable>);
-        static_assert(std::is_same_v<decltype(vec)::allocator_type, std::allocator<lean_vector_detail::Copyable>>);
-        ASSERT_EQ(vec.size(), 1);
+        hi::lean_vector vec(1, Copyable{}); // vector (size_type, T)
+        static_assert(std::is_same_v<decltype(vec)::value_type, Copyable>);
+        static_assert(std::is_same_v<decltype(vec)::allocator_type, std::allocator<Copyable>>);
+        REQUIRE(vec.size() == 1);
     }
 
     {
-        lean_vector vec{1U, 2U, 3U, 4U, 5U}; // vector(initializer-list)
+        hi::lean_vector vec{1U, 2U, 3U, 4U, 5U}; // vector(initializer-list)
         static_assert(std::is_same_v<decltype(vec)::value_type, unsigned>);
-        ASSERT_EQ(vec.size(), 5);
-        ASSERT_EQ(vec[2], 3U);
+        REQUIRE(vec.size() == 5);
+        REQUIRE(vec[2] == 3U);
     }
 
     {
-        lean_vector<long double> source;
-        lean_vector vec(source); // vector(vector &)
+        hi::lean_vector<long double> source;
+        hi::lean_vector vec(source); // vector(vector &)
         static_assert(std::is_same_v<decltype(vec)::value_type, long double>);
         static_assert(std::is_same_v<decltype(vec)::allocator_type, std::allocator<long double>>);
-        ASSERT_EQ(vec.size(), 0);
+        REQUIRE(vec.size() == 0);
     }
 
     //  A couple of vector<bool> tests, too!
     {
-        lean_vector vec(3, true); // vector(initializer-list)
+        hi::lean_vector vec(3, true); // vector(initializer-list)
         static_assert(std::is_same_v<decltype(vec)::value_type, bool>);
         static_assert(std::is_same_v<decltype(vec)::allocator_type, std::allocator<bool>>);
-        ASSERT_EQ(vec.size(), 3);
-        ASSERT_TRUE(vec[0] && vec[1] && vec[2]);
+        REQUIRE(vec.size() == 3);
+        REQUIRE(vec[0]);
+        REQUIRE(vec[1]);
+        REQUIRE(vec[2]);
     }
 
     {
-        lean_vector<bool> source;
-        lean_vector vec(source); // vector(vector &)
+        hi::lean_vector<bool> source;
+        hi::lean_vector vec(source); // vector(vector &)
         static_assert(std::is_same_v<decltype(vec)::value_type, bool>);
         static_assert(std::is_same_v<decltype(vec)::allocator_type, std::allocator<bool>>);
-        ASSERT_EQ(vec.size(), 0);
+        REQUIRE(vec.size() == 0);
     }
 }
 
-//TEST(lean_vector, construct_default_recursive)
+// TEST_CASE(construct_default_recursive)
 //{
-//    struct X {
-//        lean_vector<X> q;
-//    };
+//     struct X {
+//         hi::lean_vector<X> q;
+//     };
 //
-//    X x;
-//    ASSERT_EQ(x.q.size(), 0);
-//}
+//     X x;
+//     REQUIRE(x.q.size() == 0);
+// }
 
-TEST(lean_vector, construct_default_noexcept)
+TEST_CASE(construct_default_noexcept)
 {
-    typedef lean_vector<lean_vector_detail::MoveOnly> C;
+    typedef hi::lean_vector<MoveOnly> C;
     static_assert(std::is_nothrow_default_constructible<C>::value);
 }
 
-TEST(lean_vector, destruct_noexcept)
+TEST_CASE(destruct_noexcept)
 {
-    typedef lean_vector<lean_vector_detail::MoveOnly> C;
+    typedef hi::lean_vector<MoveOnly> C;
     static_assert(std::is_nothrow_destructible<C>::value);
 }
 
-TEST(lean_vector, construct_initializer_list)
+TEST_CASE(construct_initializer_list)
 {
-    lean_vector<int> d = {3, 4, 5, 6};
-    ASSERT_EQ(d.size(), 4);
-    ASSERT_EQ(d[0], 3);
-    ASSERT_EQ(d[1], 4);
-    ASSERT_EQ(d[2], 5);
-    ASSERT_EQ(d[3], 6);
+    hi::lean_vector<int> d = {3, 4, 5, 6};
+    REQUIRE(d.size() == 4);
+    REQUIRE(d[0] == 3);
+    REQUIRE(d[1] == 4);
+    REQUIRE(d[2] == 5);
+    REQUIRE(d[3] == 6);
 }
 
-TEST(lean_vector, construct_move)
+TEST_CASE(construct_move)
 {
     int a1[] = {1, 3, 7, 9, 10};
-    lean_vector<int> c1(a1, a1 + sizeof(a1) / sizeof(a1[0]));
-    lean_vector<int> c2 = std::move(c1);
+    hi::lean_vector<int> c1(a1, a1 + sizeof(a1) / sizeof(a1[0]));
+    hi::lean_vector<int> c2 = std::move(c1);
     c1.clear();
-    ASSERT_EQ(c1.size(), 0);
-    ASSERT_EQ(c2.size(), 5);
-    ASSERT_EQ(c2[0], 1);
-    ASSERT_EQ(c2[1], 3);
-    ASSERT_EQ(c2[2], 7);
-    ASSERT_EQ(c2[3], 9);
-    ASSERT_EQ(c2[4], 10);
+    REQUIRE(c1.size() == 0);
+    REQUIRE(c2.size() == 5);
+    REQUIRE(c2[0] == 1);
+    REQUIRE(c2[1] == 3);
+    REQUIRE(c2[2] == 7);
+    REQUIRE(c2[3] == 9);
+    REQUIRE(c2[4] == 10);
 }
 
-TEST(lean_vector, construct_move_assign_noexcept)
+TEST_CASE(construct_move_assign_noexcept)
 {
-    typedef lean_vector<lean_vector_detail::MoveOnly> C;
+    typedef hi::lean_vector<MoveOnly> C;
     static_assert(std::is_nothrow_move_assignable<C>::value);
 }
 
-TEST(lean_vector, construct_move_noexcept)
+TEST_CASE(construct_move_noexcept)
 {
-    typedef lean_vector<lean_vector_detail::MoveOnly> C;
+    typedef hi::lean_vector<MoveOnly> C;
     static_assert(std::is_nothrow_move_constructible<C>::value);
 }
 
-TEST(lean_vector, construct_op_equal_initializer_list)
+TEST_CASE(construct_op_equal_initializer_list)
 {
-    lean_vector<int> d;
+    hi::lean_vector<int> d;
     d = {3, 4, 5, 6};
-    ASSERT_EQ(d.size(), 4);
-    ASSERT_EQ(d[0], 3);
-    ASSERT_EQ(d[1], 4);
-    ASSERT_EQ(d[2], 5);
-    ASSERT_EQ(d[3], 6);
+    REQUIRE(d.size() == 4);
+    REQUIRE(d[0] == 3);
+    REQUIRE(d[1] == 4);
+    REQUIRE(d[2] == 5);
+    REQUIRE(d[3] == 6);
 }
 
-TEST(lean_vector, data)
+TEST_CASE(data)
 {
     struct Nasty {
         Nasty() : i_(0) {}
         Nasty(int i) : i_(i) {}
         ~Nasty() {}
 
-        Nasty *operator&() const
+        Nasty* operator&() const
         {
             assert(false);
             return nullptr;
@@ -894,27 +871,27 @@ TEST(lean_vector, data)
     };
 
     {
-        lean_vector<int> v;
-        ASSERT_EQ(v.data(), nullptr);
+        hi::lean_vector<int> v;
+        REQUIRE(v.data() == nullptr);
     }
     {
-        lean_vector<int> v(100);
-        ASSERT_EQ(v.data(), std::addressof(v.front()));
+        hi::lean_vector<int> v(100);
+        REQUIRE(v.data() == std::addressof(v.front()));
     }
     {
-        lean_vector<Nasty> v(100);
-        ASSERT_EQ(v.data(), std::addressof(v.front()));
+        hi::lean_vector<Nasty> v(100);
+        REQUIRE(v.data() == std::addressof(v.front()));
     }
 }
 
-TEST(lean_vector, data_const)
+TEST_CASE(data_const)
 {
     struct Nasty {
         Nasty() : i_(0) {}
         Nasty(int i) : i_(i) {}
         ~Nasty() {}
 
-        Nasty *operator&() const
+        Nasty* operator&() const
         {
             assert(false);
             return nullptr;
@@ -924,24 +901,24 @@ TEST(lean_vector, data_const)
 
     {
         const std::vector<int> v;
-        ASSERT_EQ(v.data(), nullptr);
+        REQUIRE(v.data() == nullptr);
     }
     {
         const std::vector<int> v(100);
-        ASSERT_EQ(v.data(), std::addressof(v.front()));
+        REQUIRE(v.data() == std::addressof(v.front()));
     }
     {
         std::vector<Nasty> v(100);
-        ASSERT_EQ(v.data(), std::addressof(v.front()));
+        REQUIRE(v.data() == std::addressof(v.front()));
     }
 }
 
 template<typename S, typename U>
-void erase_test0(S s, U val, S expected)
+static void erase_test0(S s, U val, S expected)
 {
     static_assert(std::is_same_v<typename S::size_type, decltype(erase(s, val))>);
     erase(s, val);
-    ASSERT_EQ(s, expected);
+    REQUIRE(s == expected);
 }
 
 template<typename S>
@@ -980,11 +957,11 @@ static void erase_test()
     erase_test0(S({1, 2, 1}), opt(3), S({1, 2, 1}));
 }
 
-TEST(lean_vector, erase)
+TEST_CASE(erase_tests)
 {
-    erase_test<lean_vector<int>>();
-    erase_test<lean_vector<long>>();
-    erase_test<lean_vector<double>>();
+    erase_test<hi::lean_vector<int>>();
+    erase_test<hi::lean_vector<long>>();
+    erase_test<hi::lean_vector<double>>();
 }
 
 template<class S, class Pred>
@@ -992,7 +969,7 @@ void erase_if_test0(S s, Pred p, S expected)
 {
     static_assert(std::is_same_v<typename S::size_type, decltype(erase_if(s, p))>);
     erase_if(s, p);
-    ASSERT_EQ(s, expected);
+    REQUIRE(s == expected);
 }
 
 template<typename S>
@@ -1046,23 +1023,23 @@ void erase_if_test()
     erase_if_test0(S({1, 2, 3}), False, S({1, 2, 3}));
 }
 
-TEST(lean_vector, erase_if)
+TEST_CASE(erase_if_tests)
 {
     erase_if_test<std::vector<int>>();
     erase_if_test<std::vector<long>>();
     erase_if_test<std::vector<double>>();
 }
 
-TEST(lean_vector, clear)
+TEST_CASE(clear)
 {
     int a[] = {1, 2, 3};
-    lean_vector<int> c(a, a + 3);
+    hi::lean_vector<int> c(a, a + 3);
     static_assert(noexcept(c.clear()));
     c.clear();
-    ASSERT_TRUE(c.empty());
+    REQUIRE(c.empty());
 }
 
-TEST(lean_vector, emplace)
+TEST_CASE(emplace)
 {
     class A {
         int i_;
@@ -1099,31 +1076,31 @@ TEST(lean_vector, emplace)
         }
     };
 
-    lean_vector<A> c;
-    lean_vector<A>::iterator i = c.emplace(c.cbegin(), 2, 3.5);
-    ASSERT_EQ(i, c.begin());
-    ASSERT_EQ(c.size(), 1);
-    ASSERT_EQ(c.front().geti(), 2);
-    ASSERT_EQ(c.front().getd(), 3.5);
+    hi::lean_vector<A> c;
+    hi::lean_vector<A>::iterator i = c.emplace(c.cbegin(), 2, 3.5);
+    REQUIRE(i == c.begin());
+    REQUIRE(c.size() == 1);
+    REQUIRE(c.front().geti() == 2);
+    REQUIRE(c.front().getd() == 3.5);
     i = c.emplace(c.cend(), 3, 4.5);
-    ASSERT_EQ(i, c.end() - 1);
-    ASSERT_EQ(c.size(), 2);
-    ASSERT_EQ(c.front().geti(), 2);
-    ASSERT_EQ(c.front().getd(), 3.5);
-    ASSERT_EQ(c.back().geti(), 3);
-    ASSERT_EQ(c.back().getd(), 4.5);
+    REQUIRE(i == c.end() - 1);
+    REQUIRE(c.size() == 2);
+    REQUIRE(c.front().geti() == 2);
+    REQUIRE(c.front().getd() == 3.5);
+    REQUIRE(c.back().geti() == 3);
+    REQUIRE(c.back().getd() == 4.5);
     i = c.emplace(c.cbegin() + 1, 4, 6.5);
-    ASSERT_EQ(i, c.begin() + 1);
-    ASSERT_EQ(c.size(), 3);
-    ASSERT_EQ(c.front().geti(), 2);
-    ASSERT_EQ(c.front().getd(), 3.5);
-    ASSERT_EQ(c[1].geti(), 4);
-    ASSERT_EQ(c[1].getd(), 6.5);
-    ASSERT_EQ(c.back().geti(), 3);
-    ASSERT_EQ(c.back().getd(), 4.5);
+    REQUIRE(i == c.begin() + 1);
+    REQUIRE(c.size() == 3);
+    REQUIRE(c.front().geti() == 2);
+    REQUIRE(c.front().getd() == 3.5);
+    REQUIRE(c[1].geti() == 4);
+    REQUIRE(c[1].getd() == 6.5);
+    REQUIRE(c.back().geti() == 3);
+    REQUIRE(c.back().getd() == 4.5);
 }
 
-TEST(lean_vector, emplace_back)
+TEST_CASE(emplace_back)
 {
     class A {
         int i_;
@@ -1160,495 +1137,485 @@ TEST(lean_vector, emplace_back)
         }
     };
 
-    lean_vector<A> c;
-    lean_vector<A>::iterator i = c.emplace(c.cbegin(), 2, 3.5);
-    ASSERT_EQ(i, c.begin());
-    ASSERT_EQ(c.size(), 1);
-    ASSERT_EQ(c.front().geti(), 2);
-    ASSERT_EQ(c.front().getd(), 3.5);
+    hi::lean_vector<A> c;
+    hi::lean_vector<A>::iterator i = c.emplace(c.cbegin(), 2, 3.5);
+    REQUIRE(i == c.begin());
+    REQUIRE(c.size() == 1);
+    REQUIRE(c.front().geti() == 2);
+    REQUIRE(c.front().getd() == 3.5);
     i = c.emplace(c.cend(), 3, 4.5);
-    ASSERT_EQ(i, c.end() - 1);
-    ASSERT_EQ(c.size(), 2);
-    ASSERT_EQ(c.front().geti(), 2);
-    ASSERT_EQ(c.front().getd(), 3.5);
-    ASSERT_EQ(c.back().geti(), 3);
-    ASSERT_EQ(c.back().getd(), 4.5);
+    REQUIRE(i == c.end() - 1);
+    REQUIRE(c.size() == 2);
+    REQUIRE(c.front().geti() == 2);
+    REQUIRE(c.front().getd() == 3.5);
+    REQUIRE(c.back().geti() == 3);
+    REQUIRE(c.back().getd() == 4.5);
     i = c.emplace(c.cbegin() + 1, 4, 6.5);
-    ASSERT_EQ(i, c.begin() + 1);
-    ASSERT_EQ(c.size(), 3);
-    ASSERT_EQ(c.front().geti(), 2);
-    ASSERT_EQ(c.front().getd(), 3.5);
-    ASSERT_EQ(c[1].geti(), 4);
-    ASSERT_EQ(c[1].getd(), 6.5);
-    ASSERT_EQ(c.back().geti(), 3);
-    ASSERT_EQ(c.back().getd(), 4.5);
+    REQUIRE(i == c.begin() + 1);
+    REQUIRE(c.size() == 3);
+    REQUIRE(c.front().geti() == 2);
+    REQUIRE(c.front().getd() == 3.5);
+    REQUIRE(c[1].geti() == 4);
+    REQUIRE(c[1].getd() == 6.5);
+    REQUIRE(c.back().geti() == 3);
+    REQUIRE(c.back().getd() == 4.5);
 }
 
-TEST(lean_vector, emplace_extra1)
+TEST_CASE(emplace_extra1)
 {
     {
-        lean_vector<int> v;
+        hi::lean_vector<int> v;
         v.reserve(3);
         v = {1, 2, 3};
         v.emplace(v.begin(), v.back());
-        ASSERT_EQ(v[0], 3);
+        REQUIRE(v[0] == 3);
     }
     {
-        lean_vector<int> v;
+        hi::lean_vector<int> v;
         v.reserve(4);
         v = {1, 2, 3};
         v.emplace(v.begin(), v.back());
-        ASSERT_EQ(v[0], 3);
+        REQUIRE(v[0] == 3);
     }
 
     {
-        lean_vector<int> v;
+        hi::lean_vector<int> v;
         v.reserve(5);
         v = {1, 2, 3};
         v.emplace(v.begin(), v.back());
-        ASSERT_EQ(v[0], 3);
+        REQUIRE(v[0] == 3);
     }
     {
-        lean_vector<int> v;
+        hi::lean_vector<int> v;
         v.reserve(6);
         v = {1, 2, 3};
         v.emplace(v.begin(), v.back());
-        ASSERT_EQ(v[0], 3);
+        REQUIRE(v[0] == 3);
     }
 
     {
-        lean_vector<int> v;
+        hi::lean_vector<int> v;
         v.reserve(5);
         v = {1, 2, 3, 4, 5};
         v.emplace(v.begin(), v.back());
-        ASSERT_EQ(v[0], 5);
+        REQUIRE(v[0] == 5);
     }
     {
-        lean_vector<int> v;
+        hi::lean_vector<int> v;
         v.reserve(6);
         v = {1, 2, 3, 4, 5};
         v.emplace(v.begin(), v.back());
-        ASSERT_EQ(v[0], 5);
+        REQUIRE(v[0] == 5);
     }
 }
 
-TEST(lean_vector, erase_iter)
+TEST_CASE(erase_iter)
 {
     int a1[] = {1, 2, 3};
-    lean_vector<int> l1(a1, a1 + 3);
-    lean_vector<int>::const_iterator i = l1.begin();
+    hi::lean_vector<int> l1(a1, a1 + 3);
+    hi::lean_vector<int>::const_iterator i = l1.begin();
     ++i;
-    lean_vector<int>::iterator j = l1.erase(i);
-    ASSERT_EQ(l1.size(), 2);
-    ASSERT_EQ(std::distance(l1.begin(), l1.end()), 2);
-    ASSERT_EQ(*j, 3);
-    ASSERT_EQ(*l1.begin(), 1);
-    ASSERT_EQ(*std::next(l1.begin()), 3);
+    hi::lean_vector<int>::iterator j = l1.erase(i);
+    REQUIRE(l1.size() == 2);
+    REQUIRE(std::distance(l1.begin(), l1.end()) == 2);
+    REQUIRE(*j == 3);
+    REQUIRE(*l1.begin() == 1);
+    REQUIRE(*std::next(l1.begin()) == 3);
     j = l1.erase(j);
-    ASSERT_EQ(j, l1.end());
-    ASSERT_EQ(l1.size(), 1);
-    ASSERT_EQ(std::distance(l1.begin(), l1.end()), 1);
-    ASSERT_EQ(*l1.begin(), 1);
+    REQUIRE(j == l1.end());
+    REQUIRE(l1.size() == 1);
+    REQUIRE(std::distance(l1.begin(), l1.end()) == 1);
+    REQUIRE(*l1.begin() == 1);
     j = l1.erase(l1.begin());
-    ASSERT_EQ(j, l1.end());
-    ASSERT_EQ(l1.size(), 0);
-    ASSERT_EQ(std::distance(l1.begin(), l1.end()), 0);
+    REQUIRE(j == l1.end());
+    REQUIRE(l1.size() == 0);
+    REQUIRE(std::distance(l1.begin(), l1.end()) == 0);
 }
 
-TEST(lean_vector, erase_iter_LWG2853)
+TEST_CASE(erase_iter_LWG2853)
 {
-    lean_vector_detail::Throws arr[] = {1, 2, 3};
-    lean_vector<lean_vector_detail::Throws> v(arr, arr + 3);
-    lean_vector_detail::Throws::sThrows = true;
+    Throws arr[] = {1, 2, 3};
+    hi::lean_vector<Throws> v(arr, arr + 3);
+    Throws::sThrows = true;
     v.erase(v.begin());
     auto tmp = v.end();
     v.erase(--tmp);
     v.erase(v.begin());
-    ASSERT_EQ(v.size(), 0);
-    lean_vector_detail::Throws::sThrows = false;
+    REQUIRE(v.size() == 0);
+    Throws::sThrows = false;
 }
 
-TEST(lean_vector, erase_iter_iter)
+TEST_CASE(erase_iter_iter)
 {
     int a1[] = {1, 2, 3};
     {
-        lean_vector<int> l1(a1, a1 + 3);
-        lean_vector<int>::iterator i = l1.erase(l1.cbegin(), l1.cbegin());
-        ASSERT_EQ(l1.size(), 3);
-        ASSERT_EQ(std::distance(l1.cbegin(), l1.cend()), 3);
-        ASSERT_EQ(i, l1.begin());
+        hi::lean_vector<int> l1(a1, a1 + 3);
+        hi::lean_vector<int>::iterator i = l1.erase(l1.cbegin(), l1.cbegin());
+        REQUIRE(l1.size() == 3);
+        REQUIRE(std::distance(l1.cbegin(), l1.cend()) == 3);
+        REQUIRE(i == l1.begin());
     }
     {
-        lean_vector<int> l1(a1, a1 + 3);
-        lean_vector<int>::iterator i = l1.erase(l1.cbegin(), std::next(l1.cbegin()));
-        ASSERT_EQ(l1.size(), 2);
-        ASSERT_EQ(std::distance(l1.cbegin(), l1.cend()), 2);
-        ASSERT_EQ(i, l1.begin());
-        ASSERT_EQ(l1, lean_vector<int>(a1 + 1, a1 + 3));
+        hi::lean_vector<int> l1(a1, a1 + 3);
+        hi::lean_vector<int>::iterator i = l1.erase(l1.cbegin(), std::next(l1.cbegin()));
+        REQUIRE(l1.size() == 2);
+        REQUIRE(std::distance(l1.cbegin(), l1.cend()) == 2);
+        REQUIRE(i == l1.begin());
+        REQUIRE(l1 == hi::lean_vector<int>(a1 + 1, a1 + 3));
     }
     {
-        lean_vector<int> l1(a1, a1 + 3);
-        lean_vector<int>::iterator i = l1.erase(l1.cbegin(), std::next(l1.cbegin(), 2));
-        ASSERT_EQ(l1.size(), 1);
-        ASSERT_EQ(std::distance(l1.cbegin(), l1.cend()), 1);
-        ASSERT_EQ(i, l1.begin());
-        ASSERT_EQ(l1, lean_vector<int>(a1 + 2, a1 + 3));
+        hi::lean_vector<int> l1(a1, a1 + 3);
+        hi::lean_vector<int>::iterator i = l1.erase(l1.cbegin(), std::next(l1.cbegin(), 2));
+        REQUIRE(l1.size() == 1);
+        REQUIRE(std::distance(l1.cbegin(), l1.cend()) == 1);
+        REQUIRE(i == l1.begin());
+        REQUIRE(l1 == hi::lean_vector<int>(a1 + 2, a1 + 3));
     }
     {
-        lean_vector<int> l1(a1, a1 + 3);
-        lean_vector<int>::iterator i = l1.erase(l1.cbegin(), std::next(l1.cbegin(), 3));
-        ASSERT_EQ(l1.size(), 0);
-        ASSERT_EQ(std::distance(l1.cbegin(), l1.cend()), 0);
-        ASSERT_EQ(i, l1.begin());
+        hi::lean_vector<int> l1(a1, a1 + 3);
+        hi::lean_vector<int>::iterator i = l1.erase(l1.cbegin(), std::next(l1.cbegin(), 3));
+        REQUIRE(l1.size() == 0);
+        REQUIRE(std::distance(l1.cbegin(), l1.cend()) == 0);
+        REQUIRE(i == l1.begin());
     }
     {
-        lean_vector<lean_vector<int>> outer(2, lean_vector<int>(1));
+        hi::lean_vector<hi::lean_vector<int>> outer(2, hi::lean_vector<int>(1));
         outer.erase(outer.begin(), outer.begin());
-        ASSERT_EQ(outer.size(), 2);
-        ASSERT_EQ(outer[0].size(), 1);
-        ASSERT_EQ(outer[1].size(), 1);
+        REQUIRE(outer.size() == 2);
+        REQUIRE(outer[0].size() == 1);
+        REQUIRE(outer[1].size() == 1);
     }
 }
 
-TEST(lean_vector, erase_iter_iter_LWG2863)
+TEST_CASE(erase_iter_iter_LWG2863)
 {
-    lean_vector_detail::Throws arr[] = {1, 2, 3};
-    lean_vector<lean_vector_detail::Throws> v(arr, arr + 3);
-    lean_vector_detail::Throws::sThrows = true;
+    Throws arr[] = {1, 2, 3};
+    hi::lean_vector<Throws> v(arr, arr + 3);
+    Throws::sThrows = true;
     auto tmp = v.end();
     v.erase(v.begin(), --tmp);
-    ASSERT_EQ(v.size(), 1);
+    REQUIRE(v.size() == 1);
     v.erase(v.begin(), v.end());
-    ASSERT_EQ(v.size(), 0);
-    lean_vector_detail::Throws::sThrows = false;
+    REQUIRE(v.size() == 0);
+    Throws::sThrows = false;
 }
 
-TEST(lean_vector, insert_iter_initializer_list)
+TEST_CASE(insert_iter_initializer_list)
 {
-    lean_vector<int> d(10, 1);
-    lean_vector<int>::iterator i = d.insert(d.cbegin() + 2, {3, 4, 5, 6});
-    ASSERT_EQ(d.size(), 14);
-    ASSERT_EQ(i, d.begin() + 2);
-    ASSERT_EQ(d[0], 1);
-    ASSERT_EQ(d[1], 1);
-    ASSERT_EQ(d[2], 3);
-    ASSERT_EQ(d[3], 4);
-    ASSERT_EQ(d[4], 5);
-    ASSERT_EQ(d[5], 6);
-    ASSERT_EQ(d[6], 1);
-    ASSERT_EQ(d[7], 1);
-    ASSERT_EQ(d[8], 1);
-    ASSERT_EQ(d[9], 1);
-    ASSERT_EQ(d[10], 1);
-    ASSERT_EQ(d[11], 1);
-    ASSERT_EQ(d[12], 1);
-    ASSERT_EQ(d[13], 1);
+    hi::lean_vector<int> d(10, 1);
+    hi::lean_vector<int>::iterator i = d.insert(d.cbegin() + 2, {3, 4, 5, 6});
+    REQUIRE(d.size() == 14);
+    REQUIRE(i == d.begin() + 2);
+    REQUIRE(d[0] == 1);
+    REQUIRE(d[1] == 1);
+    REQUIRE(d[2] == 3);
+    REQUIRE(d[3] == 4);
+    REQUIRE(d[4] == 5);
+    REQUIRE(d[5] == 6);
+    REQUIRE(d[6] == 1);
+    REQUIRE(d[7] == 1);
+    REQUIRE(d[8] == 1);
+    REQUIRE(d[9] == 1);
+    REQUIRE(d[10] == 1);
+    REQUIRE(d[11] == 1);
+    REQUIRE(d[12] == 1);
+    REQUIRE(d[13] == 1);
 }
 
-TEST(lean_vector, insert_iter_iter_iter)
+TEST_CASE(insert_iter_iter_iter)
 {
     {
-        typedef lean_vector<int> V;
+        typedef hi::lean_vector<int> V;
         V v(100);
         int a[] = {1, 2, 3, 4, 5};
         const int N = sizeof(a) / sizeof(a[0]);
-        V::iterator i = v.insert(
-            v.cbegin() + 10,
-            lean_vector_detail::input_iterator<const int *>(a),
-            lean_vector_detail::input_iterator<const int *>(a + N));
-        ASSERT_EQ(v.size(), 100 + N);
-        ASSERT_EQ(i, v.begin() + 10);
+        V::iterator i = v.insert(v.cbegin() + 10, input_iterator<const int*>(a), input_iterator<const int*>(a + N));
+        REQUIRE(v.size() == 100 + N);
+        REQUIRE(i == v.begin() + 10);
         int j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (std::size_t k = 0; k < N; ++j, ++k)
-            ASSERT_EQ(v[j], a[k]);
+            REQUIRE(v[j] == a[k]);
         for (; j < 105; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        typedef lean_vector<int> V;
+        typedef hi::lean_vector<int> V;
         V v(100);
         int a[] = {1, 2, 3, 4, 5};
         const int N = sizeof(a) / sizeof(a[0]);
-        V::iterator i = v.insert(
-            v.cbegin() + 10,
-            lean_vector_detail::forward_iterator<const int *>(a),
-            lean_vector_detail::forward_iterator<const int *>(a + N));
-        ASSERT_EQ(v.size(), 100 + N);
-        ASSERT_EQ(i, v.begin() + 10);
+        V::iterator i = v.insert(v.cbegin() + 10, forward_iterator<const int*>(a), forward_iterator<const int*>(a + N));
+        REQUIRE(v.size() == 100 + N);
+        REQUIRE(i == v.begin() + 10);
         int j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (std::size_t k = 0; k < N; ++j, ++k)
-            ASSERT_EQ(v[j], a[k]);
+            REQUIRE(v[j] == a[k]);
         for (; j < 105; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        typedef lean_vector<int> V;
+        typedef hi::lean_vector<int> V;
         V v(100);
         while (v.size() < v.capacity())
             v.push_back(0); // force reallocation
         size_t sz = v.size();
         int a[] = {1, 2, 3, 4, 5};
         const unsigned N = sizeof(a) / sizeof(a[0]);
-        V::iterator i = v.insert(
-            v.cbegin() + 10,
-            lean_vector_detail::forward_iterator<const int *>(a),
-            lean_vector_detail::forward_iterator<const int *>(a + N));
-        ASSERT_EQ(v.size(), sz + N);
-        ASSERT_EQ(i, v.begin() + 10);
+        V::iterator i = v.insert(v.cbegin() + 10, forward_iterator<const int*>(a), forward_iterator<const int*>(a + N));
+        REQUIRE(v.size() == sz + N);
+        REQUIRE(i == v.begin() + 10);
         std::size_t j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (std::size_t k = 0; k < N; ++j, ++k)
-            ASSERT_EQ(v[j], a[k]);
+            REQUIRE(v[j] == a[k]);
         for (; j < v.size(); ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        typedef lean_vector<int> V;
+        typedef hi::lean_vector<int> V;
         V v(100);
         v.reserve(128); // force no reallocation
         size_t sz = v.size();
         int a[] = {1, 2, 3, 4, 5};
         const unsigned N = sizeof(a) / sizeof(a[0]);
-        V::iterator i = v.insert(
-            v.cbegin() + 10,
-            lean_vector_detail::forward_iterator<const int *>(a),
-            lean_vector_detail::forward_iterator<const int *>(a + N));
-        ASSERT_EQ(v.size(), sz + N);
-        ASSERT_EQ(i, v.begin() + 10);
+        V::iterator i = v.insert(v.cbegin() + 10, forward_iterator<const int*>(a), forward_iterator<const int*>(a + N));
+        REQUIRE(v.size() == sz + N);
+        REQUIRE(i == v.begin() + 10);
         std::size_t j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (std::size_t k = 0; k < N; ++j, ++k)
-            ASSERT_EQ(v[j], a[k]);
+            REQUIRE(v[j] == a[k]);
         for (; j < v.size(); ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
 }
 
-TEST(lean_vector, insert_iter_rvalue)
+TEST_CASE(insert_iter_rvalue)
 {
-    lean_vector<lean_vector_detail::MoveOnly> v(100);
-    lean_vector<lean_vector_detail::MoveOnly>::iterator i = v.insert(v.cbegin() + 10, lean_vector_detail::MoveOnly(3));
-    ASSERT_EQ(v.size(), 101);
-    ASSERT_EQ(i, v.begin() + 10);
+    hi::lean_vector<MoveOnly> v(100);
+    hi::lean_vector<MoveOnly>::iterator i = v.insert(v.cbegin() + 10, MoveOnly(3));
+    REQUIRE(v.size() == 101);
+    REQUIRE(i == v.begin() + 10);
     int j;
     for (j = 0; j < 10; ++j)
-        ASSERT_EQ(v[j], lean_vector_detail::MoveOnly());
-    ASSERT_EQ(v[j], lean_vector_detail::MoveOnly(3));
+        REQUIRE(v[j] == MoveOnly());
+    REQUIRE(v[j] == MoveOnly(3));
     for (++j; j < 101; ++j)
-        ASSERT_EQ(v[j], lean_vector_detail::MoveOnly());
+        REQUIRE(v[j] == MoveOnly());
 }
 
-TEST(lean_vector, insert_iter_size_value)
+TEST_CASE(insert_iter_size_value)
 {
     {
-        lean_vector<int> v(100);
-        lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 5, 1);
-        ASSERT_EQ(v.size(), 105);
-        ASSERT_EQ(i, v.begin() + 10);
+        hi::lean_vector<int> v(100);
+        hi::lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 5, 1);
+        REQUIRE(v.size() == 105);
+        REQUIRE(i == v.begin() + 10);
         int j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (; j < 15; ++j)
-            ASSERT_EQ(v[j], 1);
+            REQUIRE(v[j] == 1);
         for (++j; j < 105; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        lean_vector<int> v(100);
+        hi::lean_vector<int> v(100);
         while (v.size() < v.capacity())
             v.push_back(0); // force reallocation
         size_t sz = v.size();
-        lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 5, 1);
-        ASSERT_EQ(v.size(), sz + 5);
-        ASSERT_EQ(i, v.begin() + 10);
+        hi::lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 5, 1);
+        REQUIRE(v.size() == sz + 5);
+        REQUIRE(i == v.begin() + 10);
         std::size_t j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (; j < 15; ++j)
-            ASSERT_EQ(v[j], 1);
+            REQUIRE(v[j] == 1);
         for (++j; j < v.size(); ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        lean_vector<int> v(100);
+        hi::lean_vector<int> v(100);
         v.reserve(128); // force no reallocation
         size_t sz = v.size();
-        lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 5, 1);
-        ASSERT_EQ(v.size(), sz + 5);
-        ASSERT_EQ(i, v.begin() + 10);
+        hi::lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 5, 1);
+        REQUIRE(v.size() == sz + 5);
+        REQUIRE(i == v.begin() + 10);
         std::size_t j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
         for (; j < 15; ++j)
-            ASSERT_EQ(v[j], 1);
+            REQUIRE(v[j] == 1);
         for (++j; j < v.size(); ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
 }
 
-TEST(lean_vector, insert_iter_value)
+TEST_CASE(insert_iter_value)
 {
     {
-        lean_vector<int> v(100);
-        lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 1);
-        ASSERT_EQ(v.size(), 101);
-        ASSERT_EQ(i, v.begin() + 10);
+        hi::lean_vector<int> v(100);
+        hi::lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 1);
+        REQUIRE(v.size() == 101);
+        REQUIRE(i == v.begin() + 10);
         int j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
-        ASSERT_EQ(v[j], 1);
+            REQUIRE(v[j] == 0);
+        REQUIRE(v[j] == 1);
         for (++j; j < 101; ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        lean_vector<int> v(100);
+        hi::lean_vector<int> v(100);
         while (v.size() < v.capacity())
             v.push_back(0); // force reallocation
         size_t sz = v.size();
-        lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 1);
-        ASSERT_EQ(v.size(), sz + 1);
-        ASSERT_EQ(i, v.begin() + 10);
+        hi::lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 1);
+        REQUIRE(v.size() == sz + 1);
+        REQUIRE(i == v.begin() + 10);
         std::size_t j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
-        ASSERT_EQ(v[j], 1);
+            REQUIRE(v[j] == 0);
+        REQUIRE(v[j] == 1);
         for (++j; j < v.size(); ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
     {
-        lean_vector<int> v(100);
+        hi::lean_vector<int> v(100);
         while (v.size() < v.capacity())
             v.push_back(0);
         v.pop_back();
         v.pop_back(); // force no reallocation
         size_t sz = v.size();
-        lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 1);
-        ASSERT_EQ(v.size(), sz + 1);
-        ASSERT_EQ(i, v.begin() + 10);
+        hi::lean_vector<int>::iterator i = v.insert(v.cbegin() + 10, 1);
+        REQUIRE(v.size() == sz + 1);
+        REQUIRE(i == v.begin() + 10);
         std::size_t j;
         for (j = 0; j < 10; ++j)
-            ASSERT_EQ(v[j], 0);
-        ASSERT_EQ(v[j], 1);
+            REQUIRE(v[j] == 0);
+        REQUIRE(v[j] == 1);
         for (++j; j < v.size(); ++j)
-            ASSERT_EQ(v[j], 0);
+            REQUIRE(v[j] == 0);
     }
 }
 
-TEST(lean_vector, pop_back)
+TEST_CASE(pop_back)
 {
-    lean_vector<int> c;
+    hi::lean_vector<int> c;
     c.push_back(1);
-    ASSERT_EQ(c.size(), 1);
+    REQUIRE(c.size() == 1);
     c.pop_back();
-    ASSERT_EQ(c.size(), 0);
+    REQUIRE(c.size() == 0);
 }
 
-TEST(lean_vector, pop_back_LWG526)
+TEST_CASE(pop_back_LWG526)
 {
     int arr[] = {0, 1, 2, 3, 4};
     int sz = 5;
-    lean_vector<int> c(arr, arr + sz);
+    hi::lean_vector<int> c(arr, arr + sz);
     while (c.size() < c.capacity())
         c.push_back(sz++);
     c.push_back(c.front());
-    ASSERT_EQ(c.back(), 0);
+    REQUIRE(c.back() == 0);
     for (int i = 0; i < sz; ++i)
-        ASSERT_EQ(c[i], i);
+        REQUIRE(c[i] == i);
 }
 
-TEST(lean_vector, push_back)
+TEST_CASE(push_back)
 {
-    lean_vector<int> c;
+    hi::lean_vector<int> c;
     c.push_back(0);
-    ASSERT_EQ(c.size(), 1);
+    REQUIRE(c.size() == 1);
     for (int j = 0; static_cast<std::size_t>(j) < c.size(); ++j)
-        ASSERT_EQ(c[j], j);
+        REQUIRE(c[j] == j);
     c.push_back(1);
-    ASSERT_EQ(c.size(), 2);
+    REQUIRE(c.size() == 2);
     for (int j = 0; static_cast<std::size_t>(j) < c.size(); ++j)
-        ASSERT_EQ(c[j], j);
+        REQUIRE(c[j] == j);
     c.push_back(2);
-    ASSERT_EQ(c.size(), 3);
+    REQUIRE(c.size() == 3);
     for (int j = 0; static_cast<std::size_t>(j) < c.size(); ++j)
-        ASSERT_EQ(c[j], j);
+        REQUIRE(c[j] == j);
     c.push_back(3);
-    ASSERT_EQ(c.size(), 4);
+    REQUIRE(c.size() == 4);
     for (int j = 0; static_cast<std::size_t>(j) < c.size(); ++j)
-        ASSERT_EQ(c[j], j);
+        REQUIRE(c[j] == j);
     c.push_back(4);
-    ASSERT_EQ(c.size(), 5);
+    REQUIRE(c.size() == 5);
     for (int j = 0; static_cast<std::size_t>(j) < c.size(); ++j)
-        ASSERT_EQ(c[j], j);
+        REQUIRE(c[j] == j);
 }
 
-TEST(lean_vector, push_back_exception_safety)
+TEST_CASE(push_back_exception_safety)
 {
-    lean_vector_detail::Throws instance(42);
-    lean_vector<lean_vector_detail::Throws> vec;
+    Throws instance(42);
+    hi::lean_vector<Throws> vec;
 
     vec.push_back(instance);
-    lean_vector<lean_vector_detail::Throws> vec2(vec);
+    hi::lean_vector<Throws> vec2(vec);
 
-    lean_vector_detail::Throws::sThrows = true;
-    ASSERT_ANY_THROW(vec.push_back(instance));
-    ASSERT_EQ(vec, vec2);
-    lean_vector_detail::Throws::sThrows = false;
+    Throws::sThrows = true;
+    REQUIRE_THROWS(vec.push_back(instance), int);
+    REQUIRE(vec == vec2);
+    Throws::sThrows = false;
 }
 
-TEST(lean_vector, swap)
+TEST_CASE(swap_test)
 {
     {
         int a1[] = {1, 3, 7, 9, 10};
         int a2[] = {0, 2, 4, 5, 6, 8, 11};
-        lean_vector<int> c1(a1, a1 + sizeof(a1) / sizeof(a1[0]));
-        lean_vector<int> c2(a2, a2 + sizeof(a2) / sizeof(a2[0]));
+        hi::lean_vector<int> c1(a1, a1 + sizeof(a1) / sizeof(a1[0]));
+        hi::lean_vector<int> c2(a2, a2 + sizeof(a2) / sizeof(a2[0]));
         swap(c1, c2);
-        ASSERT_EQ(c1 , lean_vector<int>(a2, a2 + sizeof(a2) / sizeof(a2[0])));
-        ASSERT_EQ(c2 , lean_vector<int>(a1, a1 + sizeof(a1) / sizeof(a1[0])));
+        REQUIRE(c1 == hi::lean_vector<int>(a2, a2 + sizeof(a2) / sizeof(a2[0])));
+        REQUIRE(c2 == hi::lean_vector<int>(a1, a1 + sizeof(a1) / sizeof(a1[0])));
     }
     {
         int a1[] = {1, 3, 7, 9, 10};
         int a2[] = {0, 2, 4, 5, 6, 8, 11};
-        lean_vector<int> c1(a1, a1);
-        lean_vector<int> c2(a2, a2 + sizeof(a2) / sizeof(a2[0]));
+        hi::lean_vector<int> c1(a1, a1);
+        hi::lean_vector<int> c2(a2, a2 + sizeof(a2) / sizeof(a2[0]));
         swap(c1, c2);
-        ASSERT_EQ(c1 , lean_vector<int>(a2, a2 + sizeof(a2) / sizeof(a2[0])));
-        ASSERT_TRUE(c2.empty());
-        ASSERT_EQ(std::distance(c2.begin(), c2.end()) , 0);
+        REQUIRE(c1 == hi::lean_vector<int>(a2, a2 + sizeof(a2) / sizeof(a2[0])));
+        REQUIRE(c2.empty());
+        REQUIRE(std::distance(c2.begin(), c2.end()) == 0);
     }
     {
         int a1[] = {1, 3, 7, 9, 10};
         int a2[] = {0, 2, 4, 5, 6, 8, 11};
-        lean_vector<int> c1(a1, a1 + sizeof(a1) / sizeof(a1[0]));
-        lean_vector<int> c2(a2, a2);
+        hi::lean_vector<int> c1(a1, a1 + sizeof(a1) / sizeof(a1[0]));
+        hi::lean_vector<int> c2(a2, a2);
         swap(c1, c2);
-        ASSERT_TRUE(c1.empty());
-        ASSERT_EQ(std::distance(c1.begin(), c1.end()), 0);
-        ASSERT_EQ(c2 , lean_vector<int>(a1, a1 + sizeof(a1) / sizeof(a1[0])));
+        REQUIRE(c1.empty());
+        REQUIRE(std::distance(c1.begin(), c1.end()) == 0);
+        REQUIRE(c2 == hi::lean_vector<int>(a1, a1 + sizeof(a1) / sizeof(a1[0])));
     }
     {
         int a1[] = {1, 3, 7, 9, 10};
         int a2[] = {0, 2, 4, 5, 6, 8, 11};
-        lean_vector<int> c1(a1, a1);
-        lean_vector<int> c2(a2, a2);
+        hi::lean_vector<int> c1(a1, a1);
+        hi::lean_vector<int> c2(a2, a2);
         swap(c1, c2);
-        ASSERT_TRUE(c1.empty());
-        ASSERT_EQ(std::distance(c1.begin(), c1.end()), 0);
-        ASSERT_TRUE(c2.empty());
-        ASSERT_EQ(std::distance(c2.begin(), c2.end()), 0);
+        REQUIRE(c1.empty());
+        REQUIRE(std::distance(c1.begin(), c1.end()) == 0);
+        REQUIRE(c2.empty());
+        REQUIRE(std::distance(c2.begin(), c2.end()) == 0);
     }
 }
 
-TEST(lean_vector, swap_noexcept)
+TEST_CASE(swap_noexcept)
 {
-    typedef lean_vector<lean_vector_detail::MoveOnly> C;
+    typedef hi::lean_vector<MoveOnly> C;
     static_assert(noexcept(swap(std::declval<C&>(), std::declval<C&>())));
 }
+
+}; // TEST_SUITE(lean_vector_suite)
 
 hi_warning_pop();

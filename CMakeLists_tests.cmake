@@ -69,21 +69,6 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
 endif()
 
 target_sources(hikogui_gtests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_weight_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/graphic_path/bezier_curve_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/graphic_path/graphic_path_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_state_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap_span_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/spreadsheet_address_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bigint_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer_tests.cpp
@@ -142,12 +127,14 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/async_task_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/task_controller_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/iso_15924_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/iso_3166_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/iso_639_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/language_tag_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_char_map_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/font/font_weight_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/matrix3_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/point3_tests.cpp
@@ -158,6 +145,19 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/translate3_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/geometry/vector3_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/graphic_path/bezier_curve_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/graphic_path/graphic_path_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_state_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/iso_15924_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/iso_3166_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/iso_639_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/i18n/language_tag_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap_span_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/image/pixmap_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/layout/spreadsheet_address_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bigint_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float_to_half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_to_float_tests.cpp

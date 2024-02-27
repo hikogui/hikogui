@@ -4,20 +4,15 @@
 
 #include "file_view.hpp"
 #include "../path/path.hpp"
-#include "../utility/utility.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
+TEST_SUITE(file_view) {
 
-
-using namespace std;
-using namespace hi;
-
-TEST(file_view, read)
+TEST_CASE(read)
 {
-    auto const view = file_view{library_source_dir() / "tests" / "data" / "file_view.txt"};
+    auto const view = hi::file_view{hi::library_source_dir() / "tests" / "data" / "file_view.txt"};
 
-    ASSERT_EQ(as_string_view(view), "The quick brown fox jumps over the lazy dog.");
+    REQUIRE(as_string_view(view) == "The quick brown fox jumps over the lazy dog.");
 }
+
+};
