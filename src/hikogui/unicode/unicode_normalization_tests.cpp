@@ -202,8 +202,8 @@ TEST_CASE(invariant)
 
             REQUIRE(hi::unicode_decompose(str) == str, std::format("NFD code-point: {:x}", static_cast<int>(i)));
             REQUIRE(hi::unicode_normalize(str) == str, std::format("NFC code-point: {:x}", static_cast<int>(i)));
-            REQUIRE(hi::unicode_decompose(str, unicode_normalize_config::NFKD()) == str, std::format("NFKD code-point: {:x}", static_cast<int>(i)));
-            REQUIRE(hi::unicode_normalize(str, unicode_normalize_config::NFKC()) == str, std::format("NFKC code-point: {:x}", static_cast<int>(i)));
+            REQUIRE(hi::unicode_decompose(str, hi::unicode_normalize_config::NFKD()) == str, std::format("NFKD code-point: {:x}", static_cast<int>(i)));
+            REQUIRE(hi::unicode_normalize(str, hi::unicode_normalize_config::NFKC()) == str, std::format("NFKC code-point: {:x}", static_cast<int>(i)));
         }
     }
 }
