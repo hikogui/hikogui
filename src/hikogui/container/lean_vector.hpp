@@ -1113,7 +1113,7 @@ lean_vector<T> make_lean_vector(Args &&...args) noexcept
 //    }
 //};
 
-template<std::formattable<char> T>
+template<typename T>
 struct std::formatter<hi::lean_vector<T>, char> : std::formatter<std::string, char> {
     auto format(hi::lean_vector<T> const& t, auto& fc) const
     {
