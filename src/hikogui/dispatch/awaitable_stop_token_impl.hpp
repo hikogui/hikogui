@@ -20,7 +20,7 @@ hi_inline void awaitable_stop_token::callback_wrapper::operator()() noexcept
 {
     // Stop tokens are specifically designed to be called from a different thread,
     // so we will post the function to the same thread as the co_await.
-    await_loop->post_function([=]() {
+    await_loop->post_function([this]() {
         if (handle and not handle.done()) {
             handle.resume();
         }
