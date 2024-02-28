@@ -12,16 +12,14 @@
 #include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <iostream>
 #include <string>
 #include <span>
 #include <format>
 #include <ranges>
 
-
-
-namespace {
+TEST_SUITE(unicode_break_suite) {
 
 struct test_type {
     std::u32string code_points;
@@ -77,18 +75,16 @@ static hi::generator<test_type> parse_tests(std::filesystem::path filename)
     }
 }
 
-} // namespace
-
-TEST(unicode_break, grapheme_break)
+TEST_CASE(grapheme_break)
 {
     for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "GraphemeBreakTest.txt")) {
         auto const result = hi::unicode_grapheme_break(test.code_points.begin(), test.code_points.end());
 
-        ASSERT_EQ(test.expected, result) << test.comment;
+        REQUIRE(test.expected == result, test.comment);
     }
 }
 
-TEST(unicode_break, word_break)
+TEST_CASE(word_break)
 {
     for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "WordBreakTest.txt")) {
         auto const result =
@@ -96,11 +92,11 @@ TEST(unicode_break, word_break)
                 return code_point;
             });
 
-        ASSERT_EQ(test.expected, result) << test.comment;
+        REQUIRE(test.expected == result, test.comment);
     }
 }
 
-TEST(unicode_break, sentence_break)
+TEST_CASE(sentence_break)
 {
     for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "SentenceBreakTest.txt")) {
         auto const result =
@@ -108,11 +104,11 @@ TEST(unicode_break, sentence_break)
                 return code_point;
             });
 
-        ASSERT_EQ(test.expected, result) << test.comment;
+        REQUIRE(test.expected == result, test.comment);
     }
 }
 
-TEST(unicode_break, line_break)
+TEST_CASE(line_break)
 {
     for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "LineBreakTest.txt")) {
         auto result =
@@ -127,6 +123,8 @@ TEST(unicode_break, line_break)
             }
         }
 
-        ASSERT_EQ(test.expected, result) << test.comment;
+        REQUIRE(test.expected == result, test.comment);
     }
 }
+
+};

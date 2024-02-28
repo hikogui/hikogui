@@ -3,20 +3,23 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "fixed_string.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <string>
 
-TEST(fixed_string, from_string_literal)
+TEST_SUITE(fixed_string) {
+
+TEST_CASE(from_string_literal)
 {
     constexpr auto s = hi::fixed_string{"Hello World"};
-    ASSERT_EQ(s, std::string("Hello World"));
-    ASSERT_EQ(s.size(), 11);
+    REQUIRE(s == std::string("Hello World"));
+    REQUIRE(s.size() == 11);
 }
 
 #if HI_COMPILER == HI_CC_MSVC
-TEST(fixed_string, to_fixed_string)
+TEST_CASE(to_fixed_string)
 {
     static_assert(hi_to_fixed_string(std::string{"hello"}) == hi::fixed_string{"hello"});
 }
 #endif
+
+};

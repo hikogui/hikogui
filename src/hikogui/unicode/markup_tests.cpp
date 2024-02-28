@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "markup.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
+TEST_SUITE(markup_suite) {
 
 // case 'r': return phrasing::regular;
 // case 'e': return phrasing::emphesis;
@@ -23,158 +23,160 @@
 // case 'W': return phrasing::warning;
 // case 'E': return phrasing::error;
 
-TEST(markup, phrasing_regular)
+TEST_CASE(phrasing_regular)
 {
     auto tmp = hi::apply_markup("a[r]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_emphesis)
+TEST_CASE(phrasing_emphesis)
 {
     auto tmp = hi::apply_markup("a[e]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::emphesis);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::emphesis);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_strong)
+TEST_CASE(phrasing_strong)
 {
     auto tmp = hi::apply_markup("a[s]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::strong);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::strong);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_code)
+TEST_CASE(phrasing_code)
 {
     auto tmp = hi::apply_markup("a[c]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::code);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::code);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_abbreviation)
+TEST_CASE(phrasing_abbreviation)
 {
     auto tmp = hi::apply_markup("a[a]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::abbreviation);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::abbreviation);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_quote)
+TEST_CASE(phrasing_quote)
 {
     auto tmp = hi::apply_markup("a[q]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::quote);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::quote);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_keyboard)
+TEST_CASE(phrasing_keyboard)
 {
     auto tmp = hi::apply_markup("a[k]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::keyboard);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::keyboard);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_highlight)
+TEST_CASE(phrasing_highlight)
 {
     auto tmp = hi::apply_markup("a[h]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::highlight);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::highlight);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_math)
+TEST_CASE(phrasing_math)
 {
     auto tmp = hi::apply_markup("a[m]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::math);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::math);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_example)
+TEST_CASE(phrasing_example)
 {
     auto tmp = hi::apply_markup("a[x]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::example);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::example);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_unarticulated)
+TEST_CASE(phrasing_unarticulated)
 {
     auto tmp = hi::apply_markup("a[u]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::unarticulated);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::unarticulated);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_title)
+TEST_CASE(phrasing_title)
 {
     auto tmp = hi::apply_markup("a[t]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::title);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::title);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_success)
+TEST_CASE(phrasing_success)
 {
     auto tmp = hi::apply_markup("a[S]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::success);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::success);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_warning)
+TEST_CASE(phrasing_warning)
 {
     auto tmp = hi::apply_markup("a[W]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::warning);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::warning);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_error)
+TEST_CASE(phrasing_error)
 {
     auto tmp = hi::apply_markup("a[E]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(tmp[0].phrasing(), hi::phrasing::regular);
-    ASSERT_EQ(tmp[1].phrasing(), hi::phrasing::error);
-    ASSERT_EQ(tmp[2].phrasing(), hi::phrasing::regular);
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::error);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
-TEST(markup, phrasing_unknown)
+TEST_CASE(phrasing_unknown)
 {
     auto tmp = hi::apply_markup("a[Z]b[.]c");
-    ASSERT_EQ(tmp, "a[Z]bc");
+    REQUIRE(tmp == "a[Z]bc");
 }
 
-TEST(markup, language_nl)
+TEST_CASE(language_nl)
 {
     auto tmp = hi::apply_markup("a[nl]b[.]c");
-    ASSERT_EQ(tmp, "abc");
-    ASSERT_EQ(to_string(tmp[0].language_tag()), "en-Latn-US");
-    ASSERT_EQ(to_string(tmp[1].language_tag()), "nl-Latn-NL");
-    ASSERT_EQ(to_string(tmp[2].language_tag()), "en-Latn-US");
+    REQUIRE(tmp == "abc");
+    REQUIRE(to_string(tmp[0].language_tag()) == "en-Latn-US");
+    REQUIRE(to_string(tmp[1].language_tag()) == "nl-Latn-NL");
+    REQUIRE(to_string(tmp[2].language_tag()) == "en-Latn-US");
 }
 
-TEST(markup, language_unknown)
+TEST_CASE(language_unknown)
 {
     auto tmp = hi::apply_markup("a[no-lang]b[.]c");
-    ASSERT_EQ(tmp, "a[no-lang]bc");
+    REQUIRE(tmp == "a[no-lang]bc");
 }
+
+};

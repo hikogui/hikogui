@@ -394,12 +394,38 @@ template<error_class ErrorClass>
     return {e, rhs};
 }
 
+// clang-format off
+template<typename T> struct is_signed_integer : std::false_type {};
+template<> struct is_signed_integer<signed char> : std::true_type {};
+template<> struct is_signed_integer<signed short> : std::true_type {};
+template<> struct is_signed_integer<signed int> : std::true_type {};
+template<> struct is_signed_integer<signed long> : std::true_type {};
+template<> struct is_signed_integer<signed long long> : std::true_type {};
+template<typename T> constexpr bool is_signed_integer_v = is_signed_integer<T>::value;
+template<typename T> concept signed_integer = is_signed_integer_v<T>;
+
+template<typename T> struct is_unsigned_integer : std::false_type {};
+template<> struct is_unsigned_integer<unsigned char> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned short> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned int> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned long> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned long long> : std::true_type {};
+template<typename T> constexpr bool is_unsigned_integer_v = is_unsigned_integer<T>::value;
+template<typename T> concept unsigned_integer = is_unsigned_integer_v<T>;
+
+template<typename T> concept integer = signed_integer<T> or unsigned_integer<T>;
+// clang-format on
+
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr bool exact_equal_to(LHS const& lhs, RHS const& rhs) noexcept
 {
     // clang-format off
     if constexpr (requires { { lhs == rhs } -> std::convertible_to<bool>; }) {
-        return lhs == rhs;
+        if constexpr (::test::integer<LHS> and ::test::integer<RHS>) {
+            return std::cmp_equal(lhs, rhs);
+        } else {
+            return lhs == rhs;
+        }
 
     } else if constexpr (requires { { lhs != rhs } -> std::convertible_to<bool>; }) {
         return not lhs != rhs;

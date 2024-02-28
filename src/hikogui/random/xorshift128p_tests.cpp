@@ -3,44 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "xorshift128p.hpp"
-#include "../macros.hpp"
-#include <iostream>
-#include <string>
-#include <limits>
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace hi;
-
-namespace xorshift128p_tests {
-
-// The helper function for {ASSERT|EXPECT}_EQ.
-template<typename T, std::size_t N>
-::testing::AssertionResult
-CmpHelperEQ(const char *lhs_expression, const char *rhs_expression, ::hi::simd<T, N> const& lhs, ::hi::simd<T, N> const& rhs)
-{
-    if (equal(lhs, rhs)) {
-        return ::testing::AssertionSuccess();
-    }
-
-    return ::testing::internal::CmpHelperEQFailure(lhs_expression, rhs_expression, lhs, rhs);
-}
-
-template<typename T, std::size_t N>
-::testing::AssertionResult
-CmpHelperNE(const char *lhs_expression, const char *rhs_expression, ::hi::simd<T, N> const& lhs, ::hi::simd<T, N> const& rhs)
-{
-    if (not equal(lhs, rhs)) {
-        return ::testing::AssertionSuccess();
-    }
-
-    return ::testing::internal::CmpHelperEQFailure(lhs_expression, rhs_expression, lhs, rhs);
-}
-
-} // namespace xorshift128p_tests
-
-#define HI_ASSERT_SIMD_EQ(val1, val2) ASSERT_PRED_FORMAT2(xorshift128p_tests::CmpHelperEQ, val1, val2)
-#define HI_ASSERT_SIMD_NE(val1, val2) ASSERT_PRED_FORMAT2(xorshift128p_tests::CmpHelperNE, val1, val2)
+TEST_SUITE(xorshift128p) {
 
 //TEST(xorshift128p, compare_64_and_128_bits)
 //{
@@ -57,3 +22,5 @@ CmpHelperNE(const char *lhs_expression, const char *rhs_expression, ::hi::simd<T
 //        HI_ASSERT_SIMD_EQ(result, expected);
 //    }
 //}
+
+};

@@ -3,27 +3,27 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "not_null.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
-namespace not_null_tests {
+TEST_SUITE(not_null) {
 
 struct A {};
 
 struct B : A {}; 
 
+
+TEST_CASE(make_shared_implicit_cast)
+{
+    auto b = std::make_shared<B>();
+    auto a_copy = hi::not_null<std::shared_ptr<A>>{b};
+    auto a_move = hi::not_null<std::shared_ptr<A>>{std::move(b)};
 }
 
-TEST(not_null, make_shared_implicit_cast)
+TEST_CASE(make_shared_not_null_implicit_cast)
 {
-    auto b = std::make_shared<not_null_tests::B>();
-    auto a_copy = hi::not_null<std::shared_ptr<not_null_tests::A>>{b};
-    auto a_move = hi::not_null<std::shared_ptr<not_null_tests::A>>{std::move(b)};
+    auto b = hi::make_shared_not_null<B>();
+    auto a_copy = hi::not_null<std::shared_ptr<A>>{b};
+    auto a_move = hi::not_null<std::shared_ptr<A>>{std::move(b)};
 }
 
-TEST(not_null, make_shared_not_null_implicit_cast)
-{
-    auto b = hi::make_shared_not_null<not_null_tests::B>();
-    auto a_copy = hi::not_null<std::shared_ptr<not_null_tests::A>>{b};
-    auto a_move = hi::not_null<std::shared_ptr<not_null_tests::A>>{std::move(b)};
-}
+};

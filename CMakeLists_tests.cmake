@@ -1,16 +1,4 @@
 
-add_executable(hikogui_gtests)
-target_link_libraries(hikogui_gtests PRIVATE gtest_main hikogui)
-target_include_directories(hikogui_gtests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(hikogui_gtests PROPERTIES DEBUG_POSTFIX "-deb")
-set_target_properties(hikogui_gtests PROPERTIES RELEASE_POSTFIX "-rel")
-set_target_properties(hikogui_gtests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
-
-# vscode will run each discoverred test as a separate executable invocation
-# wish has a extreme performance impact of about 100x slower. That is why
-# we use add_test as if it is a single test.
-#gtest_discover_tests(hikogui_gtests)
-add_test(NAME hikogui_gtests COMMAND hikogui_gtests)
 
 add_executable(hikogui_htests)
 target_link_libraries(hikogui_htests PRIVATE hikotest hikogui)
@@ -27,13 +15,6 @@ if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     else()
         cmake_path(REPLACE_FILENAME ASAN_DLL "clang_rt.asan_dynamic-x86_64.dll")
     endif()
-
-    add_custom_command(TARGET hikogui_gtests PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_gtests>)
-
-    target_compile_definitions(hikogui_gtests PRIVATE "_DISABLE_VECTOR_ANNOTATION")
-    target_compile_definitions(hikogui_gtests PRIVATE "_DISABLE_STRING_ANNOTATION")
-    target_compile_options(hikogui_gtests PRIVATE -fsanitize=address)
 
     add_custom_command(TARGET hikogui_htests PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_htests>)
@@ -53,12 +34,6 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
             cmake_path(REPLACE_FILENAME ASAN_DLL "clang_rt.asan_dynamic-x86_64.dll")
         endif()
 
-        add_custom_command(TARGET hikogui_gtests PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_gtests>)
-
-        target_compile_options(hikogui_gtests PRIVATE -fsanitize=address)
-        target_link_options(hikogui_gtests PRIVATE -fsanitize=address)
-
         add_custom_command(TARGET hikogui_htests PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "${ASAN_DLL}" $<TARGET_FILE_DIR:hikogui_htests>)
 
@@ -67,43 +42,6 @@ elseif(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
 
     endif()
 endif()
-
-target_sources(hikogui_gtests PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lookahead_iterator_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/glob_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/URI_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/URL_tests.cpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/dither_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/counters_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/format_check_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/grapheme_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/gstring_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/markup_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/ucd_scripts_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_bidi_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_break_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_normalization_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cast_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/defer_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exceptions_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units_tests.cpp
-    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
-)
 
 target_sources(hikogui_htests PRIVATE
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_packer_tests.cpp
@@ -158,11 +96,42 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/bigint_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/int_carry_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/numeric/polynomial_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/group_ptr_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/observer/shared_state_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lexer_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/parser/lookahead_iterator_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/glob_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/URI_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/URL_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/dither_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float_to_half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_to_float_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/counters_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/telemetry/format_check_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/grapheme_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/gstring_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/markup_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/ucd_scripts_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_bidi_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_break_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_normalization_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cast_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/defer_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
 )
 
-show_build_target_properties(hikogui_gtests)
 show_build_target_properties(hikogui_htests)

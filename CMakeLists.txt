@@ -76,15 +76,15 @@ if(BUILD_TESTING)
     #
     # GoogleTest - non-vcpkg, directly build from externals
     #
-    set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
-    set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
-    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG v1.13.0)
-    FetchContent_MakeAvailable(googletest)
-
-    include(GoogleTest)
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_target_properties(gtest      PROPERTIES FOLDER extern)
-    set_target_properties(gtest_main PROPERTIES FOLDER extern)
+    #set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
+    #set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
+    #FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG v1.13.0)
+    #FetchContent_MakeAvailable(googletest)
+#
+    #include(GoogleTest)
+    #set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    #set_target_properties(gtest      PROPERTIES FOLDER extern)
+    #set_target_properties(gtest_main PROPERTIES FOLDER extern)
 
     #
     # HikoTest
