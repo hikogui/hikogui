@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
+#include <format>
 
 hi_export_module(hikogui.container.lean_vector);
 
@@ -1104,5 +1105,31 @@ lean_vector<T> make_lean_vector(Args &&...args) noexcept
 
 
 }} // namespace hi::v1
+
+//template<std::formattable<char> T>
+//struct std::formatter<hi::lean_vector<T>, char> : std::range_formatter<T, char> {
+//    formatter() {
+//        this->set_brackets("[", "]");
+//    }
+//};
+
+template<std::formattable<char> T>
+struct std::formatter<hi::lean_vector<T>, char> : std::formatter<std::string, char> {
+    auto format(hi::lean_vector<T> const& t, auto& fc) const
+    {
+        auto r = std::string{"["};
+
+        for (auto &x: t) {
+            if (r.size() > 1) {
+                r += ',';
+                r += ' ';
+            }
+            r += std::format("{}", x);
+        }
+
+        r += ']';
+        return std::formatter<std::string, char>::format(r, fc);
+    }
+};
 
 hi_warning_pop();
