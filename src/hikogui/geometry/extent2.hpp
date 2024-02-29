@@ -351,14 +351,9 @@ private:
 
 // XXX #617 MSVC bug does not handle partial specialization in modules.
 hi_export template<>
-struct std::formatter<hi::extent2, char> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
+struct std::formatter<hi::extent2, char> : std::formatter<std::string, char> {
     auto format(hi::extent2 const& t, auto& fc) const
     {
-        return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
+        return std::formatter<std::string, char>::format(std::format("[{}, {}]", t.width(), t.height()), fc);
     }
 };

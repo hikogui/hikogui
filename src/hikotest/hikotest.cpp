@@ -60,7 +60,7 @@ namespace test {
 
         } else if (c == '>') {
             it = str.erase(it);
-            it = str.insert_range(it, std::string_view{"&qt;"});
+            it = str.insert_range(it, std::string_view{"&gt;"});
             it += 3;
 
         } else if (c == '&') {
@@ -71,6 +71,11 @@ namespace test {
     }
 
     return str;
+}
+
+[[nodiscard]] static std::string xml_escape(std::string_view str, char quote_char = '\0') noexcept
+{
+    return xml_escape(std::string{str}, quote_char);
 }
 
 filter::filter(std::string_view str)
@@ -262,7 +267,7 @@ void test_case::result_type::junit_xml(FILE* out) const noexcept
     using namespace std::literals;
 
     std::print(
-        out, "    <testcase name=\"{}\" file=\"{}\" line=\"{}\" classname=\"{}\" ", test_name(), file(), line(), suite_name());
+        out, "    <testcase name=\"{}\" file=\"{}\" line=\"{}\" classname=\"{}\" ", xml_escape(test_name(), '"'), xml_escape(file(), '"'), line(), xml_escape(suite_name(), '"'));
 
     if (completed) {
         std::print(
@@ -402,7 +407,7 @@ void test_suite::result_type::junit_xml(FILE* out) const noexcept
 {
     using namespace std::literals;
 
-    std::print(out, "  <testsuite name=\"{}\" tests=\"{}\" ", suite_name(), num_tests());
+    std::print(out, "  <testsuite name=\"{}\" tests=\"{}\" ", xml_escape(suite_name(), '"'), num_tests());
 
     if (completed) {
         std::println(

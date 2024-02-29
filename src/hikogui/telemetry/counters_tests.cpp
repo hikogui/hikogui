@@ -3,41 +3,36 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "counters.hpp"
-#include "../utility/utility.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
+TEST_SUITE(counters) {
 
-
-using namespace std;
-using namespace hi;
-
-TEST(counters, template_read)
+TEST_CASE(template_read)
 {
-    global_counter<"foo_a"> = 0;
-    global_counter<"bar_a"> = 0;
+    hi::global_counter<"foo_a"> = 0;
+    hi::global_counter<"bar_a"> = 0;
 
-    ++global_counter<"foo_a">;
-    ++global_counter<"bar_a">;
-    ++global_counter<"bar_a">;
+    ++hi::global_counter<"foo_a">;
+    ++hi::global_counter<"bar_a">;
+    ++hi::global_counter<"bar_a">;
 
-    ASSERT_EQ(global_counter<"baz_a">, 0);
-    ASSERT_EQ(global_counter<"foo_a">, 1);
-    ASSERT_EQ(global_counter<"bar_a">, 2);
+    REQUIRE(hi::global_counter<"baz_a"> == 0);
+    REQUIRE(hi::global_counter<"foo_a"> == 1);
+    REQUIRE(hi::global_counter<"bar_a"> == 2);
 }
 
-TEST(counters, search_and_read)
+TEST_CASE(search_and_read)
 {
-    global_counter<"foo_b"> = 0;
-    global_counter<"bar_b"> = 0;
+    hi::global_counter<"foo_b"> = 0;
+    hi::global_counter<"bar_b"> = 0;
 
-    ++global_counter<"foo_b">;
-    ++global_counter<"bar_b">;
-    ++global_counter<"bar_b">;
+    ++hi::global_counter<"foo_b">;
+    ++hi::global_counter<"bar_b">;
+    ++hi::global_counter<"bar_b">;
 
-    ASSERT_EQ(get_global_counter_if("baz_b"), nullptr);
-    ASSERT_EQ(*get_global_counter_if("foo_b"), 1);
-    ASSERT_EQ(*get_global_counter_if("bar_b"), 2);
+    REQUIRE(hi::get_global_counter_if("baz_b") == nullptr);
+    REQUIRE(*hi::get_global_counter_if("foo_b") == 1);
+    REQUIRE(*hi::get_global_counter_if("bar_b") == 2);
 }
+
+};

@@ -3,18 +3,16 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "forward_value.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
-#include <limits>
+#include <hikotest/hikotest.hpp>
 
-TEST(forward_value, string_literal)
+TEST_SUITE(forward_value) {
+
+TEST_CASE(string_literal)
 {
     static_assert(std::is_same_v<hi::forward_value_t<decltype("hello world")>, char const *>);
 }
 
-TEST(forward_value, char_ptr_literal)
+TEST_CASE(char_ptr_literal)
 {
     [[maybe_unused]] char const *hello_world = "hello world";
     [[maybe_unused]] char const *const const_hello_world = "hello world";
@@ -24,7 +22,7 @@ TEST(forward_value, char_ptr_literal)
     static_assert(std::is_same_v<hi::forward_value_t<decltype(hello_world) &>, std::string>);
     static_assert(std::is_same_v<hi::forward_value_t<decltype(const_hello_world) &>, std::string>);
 }
-TEST(forward_value, string_view)
+TEST_CASE(string_view)
 {
     static_assert(std::is_same_v<hi::forward_value_t<std::string_view>, std::string>);
     static_assert(std::is_same_v<hi::forward_value_t<std::string_view const>, std::string>);
@@ -32,7 +30,7 @@ TEST(forward_value, string_view)
     static_assert(std::is_same_v<hi::forward_value_t<std::string_view &>, std::string>);
 }
 
-TEST(forward_value, integer)
+TEST_CASE(integer)
 {
     static_assert(std::is_same_v<hi::forward_value_t<int>, int>);
     static_assert(std::is_same_v<hi::forward_value_t<int &>, int>);
@@ -50,7 +48,7 @@ TEST(forward_value, integer)
 class A {
 };
 
-TEST(forward_value, class_object)
+TEST_CASE(class_object)
 {
     static_assert(std::is_same_v<hi::forward_value_t<A>, A>);
     static_assert(std::is_same_v<hi::forward_value_t<A &>, A>);
@@ -64,3 +62,5 @@ TEST(forward_value, class_object)
     static_assert(std::is_same_v<hi::forward_value_t<A const *&>, A const *>);
     static_assert(std::is_same_v<hi::forward_value_t<A const *const &>, A const *>);
 }
+
+};

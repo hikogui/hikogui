@@ -7,8 +7,7 @@
 #include "../path/path.hpp"
 #include "../utility/utility.hpp"
 #include "../algorithm/algorithm.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -16,16 +15,14 @@
 #include <format>
 #include <ranges>
 
-
-
-using namespace hi;
+TEST_SUITE(unicode_bidi) {
 
 struct unicode_bidi_test {
     std::vector<int> levels;
     std::vector<int> reorder;
     int line_nr;
 
-    std::vector<unicode_bidi_class> input;
+    std::vector<hi::unicode_bidi_class> input;
     bool test_for_LTR = false;
     bool test_for_RTL = false;
     bool test_for_auto = false;
@@ -45,18 +42,18 @@ struct unicode_bidi_test {
         return r;
     }
 
-    [[nodiscard]] std::vector<unicode_bidi_class> get_paragraph_directions() const noexcept
+    [[nodiscard]] std::vector<hi::unicode_bidi_class> get_paragraph_directions() const noexcept
     {
-        auto r = std::vector<unicode_bidi_class>{};
+        auto r = std::vector<hi::unicode_bidi_class>{};
 
         if (test_for_LTR) {
-            r.push_back(unicode_bidi_class::L);
+            r.push_back(hi::unicode_bidi_class::L);
         }
         if (test_for_RTL) {
-            r.push_back(unicode_bidi_class::R);
+            r.push_back(hi::unicode_bidi_class::R);
         }
         if (test_for_auto) {
-            r.push_back(unicode_bidi_class::ON);
+            r.push_back(hi::unicode_bidi_class::ON);
         }
 
         return r;
@@ -79,7 +76,7 @@ struct unicode_bidi_test {
 [[nodiscard]] static std::vector<int> parse_bidi_test_reorder(std::string_view line) noexcept
 {
     auto r = std::vector<int>{};
-    for (auto const value : split(strip(line))) {
+    for (auto const value : hi::split(hi::strip(line))) {
         if (value == "x") {
             r.push_back(-1);
         } else {
@@ -97,13 +94,13 @@ struct unicode_bidi_test {
 {
     auto r = unicode_bidi_test{levels, reorder, level_nr};
 
-    auto line_s = split(line, ';');
+    auto line_s = hi::split(line, ';');
 
-    for (auto bidi_class_str : split(strip(line_s[0]))) {
-        r.input.push_back(unicode_bidi_class_from_string(bidi_class_str));
+    for (auto bidi_class_str : hi::split(hi::strip(line_s[0]))) {
+        r.input.push_back(hi::unicode_bidi_class_from_string(bidi_class_str));
     }
 
-    auto bitset = hi::from_string<int>(strip(line_s[1]), 16);
+    auto bitset = hi::from_string<int>(hi::strip(line_s[1]), 16);
     r.test_for_auto = (bitset & 1) != 0;
     r.test_for_LTR = (bitset & 2) != 0;
     r.test_for_RTL = (bitset & 4) != 0;
@@ -111,9 +108,9 @@ struct unicode_bidi_test {
     return r;
 }
 
-generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
+hi::generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
-    auto const view = file_view(library_source_dir() / "tests" / "data" / "BidiTest.txt");
+    auto const view = hi::file_view(hi::library_source_dir() / "tests" / "data" / "BidiTest.txt");
     auto const test_data = as_string_view(view);
 
     auto levels = std::vector<int>{};
@@ -121,7 +118,7 @@ generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 
     int line_nr = 1;
     for (auto const line_view : std::views::split(test_data, std::string_view{"\n"})) {
-        auto const line = strip(std::string_view{line_view.begin(), line_view.end()});
+        auto const line = hi::strip(std::string_view{line_view.begin(), line_view.end()});
         if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
         } else if (line.starts_with("@Levels:")) {
@@ -143,7 +140,7 @@ generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
     }
 }
 
-TEST(unicode_bidi, bidi_test)
+TEST_CASE(bidi_test)
 {
     for (auto test : parse_bidi_test()) {
         for (auto paragraph_direction : test.get_paragraph_directions()) {
@@ -152,8 +149,8 @@ TEST(unicode_bidi, bidi_test)
             test_parameters.enable_line_separator = false;
             // clang-format off
             test_parameters.direction_mode =
-                paragraph_direction == unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
-                paragraph_direction == unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
+                paragraph_direction == hi::unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
+                paragraph_direction == hi::unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
                 hi::unicode_bidi_context::mode_type::auto_LTR;
             // clang-format on
 
@@ -169,16 +166,16 @@ TEST(unicode_bidi, bidi_test)
             for (auto it = first; it != last; ++it) {
                 auto const expected_embedding_level = test.levels[it->index];
 
-                ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
+                REQUIRE((expected_embedding_level == -1 or expected_embedding_level == it->embedding_level));
             }
 
-            ASSERT_EQ(std::distance(first, last), ssize(test.reorder));
+            REQUIRE(std::distance(first, last) == std::ssize(test.reorder));
 
             auto index = 0;
             for (auto it = first; it != last; ++it, ++index) {
                 auto const expected_input_index = test.reorder[index];
 
-                ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
+                REQUIRE((expected_input_index == -1 or expected_input_index == it->index));
             }
         }
 
@@ -193,8 +190,8 @@ TEST(unicode_bidi, bidi_test)
 struct unicode_bidi_character_test {
     int line_nr;
     std::vector<char32_t> characters;
-    unicode_bidi_class paragraph_direction;
-    unicode_bidi_class resolved_paragraph_direction;
+    hi::unicode_bidi_class paragraph_direction;
+    hi::unicode_bidi_class resolved_paragraph_direction;
     std::vector<int> resolved_levels;
     std::vector<int> resolved_order;
 
@@ -218,26 +215,26 @@ struct unicode_bidi_character_test {
 
 [[nodiscard]] static unicode_bidi_character_test parse_bidi_character_test_line(std::string_view line, int line_nr)
 {
-    auto const split_line = split(line, ';');
-    auto const hex_characters = split(split_line[0]);
+    auto const split_line = hi::split(line, ';');
+    auto const hex_characters = hi::split(split_line[0]);
     auto const paragraph_direction = hi::from_string<int>(split_line[1]);
     auto const resolved_paragraph_direction = hi::from_string<int>(split_line[2]);
-    auto const int_resolved_levels = split(split_line[3]);
-    auto const int_resolved_order = split(split_line[4]);
+    auto const int_resolved_levels = hi::split(split_line[3]);
+    auto const int_resolved_order = hi::split(split_line[4]);
 
     auto r = unicode_bidi_character_test{};
     r.line_nr = line_nr;
     std::transform(begin(hex_characters), end(hex_characters), std::back_inserter(r.characters), [](auto const &x) {
-        return char_cast<char32_t>(hi::from_string<uint32_t>(x, 16));
+        return hi::char_cast<char32_t>(hi::from_string<uint32_t>(x, 16));
     });
 
-    r.paragraph_direction = paragraph_direction == 0 ? unicode_bidi_class::L :
-        paragraph_direction == 1                     ? unicode_bidi_class::R :
-                                                       unicode_bidi_class::ON;
+    r.paragraph_direction = paragraph_direction == 0 ? hi::unicode_bidi_class::L :
+        paragraph_direction == 1                     ? hi::unicode_bidi_class::R :
+                                                       hi::unicode_bidi_class::ON;
 
-    r.resolved_paragraph_direction = resolved_paragraph_direction == 0 ? unicode_bidi_class::L :
-        resolved_paragraph_direction == 1                              ? unicode_bidi_class::R :
-                                                                         unicode_bidi_class::ON;
+    r.resolved_paragraph_direction = resolved_paragraph_direction == 0 ? hi::unicode_bidi_class::L :
+        resolved_paragraph_direction == 1                              ? hi::unicode_bidi_class::R :
+                                                                         hi::unicode_bidi_class::ON;
 
     std::transform(begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](auto const &x) {
         if (x == "x") {
@@ -254,14 +251,14 @@ struct unicode_bidi_character_test {
     return r;
 }
 
-generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
+hi::generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
-    auto const view = file_view(library_source_dir() / "tests" / "data" / "BidiCharacterTest.txt");
+    auto const view = hi::file_view(hi::library_source_dir() / "tests" / "data" / "BidiCharacterTest.txt");
     auto const test_data = as_string_view(view);
 
     int line_nr = 1;
     for (auto const line_view : std::views::split(test_data, std::string_view{"\n"})) {
-        auto const line = strip(std::string_view{line_view.begin(), line_view.end()});
+        auto const line = hi::strip(std::string_view{line_view.begin(), line_view.end()});
         if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
         } else {
@@ -279,7 +276,7 @@ generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_n
     }
 }
 
-TEST(unicode_bidi, bidi_character_test)
+TEST_CASE(bidi_character_test)
 {
     for (auto test : parse_bidi_character_test()) {
         auto test_parameters = hi::unicode_bidi_context{};
@@ -287,8 +284,8 @@ TEST(unicode_bidi, bidi_character_test)
         test_parameters.enable_line_separator = true;
         // clang-format off
         test_parameters.direction_mode =
-            test.paragraph_direction == unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
-            test.paragraph_direction == unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
+            test.paragraph_direction == hi::unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
+            test.paragraph_direction == hi::unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
             hi::unicode_bidi_context::mode_type::auto_LTR;
         // clang-format on
 
@@ -296,7 +293,7 @@ TEST(unicode_bidi, bidi_character_test)
         auto first = begin(input);
         auto last = end(input);
 
-        auto const[new_last, paragraph_directions] = unicode_bidi(
+        auto const[new_last, paragraph_directions] = hi::unicode_bidi(
             first,
             last,
             [](auto const &x) {
@@ -317,13 +314,13 @@ TEST(unicode_bidi, bidi_character_test)
         //    ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
         //}
 
-        ASSERT_EQ(std::distance(first, last), ssize(test.resolved_order));
+        REQUIRE(std::distance(first, last) == std::ssize(test.resolved_order));
 
         auto index = 0;
         for (auto it = first; it != last; ++it, ++index) {
             auto const expected_input_index = test.resolved_order[index];
 
-            ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
+            REQUIRE((expected_input_index == -1 or expected_input_index == it->index));
         }
 
 #ifndef NDEBUG
@@ -333,3 +330,5 @@ TEST(unicode_bidi, bidi_character_test)
 #endif
     }
 }
+
+};

@@ -4,44 +4,42 @@
 
 #include "graphic_path.hpp"
 #include "bezier_curve.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace hi;
+TEST_SUITE(graphic_path) {
 
-TEST(grahpic_path, getBeziersOfLayer)
+TEST_CASE(get_beziers_points_of_Layer)
 {
-    auto path = graphic_path();
-    path.moveTo(point2{1, 1});
-    path.lineTo(point2{2, 1});
-    path.lineTo(point2{2, 2});
-    path.lineTo(point2{1, 2});
+    auto path = hi::graphic_path();
+    path.moveTo(hi::point2{1, 1});
+    path.lineTo(hi::point2{2, 1});
+    path.lineTo(hi::point2{2, 2});
+    path.lineTo(hi::point2{1, 2});
     path.closeContour();
 
     auto const beziers = path.getBeziers();
-    ASSERT_EQ(beziers.size(), 4);
-    ASSERT_EQ(beziers[0], bezier_curve(point2(1, 1), point2(2, 1)));
-    ASSERT_EQ(beziers[1], bezier_curve(point2(2, 1), point2(2, 2)));
-    ASSERT_EQ(beziers[2], bezier_curve(point2(2, 2), point2(1, 2)));
-    ASSERT_EQ(beziers[3], bezier_curve(point2(1, 2), point2(1, 1)));
+    REQUIRE(beziers.size() == 4);
+    REQUIRE(beziers[0] == hi::bezier_curve(hi::point2(1, 1), hi::point2(2, 1)));
+    REQUIRE(beziers[1] == hi::bezier_curve(hi::point2(2, 1), hi::point2(2, 2)));
+    REQUIRE(beziers[2] == hi::bezier_curve(hi::point2(2, 2), hi::point2(1, 2)));
+    REQUIRE(beziers[3] == hi::bezier_curve(hi::point2(1, 2), hi::point2(1, 1)));
 }
 
-TEST(grahpic_path, getbezier_pointsOfContour)
+TEST_CASE(get_bezier_points_of_contour)
 {
-    auto path = graphic_path();
-    path.moveTo(point2{1, 1});
-    path.lineTo(point2{2, 1});
-    path.lineTo(point2{2, 2});
-    path.lineTo(point2{1, 2});
+    auto path = hi::graphic_path();
+    path.moveTo(hi::point2{1, 1});
+    path.lineTo(hi::point2{2, 1});
+    path.lineTo(hi::point2{2, 2});
+    path.lineTo(hi::point2{1, 2});
     path.closeContour();
 
     auto const points = path.getbezier_pointsOfContour(0);
-    ASSERT_EQ(points.size(), 4);
-    ASSERT_EQ(points[0], bezier_point(point2(1, 1), bezier_point::Type::Anchor));
-    ASSERT_EQ(points[1], bezier_point(point2(2, 1), bezier_point::Type::Anchor));
-    ASSERT_EQ(points[2], bezier_point(point2(2, 2), bezier_point::Type::Anchor));
-    ASSERT_EQ(points[3], bezier_point(point2(1, 2), bezier_point::Type::Anchor));
+    REQUIRE(points.size() == 4);
+    REQUIRE(points[0] == hi::bezier_point(hi::point2(1, 1), hi::bezier_point::Type::Anchor));
+    REQUIRE(points[1] == hi::bezier_point(hi::point2(2, 1), hi::bezier_point::Type::Anchor));
+    REQUIRE(points[2] == hi::bezier_point(hi::point2(2, 2), hi::bezier_point::Type::Anchor));
+    REQUIRE(points[3] == hi::bezier_point(hi::point2(1, 2), hi::bezier_point::Type::Anchor));
 }
+
+};

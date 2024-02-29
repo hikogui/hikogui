@@ -110,7 +110,7 @@ public:
     template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
     [[nodiscard]] constexpr pixmap_span(pixmap<O, Allocator>&& other) = delete;
 
-    [[nodiscard]] constexpr size_type empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
         return _width == 0 and _height == 0;
     }

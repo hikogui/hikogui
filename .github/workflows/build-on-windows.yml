@@ -117,10 +117,6 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config Debug --parallel 1
     
-      - name: ✔ ❌✔️ Google-Test Debug
-        working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_gtests-deb "--gtest_output=xml:${{github.workspace}}\result_gtests_deb_${{env.MATRIX_ID}}.xml"
-
       - name: ✔ ❌✔️ Hiko-Test Debug
         working-directory: ${{env.BUILD_DIR}}
         run: Debug\hikogui_htests-deb "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
@@ -133,10 +129,6 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config RelWithDebInfo --parallel 1
     
-      - name: ✔ ❌✔️ Google-Test RelWithDebInfo
-        working-directory: ${{env.BUILD_DIR}}
-        run: RelWithDebInfo\hikogui_gtests-rdi "--gtest_output=xml:${{github.workspace}}\result_gtests_rdi_${{env.MATRIX_ID}}.xml"
-
       - name: ✔ ❌✔️ Hiko-Test RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
         run: RelWithDebInfo\hikogui_htests-rdi "--gtest_output=xml:${{github.workspace}}\result_htests_rdi_${{env.MATRIX_ID}}.xml"
@@ -149,10 +141,6 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config Release --parallel 1
     
-      - name: ✔ ❌✔️ Google-Test Release
-        working-directory: ${{env.BUILD_DIR}}
-        run: Release\hikogui_gtests-rel "--gtest_output=xml:${{github.workspace}}\result_gtests_rel${{env.MATRIX_ID}}.xml"
-
       - name: ✔ ❌✔️ Hiko-Test Release
         working-directory: ${{env.BUILD_DIR}}
         run: Release\hikogui_htests-rel "--gtest_output=xml:${{github.workspace}}\result_htests_rel${{env.MATRIX_ID}}.xml"
@@ -182,9 +170,8 @@ jobs:
           --excluded_sources=src\*\*_tests.cpp ^
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\build ^
-          --cover_children ^
-          -- ctest.exe --build-config=Debug
+          --working_dir=${{env.BUILD_DIR}} ^
+          -- Debug\hikogui_htests-deb
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)

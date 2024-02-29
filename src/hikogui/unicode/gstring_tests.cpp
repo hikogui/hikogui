@@ -3,12 +3,15 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gstring.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
-TEST(gstring, from_utf8)
+TEST_SUITE(gstring) {
+
+TEST_CASE(from_utf8)
 {
     auto test = hi::to_gstring("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:");
     //ASSERT_EQ(test.size(), 30);
-    ASSERT_NE(test[10].starter(), 0);
+    REQUIRE(static_cast<int>(test[10].starter()) != 0);
 }
+
+};

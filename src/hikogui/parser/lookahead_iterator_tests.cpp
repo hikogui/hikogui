@@ -3,71 +3,75 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "lookahead_iterator.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <vector>
 #include <iterator>
 
-TEST(lookahead_iterator, iterate)
+TEST_SUITE(lookahead_iterator) {
+
+TEST_CASE(iterate)
 {
     auto values = std::vector{'a', 'b', 'c', 'd', 'e', 'f'};
 
     auto it = hi::make_lookahead_iterator<4>(values.begin(), values.end());
 
-    ASSERT_EQ(it.size(), 4);
-    ASSERT_FALSE(it.empty());
-    ASSERT_NE(it, std::default_sentinel);
-    ASSERT_EQ(*it, 'a');
-    ASSERT_EQ(it[0], 'a');
-    ASSERT_EQ(it[1], 'b');
-    ASSERT_EQ(it[2], 'c');
-    ASSERT_EQ(it[3], 'd');
+    REQUIRE(it.size() == 4);
+    REQUIRE(not it.empty());
+    REQUIRE(it != std::default_sentinel);
+    REQUIRE(*it == 'a');
+    REQUIRE(it[0] == 'a');
+    REQUIRE(it[1] == 'b');
+    REQUIRE(it[2] == 'c');
+    REQUIRE(it[3] == 'd');
 
     ++it;
-    ASSERT_EQ(it.size(), 4);
-    ASSERT_FALSE(it.empty());
-    ASSERT_NE(it, std::default_sentinel);
-    ASSERT_EQ(*it, 'b');
-    ASSERT_EQ(it[0], 'b');
-    ASSERT_EQ(it[1], 'c');
-    ASSERT_EQ(it[2], 'd');
-    ASSERT_EQ(it[3], 'e');
+    REQUIRE(it.size() == 4);
+    REQUIRE(not it.empty());
+    REQUIRE(it != std::default_sentinel);
+    REQUIRE(*it == 'b');
+    REQUIRE(it[0] == 'b');
+    REQUIRE(it[1] == 'c');
+    REQUIRE(it[2] == 'd');
+    REQUIRE(it[3] == 'e');
 
     ++it;
-    ASSERT_EQ(it.size(), 4);
-    ASSERT_FALSE(it.empty());
-    ASSERT_NE(it, std::default_sentinel);
-    ASSERT_EQ(*it, 'c');
-    ASSERT_EQ(it[0], 'c');
-    ASSERT_EQ(it[1], 'd');
-    ASSERT_EQ(it[2], 'e');
-    ASSERT_EQ(it[3], 'f');
+    REQUIRE(it.size() == 4);
+    REQUIRE(not it.empty());
+    REQUIRE(it != std::default_sentinel);
+    REQUIRE(*it == 'c');
+    REQUIRE(it[0] == 'c');
+    REQUIRE(it[1] == 'd');
+    REQUIRE(it[2] == 'e');
+    REQUIRE(it[3] == 'f');
 
     ++it;
-    ASSERT_EQ(it.size(), 3);
-    ASSERT_FALSE(it.empty());
-    ASSERT_NE(it, std::default_sentinel);
-    ASSERT_EQ(*it, 'd');
-    ASSERT_EQ(it[0], 'd');
-    ASSERT_EQ(it[1], 'e');
-    ASSERT_EQ(it[2], 'f');
+    REQUIRE(it.size() == 3);
+    REQUIRE(not it.empty());
+    REQUIRE(it != std::default_sentinel);
+    REQUIRE(*it == 'd');
+    REQUIRE(it[0] == 'd');
+    REQUIRE(it[1] == 'e');
+    REQUIRE(it[2] == 'f');
 
     ++it;
-    ASSERT_EQ(it.size(), 2);
-    ASSERT_FALSE(it.empty());
-    ASSERT_NE(it, std::default_sentinel);
-    ASSERT_EQ(*it, 'e');
-    ASSERT_EQ(it[0], 'e');
-    ASSERT_EQ(it[1], 'f');
+    REQUIRE(it.size() == 2);
+    REQUIRE(not it.empty());
+    REQUIRE(it != std::default_sentinel);
+    REQUIRE(*it == 'e');
+    REQUIRE(it[0] == 'e');
+    REQUIRE(it[1] == 'f');
 
     ++it;
-    ASSERT_EQ(it.size(), 1);
-    ASSERT_FALSE(it.empty());
-    ASSERT_NE(it, std::default_sentinel);
-    ASSERT_EQ(*it, 'f');
-    ASSERT_EQ(it[0], 'f');
+    REQUIRE(it.size() == 1);
+    REQUIRE(not it.empty());
+    REQUIRE(it != std::default_sentinel);
+    REQUIRE(*it == 'f');
+    REQUIRE(it[0] == 'f');
 
-        ++it;
-    ASSERT_EQ(it.size(), 0);
-    ASSERT_TRUE(it.empty());
-    ASSERT_EQ(it, std::default_sentinel);
+    ++it;
+    REQUIRE(it.size() == 0);
+    REQUIRE(it.empty());
+    REQUIRE(it == std::default_sentinel);
 }
+
+}; // TEST_SUITE(lookahead_iterator)

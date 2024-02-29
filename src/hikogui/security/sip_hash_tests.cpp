@@ -3,17 +3,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "sip_hash.hpp"
-#include "../utility/utility.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
+#include<hikotest/hikotest.hpp>
 #include <array>
 #include <string_view>
 
-
+TEST_SUITE(sip_hash) {
 
 // clang-format off
-auto results = std::array<uint64_t, 64>{
+inline static auto results = std::array<uint64_t, 64>{
     0x726fdb47dd0e0e31,
     0x74f839c593dc67fd,
     0x0d6c8009d9a94f5a,
@@ -81,7 +78,7 @@ auto results = std::array<uint64_t, 64>{
 };
 // clang-format on
 
-TEST(sip_hash, standard_vectors)
+TEST_CASE(standard_vectors)
 {
     std::array<uint8_t, 64> message;
 
@@ -95,11 +92,11 @@ TEST(sip_hash, standard_vectors)
         sh.add(message.data(), i);
         auto r = sh.finish();
 
-        ASSERT_EQ(r, results[i]) << std::format("test vector: {}", i);
+        REQUIRE(r == results[i], std::format("test vector: {}", i));
     }
 }
 
-TEST(sip_hash, standard_vectors_complete_message)
+TEST_CASE(standard_vectors_complete_message)
 {
     std::array<uint8_t, 64> message;
 
@@ -111,11 +108,11 @@ TEST(sip_hash, standard_vectors_complete_message)
     for (size_t i = 0; i != 64; ++i) {
         auto r = sh(message.data(), i);
 
-        ASSERT_EQ(r, results[i]) << std::format("test vector: {}", i);
+        REQUIRE(r == results[i], std::format("test vector: {}", i));
     }
 }
 
-TEST(sip_hash, global)
+TEST_CASE(global)
 {
     std::array<char, 64> message;
 
@@ -129,5 +126,7 @@ TEST(sip_hash, global)
 
     auto r2 = hi::sip_hash24<std::string_view>{}(std::string_view{message.data(), 9});
 
-    ASSERT_EQ(r1, r2);
+    REQUIRE(r1 == r2);
 }
+
+};

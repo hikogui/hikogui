@@ -335,7 +335,7 @@ error(double, char const*) -> error<error_class::absolute>;
  *  - lhs: The rhs of a comparison operator.
  *    (the operand becomes the rhs of the comparison operator).
  *  - rhs: Any `error<>` value.
- * 
+ *
  * We copy the value if the RHS is a rvalue reference.
  * We take a reference of the value if the RHS is a lvalue reference.
  */
@@ -348,7 +348,9 @@ struct operand {
     value_type v;
 
     template<typename Arg>
-    operand(error<ErrorClass> error, Arg&& arg) noexcept : e(error), v(std::forward<Arg>(arg)) {}
+    operand(error<ErrorClass> error, Arg&& arg) noexcept : e(error), v(std::forward<Arg>(arg))
+    {
+    }
 
     /** Convert the boolean result as an std::expected.
      *
@@ -392,35 +394,50 @@ template<error_class ErrorClass>
     return {e, rhs};
 }
 
+// clang-format off
+template<typename T> struct is_signed_integer : std::false_type {};
+template<> struct is_signed_integer<signed char> : std::true_type {};
+template<> struct is_signed_integer<signed short> : std::true_type {};
+template<> struct is_signed_integer<signed int> : std::true_type {};
+template<> struct is_signed_integer<signed long> : std::true_type {};
+template<> struct is_signed_integer<signed long long> : std::true_type {};
+template<typename T> constexpr bool is_signed_integer_v = is_signed_integer<T>::value;
+template<typename T> concept signed_integer = is_signed_integer_v<T>;
+
+template<typename T> struct is_unsigned_integer : std::false_type {};
+template<> struct is_unsigned_integer<unsigned char> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned short> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned int> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned long> : std::true_type {};
+template<> struct is_unsigned_integer<unsigned long long> : std::true_type {};
+template<typename T> constexpr bool is_unsigned_integer_v = is_unsigned_integer<T>::value;
+template<typename T> concept unsigned_integer = is_unsigned_integer_v<T>;
+
+template<typename T> concept integer = signed_integer<T> or unsigned_integer<T>;
+// clang-format on
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::expected<void, std::string>
-operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+[[nodiscard]] constexpr bool exact_equal_to(LHS const& lhs, RHS const& rhs) noexcept
 {
     // clang-format off
-    if constexpr (requires { { lhs == rhs.v } -> std::convertible_to<bool>; }) {
-        if (lhs == rhs.v) {
-            return {};
+    if constexpr (requires { { lhs == rhs } -> std::convertible_to<bool>; }) {
+        if constexpr (::test::integer<LHS> and ::test::integer<RHS>) {
+            return std::cmp_equal(lhs, rhs);
         } else {
-            return std::unexpected{
-                std::format("Expected equality of these values:{}{}{}", operand_to_string("left-hand-side", lhs), operand_to_string("right-hand-side", rhs.v), rhs.e.message())};
+            return lhs == rhs;
         }
 
-    } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
-        if (std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v)) {
-            return {};
-        } else {
-            return std::unexpected{
-                std::format("Expected equality of these values:{}{}{}", operand_to_string("left-hand-side", lhs), operand_to_string("right-hand-side", rhs.v), rhs.e.message())};
-        }
+    } else if constexpr (requires { { lhs != rhs } -> std::convertible_to<bool>; }) {
+        return not lhs != rhs;
 
-    } else if constexpr (requires { std::ranges::equal(lhs, rhs.v); }) {
-        if (std::ranges::equal(lhs, rhs.v)) {
-            return {};
-        } else {
-            return std::unexpected{
-                std::format("Expected equality of these values:{}{}{}", operand_to_string("left-hand-side", lhs), operand_to_string("right-hand-side", rhs.v), rhs.e.message())};
-        }
+    } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs); }) {
+        return std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs);
+
+    } else if constexpr (requires { std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs); }) {
+        return not std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs);
+
+    } else if constexpr (requires { std::ranges::equal(lhs, rhs); }) {
+        return std::ranges::equal(lhs, rhs);
 
     } else {
         []<bool Flag = false>() {
@@ -431,46 +448,39 @@ operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
 }
 
 template<typename LHS, typename RHS>
-[[nodiscard]] constexpr std::expected<void, std::string>
-operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+[[nodiscard]] constexpr std::strong_ordering exact_compare(LHS const& lhs, RHS const& rhs) noexcept
 {
     // clang-format off
-    if constexpr (requires { { lhs != rhs.v } -> std::convertible_to<bool>; }) {
-        if (lhs != rhs.v) {
-            return {};
+    if constexpr (requires { { lhs == rhs } -> std::convertible_to<bool>; { lhs < rhs } -> std::convertible_to<bool>; }) {
+        if (lhs == rhs) {
+            return std::strong_ordering::equal;
+        } else if (lhs < rhs) {
+            return std::strong_ordering::less;
         } else {
-            return std::unexpected{
-                std::format("Expected inequality between these values:{}{}{}",
-                    operand_to_string("left-hand-side", lhs),
-                    operand_to_string("right-hand-side", rhs.v),
-                    rhs.e.message())};
+            return std::strong_ordering::greater;
         }
 
-    } else if constexpr (requires { std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v); }) {
-        if (std::not_equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs.v)) {
-            return {};
+    } else if constexpr (requires { std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs); std::less<std::common_type_t<LHS, RHS>>{}(lhs, rhs); }) {
+        if (std::equal_to<std::common_type_t<LHS, RHS>>{}(lhs, rhs)) {
+            return std::strong_ordering::equal;
+        } else if (std::less<std::common_type_t<LHS, RHS>>{}(lhs, rhs)) {
+            return std::strong_ordering::less;
         } else {
-            return std::unexpected{
-                std::format("Expected inequality between these values:{}{}{}",
-                operand_to_string("left-hand-side", lhs),
-                operand_to_string("right-hand-side", rhs.v),
-                rhs.e.message())};
+            return std::strong_ordering::greater;
         }
 
-    } else if constexpr (requires { not std::ranges::equal(lhs, rhs.v); }) {
-        if (not std::ranges::equal(lhs, rhs.v)) {
-            return {};
+    } else if constexpr (requires { std::ranges::equal(lhs, rhs); std::ranges::lexicographical_compare(lhs, rhs); }) {
+        if (std::ranges::equal(lhs, rhs)) {
+            return std::strong_ordering::equal;
+        } else if (std::ranges::lexicographical_compare(lhs, rhs)) {
+            return std::strong_ordering::less;
         } else {
-            return std::unexpected{
-                std::format("Expected inequality between these values:{}{}{}",
-                    operand_to_string("left-hand-side", lhs),
-                    operand_to_string("right-hand-side", rhs.v),
-                    rhs.e.message())};
+            return std::strong_ordering::greater;
         }
 
     } else {
         []<bool Flag = false>() {
-            static_assert(Flag, "hikotest: Unable to inequality-compare two values.");
+            static_assert(Flag, "hikotest: Unable to equality-compare two values.");
         }();
     }
     // clang-format on
@@ -484,15 +494,39 @@ concept diff_ordered = requires(LHS lhs, RHS rhs) {
 };
 
 template<typename LHS, typename RHS, typename Error>
+[[nodiscard]] constexpr bool absolute_equal_to(LHS const& lhs, RHS const& rhs, Error const &error) noexcept
+{
+    auto const compare_equal = [error=error](auto const &lhs, auto const &rhs) -> bool {
+        auto const diff = rhs - lhs;
+        return diff >= -error and diff <= +error;
+    };
+
+    // clang-format off
+    if constexpr (requires { { lhs - rhs } -> std::totally_ordered_with<decltype(+error)>; }) {
+        auto const diff = rhs - lhs;
+        return diff >= -error and diff <= +error;
+
+    } else if constexpr (requires { std::ranges::equal(lhs, rhs, compare_equal); }) {
+
+        return std::ranges::equal(lhs, rhs, compare_equal);
+
+    } else {
+        []<bool Flag = false>() {
+            static_assert(Flag, "hikotest: Unable to equality-compare two values within an error range.");
+        }();
+    }
+    // clang-format on
+}
+
+template<typename LHS, typename RHS, typename Error>
 concept range_diff_ordered = std::ranges::range<LHS> and std::ranges::range<RHS> and
     diff_ordered<std::ranges::range_value_t<LHS>, std::ranges::range_value_t<RHS>, Error>;
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::expected<void, std::string>
-operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexcept requires diff_ordered<LHS, RHS, double>
+operator==(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
 {
-    auto const diff = lhs - rhs.v;
-    if (diff >= -rhs.e and diff <= +rhs.e) {
+    if (exact_equal_to<LHS, RHS>(lhs, rhs.v)) {
         return {};
     } else {
         return std::unexpected{std::format(
@@ -505,38 +539,93 @@ operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexc
 
 template<typename LHS, typename RHS>
 [[nodiscard]] constexpr std::expected<void, std::string>
-operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexcept
-    requires(not diff_ordered<LHS, RHS, double>) and range_diff_ordered<LHS, RHS, double>
+operator!=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
 {
-    auto lit = lhs.begin();
-    auto rit = rhs.v.begin();
-
-    auto const lend = lhs.end();
-    auto const rend = rhs.v.end();
-
-    while (lit != lend and rit != rend) {
-        auto const diff = *lit - *rit;
-        if (diff < -rhs.e or diff > +rhs.e) {
-            return std::unexpected{std::format(
-                "Expected equality of these values:{}{}{}",
-                operand_to_string("left-hand-side", lhs),
-                operand_to_string("right-hand-side", rhs.v),
-                rhs.e.message())};
-        }
-
-        ++lit;
-        ++rit;
-    }
-
-    if (lit != lend or rit != rend) {
+    if (not exact_equal_to<LHS, RHS>(lhs, rhs.v)) {
+        return {};
+    } else {
         return std::unexpected{std::format(
-            "Expected both range-values to the same size:{}{}{}",
+            "Expected inequality of these values:{}{}{}",
             operand_to_string("left-hand-side", lhs),
             operand_to_string("right-hand-side", rhs.v),
             rhs.e.message())};
     }
+}
 
-    return {};
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator<(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+{
+    if (exact_compare<LHS, RHS>(lhs, rhs.v) == std::strong_ordering::less) {
+        return {};
+    } else {
+        return std::unexpected{std::format(
+            "Expected lhs value to be less than the rhs value:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
+    }
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator>(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+{
+    if (exact_compare<LHS, RHS>(lhs, rhs.v) == std::strong_ordering::greater) {
+        return {};
+    } else {
+        return std::unexpected{std::format(
+            "Expected lhs value to be greater than the rhs value:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
+    }
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator<=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+{
+    if (exact_compare<LHS, RHS>(lhs, rhs.v) != std::strong_ordering::greater) {
+        return {};
+    } else {
+        return std::unexpected{std::format(
+            "Expected lhs value to be less or equal to the rhs value:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
+    }
+}
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator>=(LHS const& lhs, operand<error_class::exact, RHS> const& rhs) noexcept
+{
+    if (exact_compare<LHS, RHS>(lhs, rhs.v) != std::strong_ordering::less) {
+        return {};
+    } else {
+        return std::unexpected{std::format(
+            "Expected lhs value to be greater or equal to the rhs value:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
+    }
+}
+
+
+template<typename LHS, typename RHS>
+[[nodiscard]] constexpr std::expected<void, std::string>
+operator==(LHS const& lhs, operand<error_class::absolute, RHS> const& rhs) noexcept
+{
+    if (absolute_equal_to(lhs, rhs.v, rhs.e)) {
+        return {};
+    } else {
+        return std::unexpected{std::format(
+            "Expected equality of these values:{}{}{}",
+            operand_to_string("left-hand-side", lhs),
+            operand_to_string("right-hand-side", rhs.v),
+            rhs.e.message())};
+    }
 }
 
 class filter {
@@ -745,7 +834,13 @@ struct all_tests {
             return *it;
         }
 
-        return *suites.emplace(it, name);
+        auto const new_it = suites.emplace(it, name);
+
+        if constexpr (requires { Suite::register_tests(); }) {
+            Suite::register_tests();
+        }
+
+        return *new_it;
     }
 
     template<typename Suite>
@@ -797,7 +892,7 @@ template<typename Suite>
 }
 
 template<typename Suite>
-[[nodiscard]] inline test_case& register_test(void (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
+inline test_case& register_test(void (Suite::*test)(), std::string_view file, int line, std::string name) noexcept
 {
     return all.template register_test<Suite>(test, file, line, std::move(name));
 }

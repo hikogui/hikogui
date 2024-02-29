@@ -8,16 +8,13 @@
 #include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <iostream>
 #include <string>
 #include <span>
 #include <format>
 
-
-
-using namespace std;
-using namespace hi;
+TEST_SUITE(unicode_normalization_suite) {
 
 /*! A test defined in NormalizationTests.txt.
  *
@@ -54,26 +51,26 @@ struct NormalizationTest {
     std::string comment;
 };
 
-std::u32string parseNormalizationTest_column(std::string_view column)
+static std::u32string parseNormalizationTest_column(std::string_view column)
 {
     std::u32string r;
 
-    auto codePointStrings = split_view(column);
+    auto codePointStrings = hi::split_view(column);
     for (auto const codePointString : codePointStrings) {
-        r += char_cast<char32_t>(from_string<uint32_t>(codePointString, 16));
+        r += hi::char_cast<char32_t>(hi::from_string<uint32_t>(codePointString, 16));
     }
     return r;
 }
 
-std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line, size_t line_nr)
+static std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line, size_t line_nr)
 {
     auto r = std::optional<NormalizationTest>{};
 
-    auto const split_line = split_view(line, '#');
+    auto const split_line = hi::split_view(line, '#');
     if (split_line.size() < 2) {
         return r;
     }
-    auto const columns = split_view(split_line[0], ';');
+    auto const columns = hi::split_view(split_line[0], ';');
     if (columns.size() < 6) {
         return r;
     }
@@ -90,13 +87,13 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
     return r;
 }
 
-generator<NormalizationTest> parseNormalizationTests()
+static hi::generator<NormalizationTest> parseNormalizationTests()
 {
-    auto const view = file_view(library_source_dir() / "tests" / "data" / "NormalizationTest.txt");
+    auto const view = hi::file_view(hi::library_source_dir() / "tests" / "data" / "NormalizationTest.txt");
     auto const test_data = as_string_view(view);
 
     size_t line_nr = 0;
-    for (auto const line : split_view(test_data, '\n')) {
+    for (auto const line : hi::split_view(test_data, '\n')) {
         if (auto const optionalTest = parseNormalizationTest_line(line, ++line_nr)) {
             co_yield *optionalTest;
         }
@@ -126,59 +123,59 @@ generator<NormalizationTest> parseNormalizationTests()
 //
 //      X == toNFC(X) == toNFD(X) == toNFKC(X) == toNFKD(X)
 
-TEST(unicode_normalization, unicode_NFC_colon)
+TEST_CASE(unicode_NFC_colon)
 {
-    ASSERT_TRUE(unicode_normalize(hi::to_u32string("Audio device:")) == hi::to_u32string("Audio device:"));
-    ASSERT_TRUE(unicode_decompose(hi::to_u32string("Audio device:")) == hi::to_u32string("Audio device:"));
+    REQUIRE(hi::unicode_normalize(hi::to_u32string("Audio device:")) == hi::to_u32string("Audio device:"));
+    REQUIRE(hi::unicode_decompose(hi::to_u32string("Audio device:")) == hi::to_u32string("Audio device:"));
 }
 
-TEST(unicode_normalization, NFC)
+TEST_CASE(NFC)
 {
     for (auto const& test : parseNormalizationTests()) {
-        ASSERT_EQ(unicode_normalize(test.c1), test.c2) << test.comment;
-        ASSERT_EQ(unicode_normalize(test.c2), test.c2) << test.comment;
-        ASSERT_EQ(unicode_normalize(test.c3), test.c2) << test.comment;
-        ASSERT_EQ(unicode_normalize(test.c4), test.c4) << test.comment;
-        ASSERT_EQ(unicode_normalize(test.c5), test.c4) << test.comment;
+        REQUIRE(hi::unicode_normalize(test.c1) == test.c2, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c2) == test.c2, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c3) == test.c2, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c4) == test.c4, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c5) == test.c4, test.comment);
     }
 }
 
-TEST(unicode_normalization, NFKC)
+TEST_CASE(NFKC)
 {
     for (auto const& test : parseNormalizationTests()) {
-        ASSERT_TRUE(unicode_normalize(test.c1, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c2, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c3, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c4, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
-        ASSERT_TRUE(unicode_normalize(test.c5, unicode_normalize_config::NFKC()) == test.c4) << test.comment;
+        REQUIRE(hi::unicode_normalize(test.c1, hi::unicode_normalize_config::NFKC()) == test.c4, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c2, hi::unicode_normalize_config::NFKC()) == test.c4, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c3, hi::unicode_normalize_config::NFKC()) == test.c4, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c4, hi::unicode_normalize_config::NFKC()) == test.c4, test.comment);
+        REQUIRE(hi::unicode_normalize(test.c5, hi::unicode_normalize_config::NFKC()) == test.c4, test.comment);
     }
 }
 
-TEST(unicode_normalization, NFD)
+TEST_CASE(NFD)
 {
     for (auto const& test : parseNormalizationTests()) {
-        ASSERT_TRUE(unicode_decompose(test.c1) == test.c3) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c2) == test.c3) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c3) == test.c3) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c4) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c5) == test.c5) << test.comment;
+        REQUIRE(hi::unicode_decompose(test.c1) == test.c3, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c2) == test.c3, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c3) == test.c3, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c4) == test.c5, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c5) == test.c5, test.comment);
     }
 }
 
-TEST(unicode_normalization, NFKD)
+TEST_CASE(NFKD)
 {
     for (auto const& test : parseNormalizationTests()) {
-        ASSERT_TRUE(unicode_decompose(test.c1, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c2, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c3, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c4, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
-        ASSERT_TRUE(unicode_decompose(test.c5, unicode_normalize_config::NFKD()) == test.c5) << test.comment;
+        REQUIRE(hi::unicode_decompose(test.c1, hi::unicode_normalize_config::NFKD()) == test.c5, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c2, hi::unicode_normalize_config::NFKD()) == test.c5, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c3, hi::unicode_normalize_config::NFKD()) == test.c5, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c4, hi::unicode_normalize_config::NFKD()) == test.c5, test.comment);
+        REQUIRE(hi::unicode_decompose(test.c5, hi::unicode_normalize_config::NFKD()) == test.c5, test.comment);
     }
 }
 
 #ifdef NDEBUG
 
-TEST(unicode_normalization, Invariant)
+TEST_CASE(invariant)
 {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
     for (auto const& test : parseNormalizationTests()) {
@@ -203,12 +200,14 @@ TEST(unicode_normalization, Invariant)
         if (!previouslyTestedCodePoints[i]) {
             auto const str = std::u32string(1, i);
 
-            ASSERT_TRUE(unicode_decompose(str) == str) << "NFD code-point: " << static_cast<int>(i);
-            ASSERT_TRUE(unicode_normalize(str) == str) << "NFC code-point: " << static_cast<int>(i);
-            ASSERT_TRUE(unicode_decompose(str, unicode_normalize_config::NFKD()) == str) << "NFKD code-point: " << static_cast<int>(i);
-            ASSERT_TRUE(unicode_normalize(str, unicode_normalize_config::NFKC()) == str) << "NFKC code-point: " << static_cast<int>(i);
+            REQUIRE(hi::unicode_decompose(str) == str, std::format("NFD code-point: {:x}", static_cast<int>(i)));
+            REQUIRE(hi::unicode_normalize(str) == str, std::format("NFC code-point: {:x}", static_cast<int>(i)));
+            REQUIRE(hi::unicode_decompose(str, hi::unicode_normalize_config::NFKD()) == str, std::format("NFKD code-point: {:x}", static_cast<int>(i)));
+            REQUIRE(hi::unicode_normalize(str, hi::unicode_normalize_config::NFKC()) == str, std::format("NFKC code-point: {:x}", static_cast<int>(i)));
         }
     }
 }
 
 #endif
+
+};
