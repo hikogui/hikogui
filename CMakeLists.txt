@@ -73,30 +73,8 @@ include(CTest)
 #-------------------------------------------------------------------
 
 if(BUILD_TESTING)
-    #
-    # GoogleTest - non-vcpkg, directly build from externals
-    #
-    #set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
-    #set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
-    #FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG v1.13.0)
-    #FetchContent_MakeAvailable(googletest)
-#
-    #include(GoogleTest)
-    #set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    #set_target_properties(gtest      PROPERTIES FOLDER extern)
-    #set_target_properties(gtest_main PROPERTIES FOLDER extern)
-
-    #
-    # HikoTest
-    #
-    add_library(hikotest)
-    target_sources(hikotest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.cpp)
-    target_sources(hikotest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.hpp)
-    target_compile_features(hikotest PUBLIC cxx_std_23)
-    if (WIN32)
-        # std::fopen_s() does not exist, this needs to be set if we use std::fopen().
-        target_compile_definitions(hikotest PUBLIC "_CRT_SECURE_NO_WARNINGS")
-    endif()
+    FetchContent_Declare(hikotest GIT_REPOSITORY https://github.com/hikogui/hikotest.git GIT_TAG main)
+    FetchContent_MakeAvailable(hikotest)
 endif()
 
 #
