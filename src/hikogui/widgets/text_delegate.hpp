@@ -30,12 +30,17 @@ class text_widget;
  *
  * @ingroup widget_delegates
  */
-class text_delegate {
+struct text_delegate {
 public:
     virtual ~text_delegate() = default;
 
     virtual void init(widget_intf const& sender) noexcept {}
     virtual void deinit(widget_intf const& sender) noexcept {}
+
+    [[nodiscard]] virtual gstring get_text(widget_intf const& sender) noexcept = 0;
+    [[nodiscard]] virtual void set_text(widget_intf const& sender, gstring const& text) noexcept = 0;
+    [[nodiscard]] virtual bool can_set_text(widget_intf const& sender) noexcept = 0;
+
 
     /** Read text as a string of graphemes.
      */
@@ -44,14 +49,6 @@ public:
     /** Write text from a string of graphemes.
      */
     virtual void write(widget_intf const& sender, gstring const& text) noexcept = 0;
-
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    template<forward_of<void()> Func>
-    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
-    {
-        return _notifier.subscribe(std::forward<Func>(func), flags);
-    }
 
 protected:
     notifier<void()> _notifier;
