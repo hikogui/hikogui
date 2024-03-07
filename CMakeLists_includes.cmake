@@ -367,6 +367,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_shaper_char.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_shaper_line.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/text/text_style.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/theme/theme.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/theme/theme_selector.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/chrono.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/time.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/time/time_stamp_count.hpp

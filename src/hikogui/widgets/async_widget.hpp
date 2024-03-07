@@ -43,10 +43,12 @@ concept async_widget_attribute =
  *
  * @snippet widgets/async_example_impl.cpp Create a async
  */
+template<fixed_string Tag = {}>
 class async_widget : public widget {
 public:
     using super = widget;
     using delegate_type = async_delegate;
+    constexpr static auto tag = theme_tag<"async", Tag>();
 
     struct attributes_type {
         observer<alignment> alignment = alignment::top_left();
