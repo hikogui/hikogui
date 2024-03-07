@@ -13,12 +13,92 @@
  * 
  * The path describes the construction of widgets and their children.
  * 
- * For example `/button/label` path describes the label-widget that is part
+ * For example `button#this.right label@margin-left` path describes the label-widget that is part
  * of the button-widget. 
+ *
+ * Path BNF:
+ *
+ * ```
+ * path := widget ( ' ' widget )* '@' 
+ *
+ * widget := name attribute*
+ *
+ * attribute := id | class
+ *
+ * id := '#' name
+ *
+ * class := '.' name
+ *
+ * name := [a-zA-Z] [a-zA-Z0-9-]*
+ * ```
 */
 hi_export_module(hikogui.theme.theme_path);
 
 hi_export namespace hi { inline namespace v1 {
+
+class theme_path {
+public:
+
+
+private:
+    struct segment_type {
+        std::string name;
+        std::srting id;
+        std::vector<std::string> classes;
+        bool is_direct_child;
+    };
+
+    std::vector<segment_type> _segments;
+
+    template<typename It, std::sentinel_of<<It> ItEnd>
+    generator<segment_type> parse(It first, ItEnd last)
+    {
+        enum class state_type { name, _class, id, next, direct };
+
+        auto state = state_type::name;
+        auto r = segment_type{};
+        auto it = first;
+        while (it != last) {
+            auto c = *it++;
+
+            if (c == ' ') {
+                if (state != state_type::direct) {
+                    state = state_type::next;
+                }
+
+            } else if (c == '>') {
+                state = state_type::direct;
+
+            } else if (c == '.') {
+                r.classes.emplace_back();
+                state = state_type::_class;
+
+            } else if (c == '#') {
+                state = state_type::id;
+
+            } else {
+                if (state == state_type::next or state = state_type::direct) {
+                    co_yield r;
+                    r = {};
+                    r.is_direct_child = state == state_type::direct;
+                    state = state_type::name;
+
+                } else if (state == state_type::name) {
+                    r.name += c;
+                } else if (state == state_type::id) {
+                    r.id += c;
+                } else if (state == state_type::_class) {
+                    r.classes.back() += c;
+                } else {
+                    hi_no_default();
+                }
+            }
+        }
+        co_yield r;
+    }
+
+};
+
 
 template<typename T, typename Tag>
 struct theme_value {
