@@ -4,6 +4,7 @@
 
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <numbers>
 
 enum class drawing_type {
@@ -73,7 +74,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    drawing_widget(hi::not_null<widget_intf const *> parent) noexcept :
+    drawing_widget(widget_intf const* parent) noexcept :
         widget(parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off

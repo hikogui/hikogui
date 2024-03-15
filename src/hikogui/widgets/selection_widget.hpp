@@ -17,6 +17,7 @@
 #include "selection_delegate.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -93,13 +94,13 @@ public:
 
     attributes_type attributes;
 
-    not_null<std::shared_ptr<delegate_type>> delegate;
+    std::shared_ptr<delegate_type> delegate;
 
     template<typename... Args>
-    [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args &&...args)
-        requires requires { make_shared_ctad_not_null<default_selection_delegate>(std::forward<Args>(args)...); }
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
+        requires requires { make_shared_ctad<default_selection_delegate>(std::forward<Args>(args)...); }
     {
-        return make_shared_ctad_not_null<default_selection_delegate>(std::forward<Args>(args)...);
+        return make_shared_ctad<default_selection_delegate>(std::forward<Args>(args)...);
     }
 
     ~selection_widget()
@@ -112,7 +113,7 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(not_null<widget_intf const *> parent, attributes_type attributes, not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+    selection_widget(widget_intf const* parent, attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment, this->attributes.text_style);
@@ -139,6 +140,7 @@ public:
         }, callback_flags::main);
         _delegate_value_cbt();
 
+        hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
     }
 
@@ -159,7 +161,7 @@ public:
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
     selection_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         Value&& value,
         OptionList&& option_list,
         Attributes&&...attributes) noexcept requires requires

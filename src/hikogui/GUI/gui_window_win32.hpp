@@ -58,7 +58,7 @@ public:
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
      */
-    float dpi = 72.0;
+    units::ppi dpi = 72.0 * units::ppi;
 
     /** Theme to use to draw the widgets on this window.
      * The sizes and colors of the theme have already been adjusted to the window's state and dpi.
@@ -1322,8 +1322,8 @@ private:
         if (_dpi == 0) {
             throw gui_error("Could not retrieve dpi for window.");
         }
-        dpi = narrow_cast<float>(_dpi);
-
+        dpi = _dpi * units::ppi;
+ 
         surface = make_unique_gfx_surface(crt_application_instance, win32Window);
     }
 
@@ -1679,7 +1679,7 @@ private:
             {
                 hi_axiom(loop::main().on_thread());
                 // x-axis dpi value.
-                dpi = narrow_cast<float>(LOWORD(wParam));
+                dpi = LOWORD(wParam) * units::ppi;
 
                 // Use the recommended rectangle to resize and reposition the window
                 auto const new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
@@ -1694,7 +1694,8 @@ private:
                 ++global_counter<"gui_window:WM_DPICHANGED:constrain">;
                 this->process_event({gui_event_type::window_reconstrain});
 
-                hi_log_info("DPI has changed to {}", dpi);
+                // XXX #667 use mp-units formatting.
+                hi_log_info("DPI has changed to {} ppi", mp_units::value_cast<double>(dpi));
             }
             break;
 

@@ -8,9 +8,9 @@
 #include "../macros.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
-#include "not_null.hpp"
 #include "terminate.hpp"
 #include "cast.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <concepts>
 #include <memory>
 #include <vector>
@@ -57,34 +57,6 @@ template<template<typename...> typename T, typename... Args>
     using deduced_type = decltype(T{std::forward<Args>(args)...});
     return std::make_shared<deduced_type>(std::forward<Args>(args)...);
 }
-
-/** make_unique with CTAD (Class Template Argument Deduction)
- * 
- * @tparam T A class template type.
- * @param args The arguments forwarded to the constructor.
- * @return A std::unique_ptr<ctad_t<T>> to an object.
- */
-template<template<typename...> typename T, typename... Args>
-[[nodiscard]] auto make_unique_ctad_not_null(Args &&...args)
-{
-    using deduced_type = decltype(T{std::forward<Args>(args)...});
-    return make_unique_not_null<deduced_type>(std::forward<Args>(args)...);
-}
-
-
-/** make_shared with CTAD (Class Template Argument Deduction)
- * 
- * @tparam T A class template type.
- * @param args The arguments forwarded to the constructor.
- * @return A std::shared_ptr<ctad_t<T>> to an object.
- */
-template<template<typename...> typename T, typename... Args>
-[[nodiscard]] auto make_shared_ctad_not_null(Args &&...args)
-{
-    using deduced_type = decltype(T{std::forward<Args>(args)...});
-    return make_shared_not_null<deduced_type>(std::forward<Args>(args)...);
-}
-
 
 [[nodiscard]] bool equal_ptr(auto *p1, auto *p2) noexcept
 {

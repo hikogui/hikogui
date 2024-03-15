@@ -12,6 +12,7 @@
 #include "../layout/layout.hpp"
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <ranges>
 #include <coroutine>
@@ -43,7 +44,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    toolbar_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    toolbar_widget(widget_intf const* parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         _children.push_back(std::make_unique<spacer_widget>(this));

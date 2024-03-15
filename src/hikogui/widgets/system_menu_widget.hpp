@@ -12,6 +12,7 @@
 #include "icon_widget.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -35,13 +36,13 @@ public:
 
     ~system_menu_widget() {}
 
-    system_menu_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    system_menu_widget(widget_intf const* parent) noexcept : super(parent)
     {
         _icon_widget = std::make_unique<icon_widget>(this, icon);
     }
 
     template<forward_of<observer<hi::icon>> Icon>
-    system_menu_widget(not_null<widget_intf const *> parent, Icon&& icon) noexcept :
+    system_menu_widget(widget_intf const* parent, Icon&& icon) noexcept :
         system_menu_widget(parent)
     {
         this->icon = std::forward<Icon>(icon);

@@ -4,6 +4,7 @@
 
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 
 // Every widget must inherit from hi::widget.
 class widget_with_child : public hi::widget {
@@ -11,7 +12,7 @@ public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
     template<typename Label>
-    widget_with_child(hi::not_null<widget_intf const *> parent, Label&& label) noexcept : widget(parent)
+    widget_with_child(widget_intf const* parent, Label&& label) noexcept : widget(parent)
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.

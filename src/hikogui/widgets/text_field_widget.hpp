@@ -14,6 +14,7 @@
 #include "scroll_widget.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -89,7 +90,7 @@ public:
         delegate->deinit(*this);
     }
 
-    text_field_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    text_field_widget(widget_intf const* parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), delegate(std::move(delegate)), _text()
     {
         hi_assert_not_null(this->delegate);
@@ -126,7 +127,7 @@ public:
 
     template<text_field_widget_attribute... Attributes>
     text_field_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         std::shared_ptr<delegate_type> delegate,
         Attributes&&...attributes) noexcept :
         text_field_widget(parent, std::move(delegate))
@@ -142,7 +143,7 @@ public:
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Value, text_field_widget_attribute... Attributes>
     text_field_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         Value&& value,
         Attributes&&...attributes) noexcept requires requires
     {

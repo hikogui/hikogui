@@ -15,6 +15,7 @@
 #include "../l10n/l10n.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -68,7 +69,7 @@ public:
         delegate->deinit(*this);
     }
 
-    abstract_button_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    abstract_button_widget(widget_intf const* parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), delegate(std::move(delegate))
     {
         hi_assert_not_null(this->delegate);

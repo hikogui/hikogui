@@ -36,7 +36,7 @@ public:
     observer<label> title;
 
     template<forward_of<observer<label>> Title>
-    window_widget(Title&& title) noexcept : super(nullptr), title(std::forward<Title>(title))
+    window_widget(Title&& title) noexcept : super(), title(std::forward<Title>(title))
     {
         _toolbar = std::make_unique<toolbar_widget>(this);
 

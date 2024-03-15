@@ -17,6 +17,7 @@
 #include "../macros.hpp"
 #include "radio_delegate.hpp"
 #include "radio_widget.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <functional>
 #include <vector>
@@ -123,7 +124,7 @@ public:
     default_selection_delegate(Value&& value, Options&& options) noexcept :
         value(std::forward<Value>(value)), options(std::forward<Options>(options))
     {
-        _option_delegate = std::make_shared<option_delegate_type>(this);
+        _option_delegate = std::make_shared<option_delegate_type>(*this);
 
         // clang-format off
         _value_cbt = this->value.subscribe([&](auto...){ this->_value_notifier(); });
@@ -167,9 +168,9 @@ public:
 private:
     class option_delegate_type : public radio_delegate {
     public:
-        option_delegate_type(not_null<default_selection_delegate *> parent) noexcept : _parent(parent)
+        option_delegate_type(default_selection_delegate &parent) noexcept : _parent(&parent)
         {
-            _value_cbt = parent->value.subscribe([&](auto...) {
+            _value_cbt = _parent->value.subscribe([&](auto...) {
                 this->_notifier();
             });
         }
@@ -215,7 +216,7 @@ private:
 
             // Prepare the value for the next widget, so that the widget immediately can retrieve its value.
             _next_value = value;
-            return make_unique<button_widget>(make_not_null(parent), button_attributes{label}, std::move(shared_this));
+            return std::make_unique<button_widget>(std::addressof(parent), button_attributes{label}, std::move(shared_this));
         }
 
         [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
@@ -256,7 +257,7 @@ private:
             }
         };
 
-        not_null<default_selection_delegate *> _parent;
+        default_selection_delegate* _parent;
         std::vector<sender_info_type> _senders;
         std::optional<value_type> _next_value;
         callback<void(value_type)> _value_cbt;

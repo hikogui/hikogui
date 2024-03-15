@@ -10,6 +10,7 @@
 
 #include "widget.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <coroutine>
 
 hi_export_module(hikogui.widgets.scroll_aperture_widget);
@@ -34,7 +35,7 @@ public:
     observer<float> offset_x;
     observer<float> offset_y;
 
-    scroll_aperture_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    scroll_aperture_widget(widget_intf const* parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
 

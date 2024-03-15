@@ -4,6 +4,7 @@
 
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 
 // Every widget must inherit from hi::widget.
 class command_widget : public hi::widget {
@@ -13,7 +14,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    command_widget(hi::not_null<widget_intf const *> parent) noexcept : hi::widget(parent)
+    command_widget(widget_intf const* parent) noexcept : hi::widget(parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
         _value_cbt = value.subscribe([&](auto...) {

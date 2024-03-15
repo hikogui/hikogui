@@ -10,6 +10,7 @@
 
 #include "widget.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <coroutine>
 
 hi_export_module(hikogui.widgets.overlay_widget);
@@ -49,7 +50,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    overlay_widget(widget_intf const* parent) noexcept : super(parent)
     {
     }
 

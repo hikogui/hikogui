@@ -11,6 +11,7 @@
 #include "widget.hpp"
 #include "../font/font.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -30,7 +31,7 @@ class window_controls_win32_widget : public widget {
 public:
     using super = widget;
 
-    window_controls_win32_widget(not_null<widget_intf const *> parent) noexcept : super(parent) {}
+    window_controls_win32_widget(widget_intf const* parent) noexcept : super(parent) {}
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override

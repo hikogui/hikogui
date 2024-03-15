@@ -13,6 +13,7 @@
 #include "../audio/audio.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -41,7 +42,7 @@ public:
 
     virtual ~audio_device_widget() {}
 
-    audio_device_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    audio_device_widget(widget_intf const* parent) noexcept : super(parent)
     {
         _grid_widget = std::make_unique<grid_widget>(this);
         _device_selection_widget = &_grid_widget->emplace<selection_widget>("A1", device_id, _device_list);

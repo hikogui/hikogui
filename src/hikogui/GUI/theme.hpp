@@ -24,11 +24,7 @@ class theme {
 public:
     /** The DPI of the size values.
      */
-    float dpi = 72;
-
-    /** The scale factor used to convert pt to physical pixel size.
-     */
-    float scale = 1.0f;
+    units::ppi dpi = 72.0 * units::ppi;
 
     std::string name;
     theme_mode mode = theme_mode::light;
@@ -139,17 +135,12 @@ public:
      *
      * @param dpi The dpi of the window.
      */
-    [[nodiscard]] theme transform(float new_dpi) const noexcept
+    [[nodiscard]] theme transform(units::ppi new_dpi) const noexcept
     {
         auto r = *this;
 
-        hi_assert(new_dpi != 0.0f);
-        hi_assert(dpi != 0.0f);
-        hi_assert(scale != 0.0f);
-
-        auto delta_scale = new_dpi / dpi;
+        auto delta_scale = mp_units::value_cast<double>(new_dpi / dpi);
         r.dpi = new_dpi;
-        r.scale = delta_scale * scale;
 
         // Scale each size, and round so that everything will stay aligned on pixel boundaries.
         r._margin = std::round(delta_scale * _margin);

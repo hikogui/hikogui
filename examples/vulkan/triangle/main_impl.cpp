@@ -5,6 +5,7 @@
 #include "triangle.hpp"
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <ranges>
 #include <cassert>
 
@@ -13,7 +14,7 @@ class triangle_widget : public hi::widget, public hi::gfx_surface_delegate {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    triangle_widget(hi::not_null<widget_intf const *> parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
+    triangle_widget(widget_intf const* parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
     {
         _surface.add_delegate(this);
     }

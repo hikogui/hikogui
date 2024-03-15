@@ -10,6 +10,7 @@
 
 #include "widget.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 
 hi_export_module(hikogui.widgets.spacer_widget);
 
@@ -23,7 +24,7 @@ class spacer_widget : public widget {
 public:
     using super = widget;
 
-    spacer_widget(not_null<widget_intf const *> parent) noexcept : super(parent) {}
+    spacer_widget(widget_intf const* parent) noexcept : super(parent) {}
 
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {

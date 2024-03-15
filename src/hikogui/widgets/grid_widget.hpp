@@ -11,6 +11,7 @@
 #include "widget.hpp"
 #include "../layout/layout.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <coroutine>
 
@@ -50,7 +51,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    grid_widget(not_null<widget_intf const *> parent) noexcept : widget(parent)
+    grid_widget(widget_intf const* parent) noexcept : widget(parent)
     {
     }
 

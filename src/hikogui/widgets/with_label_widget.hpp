@@ -18,6 +18,7 @@
 #include "../l10n/l10n.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -132,9 +133,9 @@ public:
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
     with_label_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         attributes_type attributes,
-        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), attributes(std::move(attributes))
     {
         _button_widget =
@@ -167,7 +168,7 @@ public:
      *             widget followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    with_label_widget(not_null<widget_intf const *> parent, Args&&...args)
+    with_label_widget(widget_intf const* parent, Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
         with_label_widget(

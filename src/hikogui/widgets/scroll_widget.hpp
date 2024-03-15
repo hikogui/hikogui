@@ -14,6 +14,7 @@
 #include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <coroutine>
 
 hi_export_module(hikogui.widgets.scroll_widget);
@@ -61,7 +62,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    scroll_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    scroll_widget(widget_intf const* parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
 

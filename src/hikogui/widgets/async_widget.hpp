@@ -14,6 +14,7 @@
 #include "async_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 
 hi_export_module(hikogui.widgets.async_widget);
 
@@ -92,13 +93,13 @@ public:
 
     /** The delegate that controls the button widget.
      */
-    not_null<std::shared_ptr<delegate_type>> delegate;
+    std::shared_ptr<delegate_type> delegate;
 
     template<typename... Args>
-    [[nodiscard]] static not_null<std::shared_ptr<delegate_type>> make_default_delegate(Args &&...args)
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
         requires requires { default_async_delegate{std::forward<Args>(args)...}; }
     {
-        return make_shared_ctad_not_null<default_async_delegate>(std::forward<Args>(args)...);
+        return make_shared_ctad<default_async_delegate>(std::forward<Args>(args)...);
     }
 
     ~async_widget()
@@ -112,9 +113,9 @@ public:
      * @param delegate The delegate to use to manage the state of the async button.
      */
     async_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         attributes_type attributes,
-        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         this->delegate->init(*this);
@@ -132,7 +133,7 @@ public:
      */
     template<incompatible_with<attributes_type> Value, async_widget_attribute... Attributes>
     async_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         Value&& value,
         Attributes &&...attributes) requires requires
     {

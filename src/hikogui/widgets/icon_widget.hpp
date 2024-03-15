@@ -13,6 +13,7 @@
 #include "../geometry/geometry.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -49,7 +50,7 @@ public:
     observer<alignment> alignment = hi::alignment::middle_center();
 
     template<icon_widget_attribute... Attributes>
-    icon_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept :
+    icon_widget(widget_intf const* parent, Attributes&&...attributes) noexcept :
         icon_widget(parent)
     {
         set_attributes(std::forward<Attributes>(attributes)...);
@@ -178,7 +179,7 @@ private:
 
     callback<void(hi::icon)> _icon_cbt;
 
-    icon_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    icon_widget(widget_intf const* parent) noexcept : super(parent)
     {
         _icon_cbt = icon.subscribe([this](auto...) {
             _icon_has_modified = true;

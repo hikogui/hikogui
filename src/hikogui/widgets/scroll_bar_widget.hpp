@@ -14,6 +14,7 @@
 #include "../observer/observer.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -47,7 +48,7 @@ public:
 
     template<forward_of<observer<float>> Content, forward_of<observer<float>> Aperture, forward_of<observer<float>> Offset>
     scroll_bar_widget(
-        not_null<widget_intf const*> parent,
+        widget_intf const* parent,
         Content&& content,
         Aperture&& aperture,
         Offset&& offset) noexcept :

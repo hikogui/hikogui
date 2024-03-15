@@ -10,6 +10,7 @@
 
 #include "abstract_button_widget.hpp"
 #include "../macros.hpp"
+#include <gsl-lite/gsl-lite.hpp>
 #include <stop_token>
 
 hi_export_module(hikogui.widgets.toolbar_button_widget);
@@ -27,7 +28,7 @@ public:
 
     template<button_widget_attribute... Attributes>
     toolbar_button_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         std::shared_ptr<delegate_type> delegate,
         Attributes&&...attributes) noexcept :
         super(parent, std::move(delegate))
@@ -37,7 +38,7 @@ public:
     }
 
     template<button_widget_attribute... Attributes>
-    toolbar_button_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept :
+    toolbar_button_widget(widget_intf const* parent, Attributes&&...attributes) noexcept :
         toolbar_button_widget(parent, std::make_shared<button_delegate>(), std::forward<Attributes>(attributes)...)
     {
     }
