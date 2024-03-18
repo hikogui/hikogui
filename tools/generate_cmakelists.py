@@ -16,7 +16,9 @@ def get_header_files():
     return header_files
 
 def make_cmakelist_includes_text(header_files, suppressed_header_files):
-    r  = "if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)\n"
+    r  = "# This file was generated with tools/generate_cmakelists.sh\n"
+    r += "\n"
+    r += "if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)\n"
     r += "    # vcpkg does not allow absolute paths anywhere in the install directory.\n"
     r += "    # These directories are normally used to execute files in their build\n"
     r += "    # directory; which does not happen on a vcpkg install.\n"
@@ -38,19 +40,19 @@ def make_cmakelist_includes_text(header_files, suppressed_header_files):
     r += "target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS \"${CMAKE_CURRENT_SOURCE_DIR}/src/\"  FILES\n"
     for header_file in header_files:
         if header_file.endswith("_win32.hpp") or header_file.endswith("_win32_impl.hpp") or header_file.endswith("_win32_intf.hpp"):
-            r += "   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
+            r += "    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
 
         if header_file.endswith("_posix.hpp") or header_file.endswith("_posix_impl.hpp") or header_file.endswith("_posix_intf.hpp"):
-            r += "   $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
+            r += "    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
 
         if header_file.endswith("_macos.hpp") or header_file.endswith("_macos_impl.hpp") or header_file.endswith("_macos_intf.hpp"):
-            r += "   $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
+            r += "    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
 
         if header_file.endswith("_x86.hpp") or header_file.endswith("_x86_impl.hpp") or header_file.endswith("_x86_intf.hpp"):
-            r += "   $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
+            r += "    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
 
         if header_file.endswith("_generic.hpp") or header_file.endswith("_generic_impl.hpp") or header_file.endswith("_generic_iintf.hpp"):
-            r += "   $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
+            r += "    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/%s>\n" % header_file.replace("\\", "/")
 
         if header_file in suppressed_header_files:
             r += "    #%s\n" % header_file.replace("\\", "/")

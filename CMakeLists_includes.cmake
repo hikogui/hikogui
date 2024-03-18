@@ -1,3 +1,5 @@
+# This file was generated with tools/generate_cmakelists.sh
+
 if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
     # vcpkg does not allow absolute paths anywhere in the install directory.
     # These directories are normally used to execute files in their build
@@ -53,7 +55,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/GUI/gui_event_type.hpp
     src/hikogui/GUI/gui_event_variant.hpp
     src/hikogui/GUI/gui_window_size.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/gui_window_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/gui_window_win32.hpp>
     src/hikogui/GUI/gui_window_win32.hpp
     src/hikogui/GUI/hitbox.hpp
     src/hikogui/GUI/keyboard_bindings.hpp
@@ -63,7 +65,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/GUI/keyboard_modifiers.hpp
     src/hikogui/GUI/keyboard_state.hpp
     src/hikogui/GUI/keyboard_virtual_key_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_virtual_key_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/keyboard_virtual_key_win32_impl.hpp>
     src/hikogui/GUI/keyboard_virtual_key_win32_impl.hpp
     src/hikogui/GUI/mouse_buttons.hpp
     src/hikogui/GUI/mouse_cursor.hpp
@@ -74,19 +76,19 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/GUI/widget_layout.hpp
     src/hikogui/GUI/widget_state.hpp
     src/hikogui/SIMD/SIMD.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_generic.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_generic.hpp>
     src/hikogui/SIMD/array_generic.hpp
     src/hikogui/SIMD/array_intrinsic.hpp
     src/hikogui/SIMD/array_intrinsic_f16x4.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp>
     src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f64x2_x86.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f64x2_x86.hpp>
     src/hikogui/SIMD/array_intrinsic_f64x2_x86.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f64x4_x86.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f64x4_x86.hpp>
     src/hikogui/SIMD/array_intrinsic_f64x4_x86.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_generic.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_generic.hpp>
     src/hikogui/SIMD/cpu_id_generic.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_x86.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_x86.hpp>
     src/hikogui/SIMD/cpu_id_x86.hpp
     src/hikogui/SIMD/float_to_half.hpp
     src/hikogui/SIMD/half.hpp
@@ -105,7 +107,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/audio/audio_device_asio.hpp
     src/hikogui/audio/audio_device_delegate.hpp
     src/hikogui/audio/audio_device_state.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_device_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_device_win32.hpp>
     src/hikogui/audio/audio_device_win32.hpp
     src/hikogui/audio/audio_direction.hpp
     src/hikogui/audio/audio_format_range.hpp
@@ -114,16 +116,16 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/audio/audio_sample_unpacker.hpp
     src/hikogui/audio/audio_stream_config.hpp
     src/hikogui/audio/audio_stream_format.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_stream_format_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_stream_format_win32.hpp>
     src/hikogui/audio/audio_stream_format_win32.hpp
     src/hikogui/audio/audio_system.hpp
     src/hikogui/audio/audio_system_aggregate.hpp
     src/hikogui/audio/audio_system_asio.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_system_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_system_win32.hpp>
     src/hikogui/audio/audio_system_win32.hpp
     src/hikogui/audio/pcm_format.hpp
     src/hikogui/audio/speaker_mapping.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/speaker_mapping_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/speaker_mapping_win32.hpp>
     src/hikogui/audio/speaker_mapping_win32.hpp
     src/hikogui/audio/surround_mode.hpp
     src/hikogui/audio/win32_device_interface.hpp
@@ -169,7 +171,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/concurrency/subsystem.hpp
     src/hikogui/concurrency/thread.hpp
     src/hikogui/concurrency/thread_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/thread_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/thread_win32_impl.hpp>
     src/hikogui/concurrency/thread_win32_impl.hpp
     src/hikogui/concurrency/unfair_mutex.hpp
     src/hikogui/concurrency/unfair_mutex_impl.hpp
@@ -192,7 +194,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/crt/crt.hpp
     src/hikogui/crt/crt_utils.hpp
     src/hikogui/crt/crt_utils_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
     src/hikogui/crt/crt_utils_win32_impl.hpp
     src/hikogui/dispatch/async_task.hpp
     src/hikogui/dispatch/awaitable.hpp
@@ -202,13 +204,13 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/dispatch/awaitable_timer_intf.hpp
     src/hikogui/dispatch/dispatch.hpp
     src/hikogui/dispatch/function_timer.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     src/hikogui/dispatch/loop_win32_intf.hpp
     src/hikogui/dispatch/notifier.hpp
     src/hikogui/dispatch/progress.hpp
     src/hikogui/dispatch/socket_event.hpp
     src/hikogui/dispatch/socket_event_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
     src/hikogui/dispatch/socket_event_win32_impl.hpp
     src/hikogui/dispatch/task.hpp
     src/hikogui/dispatch/task_controller.hpp
@@ -216,14 +218,14 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/file/access_mode.hpp
     src/hikogui/file/file.hpp
     src/hikogui/file/file_intf.hpp
-   $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_posix_impl.hpp>
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_posix_impl.hpp>
     src/hikogui/file/file_posix_impl.hpp
     src/hikogui/file/file_view.hpp
-   $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_posix_impl.hpp>
+    $<$<PLATFORM_ID:Linux>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_posix_impl.hpp>
     src/hikogui/file/file_view_posix_impl.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_win32_impl.hpp>
     src/hikogui/file/file_view_win32_impl.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_win32_impl.hpp>
     src/hikogui/file/file_win32_impl.hpp
     src/hikogui/file/resource_view.hpp
     src/hikogui/file/seek_whence.hpp
@@ -330,7 +332,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/macros.hpp
     src/hikogui/memory/locked_memory_allocator.hpp
     src/hikogui/memory/locked_memory_allocator_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/memory/locked_memory_allocator_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/memory/locked_memory_allocator_win32_impl.hpp>
     src/hikogui/memory/locked_memory_allocator_win32_impl.hpp
     src/hikogui/memory/memory.hpp
     src/hikogui/memory/secure_memory_allocator.hpp
@@ -363,23 +365,23 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/path/path.hpp
     src/hikogui/path/path_location.hpp
     src/hikogui/path/path_location_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/path_location_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/path_location_win32_impl.hpp>
     src/hikogui/path/path_location_win32_impl.hpp
     src/hikogui/random/dither.hpp
     src/hikogui/random/random.hpp
     src/hikogui/random/seed.hpp
     src/hikogui/random/seed_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_win32_impl.hpp>
     src/hikogui/random/seed_win32_impl.hpp
     src/hikogui/random/xorshift128p.hpp
     src/hikogui/security/security.hpp
     src/hikogui/security/security_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
     src/hikogui/security/security_win32_impl.hpp
     src/hikogui/security/sip_hash.hpp
     src/hikogui/settings/os_settings.hpp
     src/hikogui/settings/os_settings_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/os_settings_win32_impl.hpp>
     src/hikogui/settings/os_settings_win32_impl.hpp
     src/hikogui/settings/preferences.hpp
     src/hikogui/settings/settings.hpp
@@ -387,7 +389,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/settings/theme_mode.hpp
     src/hikogui/settings/user_settings.hpp
     src/hikogui/settings/user_settings_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/settings/user_settings_win32_impl.hpp>
     src/hikogui/settings/user_settings_win32_impl.hpp
     src/hikogui/telemetry/counters.hpp
     src/hikogui/telemetry/delayed_format.hpp
@@ -444,27 +446,27 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/utility/charconv.hpp
     src/hikogui/utility/compare.hpp
     src/hikogui/utility/concepts.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/console_win32.hpp>
     src/hikogui/utility/console_win32.hpp
     src/hikogui/utility/debugger.hpp
-   $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_generic_impl.hpp>
+    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_generic_impl.hpp>
     src/hikogui/utility/debugger_generic_impl.hpp
     src/hikogui/utility/debugger_intf.hpp
     src/hikogui/utility/debugger_utils.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp>
     src/hikogui/utility/debugger_win32_impl.hpp
     src/hikogui/utility/defer.hpp
     src/hikogui/utility/dialog.hpp
     src/hikogui/utility/dialog_intf.hpp
-   $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_macos_impl.hpp>
+    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_macos_impl.hpp>
     src/hikogui/utility/dialog_macos_impl.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_win32_impl.hpp>
     src/hikogui/utility/dialog_win32_impl.hpp
     src/hikogui/utility/endian.hpp
     src/hikogui/utility/enum_metadata.hpp
     src/hikogui/utility/exception.hpp
     src/hikogui/utility/exception_intf.hpp
-   $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_win32_impl.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_win32_impl.hpp>
     src/hikogui/utility/exception_win32_impl.hpp
     src/hikogui/utility/fixed_string.hpp
     src/hikogui/utility/forward_value.hpp
