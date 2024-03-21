@@ -50,6 +50,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/GFX/gfx_system_vulkan_impl.hpp
     src/hikogui/GFX/gfx_system_vulkan_intf.hpp
     src/hikogui/GFX/render_doc.hpp
+    src/hikogui/GFX/renderdoc_app.h
     src/hikogui/GUI/GUI.hpp
     src/hikogui/GUI/gui_event.hpp
     src/hikogui/GUI/gui_event_type.hpp
