@@ -9,7 +9,7 @@ def get_header_files():
     for dirpath, dirnames, filenames in os.walk("src"):
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            if path.endswith(".hpp"):
+            if path.endswith(".hpp") or path.endswith(".h"):
                 header_files.append(path)
 
     header_files.sort()
