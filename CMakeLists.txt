@@ -154,6 +154,7 @@ else()
     set(HI_SCOPE "INTERFACE")
     add_library(hikogui INTERFACE)
 endif()
+add_library(hikogui::hikogui ALIAS hikogui)
 
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 if(HI_ENABLE_MODULES)
