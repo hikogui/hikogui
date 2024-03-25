@@ -9,6 +9,7 @@
 #include "../macros.hpp"
 #include <atomic>
 #include <filesystem>
+#include <optional>
 
 hi_export_module(hikogui.metadata.library_metadata);
 
@@ -50,17 +51,39 @@ hi_export namespace hi { inline namespace v1 {
 }
 
 /** The full path where HikoGUI source code is located.
+ * 
+ * @return The directory where the source code was located during
+ *         CMake configuration.
+ * @retval std::nullopt The library source directory is not available.
  */
-[[nodiscard]] inline std::filesystem::path library_source_dir() noexcept
+[[nodiscard]] inline std::optional<std::filesystem::path> library_source_dir() noexcept
 {
-    return std::filesystem::canonical(std::filesystem::path{"@LIBRARY_SOURCE_DIR@"});
+    std::error_code ec;
+
+    auto r = std::filesystem::canonical(std::filesystem::path{"@LIBRARY_SOURCE_DIR@"}, &ec);
+    if (ec) {
+        return std::nullopt;
+    }
+
+    return r;
 }
 
 /** The full path where HikoGUI build directory is located.
+ * 
+ * @return The directory where the source code was located during
+ *         CMake configuration.
+ * @retval std::nullopt The library source directory is not available.
  */
-[[nodiscard]] inline std::filesystem::path library_build_dir() noexcept
+[[nodiscard]] inline std::optional<std::filesystem::path> library_build_dir() noexcept
 {
-    return std::filesystem::canonical(std::filesystem::path{"@LIBRARY_BUILD_DIR@"});
+    std::error_code ec;
+
+    auto r = std::filesystem::canonical(std::filesystem::path{"@LIBRARY_BUILD_DIR@"}, &ec);
+    if (ec) {
+        return std::nullopt;
+    }
+
+    return r;
 }
 
 }} // namespace hi::v1

@@ -109,8 +109,9 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
 /** Parse the source dir from a cmake_install.cmake file.
  * 
  * @param path The path to the cmake_install.cmake file.
- * @return The path to the source dir, or std::nullopt if the file does not
- *         exist, or could not be parsed, or the source-dir does not exist. 
+ * @return The path to the source dir
+ * @retval std::nullopt if the file does not exist,
+ *         or could not be parsed, or the source-dir does not exist. 
 */
 [[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir_parse_cmake_install(std::filesystem::path path) noexcept
 {
@@ -180,11 +181,13 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
     path.replace_filename("../../..");
     auto install_path = std::filesystem::canonical(path);
     
-    if (install_path != library_source_dir()) {
-        return install_path;
-    } else {
-        return std::nullopt;
+    if (auto libary_source_dir_ = library_source_dir()) {
+        if (install_path != *library_source_dir_) {
+            return install_path;
+        }
     }
+
+    return std::nullopt;
 }
 
 }} // namespace hi::v1

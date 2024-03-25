@@ -526,11 +526,18 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/window_controls_win32_widget.hpp
     src/hikogui/widgets/window_widget.hpp
     src/hikogui/widgets/with_label_widget.hpp
-    src/hikogui/win32/base.hpp
+    src/hikogui/win32/hresult_error_impl.hpp
+    src/hikogui/win32/hresult_error_intf.hpp
     src/hikogui/win32/libloaderapi.hpp
     src/hikogui/win32/processthreadsapi.hpp
+    src/hikogui/win32/shlobj_core.hpp
+    src/hikogui/win32/stringapiset.hpp
     src/hikogui/win32/synchapi.hpp
+    src/hikogui/win32/utility.hpp
     src/hikogui/win32/win32.hpp
+    src/hikogui/win32/win32_error_impl.hpp
+    src/hikogui/win32/win32_error_intf.hpp
+    src/hikogui/win32/winbase.hpp
     src/hikogui/win32/winnls.hpp
     src/hikogui/win32/winreg.hpp
     src/hikogui/win32/winuser.hpp
