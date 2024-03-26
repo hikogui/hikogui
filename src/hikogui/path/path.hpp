@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "cmake_install.hpp" // export
 #include "glob.hpp" // export
 #include "path_location.hpp" // export
 #include "URI.hpp" // export

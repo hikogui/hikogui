@@ -14,7 +14,7 @@ hi_export_module(hikogui.win32 : win32_error_intf);
 
 hi_export namespace hi { inline namespace v1 {
 
-enum class hresult_error : uint32_t {
+enum class hresult_error : int32_t {
     ok = S_OK,
     unspecified_error = E_FAIL,
     invalid_argument = E_INVALIDARG,

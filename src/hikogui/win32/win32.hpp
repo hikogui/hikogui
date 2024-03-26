@@ -8,6 +8,7 @@
 #include "hresult_error_impl.hpp" // export
 #include "libloaderapi.hpp" // export
 #include "processthreadsapi.hpp" // export
+#include "shlobj_core.hpp" // export
 #include "stringapiset.hpp" // export
 #include "synchapi.hpp" // export
 #include "utility.hpp" // export

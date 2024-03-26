@@ -6,6 +6,7 @@
 
 #include "../macros.hpp"
 #include "win32_error_intf.hpp"
+#include "stringapiset.hpp"
 #include <string>
 #include <expected>
 #include <Windows.h>

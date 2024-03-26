@@ -53,37 +53,21 @@ hi_export namespace hi { inline namespace v1 {
 /** The full path where HikoGUI source code is located.
  * 
  * @return The directory where the source code was located during
- *         CMake configuration.
- * @retval std::nullopt The library source directory is not available.
+ *         CMake configuration. empty if not configured.
  */
-[[nodiscard]] inline std::optional<std::filesystem::path> library_source_dir() noexcept
+[[nodiscard]] inline std::filesystem::path library_cmake_source_dir() noexcept
 {
-    std::error_code ec;
-
-    auto r = std::filesystem::canonical(std::filesystem::path{"@LIBRARY_SOURCE_DIR@"}, &ec);
-    if (ec) {
-        return std::nullopt;
-    }
-
-    return r;
+    return {"@LIBRARY_SOURCE_DIR@"};
 }
 
 /** The full path where HikoGUI build directory is located.
  * 
  * @return The directory where the source code was located during
- *         CMake configuration.
- * @retval std::nullopt The library source directory is not available.
+ *         CMake configuration. empty if not configured.
  */
-[[nodiscard]] inline std::optional<std::filesystem::path> library_build_dir() noexcept
+[[nodiscard]] inline std::filesystem::path library_cmake_build_dir() noexcept
 {
-    std::error_code ec;
-
-    auto r = std::filesystem::canonical(std::filesystem::path{"@LIBRARY_BUILD_DIR@"}, &ec);
-    if (ec) {
-        return std::nullopt;
-    }
-
-    return r;
+    return {"@LIBRARY_BUILD_DIR@"};
 }
 
 }} // namespace hi::v1

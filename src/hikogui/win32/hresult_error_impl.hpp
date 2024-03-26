@@ -69,7 +69,17 @@ inline namespace v1 {
         }
     }();
 
-    auto const failure_str = is_failure ? "ERROR" : "SUCCESS";
+    auto const failure_str = [&] {
+        if (is_failure) {
+            if (is_severe_failure) {
+                return "FATAL";
+            } else {
+                return "ERROR";
+            }
+        } else {
+            return "SUCCESS";
+        }
+    }();
 
     return std::format("HRESULT({}): {}: 0x{:08x}", facility_str, failure_str, code_);
 }
