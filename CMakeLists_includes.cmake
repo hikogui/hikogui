@@ -4,8 +4,8 @@ if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
     # vcpkg does not allow absolute paths anywhere in the install directory.
     # These directories are normally used to execute files in their build
     # directory; which does not happen on a vcpkg install.
-    set(LIBRARY_SOURCE_DIR "")
-    set(LIBRARY_BUILD_DIR "")
+    set(LIBRARY_SOURCE_DIR "vcpkg_no_source_dir")
+    set(LIBRARY_BUILD_DIR "vcpkg_no_build_dir")
 else()
     set(LIBRARY_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
     set(LIBRARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -362,6 +362,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/parser/token.hpp
     src/hikogui/path/URI.hpp
     src/hikogui/path/URL.hpp
+    src/hikogui/path/cmake_install.hpp
     src/hikogui/path/glob.hpp
     src/hikogui/path/path.hpp
     src/hikogui/path/path_location.hpp
