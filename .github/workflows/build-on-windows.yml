@@ -119,7 +119,7 @@ jobs:
     
       - name: ✔ ❌✔️ Hiko-Test Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_htests-deb "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
+        run: Debug\hikogui_htests-dbg "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Debug
         working-directory: ${{env.BUILD_DIR}}
@@ -171,7 +171,7 @@ jobs:
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
           --working_dir=${{env.BUILD_DIR}} ^
-          -- Debug\hikogui_htests-deb
+          -- ${{env.BUILD_DIR}\Debug\hikogui_htests-dbg
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
