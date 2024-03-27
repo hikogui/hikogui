@@ -110,7 +110,7 @@ struct unicode_bidi_test {
 
 hi::generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
-    auto const view = hi::file_view(hi::library_source_dir() / "tests" / "data" / "BidiTest.txt");
+    auto const view = hi::file_view(hi::library_test_data_dir() / "BidiTest.txt");
     auto const test_data = as_string_view(view);
 
     auto levels = std::vector<int>{};
@@ -253,7 +253,7 @@ struct unicode_bidi_character_test {
 
 hi::generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
-    auto const view = hi::file_view(hi::library_source_dir() / "tests" / "data" / "BidiCharacterTest.txt");
+    auto const view = hi::file_view(hi::library_test_data_dir() / "BidiCharacterTest.txt");
     auto const test_data = as_string_view(view);
 
     int line_nr = 1;

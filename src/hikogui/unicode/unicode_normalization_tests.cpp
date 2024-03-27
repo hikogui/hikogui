@@ -89,7 +89,7 @@ static std::optional<NormalizationTest> parseNormalizationTest_line(std::string_
 
 static hi::generator<NormalizationTest> parseNormalizationTests()
 {
-    auto const view = hi::file_view(hi::library_source_dir() / "tests" / "data" / "NormalizationTest.txt");
+    auto const view = hi::file_view(hi::library_test_data_dir() / "NormalizationTest.txt");
     auto const test_data = as_string_view(view);
 
     size_t line_nr = 0;

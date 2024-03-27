@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.25)
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 #-------------------------------------------------------------------
 # Build Options
@@ -154,6 +154,7 @@ else()
     set(HI_SCOPE "INTERFACE")
     add_library(hikogui INTERFACE)
 endif()
+add_library(hikogui::hikogui ALIAS hikogui)
 
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 if(HI_ENABLE_MODULES)
@@ -449,7 +450,7 @@ endif()
 #-------------------------------------------------------------------
 # Build Target: 
 #-------------------------------------------------------------------
-# A INTERFACE library does not have a build target which means it
+# An INTERFACE library does not have a build target which means it
 # can not be installed. Therefor we create a dummy target which
 # will make sure the INTERFACE library can be installed.
 add_custom_target(hikogui_dummy ALL)
@@ -528,5 +529,6 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiResources.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/TargetResources.cmake"
     DESTINATION "${INSTALL_CMAKEDIR}"
 )

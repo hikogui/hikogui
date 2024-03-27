@@ -396,10 +396,14 @@ hi_export namespace hi { inline namespace v1 {
 {
     using namespace std::literals;
 
-    auto const executable_path = executable_file().string();
-    auto const user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
+    auto const executable_file_ = executable_file();
+    if (not executable_file_) {
+        hi_log_error("Could not get path to executable: {}", executable_file_.error().message());
+        return policy::unspecified;
+    }
 
-    if (auto const result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_path)) {
+    auto const user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
+    if (auto const result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_file_->string())) {
         for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
             auto entry_sv = std::string_view{entry};
             if (entry_sv.starts_with("GpuPreference=")) {

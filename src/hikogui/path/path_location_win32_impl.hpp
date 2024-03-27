@@ -11,6 +11,7 @@
 #include "../telemetry/telemetry.hpp"
 #include "../utility/utility.hpp"
 #include "../char_maps/char_maps.hpp" // XXX #616
+#include "../win32/win32.hpp"
 #include "../macros.hpp"
 #include <filesystem>
 #include <string>
@@ -18,84 +19,90 @@
 
 hi_export_module(hikogui.path.path_location : impl);
 
-hi_export namespace hi::inline v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
-/** Convenience function for SHGetKnownFolderPath().
- *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.
- *  See https://docs.microsoft.com/en-us/windows/win32/shell/knownfolderid#constants
- *
- * @param KNOWNFOLDERID folder_id.
- * @return The path of the folder.
- */
-hi_export [[nodiscard]] hi_inline std::filesystem::path get_path_by_id(const KNOWNFOLDERID& folder_id) noexcept
+[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> executable_file() noexcept
 {
-    PWSTR wpath = nullptr;
-    if (SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath) != S_OK) {
-        hi_log_fatal("Could not get known folder path.");
-    }
-    auto const d = defer{[&] {
-        CoTaskMemFree(wpath);
-    }};
+    static auto r = []() -> std::expected<std::filesystem::path, std::error_code> {
+        if (auto path = win32_GetModuleFileName()) {
+            return *path;
+        } else {
+            return std::unexpected{std::error_code{path.error()}};
+        }
+    }();
 
-    return std::filesystem::path{wpath} / "";
+    return r;
 }
 
-hi_export [[nodiscard]] hi_inline std::filesystem::path executable_file() noexcept
+[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> data_dir() noexcept
 {
-    if (auto path = win32_GetModuleFileName()) {
-        return *path;
-    } else {
-        hi_log_fatal("Could not get executable-file. {}", make_error_code(path.error()).message());
-    }
+    static auto r = []() -> std::expected<std::filesystem::path, std::error_code> {
+        // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
+        // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
+        if (auto path = win32_SHGetKnownFolderPath(FOLDERID_LocalAppData)) {
+            return *path / get_application_vendor() / get_application_name() / "";
+        } else {
+            return std::unexpected{std::error_code{path.error()}};
+        }
+    }();
+
+    return r;
 }
 
-hi_export [[nodiscard]] hi_inline std::filesystem::path data_dir() noexcept
-{
-    // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
-    // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
-    auto const local_app_data = get_path_by_id(FOLDERID_LocalAppData);
-    return local_app_data / get_application_vendor() / get_application_name() / "";
-}
-
-hi_export [[nodiscard]] hi_inline std::filesystem::path log_dir() noexcept
+[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> log_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
-    return data_dir() / "Log" / "";
+    if (auto path = data_dir()) {
+        return *path / "Log" / "";
+    } else {
+        return std::unexpected{path.error()};
+    }
 }
 
-hi_export [[nodiscard]] hi_inline std::filesystem::path preferences_file() noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept
 {
-    // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\preferences.json"
-    return data_dir() / "preferences.json";
-}
+    // Always look at the resource directory where the executable is located.
+    if (auto path = executable_dir()) {
+        co_yield *path / "resources" / "";
+    }
 
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept
-{
-    if (auto source_path = source_dir()) {
-            // Fallback when the application is executed from its build directory.
-            co_yield executable_dir() / "resources" / "";
-            co_yield *source_path / "resources" / "";
+    // Also look in the data directory of the application.
+    if (auto path = data_dir()) {
+        co_yield *path / "resources" / "";
+    }
 
-            if (auto install_path = library_install_dir()) {
-                co_yield *install_path / "resources" / "";
+    // If the executable of the application is located in the build directory,
+    // then check the source directories for resources.
+    if (auto source_dir_ = source_dir()) {
+        co_yield *source_dir_ / "resources" / "";
 
-            } else {
-                // Fallback when HikoGUI is also still in its build directory.
-                co_yield library_source_dir() / "resources" / "";
-                co_yield library_build_dir() / "resources" / "";
-            }
-        } else {
-            co_yield executable_dir() / "resources" / "";
-            co_yield data_dir() / "resources" / "";
+        // Check the in-tree HikoGUI-library build directory.
+        if (auto path = library_cmake_build_dir(); not path.empty()) {
+            co_yield path / "resources" / "";
         }
+
+        // Check the in-tree HikoGUI-library source directory.
+        if (auto path = library_cmake_source_dir(); not path.empty()) {
+            co_yield path / "resources" / "";
+        }
+
+        // Check the HikoGUI source directory.
+        co_yield library_source_dir() / "resources" / "";
+
+        // Check the HikoGUI install directory.
+        co_yield library_source_dir() / "share" / "hikogui" / "resources" / "";
+    }
 }
 
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept
 {
-    co_yield get_path_by_id(FOLDERID_Fonts);
+    if (auto path = win32_SHGetKnownFolderPath(FOLDERID_Fonts)) {
+        co_yield *path;
+    }
 }
 
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> font_dirs() noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> font_dirs() noexcept
 {
     for (auto const& path : resource_dirs()) {
         co_yield path;
@@ -105,11 +112,12 @@ hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> font_dirs() n
     }
 }
 
-hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> theme_dirs() noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path> theme_dirs() noexcept
 {
     for (auto const& path : resource_dirs()) {
         co_yield path;
     }
 }
 
+} // namespace v1
 } // namespace hi::inline v1

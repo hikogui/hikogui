@@ -13,9 +13,9 @@ TEST_SUITE(gzip_suite) {
 
 TEST_CASE(unzip_empty)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test1.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test1.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test1.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test1.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -27,9 +27,9 @@ TEST_CASE(unzip_empty)
 
 TEST_CASE(unzip_single_a)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test2.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test2.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test2.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test2.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -41,9 +41,9 @@ TEST_CASE(unzip_single_a)
 
 TEST_CASE(unzip_text)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test3.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test3.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test3.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test3.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -57,9 +57,9 @@ TEST_CASE(unzip_text)
 
 TEST_CASE(unzip_caterbury_html)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test4.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test4.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test4.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test4.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -71,9 +71,9 @@ TEST_CASE(unzip_caterbury_html)
 
 TEST_CASE(unzip_fields_c)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test5.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test5.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test5.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test5.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -85,9 +85,9 @@ TEST_CASE(unzip_fields_c)
 
 TEST_CASE(unzip_grammar_lsp)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test6.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test6.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test6.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test6.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -99,9 +99,9 @@ TEST_CASE(unzip_grammar_lsp)
 
 TEST_CASE(unzip_sum)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test7.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test7.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test7.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test7.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
@@ -113,9 +113,9 @@ TEST_CASE(unzip_sum)
 
 TEST_CASE(unzip_xargs1)
 {
-    auto decompressed = hi::gzip_decompress(hi::library_source_dir() / "tests" / "data" / "gzip_test8.bin.gz");
+    auto decompressed = hi::gzip_decompress(hi::library_test_data_dir() / "gzip_test8.bin.gz");
 
-    auto const original = hi::file_view{hi::library_source_dir() / "tests" / "data" / "gzip_test8.bin"};
+    auto const original = hi::file_view{hi::library_test_data_dir() / "gzip_test8.bin"};
     auto const original_bytes = as_bstring_view(original);
 
     REQUIRE(decompressed.size() == original_bytes.size());
