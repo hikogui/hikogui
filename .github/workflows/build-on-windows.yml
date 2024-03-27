@@ -171,7 +171,7 @@ jobs:
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
           --working_dir=${{env.BUILD_DIR}} ^
-          -- ${{env.BUILD_DIR}\Debug\hikogui_htests-dbg
+          -- ${{env.BUILD_DIR}}\Debug\hikogui_htests-dbg
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
