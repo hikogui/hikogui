@@ -3,7 +3,7 @@
 add_executable(hikogui_htests)
 target_link_libraries(hikogui_htests PRIVATE hikotest hikogui)
 target_include_directories(hikogui_htests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(hikogui_htests PROPERTIES DEBUG_POSTFIX "-deb")
+set_target_properties(hikogui_htests PROPERTIES DEBUG_POSTFIX "-dbg")
 set_target_properties(hikogui_htests PROPERTIES RELEASE_POSTFIX "-rel")
 set_target_properties(hikogui_htests PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 add_test(NAME hikogui_htests COMMAND hikogui_htests)
