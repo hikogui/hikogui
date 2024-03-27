@@ -65,25 +65,26 @@ inline namespace v1 {
     }
 
     // If the executable of the application is located in the build directory,
-    // then check the source directory for resources.
-    if (auto path = source_dir()) {
-        co_yield *path / "resources" / "";
-    }
+    // then check the source directories for resources.
+    if (auto source_dir_ = source_dir()) {
+        co_yield *source_dir_ / "resources" / "";
 
-    // If the application is build with a in-tree HikoGUI-library check the
-    // build directory first.
-    if (auto path = library_cmake_build_dir(); not path.empty()) {
-        co_yield path / "resources" / "";
-    }
+        // Check the in-tree HikoGUI-library build directory.
+        if (auto path = library_cmake_build_dir(); not path.empty()) {
+            co_yield path / "resources" / "";
+        }
 
-    // If the application is build with a in-tree HikoGUI-library check the
-    // source directory next.
-    if (auto path = library_cmake_source_dir(); not path.empty()) {
-        co_yield path / "resources" / "";
-    }
+        // Check the in-tree HikoGUI-library source directory.
+        if (auto path = library_cmake_source_dir(); not path.empty()) {
+            co_yield path / "resources" / "";
+        }
 
-    // Check the HikoGUI source/install directory when the application was build.
-    co_yield library_source_dir() / "resources" / "";
+        // Check the HikoGUI source directory.
+        co_yield library_source_dir() / "resources" / "";
+
+        // Check the HikoGUI install directory.
+        co_yield library_source_dir() / "share" / "hikogui" / "resources" / "";
+    }
 }
 
 [[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept
