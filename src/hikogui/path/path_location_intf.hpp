@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "cmake_install.hpp"
 #include "../utility/utility.hpp"
 #include "../metadata/metadata.hpp"
 #include "../macros.hpp"
@@ -12,6 +13,16 @@
 #include <fstream>
 #include <string>
 #include <ranges>
+#include <expected>
+#include <system_error>
+
+hi_warning_push();
+// C4702 unreachable code: False positive, but "not a bug" / "low priority".
+// https://developercommunity.visualstudio.com/t/warning-c4702-for-range-based-for-loop/859129
+// The ranged for-loop is translated into a normal for-loop. The iterator
+// part of the normal for-loop is never executed due to the immediate return
+// inside the for-loop.
+hi_warning_ignore_msvc(4702);
 
 /** @file path/path_location.hpp functions to locate files and directories.
  * @ingroup path
@@ -19,12 +30,11 @@
 
 hi_export_module(hikogui.path.path_location : intf);
 
-hi_export namespace hi { inline namespace v1 {
-
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
-concept path_range =
-    std::ranges::input_range<Context> and
+concept path_range = std::ranges::input_range<Context> and
     std::convertible_to<std::ranges::range_value_t<std::remove_cvref_t<Context>>, std::filesystem::path> and
     not std::convertible_to<Context, std::filesystem::path>;
 
@@ -33,58 +43,152 @@ concept path_range =
  *
  * @param locations The locations to search for filesystem-object.
  * @param ref A relative path to the filesystem-object.
- * @return The the first full path to the filesystem-object found in the location. Or empty if the path is not found.
+ * @return full paths to the filesystem-objects found in the location.
  */
 template<path_range Locations>
-[[nodiscard]] hi_inline std::optional<std::filesystem::path>
-find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
+[[nodiscard]] hi_inline generator<std::filesystem::path>
+find_path(Locations&& locations, std::filesystem::path const& ref) noexcept
 {
     if (ref.is_absolute()) {
         if (std::filesystem::exists(ref)) {
-            return ref;
-        } else {
-            return {};
+            co_yield ref;
         }
+
     } else {
         for (auto const& base : locations) {
-            auto path = base / ref;
+            auto const path = base / ref;
             if (std::filesystem::exists(path)) {
-                return path;
+                co_yield path;
             }
         }
-        return {};
     }
+}
+
+/** Find a path.
+ * @ingroup path
+ *
+ * @param location The location to search for filesystem-object.
+ * @param ref A relative path to the filesystem-object.
+ * @return full paths to the filesystem-objects found in the location.
+ */
+[[nodiscard]] hi_inline generator<std::filesystem::path>
+find_path(std::filesystem::path const& location, std::filesystem::path const& ref) noexcept
+{
+    if (ref.is_absolute()) {
+        if (std::filesystem::exists(ref)) {
+            co_yield ref;
+        }
+
+    } else {
+        auto const path = location / ref;
+        if (std::filesystem::exists(path)) {
+            co_yield path;
+        }
+    }
+}
+
+/** Get a path.
+ * @ingroup path
+ *
+ * @param locations The locations to search for filesystem-object.
+ * @param ref A relative path to the filesystem-object.
+ * @return The full path to the first filesystem-object found in the location.
+ * @throws io_error When a path is not found.
+ */
+template<path_range Locations>
+[[nodiscard]] hi_inline std::filesystem::path get_path(Locations&& locations, std::filesystem::path const& ref)
+{
+    for (auto const& path : find_path(locations, ref)) {
+        return path;
+    }
+
+    throw io_error(std::format("Could not find '{}' in search-path: {}", ref.string(), to_string(locations)));
+}
+
+/** Get a path.
+ * @ingroup path
+ *
+ * @param location The locations to search for filesystem-object.
+ * @param ref A relative path to the filesystem-object.
+ * @return The full path to the first filesystem-object found in the location.
+ * @throws io_error When a path is not found.
+ */
+[[nodiscard]] hi_inline std::filesystem::path get_path(std::filesystem::path const& location, std::filesystem::path const& ref)
+{
+    for (auto const& path : find_path(location, ref)) {
+        return path;
+    }
+
+    throw io_error(std::format("Could not find '{}' in: {}", ref.string(), location.string()));
+}
+
+/** Get a path.
+ * @ingroup path
+ *
+ * @param location The locations to search for filesystem-object.
+ * @param ref A relative path to the filesystem-object.
+ * @return The full path to the first filesystem-object found in the location.
+ * @throws io_error When a path is not found.
+ */
+[[nodiscard]] hi_inline std::filesystem::path
+get_path(std::expected<std::filesystem::path, std::error_code> const& location, std::filesystem::path const& ref)
+{
+    if (not location) {
+        throw io_error(
+            std::format("Could not find '{}' because of an error at the location: {}", ref.string(), location.error().message()));
+    }
+
+    for (auto const& path : find_path(*location, ref)) {
+        return path;
+    }
+
+    throw io_error(std::format("Could not find '{}' in: {}", ref.string(), location->string()));
+}
+
+/** Get a string representation of a search-path.
+ *
+ * @param locations A range of std::filesystem::path elements.
+ * @return A string of semicolon ';' separated paths.
+ */
+template<path_range Locations>
+[[nodiscard]] hi_inline std::string to_string(Locations&& locations) noexcept
+{
+    auto r = std::string{};
+    for (auto const& path : locations) {
+        if (not r.empty()) {
+            r += ";";
+        }
+        r += path.string();
+    }
+    return r;
 }
 
 /** Get the full path to this executable.
  * @ingroup path
  */
-[[nodiscard]] std::filesystem::path executable_file() noexcept;
+[[nodiscard]] std::expected<std::filesystem::path, std::error_code> executable_file() noexcept;
 
 /** Get the full path to the directory when this executable is located.
  * @ingroup path
  */
-[[nodiscard]] hi_inline std::filesystem::path executable_dir() noexcept
+[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> executable_dir() noexcept
 {
-    auto tmp = executable_file();
-    tmp.remove_filename();
-    return tmp;
+    auto path = executable_file();
+    if (path) {
+        path->remove_filename();
+    }
+    return path;
 }
 
 /** Get the full path to the directory where the application should store its data.
  * @ingroup path
  */
-[[nodiscard]] std::filesystem::path data_dir() noexcept;
+[[nodiscard]] std::expected<std::filesystem::path, std::error_code> data_dir() noexcept;
 
 /** Get the full path to the directory where the application should store its log files.
  * @ingroup path
  */
-[[nodiscard]] std::filesystem::path log_dir() noexcept;
-
-/** Get the full path to application preferences file.
- * @ingroup path
- */
-[[nodiscard]] std::filesystem::path preferences_file() noexcept;
+[[nodiscard]] std::expected<std::filesystem::path, std::error_code> log_dir() noexcept;
 
 /** The directories to search for resource files.
  * @ingroup path
@@ -106,41 +210,6 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
  */
 [[nodiscard]] hi_inline generator<std::filesystem::path> theme_files() noexcept;
 
-/** Parse the source dir from a cmake_install.cmake file.
- * 
- * @param path The path to the cmake_install.cmake file.
- * @return The path to the source dir, or std::nullopt if the file does not
- *         exist, or could not be parsed, or the source-dir does not exist. 
-*/
-[[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir_parse_cmake_install(std::filesystem::path path) noexcept
-{
-    if (not std::filesystem::exists(path)) {
-        return std::nullopt;
-    }
-
-    auto line = std::string{};
-    try {
-        auto fd = std::ifstream{path.string()};
-        line = getline(fd, 512);
-        fd.close();
-
-    } catch (...) {
-        return std::nullopt;
-    }
-
-    auto const cmake_install_start = std::string{"# Install script for directory: "};
-    if (not line.starts_with(cmake_install_start)) {
-        return std::nullopt;
-    }
-
-    auto source_dir = std::filesystem::path{line.substr(cmake_install_start.size())};
-    if (not std::filesystem::exists(source_dir)) {
-        return std::nullopt;
-    }
-
-    return source_dir;
-}
-
 /** Get the full path to source code of this executable.
  *
  * @ingroup path
@@ -149,42 +218,43 @@ find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
  */
 [[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir() noexcept
 {
-    // If the cmake_install.cmake file exists then the executable is located in a build directory.
-    if (auto path = source_dir_parse_cmake_install(executable_dir() / "cmake_install.cmake")) {
-        return *path;
-    }
+    static auto r = []() -> std::optional<std::filesystem::path> {
+        auto const executable_dir_ = executable_dir();
+        if (not executable_dir_) {
+            return std::nullopt;
+        }
 
-    // When using a cmake multi-config generator, the cmake_install.cmake file is located one directory up.
-    if (auto path = source_dir_parse_cmake_install(executable_dir() / ".." / "cmake_install.cmake")) {
-        return *path;
-    }
+        // If the cmake_install.cmake file exists then the executable is located in a build directory.
+        if (auto tmp = parse_cmake_install(*executable_dir_ / "cmake_install.cmake")) {
+            return tmp->source_dir;
+        }
 
-    return std::nullopt;
+        // When using a cmake multi-config generator The executable lives in the
+        // ./Debug/, ./Release/ or ./RelWithDebInfo/ directory.
+        // So, the cmake_install.cmake file is located one directory up.
+        if (auto tmp = parse_cmake_install(*executable_dir_ / ".." / "cmake_install.cmake")) {
+            return tmp->source_dir;
+        }
+
+        return std::nullopt;
+    }();
+
+    return r;
 }
 
-/** The full path where HikoGUI is installed during compilation of the application.
- * 
- * @ingroup path
- * @return The full path to the install path of HikoGUI.
- * @retval std::nullopt The HikoGUI library is not installed and is located in its build dir.
- */
-[[nodiscard]] hi_inline std::optional<std::filesystem::path> library_install_dir() noexcept
+[[nodiscard]] hi_inline std::filesystem::path library_source_dir() noexcept
 {
-    // path is:
-    //  - /install_dir/include/hikogui/path/path_location_impl.hpp
-    //  - /build_dir/src/hikogui/path/path_location_impl.hpp
-    // becomes:
-    //  - /install_dir/
-    //  - /build_dir/
     auto path = std::filesystem::path{__FILE__};
     path.replace_filename("../../..");
-    auto install_path = std::filesystem::canonical(path);
-    
-    if (install_path != library_source_dir()) {
-        return install_path;
-    } else {
-        return std::nullopt;
-    }
+    return path.lexically_normal();
 }
 
-}} // namespace hi::v1
+[[nodiscard]] hi_inline std::filesystem::path library_test_data_dir() noexcept
+{
+    return hi::library_source_dir() / "tests" / "data";
+}
+
+} // namespace v1
+} // namespace hi::v1
+
+hi_warning_pop();

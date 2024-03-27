@@ -13,7 +13,7 @@ target_link_libraries(vulkan_triangle PRIVATE hikogui)
 target_link_resources(vulkan_triangle hikogui)
 set_target_properties(vulkan_triangle PROPERTIES MACOSX_BUNDLE TRUE)
 set_target_properties(vulkan_triangle PROPERTIES MACOSX_FRAMEWORK_IDENTIFIER org.hikogui.hikogui.vulkan_triangle)
-set_target_properties(vulkan_triangle PROPERTIES DEBUG_POSTFIX "-debug")
+set_target_properties(vulkan_triangle PROPERTIES DEBUG_POSTFIX "-dbg")
 set_target_properties(vulkan_triangle PROPERTIES RELWITHDEBINFO_POSTFIX "-rdi")
 
 target_sources(vulkan_triangle PRIVATE main_impl.cpp triangle_impl.cpp triangle.hpp)

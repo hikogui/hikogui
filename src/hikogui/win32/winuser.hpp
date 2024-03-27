@@ -6,13 +6,13 @@
 
 #include "../win32_headers.hpp"
 #include "../macros.hpp"
-#include "base.hpp"
+#include "win32_error_intf.hpp"
 #include <expected>
 #include <string>
 #include <string_view>
 #include <system_error>
 
-hi_export_module(hikogui.win32.winuser);
+hi_export_module(hikogui.win32 : winuser);
 
 namespace hi { inline namespace v1 {
 

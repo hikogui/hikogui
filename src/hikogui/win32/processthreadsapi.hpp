@@ -5,12 +5,12 @@
 #pragma once
 
 #include "../win32_headers.hpp"
-#include "base.hpp"
+#include "win32_error_intf.hpp"
 #include <expected>
 #include <string>
 #include <system_error>
 
-hi_export_module(hikogui.win32.processthreadsapi);
+hi_export_module(hikogui.win32 : processthreadsapi);
 
 hi_export namespace hi {
 inline namespace v1 {

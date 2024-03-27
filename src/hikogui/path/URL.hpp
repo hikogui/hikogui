@@ -30,6 +30,13 @@ hi_warning_push();
 // False positive reported: https://developercommunity.visualstudio.com/t/C26434-false-positive-with-conversion-op/10262199
 hi_warning_ignore_msvc(26434);
 
+// C4702 unreachable code: False positive, but "not a bug" / "low priority".
+// https://developercommunity.visualstudio.com/t/warning-c4702-for-range-based-for-loop/859129
+// The ranged for-loop is translated into a normal for-loop. The iterator
+// part of the normal for-loop is never executed due to the immediate return
+// inside the for-loop.
+hi_warning_ignore_msvc(4702);
+
 hi_export namespace hi { inline namespace v1 {
 
 /** Universal Resource Locator.
@@ -219,18 +226,12 @@ public:
             if (scheme_ == "resource") {
                 // Always used std::u8string with std::filesystem::path.
                 auto const ref = std::filesystem::path{filesystem_path_generic_u8string(false)};
-                if (auto path = find_path(resource_dirs(), ref)) {
-                    return *path;
-                } else {
-                    auto search_path = std::string{};
-                    for (auto p: resource_dirs()) {
-                        if (not search_path.empty()) {
-                            search_path += ";";
-                        }
-                        search_path += p.string();
-                    }
-                    throw url_error(std::format("Resource '{}' not found in search-path: '{}'", to_string(*this), search_path));
+
+                for (auto const& path : find_path(resource_dirs(), ref)) {
+                    // Return the first matching path.
+                    return path;
                 }
+                throw url_error(std::format("Resource '{}' not found in search-path: '{}'", to_string(*this), to_string(resource_dirs())));
 
             } else if (scheme_ == "file") {
                 return {filesystem_path_generic_u8string()};

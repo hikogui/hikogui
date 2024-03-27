@@ -6,7 +6,7 @@
 
 #include "../win32_headers.hpp"
 #include "../macros.hpp"
-#include "base.hpp"
+#include "win32_error_intf.hpp"
 #include <string_view>
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 #include <optional>
 #include <cassert>
 
-hi_export_module(hikogui.win32.winreg);
+hi_export_module(hikogui.win32 : winreg);
 
 hi_export namespace hi { inline namespace v1 {
 
