@@ -24,22 +24,30 @@ inline namespace v1 {
 
 [[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> executable_file() noexcept
 {
-    if (auto path = win32_GetModuleFileName()) {
-        return *path;
-    } else {
-        return std::unexpected{std::error_code{path.error()}};
-    }
+    static auto r = []() -> std::expected<std::filesystem::path, std::error_code> {
+        if (auto path = win32_GetModuleFileName()) {
+            return *path;
+        } else {
+            return std::unexpected{std::error_code{path.error()}};
+        }
+    }();
+
+    return r;
 }
 
 [[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> data_dir() noexcept
 {
-    // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
-    // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
-    if (auto path = win32_SHGetKnownFolderPath(FOLDERID_LocalAppData)) {
-        return *path / get_application_vendor() / get_application_name() / "";
-    } else {
-        return std::unexpected{std::error_code{path.error()}};
-    }
+    static auto r = []() -> std::expected<std::filesystem::path, std::error_code> {
+        // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
+        // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
+        if (auto path = win32_SHGetKnownFolderPath(FOLDERID_LocalAppData)) {
+            return *path / get_application_vendor() / get_application_name() / "";
+        } else {
+            return std::unexpected{std::error_code{path.error()}};
+        }
+    }();
+
+    return r;
 }
 
 [[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> log_dir() noexcept

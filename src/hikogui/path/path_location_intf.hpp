@@ -30,12 +30,11 @@ hi_warning_ignore_msvc(4702);
 
 hi_export_module(hikogui.path.path_location : intf);
 
-hi_export namespace hi { inline namespace v1 {
-
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
-concept path_range =
-    std::ranges::input_range<Context> and
+concept path_range = std::ranges::input_range<Context> and
     std::convertible_to<std::ranges::range_value_t<std::remove_cvref_t<Context>>, std::filesystem::path> and
     not std::convertible_to<Context, std::filesystem::path>;
 
@@ -48,7 +47,7 @@ concept path_range =
  */
 template<path_range Locations>
 [[nodiscard]] hi_inline generator<std::filesystem::path>
-find_path(Locations &&locations, std::filesystem::path const& ref) noexcept
+find_path(Locations&& locations, std::filesystem::path const& ref) noexcept
 {
     if (ref.is_absolute()) {
         if (std::filesystem::exists(ref)) {
@@ -99,7 +98,7 @@ find_path(std::filesystem::path const& location, std::filesystem::path const& re
 template<path_range Locations>
 [[nodiscard]] hi_inline std::filesystem::path get_path(Locations&& locations, std::filesystem::path const& ref)
 {
-    for (auto const &path: find_path(locations, ref)) {
+    for (auto const& path : find_path(locations, ref)) {
         return path;
     }
 
@@ -116,7 +115,7 @@ template<path_range Locations>
  */
 [[nodiscard]] hi_inline std::filesystem::path get_path(std::filesystem::path const& location, std::filesystem::path const& ref)
 {
-    for (auto const &path: find_path(location, ref)) {
+    for (auto const& path : find_path(location, ref)) {
         return path;
     }
 
@@ -131,13 +130,15 @@ template<path_range Locations>
  * @return The full path to the first filesystem-object found in the location.
  * @throws io_error When a path is not found.
  */
-[[nodiscard]] hi_inline std::filesystem::path get_path(std::expected<std::filesystem::path, std::error_code> const& location, std::filesystem::path const& ref)
+[[nodiscard]] hi_inline std::filesystem::path
+get_path(std::expected<std::filesystem::path, std::error_code> const& location, std::filesystem::path const& ref)
 {
     if (not location) {
-        throw io_error(std::format("Could not find '{}' because of an error at the location: {}", ref.string(), location.error().message()));
+        throw io_error(
+            std::format("Could not find '{}' because of an error at the location: {}", ref.string(), location.error().message()));
     }
 
-    for (auto const &path: find_path(*location, ref)) {
+    for (auto const& path : find_path(*location, ref)) {
         return path;
     }
 
@@ -145,15 +146,15 @@ template<path_range Locations>
 }
 
 /** Get a string representation of a search-path.
- * 
+ *
  * @param locations A range of std::filesystem::path elements.
  * @return A string of semicolon ';' separated paths.
  */
 template<path_range Locations>
-[[nodiscard]] hi_inline std::string to_string(Locations &&locations) noexcept
+[[nodiscard]] hi_inline std::string to_string(Locations&& locations) noexcept
 {
     auto r = std::string{};
-    for (auto const& path: locations) {
+    for (auto const& path : locations) {
         if (not r.empty()) {
             r += ";";
         }
@@ -217,24 +218,28 @@ template<path_range Locations>
  */
 [[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir() noexcept
 {
-    auto const executable_dir_ = executable_dir();
-    if (not executable_dir_) {
+    static auto r = []() -> std::optional<std::filesystem::path> {
+        auto const executable_dir_ = executable_dir();
+        if (not executable_dir_) {
+            return std::nullopt;
+        }
+
+        // If the cmake_install.cmake file exists then the executable is located in a build directory.
+        if (auto tmp = parse_cmake_install(*executable_dir_ / "cmake_install.cmake")) {
+            return tmp->source_dir;
+        }
+
+        // When using a cmake multi-config generator The executable lives in the
+        // ./Debug/, ./Release/ or ./RelWithDebInfo/ directory.
+        // So, the cmake_install.cmake file is located one directory up.
+        if (auto tmp = parse_cmake_install(*executable_dir_ / ".." / "cmake_install.cmake")) {
+            return tmp->source_dir;
+        }
+
         return std::nullopt;
-    }
+    }();
 
-    // If the cmake_install.cmake file exists then the executable is located in a build directory.
-    if (auto tmp = parse_cmake_install(*executable_dir_ / "cmake_install.cmake")) {
-        return tmp->source_dir;
-    }
-
-    // When using a cmake multi-config generator The executable lives in the
-    // ./Debug/, ./Release/ or ./RelWithDebInfo/ directory.
-    // So, the cmake_install.cmake file is located one directory up.
-    if (auto tmp = parse_cmake_install(*executable_dir_ / ".." / "cmake_install.cmake")) {
-        return tmp->source_dir;
-    }
-
-    return std::nullopt;
+    return r;
 }
 
 [[nodiscard]] hi_inline std::filesystem::path library_source_dir() noexcept
@@ -249,6 +254,7 @@ template<path_range Locations>
     return hi::library_source_dir() / "tests" / "data";
 }
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
 
 hi_warning_pop();
