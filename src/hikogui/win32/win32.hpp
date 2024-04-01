@@ -4,11 +4,17 @@
 
 #pragma once
 
-#include "base.hpp" // export
+#include "hresult_error_intf.hpp" // export
+#include "hresult_error_impl.hpp" // export
 #include "libloaderapi.hpp" // export
 #include "processthreadsapi.hpp" // export
+#include "shlobj_core.hpp" // export
+#include "stringapiset.hpp" // export
 #include "synchapi.hpp" // export
-#include "synchapi.h" // export
+#include "utility.hpp" // export
+#include "win32_error_intf.hpp" // export
+#include "win32_error_impl.hpp" // export
+#include "winbase.hpp" // export
 #include "winnls.hpp" // export
 #include "winreg.hpp" // export
 #include "winuser.hpp" // export

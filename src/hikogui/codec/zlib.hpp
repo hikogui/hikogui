@@ -25,9 +25,9 @@ hi_export namespace hi { inline namespace v1 {
 
     auto offset = 0_uz;
 
-    hilet header = make_placement_ptr<zlib_header>(bytes, offset);
+    auto const header = make_placement_ptr<zlib_header>(bytes, offset);
 
-    hilet header_chksum = header->CMF * 256 + header->FLG;
+    auto const header_chksum = header->CMF * 256 + header->FLG;
     hi_check(header_chksum % 31 == 0, "zlib header checksum failed.");
 
     hi_check((header->CMF & 0xf) == 8, "zlib compression method must be 8");

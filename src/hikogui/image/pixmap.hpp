@@ -151,7 +151,7 @@ public:
     {
         constexpr auto propogate_allocator = std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value;
 
-        hilet use_this_allocator = this->_allocator == other._allocator or not propogate_allocator;
+        auto const use_this_allocator = this->_allocator == other._allocator or not propogate_allocator;
 
         if (&other == this) {
             return *this;
@@ -168,7 +168,7 @@ public:
 
         } else {
             auto& new_allocator = propogate_allocator ? const_cast<allocator_type&>(other._allocator) : this->_allocator;
-            hilet new_capacity = other.size();
+            auto const new_capacity = other.size();
 
             value_type *new_data = nullptr;
             try {
@@ -235,7 +235,7 @@ public:
             return *this;
 
         } else {
-            hilet new_capacity = other.size();
+            auto const new_capacity = other.size();
             value_type *new_data = nullptr;
             try {
                 new_data = std::allocator_traits<allocator_type>::allocate(_allocator, new_capacity);
@@ -472,7 +472,7 @@ public:
         hi_axiom(x + new_width <= _width);
         hi_axiom(y + new_height <= _height);
 
-        hilet p = _data + y * _width + x;
+        auto const p = _data + y * _width + x;
         return {p, new_width, new_height, _width, allocator};
     }
 
@@ -499,7 +499,7 @@ public:
             return;
         }
 
-        hilet new_capacity = size();
+        auto const new_capacity = size();
         value_type *new_data = nullptr;
         try {
             new_data = std::allocator_traits<allocator_type>::allocate(_allocator, new_capacity);
@@ -510,8 +510,8 @@ public:
         }
 
         std::destroy(begin(), end());
-        hilet old_capacity = std::exchange(_capacity, new_capacity);
-        hilet old_data = std::exchange(_data, new_data);
+        auto const old_capacity = std::exchange(_capacity, new_capacity);
+        auto const old_data = std::exchange(_data, new_data);
         std::allocator_traits<allocator_type>::deallocate(_allocator, old_data, old_capacity);
     }
 

@@ -3,29 +3,30 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "pixmap.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
-TEST(pixmap, construct_empty)
+TEST_SUITE(pixmap) {
+
+TEST_CASE(construct_empty)
 {
     auto a = hi::pixmap<uint8_t>{};
-    ASSERT_TRUE(a.empty());
-    ASSERT_EQ(a.width(), 0);
-    ASSERT_EQ(a.height(), 0);
-    ASSERT_EQ(a.size(), 0);
-    ASSERT_EQ(a.capacity(), 0);
+    REQUIRE(a.empty());
+    REQUIRE(a.width() == 0);
+    REQUIRE(a.height() == 0);
+    REQUIRE(a.size() == 0);
+    REQUIRE(a.capacity() == 0);
 }
 
-TEST(pixmap, construct_zero_fill)
+TEST_CASE(construct_zero_fill)
 {
     auto a = hi::pixmap<uint8_t>{4, 3};
-    ASSERT_FALSE(a.empty());
-    ASSERT_EQ(a.width(), 4);
-    ASSERT_EQ(a.height(), 3);
-    ASSERT_EQ(a.size(), 12);
-    ASSERT_EQ(a.capacity(), 12);
+    REQUIRE(not a.empty());
+    REQUIRE(a.width() == 4);
+    REQUIRE(a.height() == 3);
+    REQUIRE(a.size() == 12);
+    REQUIRE(a.capacity() == 12);
     for (auto const& pixel : a) {
-        ASSERT_EQ(pixel, 0);
+        REQUIRE(pixel == 0);
     }
 }
 
@@ -39,167 +40,167 @@ static auto make_test_pixmap()
     return r;
 }
 
-TEST(pixmap, copy_construct)
+TEST_CASE(copy_construct)
 {
     auto a = make_test_pixmap();
     auto b = a;
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.size(), 12);
-    ASSERT_EQ(b.capacity(), 12);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.size() == 12);
+    REQUIRE(b.capacity() == 12);
 
     auto i = uint8_t{0};
     for (auto const& pixel : b) {
-        ASSERT_EQ(pixel, i);
+        REQUIRE(pixel == i);
         ++i;
     }
 }
 
-TEST(pixmap, construct_from_data)
+TEST_CASE(construct_from_data)
 {
     auto a = make_test_pixmap();
 
     // Create a smaller image, last argument is the stride.
     auto b = hi::pixmap<uint8_t>{a.data(), 3, 3, 4};
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 3);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.size(), 9);
-    ASSERT_EQ(b.capacity(), 9);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 3);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.size() == 9);
+    REQUIRE(b.capacity() ==9);
 
-    ASSERT_EQ(b(0, 0), 0);
-    ASSERT_EQ(b(1, 0), 1);
-    ASSERT_EQ(b(2, 0), 2);
-    ASSERT_EQ(b(0, 1), 4);
-    ASSERT_EQ(b(1, 1), 5);
-    ASSERT_EQ(b(2, 1), 6);
-    ASSERT_EQ(b(0, 2), 8);
-    ASSERT_EQ(b(1, 2), 9);
-    ASSERT_EQ(b(2, 2), 10);
+    REQUIRE(b(0, 0) == 0);
+    REQUIRE(b(1, 0) == 1);
+    REQUIRE(b(2, 0) == 2);
+    REQUIRE(b(0, 1) == 4);
+    REQUIRE(b(1, 1) == 5);
+    REQUIRE(b(2, 1) == 6);
+    REQUIRE(b(0, 2) == 8);
+    REQUIRE(b(1, 2) == 9);
+    REQUIRE(b(2, 2) == 10);
 }
 
-TEST(pixmap, move_construct)
+TEST_CASE(move_construct)
 {
     auto a = make_test_pixmap();
     auto b = std::move(a);
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.size(), 12);
-    ASSERT_EQ(b.capacity(), 12);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.size() == 12);
+    REQUIRE(b.capacity() == 12);
 
-    ASSERT_TRUE(a.empty());
-    ASSERT_EQ(a.capacity(), 0);
+    REQUIRE(a.empty());
+    REQUIRE(a.capacity() == 0);
 
     auto i = uint8_t{0};
     for (auto const& pixel : b) {
-        ASSERT_EQ(pixel, i);
+        REQUIRE(pixel == i);
         ++i;
     }
 }
 
-TEST(pixmap, copy_assign)
+TEST_CASE(copy_assign)
 {
     auto a = make_test_pixmap();
     auto b = hi::pixmap<uint8_t>{10, 8};
 
-    ASSERT_EQ(b.size(), 80);
-    ASSERT_EQ(b.capacity(), 80);
+    REQUIRE(b.size() == 80);
+    REQUIRE(b.capacity() == 80);
 
     b = a;
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.size(), 12);
-    ASSERT_EQ(b.capacity(), 80);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.size() == 12);
+    REQUIRE(b.capacity() == 80);
 
     auto i = uint8_t{0};
     for (auto const& pixel : b) {
-        ASSERT_EQ(pixel, i);
+        REQUIRE(pixel == i);
         ++i;
     }
 }
 
-TEST(pixmap, move_assign)
+TEST_CASE(move_assign)
 {
     auto a = make_test_pixmap();
     auto b = hi::pixmap<uint8_t>{10, 8};
 
-    ASSERT_EQ(b.size(), 80);
-    ASSERT_EQ(b.capacity(), 80);
+    REQUIRE(b.size() == 80);
+    REQUIRE(b.capacity() == 80);
 
     b = std::move(a);
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.size(), 12);
-    ASSERT_EQ(b.capacity(), 12);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.size() == 12);
+    REQUIRE(b.capacity() == 12);
 
     auto i = uint8_t{0};
     for (auto const& pixel : b) {
-        ASSERT_EQ(pixel, i);
+        REQUIRE(pixel == i);
         ++i;
     }
 }
 
-TEST(pixmap, shrink_to_fit)
+TEST_CASE(shrink_to_fit)
 {
     auto a = make_test_pixmap();
     auto b = hi::pixmap<uint8_t>{10, 8};
     b = a;
 
-    ASSERT_EQ(b.capacity(), 80);
+    REQUIRE(b.capacity() == 80);
 
     b.shrink_to_fit();
 
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.size(), 12);
-    ASSERT_EQ(b.capacity(), 12);
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.size() == 12);
+    REQUIRE(b.capacity() == 12);
 }
 
-TEST(pixmap, clear)
+TEST_CASE(clear)
 {
     auto a = make_test_pixmap();
 
-    ASSERT_EQ(a.width(), 4);
-    ASSERT_EQ(a.height(), 3);
-    ASSERT_EQ(a.capacity(), 12);
+    REQUIRE(a.width() == 4);
+    REQUIRE(a.height() == 3);
+    REQUIRE(a.capacity() == 12);
 
     a.clear();
 
-    ASSERT_EQ(a.width(), 0);
-    ASSERT_EQ(a.height(), 0);
-    ASSERT_EQ(a.capacity(), 12);
+    REQUIRE(a.width() == 0);
+    REQUIRE(a.height() == 0);
+    REQUIRE(a.capacity() == 12);
 
     a.shrink_to_fit();
 
-    ASSERT_EQ(a.width(), 0);
-    ASSERT_EQ(a.height(), 0);
-    ASSERT_EQ(a.capacity(), 0);
-    ASSERT_EQ(a.data(), nullptr);
+    REQUIRE(a.width() == 0);
+    REQUIRE(a.height() == 0);
+    REQUIRE(a.capacity() == 0);
+    REQUIRE(a.data() == nullptr);
 }
 
-TEST(pixmap, subimage)
+TEST_CASE(subimage)
 {
     auto a = make_test_pixmap();
 
     {
         auto b = a.subimage(0, 0, 4, 3);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 4);
-        ASSERT_EQ(b.height(), 3);
-        ASSERT_EQ(b.capacity(), 12);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 4);
+        REQUIRE(b.height() == 3);
+        REQUIRE(b.capacity() == 12);
         auto i = uint8_t{0};
         for (auto& pixel : b) {
-            ASSERT_EQ(pixel, i);
+            REQUIRE(pixel == i);
             ++i;
         }
     }
@@ -207,52 +208,54 @@ TEST(pixmap, subimage)
     {
         auto b = a.subimage(0, 0, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.capacity(), 4);
-        ASSERT_EQ(b(0, 0), 0);
-        ASSERT_EQ(b(1, 0), 1);
-        ASSERT_EQ(b(0, 1), 4);
-        ASSERT_EQ(b(1, 1), 5);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.capacity() == 4);
+        REQUIRE(b(0, 0) == 0);
+        REQUIRE(b(1, 0) == 1);
+        REQUIRE(b(0, 1) == 4);
+        REQUIRE(b(1, 1) == 5);
     }
 
     {
         auto b = a.subimage(1, 0, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.capacity(), 4);
-        ASSERT_EQ(b(0, 0), 1);
-        ASSERT_EQ(b(1, 0), 2);
-        ASSERT_EQ(b(0, 1), 5);
-        ASSERT_EQ(b(1, 1), 6);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.capacity() == 4);
+        REQUIRE(b(0, 0) == 1);
+        REQUIRE(b(1, 0) == 2);
+        REQUIRE(b(0, 1) == 5);
+        REQUIRE(b(1, 1) == 6);
     }
 
     {
         auto b = a.subimage(0, 1, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.capacity(), 4);
-        ASSERT_EQ(b(0, 0), 4);
-        ASSERT_EQ(b(1, 0), 5);
-        ASSERT_EQ(b(0, 1), 8);
-        ASSERT_EQ(b(1, 1), 9);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.capacity() == 4);
+        REQUIRE(b(0, 0) == 4);
+        REQUIRE(b(1, 0) == 5);
+        REQUIRE(b(0, 1) == 8);
+        REQUIRE(b(1, 1) == 9);
     }
 
     {
         auto b = a.subimage(1, 1, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.capacity(), 4);
-        ASSERT_EQ(b(0, 0), 5);
-        ASSERT_EQ(b(1, 0), 6);
-        ASSERT_EQ(b(0, 1), 9);
-        ASSERT_EQ(b(1, 1), 10);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.capacity() == 4);
+        REQUIRE(b(0, 0) == 5);
+        REQUIRE(b(1, 0) == 6);
+        REQUIRE(b(0, 1) == 9);
+        REQUIRE(b(1, 1) == 10);
     }
 }
+
+};

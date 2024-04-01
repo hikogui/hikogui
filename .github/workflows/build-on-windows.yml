@@ -58,7 +58,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
     
       - name: 🔽 Install Vulkan SDK
-        uses: jakoch/install-vulkan-sdk-action@v1.0.2 # https://github.com/jakoch/install-vulkan-sdk-action/
+        uses: jakoch/install-vulkan-sdk-action@v1.0.3 # https://github.com/jakoch/install-vulkan-sdk-action/
         with: 
           vulkan_version: latest
           optional_components: com.lunarg.vulkan.vma
@@ -117,13 +117,9 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config Debug --parallel 1
     
-      - name: ✔ ❌✔️ Google-Test Debug
-        working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_gtests-deb "--gtest_output=xml:${{github.workspace}}\result_gtests_deb_${{env.MATRIX_ID}}.xml"
-
       - name: ✔ ❌✔️ Hiko-Test Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_htests-deb "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
+        run: Debug\hikogui_htests-dbg "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Debug
         working-directory: ${{env.BUILD_DIR}}
@@ -133,10 +129,6 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config RelWithDebInfo --parallel 1
     
-      - name: ✔ ❌✔️ Google-Test RelWithDebInfo
-        working-directory: ${{env.BUILD_DIR}}
-        run: RelWithDebInfo\hikogui_gtests-rdi "--gtest_output=xml:${{github.workspace}}\result_gtests_rdi_${{env.MATRIX_ID}}.xml"
-
       - name: ✔ ❌✔️ Hiko-Test RelWithDebInfo
         working-directory: ${{env.BUILD_DIR}}
         run: RelWithDebInfo\hikogui_htests-rdi "--gtest_output=xml:${{github.workspace}}\result_htests_rdi_${{env.MATRIX_ID}}.xml"
@@ -149,10 +141,6 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config Release --parallel 1
     
-      - name: ✔ ❌✔️ Google-Test Release
-        working-directory: ${{env.BUILD_DIR}}
-        run: Release\hikogui_gtests-rel "--gtest_output=xml:${{github.workspace}}\result_gtests_rel${{env.MATRIX_ID}}.xml"
-
       - name: ✔ ❌✔️ Hiko-Test Release
         working-directory: ${{env.BUILD_DIR}}
         run: Release\hikogui_htests-rel "--gtest_output=xml:${{github.workspace}}\result_htests_rel${{env.MATRIX_ID}}.xml"
@@ -182,14 +170,13 @@ jobs:
           --excluded_sources=src\*\*_tests.cpp ^
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\build ^
-          --cover_children ^
-          -- ctest.exe --build-config=Debug
+          --working_dir=${{env.BUILD_DIR}} ^
+          -- ${{env.BUILD_DIR}}\Debug\hikogui_htests-dbg
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
-        uses: wandalen/wretry.action@v1 # https://github.com/wandalen/wretry.action
+        uses: wandalen/wretry.action@v3 # https://github.com/wandalen/wretry.action
         with:
           attempt_limit: 10
           action: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action

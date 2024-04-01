@@ -28,7 +28,7 @@ hi_export namespace hi { inline namespace v1 {
     if (actual_policy == hi::policy::unspecified) {
         actual_policy = policy();
     }
-    hilet actual_policy_ = actual_policy == hi::policy::low_power ? DXGI_GPU_PREFERENCE_MINIMUM_POWER :
+    auto const actual_policy_ = actual_policy == hi::policy::low_power ? DXGI_GPU_PREFERENCE_MINIMUM_POWER :
         actual_policy == hi::policy::high_performance             ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE :
                                                                     DXGI_GPU_PREFERENCE_UNSPECIFIED;
 
@@ -38,7 +38,7 @@ hi_export namespace hi { inline namespace v1 {
         return r;
     }
     hi_assert_not_null(factory);
-    hilet d1 = defer([&] {
+    auto const d1 = defer([&] {
         factory->Release();
     });
 
@@ -48,7 +48,7 @@ hi_export namespace hi { inline namespace v1 {
         return r;
     }
     hi_assert_not_null(factory6);
-    hilet d2 = defer([&] {
+    auto const d2 = defer([&] {
         factory6->Release();
     });
 
@@ -56,7 +56,7 @@ hi_export namespace hi { inline namespace v1 {
     for (UINT i = 0;
          SUCCEEDED(factory6->EnumAdapterByGpuPreference(i, actual_policy_, __uuidof(IDXGIAdapter1), (void **)&adapter));
          ++i) {
-        hilet d3 = defer([&] {
+        auto const d3 = defer([&] {
             adapter->Release();
         });
 
@@ -92,10 +92,10 @@ hi_export namespace hi { inline namespace v1 {
     // Or they return only three languages, but not nessarily the first three
     // Or they do not update at runtime.
     // The only way that works is to get the registry from the Control Panel application.
-    if (hilet languages = win32_RegGetValue<std::vector<std::string>>(
+    if (auto const languages = win32_RegGetValue<std::vector<std::string>>(
             HKEY_CURRENT_USER, "Control Panel\\International\\User Profile", "Languages")) {
         r.reserve(languages->size());
-        for (hilet& language : *languages) {
+        for (auto const& language : *languages) {
             r.push_back(language_tag{language});
         }
     } else {
@@ -151,7 +151,7 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline hi::theme_mode os_settings::gather_theme_mode()
 {
-    if (hilet result = win32_RegGetValue<uint32_t>(
+    if (auto const result = win32_RegGetValue<uint32_t>(
             HKEY_CURRENT_USER,
             "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
             "AppsUseLightTheme")) {
@@ -234,17 +234,17 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline float os_settings::gather_double_click_distance()
 {
-    hilet width = GetSystemMetrics(SM_CXDOUBLECLK);
+    auto const width = GetSystemMetrics(SM_CXDOUBLECLK);
     if (width <= 0) {
         throw os_error("Could not retrieve SM_CXDOUBLECLK");
     }
 
-    hilet height = GetSystemMetrics(SM_CYDOUBLECLK);
+    auto const height = GetSystemMetrics(SM_CYDOUBLECLK);
     if (height <= 0) {
         throw os_error("Could not retrieve SM_CYDOUBLECLK");
     }
 
-    hilet diameter = std::max(width, height);
+    auto const diameter = std::max(width, height);
     return diameter * 0.5f;
 }
 
@@ -276,7 +276,7 @@ hi_export namespace hi { inline namespace v1 {
     // SPI_GETKEYBOARDSPEED values are between 0 (2.5 per/sec) to 31 (30 per/sec).
     constexpr auto bias = 2.5f;
     constexpr auto gain = 0.887f;
-    hilet rate = bias + r * gain;
+    auto const rate = bias + r * gain;
     return std::chrono::duration_cast<std::chrono::milliseconds>(1000ms / rate);
 }
 
@@ -284,7 +284,7 @@ hi_export namespace hi { inline namespace v1 {
 {
     using namespace std::literals::chrono_literals;
 
-    hilet r = GetCaretBlinkTime();
+    auto const r = GetCaretBlinkTime();
     if (r == 0) {
         throw os_error(std::format("Could not get caret blink time: {}", get_last_error_message()));
 
@@ -305,7 +305,7 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline float os_settings::gather_minimum_window_width()
 {
-    hilet width = GetSystemMetrics(SM_CXMINTRACK);
+    auto const width = GetSystemMetrics(SM_CXMINTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMINTRACK");
     }
@@ -314,7 +314,7 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline float os_settings::gather_minimum_window_height()
 {
-    hilet height = GetSystemMetrics(SM_CYMINTRACK);
+    auto const height = GetSystemMetrics(SM_CYMINTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMINTRACK");
     }
@@ -324,7 +324,7 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline float os_settings::gather_maximum_window_width()
 {
-    hilet width = GetSystemMetrics(SM_CXMAXTRACK);
+    auto const width = GetSystemMetrics(SM_CXMAXTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMAXTRACK");
     }
@@ -333,7 +333,7 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline float os_settings::gather_maximum_window_height()
 {
-    hilet height = GetSystemMetrics(SM_CYMAXTRACK);
+    auto const height = GetSystemMetrics(SM_CYMAXTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMAXTRACK");
     }
@@ -343,19 +343,19 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline uintptr_t os_settings::gather_primary_monitor_id()
 {
-    hilet origin = POINT{0, 0};
-    hilet monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
+    auto const origin = POINT{0, 0};
+    auto const monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
     return std::bit_cast<uintptr_t>(monitor);
 }
 
 [[nodiscard]] hi_inline aarectangle os_settings::gather_primary_monitor_rectangle()
 {
-    hilet width = GetSystemMetrics(SM_CXSCREEN);
+    auto const width = GetSystemMetrics(SM_CXSCREEN);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXSCREEN");
     }
 
-    hilet height = GetSystemMetrics(SM_CYSCREEN);
+    auto const height = GetSystemMetrics(SM_CYSCREEN);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYSCREEN");
     }
@@ -366,28 +366,28 @@ hi_export namespace hi { inline namespace v1 {
 
 [[nodiscard]] hi_inline aarectangle os_settings::gather_desktop_rectangle()
 {
-    hilet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
+    auto const primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
     if (primary_monitor_height == 0) {
         throw os_error("Could not retrieve SM_CYSCREEN");
     }
 
-    hilet left = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    hilet top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    auto const left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    auto const top = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
-    hilet width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    auto const width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXVIRTUALSCREEN");
     }
 
-    hilet height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    auto const height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYVIRTUALSCREEN");
     }
 
-    hilet bottom = top + height;
+    auto const bottom = top + height;
 
     // Calculate the bottom as compared to a y-axis up coordinate system.
-    hilet inv_bottom = primary_monitor_height - bottom; // 0, 600
+    auto const inv_bottom = primary_monitor_height - bottom; // 0, 600
     return aarectangle{
         narrow_cast<float>(left), narrow_cast<float>(inv_bottom), narrow_cast<float>(width), narrow_cast<float>(height)};
 }
@@ -396,10 +396,14 @@ hi_export namespace hi { inline namespace v1 {
 {
     using namespace std::literals;
 
-    hilet executable_path = executable_file().string();
-    hilet user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
+    auto const executable_file_ = executable_file();
+    if (not executable_file_) {
+        hi_log_error("Could not get path to executable: {}", executable_file_.error().message());
+        return policy::unspecified;
+    }
 
-    if (hilet result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_path)) {
+    auto const user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
+    if (auto const result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_file_->string())) {
         for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
             auto entry_sv = std::string_view{entry};
             if (entry_sv.starts_with("GpuPreference=")) {

@@ -3,24 +3,23 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "strings.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace hi;
-
-TEST(String, Split)
+TEST_SUITE(strings_suite)
 {
-    hilet result = split("path1/path2", '/');
-    hilet check_value = std::vector<std::string>{"path1", "path2"};
-    ASSERT_EQ(result, check_value);
+
+TEST_CASE(split_test)
+{
+    auto const result = hi::split("path1/path2", '/');
+    auto const check_value = std::vector<std::string>{"path1", "path2"};
+    REQUIRE(result == check_value);
 }
 
-TEST(String, Normalize_LF)
+TEST_CASE(normalize_lf_test)
 {
-    ASSERT_EQ(normalize_lf("hello\nworld\n\nFoo\n"), "hello\nworld\n\nFoo\n");
-    ASSERT_EQ(normalize_lf("hello\rworld\r\rFoo\r"), "hello\nworld\n\nFoo\n");
-    ASSERT_EQ(normalize_lf("hello\r\nworld\r\n\r\nFoo\r\n"), "hello\nworld\n\nFoo\n");
+    REQUIRE(hi::normalize_lf("hello\nworld\n\nFoo\n") == "hello\nworld\n\nFoo\n");
+    REQUIRE(hi::normalize_lf("hello\rworld\r\rFoo\r") == "hello\nworld\n\nFoo\n");
+    REQUIRE(hi::normalize_lf("hello\r\nworld\r\n\r\nFoo\r\n") == "hello\nworld\n\nFoo\n");
 }
+
+};

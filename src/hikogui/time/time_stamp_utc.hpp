@@ -40,9 +40,9 @@ struct time_stamp_utc {
         // With three samples gathered on the same CPU we should
         // have a TSC/UTC/TSC combination that was run inside a single time-slice.
         for (auto i = 0; i != 10; ++i) {
-            hilet tmp_tsc1 = time_stamp_count::now();
-            hilet tmp_tp = std::chrono::utc_clock::now();
-            hilet tmp_tsc2 = time_stamp_count::now();
+            auto const tmp_tsc1 = time_stamp_count::now();
+            auto const tmp_tp = std::chrono::utc_clock::now();
+            auto const tmp_tsc2 = time_stamp_count::now();
 
             if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
                 throw os_error("CPU Switch detected during get_sample(), which should never happen");
@@ -55,7 +55,7 @@ struct time_stamp_utc {
                 continue;
             }
 
-            hilet diff = tmp_tsc2.count() - tmp_tsc1.count();
+            auto const diff = tmp_tsc2.count() - tmp_tsc1.count();
 
             if (diff < shortest_diff) {
                 shortest_diff = diff;
@@ -84,16 +84,16 @@ struct time_stamp_utc {
     {
         auto i = tsc.cpu_id();
         if (i >= 0) {
-            hilet tsc_epoch = tsc_epochs[i].load(std::memory_order::relaxed);
+            auto const tsc_epoch = tsc_epochs[i].load(std::memory_order::relaxed);
             if (tsc_epoch != utc_nanoseconds{}) {
                 return tsc_epoch + tsc.time_since_epoch();
             }
         }
 
         // Fallback.
-        hilet ref_tp = std::chrono::utc_clock::now();
-        hilet ref_tsc = time_stamp_count::now();
-        hilet diff_ns = ref_tsc.time_since_epoch() - tsc.time_since_epoch();
+        auto const ref_tp = std::chrono::utc_clock::now();
+        auto const ref_tsc = time_stamp_count::now();
+        auto const diff_ns = ref_tsc.time_since_epoch() - tsc.time_since_epoch();
         return ref_tp - diff_ns;
     }
 
@@ -135,7 +135,7 @@ private:
 
         std::array<uint64_t, 16> frequencies;
         for (auto i = 0; i != frequencies.size();) {
-            hilet f = time_stamp_count::measure_frequency(1s);
+            auto const f = time_stamp_count::measure_frequency(1s);
             if (f != 0) {
                 frequencies[i] = f;
                 ++i;
@@ -146,10 +146,10 @@ private:
             }
         }
         std::ranges::sort(frequencies);
-        hilet iqr_size = frequencies.size() / 2;
-        hilet iqr_first = std::next(frequencies.cbegin(), frequencies.size() / 4);
-        hilet iqr_last = std::next(iqr_first, iqr_size);
-        hilet frequency = std::accumulate(iqr_first, iqr_last, uint64_t{0}) / iqr_size;
+        auto const iqr_size = frequencies.size() / 2;
+        auto const iqr_first = std::next(frequencies.cbegin(), frequencies.size() / 4);
+        auto const iqr_last = std::next(iqr_first, iqr_size);
+        auto const frequency = std::accumulate(iqr_first, iqr_last, uint64_t{0}) / iqr_size;
 
         time_stamp_count::set_frequency(frequency);
     }
@@ -160,17 +160,17 @@ private:
         set_thread_name("time_stamp_utc");
         subsystem_proc_frequency_calibration(stop_token);
 
-        hilet process_cpu_mask = process_affinity_mask();
+        auto const process_cpu_mask = process_affinity_mask();
 
         std::size_t next_cpu = 0;
         while (not stop_token.stop_requested()) {
-            hilet current_cpu = advance_thread_affinity(next_cpu);
+            auto const current_cpu = advance_thread_affinity(next_cpu);
 
             std::this_thread::sleep_for(100ms);
-            hilet lock = std::scoped_lock(time_stamp_utc::mutex);
+            auto const lock = std::scoped_lock(time_stamp_utc::mutex);
 
             time_stamp_count tsc;
-            hilet tp = time_stamp_utc::now(tsc);
+            auto const tp = time_stamp_utc::now(tsc);
             hi_assert(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
             tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);

@@ -74,7 +74,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
-        for (hilet& child : _children) {
+        for (auto const& child : _children) {
             co_yield *child.value;
         }
     }
@@ -106,10 +106,10 @@ public:
             _children.set_layout(shape, theme().baseline_adjustment());
         }
 
-        hilet overhang = context.redraw_overhang;
+        auto const overhang = context.redraw_overhang;
 
-        for (hilet& child : _children) {
-            hilet child_clipping_rectangle =
+        for (auto const& child : _children) {
+            auto const child_clipping_rectangle =
                 aarectangle{child.shape.x() - overhang, 0, child.shape.width() + overhang * 2, context.height() + overhang * 2};
 
             child.value->set_layout(context.transform(child.shape, transform_command::menu_item, child_clipping_rectangle));
@@ -124,12 +124,12 @@ public:
                 if (tab_button_has_focus()) {
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                     // line depending if that specific button is in focus or not.
-                    hilet focus_rectangle = aarectangle{0.0f, 0.0f, layout().rectangle().width(), theme().border_width()};
+                    auto const focus_rectangle = aarectangle{0.0f, 0.0f, layout().rectangle().width(), theme().border_width()};
                     context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
                 }
             }
 
-            for (hilet& child : _children) {
+            for (auto const& child : _children) {
                 hi_assert_not_null(child.value);
                 child.value->draw(context);
             }
@@ -143,7 +143,7 @@ public:
         if (mode() >= widget_mode::partial) {
             auto r = layout().contains(position) ? hitbox{id, _layout.elevation, hitbox_type::move_area} : hitbox{};
 
-            for (hilet& child : _children) {
+            for (auto const& child : _children) {
                 hi_assert_not_null(child.value);
                 r = child.value->hitbox_test_from_parent(position, r);
             }
@@ -196,7 +196,7 @@ private:
      */
     bool tab_button_has_focus() const noexcept
     {
-        for (hilet& cell : _children) {
+        for (auto const& cell : _children) {
             if (auto const *const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
                 if (c->focus() and c->value() == widget_value::on) {
                     return true;

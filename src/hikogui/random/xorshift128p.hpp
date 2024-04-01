@@ -41,7 +41,7 @@ public:
     [[nodiscard]] uint64_t next() noexcept
     {
         auto s = _state[0];
-        hilet t = _state[1];
+        auto const t = _state[1];
 
         s ^= s << 23; // a
         s ^= s >> 17; // b

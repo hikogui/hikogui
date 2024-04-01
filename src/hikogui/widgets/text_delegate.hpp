@@ -80,7 +80,8 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -116,7 +117,8 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -152,7 +154,8 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -188,7 +191,8 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      */
-    explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -216,10 +220,11 @@ private:
  * @param value The observer value which represents the displayed text.
  * @return shared pointer to a text delegate
  */
-std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept
-    requires requires { default_text_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)}; }
+template<typename Value>
+std::shared_ptr<text_delegate> make_default_text_delegate(Value&& value) noexcept
+    requires requires { default_text_delegate<observer_decay_t<Value>>{std::forward<Value>(value)}; }
 {
-    return std::make_shared<default_text_delegate<observer_decay_t<decltype(value)>>>(hi_forward(value));
+    return std::make_shared<default_text_delegate<observer_decay_t<Value>>>(std::forward<Value>(value));
 }
 
 }} // namespace hi::v1

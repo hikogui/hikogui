@@ -110,7 +110,7 @@ public:
      */
     widget &push_back(std::unique_ptr<widget> widget) noexcept
     {
-        auto it = std::max_element(_grid.begin(), _grid.end(), [](hilet &a, hilet &b) {
+        auto it = std::max_element(_grid.begin(), _grid.end(), [](auto const &a, auto const &b) {
             return a.last_column < b.last_column;
         });
 
@@ -147,7 +147,7 @@ public:
      */
     widget &push_bottom(std::unique_ptr<widget> widget) noexcept
     {
-        auto it = std::max_element(_grid.begin(), _grid.end(), [](hilet &a, hilet &b) {
+        auto it = std::max_element(_grid.begin(), _grid.end(), [](auto const &a, auto const &b) {
             return a.last_row < b.last_row;
         });
 
@@ -203,7 +203,7 @@ public:
     template<typename Widget, typename... Args>
     Widget& emplace(std::string_view address, Args&&...args)
     {
-        hilet[column_first, row_first, column_last, row_last] = parse_spreadsheet_range(address);
+        auto const[column_first, row_first, column_last, row_last] = parse_spreadsheet_range(address);
         return emplace<Widget>(column_first, row_first, column_last, row_last, std::forward<Args>(args)...);
     }
 
@@ -279,7 +279,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
-        for (hilet& cell : _grid) {
+        for (auto const& cell : _grid) {
             co_yield *cell.value;
         }
     }
@@ -301,7 +301,7 @@ public:
             _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
 
-        for (hilet& cell : _grid) {
+        for (auto const& cell : _grid) {
             cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
@@ -309,7 +309,7 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible) {
-            for (hilet& cell : _grid) {
+            for (auto const& cell : _grid) {
                 cell.value->draw(context);
             }
         }
@@ -321,7 +321,7 @@ public:
 
         if (mode() >= widget_mode::partial) {
             auto r = hitbox{};
-            for (hilet& cell : _grid) {
+            for (auto const& cell : _grid) {
                 r = cell.value->hitbox_test_from_parent(position, r);
             }
             return r;

@@ -60,14 +60,14 @@ public:
         hi_not_implemented();
         return f32x4{};
         //if (to_bool(++_counter & 1)) {
-        //    hilet rand = _state.next<u64x2>();
-        //    hilet spdf = i16x16{bit_cast<i8x16>(rand)};
-        //    hilet [spdf1, spdf2] = spdf.split<int16_t>();
+        //    auto const rand = _state.next<u64x2>();
+        //    auto const spdf = i16x16{bit_cast<i8x16>(rand)};
+        //    auto const [spdf1, spdf2] = spdf.split<int16_t>();
         //
         //    _tpdf = spdf1 + spdf2;
         //    return f32x4{i32x4{_tpdf}} * _multiplier;
         //} else {
-        //    hilet second_tpdf = bit_cast<i16x8>(bit_cast<u64x2>(_tpdf).yx());
+        //    auto const second_tpdf = bit_cast<i16x8>(bit_cast<u64x2>(_tpdf).yx());
         //    return f32x4{i32x4{second_tpdf}} * _multiplier;
         //}
     }

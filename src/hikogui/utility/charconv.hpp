@@ -28,10 +28,10 @@ template<std::integral T>
 {
     std::array<char, 21> buffer;
 
-    hilet first = buffer.data();
-    hilet last = first + buffer.size();
+    auto const first = buffer.data();
+    auto const last = first + buffer.size();
 
-    hilet[new_last, ec] = std::to_chars(first, last, value);
+    auto const[new_last, ec] = std::to_chars(first, last, value);
     hi_assert(ec == std::errc{});
 
     auto r = std::string{};
@@ -50,10 +50,10 @@ template<std::floating_point T>
 {
     std::array<char, 128> buffer;
 
-    hilet first = buffer.data();
-    hilet last = first + buffer.size();
+    auto const first = buffer.data();
+    auto const last = first + buffer.size();
 
-    hilet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
+    auto const[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
     hi_assert(ec == std::errc{});
 
     auto r = std::string{};
@@ -74,10 +74,10 @@ template<std::integral T>
 {
     auto value = T{};
 
-    hilet first = str.data();
-    hilet last = first + ssize(str);
+    auto const first = str.data();
+    auto const last = first + ssize(str);
 
-    hilet[new_last, ec] = std::from_chars(first, last, value, base);
+    auto const[new_last, ec] = std::from_chars(first, last, value, base);
     if (ec != std::errc{} or new_last != last) {
         throw parse_error("Can not convert string to integer");
     }
@@ -97,10 +97,10 @@ template<std::floating_point T>
 {
     T value;
 
-    hilet first = str.data();
-    hilet last = first + ssize(str);
+    auto const first = str.data();
+    auto const last = first + ssize(str);
 
-    hilet[new_last, ec] = std::from_chars(first, last, value);
+    auto const[new_last, ec] = std::from_chars(first, last, value);
     if (ec != std::errc{} or new_last != last) {
         throw parse_error("Can not convert string to floating point");
     }

@@ -110,8 +110,8 @@ public:
      */
     [[nodiscard]] generator<language_tag> canonical_variants() const noexcept
     {
-        hilet check = expand();
-        for (hilet& tag : variants()) {
+        auto const check = expand();
+        for (auto const& tag : variants()) {
             if (tag.expand() == check) {
                 co_yield tag;
             }
@@ -125,9 +125,9 @@ public:
         auto r = make_vector(variants());
 
         // And languages variants from expanded variants.
-        for (hilet variant : variants()) {
+        for (auto const variant : variants()) {
             auto expanded_variant = variant.expand();
-            for (hilet expanded_variant_variants : expanded_variant.variants()) {
+            for (auto const expanded_variant_variants : expanded_variant.variants()) {
                 if (std::find(r.begin(), r.end(), expanded_variant_variants) == r.end()) {
                     r.push_back(expanded_variant_variants);
                 }
@@ -147,7 +147,7 @@ public:
     [[nodiscard]] language_tag shrink() const noexcept
     {
         auto last_variant = *this;
-        for (hilet& variant : canonical_variants()) {
+        for (auto const& variant : canonical_variants()) {
             last_variant = variant;
         }
         return last_variant;
@@ -244,7 +244,7 @@ struct std::formatter<std::vector<hi::language_tag>, char> : std::formatter<std:
     auto format(std::vector<hi::language_tag> const& t, auto& fc) const
     {
         auto r = std::string{};
-        for (hilet language : t) {
+        for (auto const language : t) {
             if (not r.empty()) {
                 r += ", ";
             }

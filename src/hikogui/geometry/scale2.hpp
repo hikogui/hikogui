@@ -50,8 +50,8 @@ public:
      */
     [[nodiscard]] constexpr static scale2 uniform(extent2 src_extent, extent2 dst_extent) noexcept
     {
-        hilet non_uniform_scale = f32x4{dst_extent}.xyxy() / f32x4{src_extent}.xyxy();
-        hilet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
+        auto const non_uniform_scale = f32x4{dst_extent}.xyxy() / f32x4{src_extent}.xyxy();
+        auto const uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
         return scale2{uniform_scale};
     }
 

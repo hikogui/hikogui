@@ -158,11 +158,11 @@ public:
             _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            hilet check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            hilet minus_glyph_bb = _minus_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const minus_glyph_bb = _minus_glyph.get_metrics().bounding_rectangle * theme().icon_size();
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
         super::set_layout(context);

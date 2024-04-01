@@ -3,23 +3,24 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "jsonpath.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
-using namespace hi;
+TEST_SUITE(jsonpath_suite) {
 
-TEST(jsonpath, parse)
+TEST_CASE(parse)
 {
-    ASSERT_EQ(to_string(jsonpath("$.store.book[*].author")), "$['store']['book'][*]['author']");
-    ASSERT_EQ(to_string(jsonpath("$..author")), "$..['author']");
-    ASSERT_EQ(to_string(jsonpath("$.store.*")), "$['store'][*]");
-    ASSERT_EQ(to_string(jsonpath("$['store'].*")), "$['store'][*]");
-    ASSERT_EQ(to_string(jsonpath("$['store','author'].*")), "$['store','author'][*]");
-    ASSERT_EQ(to_string(jsonpath("$.store..price")), "$['store']..['price']");
-    ASSERT_EQ(to_string(jsonpath("$..book[2]")), "$..['book'][2]");
-    ASSERT_EQ(to_string(jsonpath("$..book[-1]")), "$..['book'][-1]");
-    ASSERT_EQ(to_string(jsonpath("$..book[-1:]")), "$..['book'][-1:e:1]");
-    ASSERT_EQ(to_string(jsonpath("$..book[0,1]")), "$..['book'][0,1]");
-    ASSERT_EQ(to_string(jsonpath("$..book[:2]")), "$..['book'][0:2:1]");
-    ASSERT_EQ(to_string(jsonpath("$..*")), "$..[*]");
+    REQUIRE(to_string(hi::jsonpath("$.store.book[*].author")) == "$['store']['book'][*]['author']");
+    REQUIRE(to_string(hi::jsonpath("$..author")) == "$..['author']");
+    REQUIRE(to_string(hi::jsonpath("$.store.*")) == "$['store'][*]");
+    REQUIRE(to_string(hi::jsonpath("$['store'].*")) == "$['store'][*]");
+    REQUIRE(to_string(hi::jsonpath("$['store','author'].*")) == "$['store','author'][*]");
+    REQUIRE(to_string(hi::jsonpath("$.store..price")) == "$['store']..['price']");
+    REQUIRE(to_string(hi::jsonpath("$..book[2]")) == "$..['book'][2]");
+    REQUIRE(to_string(hi::jsonpath("$..book[-1]")) == "$..['book'][-1]");
+    REQUIRE(to_string(hi::jsonpath("$..book[-1:]")) == "$..['book'][-1:e:1]");
+    REQUIRE(to_string(hi::jsonpath("$..book[0,1]")) == "$..['book'][0,1]");
+    REQUIRE(to_string(hi::jsonpath("$..book[:2]")) == "$..['book'][0:2:1]");
+    REQUIRE(to_string(hi::jsonpath("$..*")) == "$..[*]");
 }
+
+};

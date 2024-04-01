@@ -26,19 +26,19 @@ public:
 
     [[nodiscard]] friend constexpr auto operator<=>(pcm_format const &lhs, pcm_format const &rhs) noexcept
     {
-        if (hilet tmp = lhs._floating_point <=> rhs._floating_point; tmp != std::strong_ordering::equal) {
+        if (auto const tmp = lhs._floating_point <=> rhs._floating_point; tmp != std::strong_ordering::equal) {
             return tmp;
         }
-        if (hilet tmp = lhs._num_major_bits <=> rhs._num_major_bits; tmp != std::strong_ordering::equal) {
+        if (auto const tmp = lhs._num_major_bits <=> rhs._num_major_bits; tmp != std::strong_ordering::equal) {
             return tmp;
         }
-        if (hilet tmp = lhs._num_minor_bits <=> rhs._num_minor_bits; tmp != std::strong_ordering::equal) {
+        if (auto const tmp = lhs._num_minor_bits <=> rhs._num_minor_bits; tmp != std::strong_ordering::equal) {
             return tmp;
         }
-        if (hilet tmp = lhs._num_bytes <=> rhs._num_bytes; tmp != std::strong_ordering::equal) {
+        if (auto const tmp = lhs._num_bytes <=> rhs._num_bytes; tmp != std::strong_ordering::equal) {
             return tmp;
         }
-        if (hilet tmp = lhs._lsb <=> rhs._lsb; tmp != std::strong_ordering::equal) {
+        if (auto const tmp = lhs._lsb <=> rhs._lsb; tmp != std::strong_ordering::equal) {
             return tmp;
         }
         return lhs._lsb <=> rhs._lsb;

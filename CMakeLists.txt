@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.25)
 # Configure early CMAKE paths
 #-------------------------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
 #-------------------------------------------------------------------
 # Build Options
@@ -37,14 +37,14 @@ else()
 endif()
 
 # vcpkg.json is the primary source for version data
-file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
 string(JSON HI_LIB_NAME     GET ${VCPKG_JSON_STRING} "name")
 string(JSON HI_LIB_VERSION  GET ${VCPKG_JSON_STRING} "version")
 string(JSON HI_LIB_LICENSE  GET ${VCPKG_JSON_STRING} "license")
 string(JSON HI_LIB_DESC     GET ${VCPKG_JSON_STRING} "description")
 string(JSON HI_LIB_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
 
-configure_file("${CMAKE_SOURCE_DIR}/CMake/packaging/package.json.in" "package.json" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/CMake/packaging/package.json.in" "package.json" @ONLY)
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/package.json PACKAGE_JSON_STRING)
 string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
 string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
@@ -65,7 +65,7 @@ include(TargetResources)
 
 # disable adding CTest build targets like "NightlyStart" (before ctest include)
 set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
-configure_file("${CMAKE_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ctest/CTestCustom.cmake.in" "CTestCustom.cmake" @ONLY)
 include(CTest)
 
 #-------------------------------------------------------------------
@@ -73,30 +73,8 @@ include(CTest)
 #-------------------------------------------------------------------
 
 if(BUILD_TESTING)
-    #
-    # GoogleTest - non-vcpkg, directly build from externals
-    #
-    set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
-    set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
-    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG v1.13.0)
-    FetchContent_MakeAvailable(googletest)
-
-    include(GoogleTest)
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_target_properties(gtest      PROPERTIES FOLDER extern)
-    set_target_properties(gtest_main PROPERTIES FOLDER extern)
-
-    #
-    # HikoTest
-    #
-    add_library(hikotest)
-    target_sources(hikotest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.cpp)
-    target_sources(hikotest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/hikotest/hikotest.hpp)
-    target_compile_features(hikotest PUBLIC cxx_std_23)
-    if (WIN32)
-        # std::fopen_s() does not exist, this needs to be set if we use std::fopen().
-        target_compile_definitions(hikotest PUBLIC "_CRT_SECURE_NO_WARNINGS")
-    endif()
+    FetchContent_Declare(hikotest GIT_REPOSITORY https://github.com/hikogui/hikotest.git GIT_TAG main)
+    FetchContent_MakeAvailable(hikotest)
 endif()
 
 #
@@ -176,6 +154,7 @@ else()
     set(HI_SCOPE "INTERFACE")
     add_library(hikogui INTERFACE)
 endif()
+add_library(hikogui::hikogui ALIAS hikogui)
 
 set(HIKOGUI_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui")
 if(HI_ENABLE_MODULES)
@@ -471,7 +450,7 @@ endif()
 #-------------------------------------------------------------------
 # Build Target: 
 #-------------------------------------------------------------------
-# A INTERFACE library does not have a build target which means it
+# An INTERFACE library does not have a build target which means it
 # can not be installed. Therefor we create a dummy target which
 # will make sure the INTERFACE library can be installed.
 add_custom_target(hikogui_dummy ALL)
@@ -550,5 +529,6 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiConfigVersion.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/hikoguiResources.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/TargetResources.cmake"
     DESTINATION "${INSTALL_CMAKEDIR}"
 )

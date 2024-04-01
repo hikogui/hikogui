@@ -189,7 +189,7 @@ public:
 
     std::size_t hash() const noexcept
     {
-        hilet v = this->normalize();
+        auto const v = this->normalize();
         return std::hash<uint64_t>{}(v.value);
     }
 
@@ -223,21 +223,21 @@ public:
      */
     [[nodiscard]] constexpr decimal normalize() const noexcept
     {
-        hilet[e, m] = exponent_mantissa();
-        hilet[e_, m_] = decimal::normalize(e, m);
+        auto const[e, m] = exponent_mantissa();
+        auto const[e_, m_] = decimal::normalize(e, m);
         return {e_, m_};
     }
 
     decimal& operator+=(decimal rhs) noexcept
     {
-        hilet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
+        auto const[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m + rhs_m);
         return *this;
     }
 
     decimal& operator-=(decimal rhs) noexcept
     {
-        hilet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
+        auto const[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m - rhs_m);
         return *this;
     }
@@ -255,13 +255,13 @@ public:
 public:
     [[nodiscard]] friend bool operator==(decimal lhs, decimal rhs) noexcept
     {
-        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        auto const[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return lhs_m == rhs_m;
     }
 
     [[nodiscard]] friend auto operator<=>(decimal lhs, decimal rhs) noexcept
     {
-        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        auto const[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return lhs_m <=> rhs_m;
     }
 
@@ -272,13 +272,13 @@ public:
 
     [[nodiscard]] friend decimal operator+(decimal lhs, decimal rhs) noexcept
     {
-        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        auto const[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return {e, lhs_m + rhs_m};
     }
 
     [[nodiscard]] friend decimal operator-(decimal lhs, decimal rhs) noexcept
     {
-        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        auto const[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return {e, lhs_m - rhs_m};
     }
 
@@ -314,9 +314,9 @@ public:
 
     [[nodiscard]] friend decimal operator/(decimal lhs, decimal rhs) noexcept
     {
-        hilet rhs_m = rhs.mantissa();
+        auto const rhs_m = rhs.mantissa();
         hi_axiom(rhs_m != 0);
-        hilet rhs_e = rhs.exponent();
+        auto const rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
 
@@ -326,9 +326,9 @@ public:
 
     [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept
     {
-        hilet rhs_m = rhs.mantissa();
+        auto const rhs_m = rhs.mantissa();
         hi_axiom(rhs_m != 0);
-        hilet rhs_e = rhs.exponent();
+        auto const rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
 
@@ -338,16 +338,16 @@ public:
 
     [[nodiscard]] friend std::string to_string(decimal x) noexcept
     {
-        hilet[e, m] = x.exponent_mantissa();
+        auto const[e, m] = x.exponent_mantissa();
         auto s = std::to_string(std::abs(m));
 
-        hilet decimal_position = -e;
-        hilet leading_zeros = (decimal_position - ssize(s)) + 1;
+        auto const decimal_position = -e;
+        auto const leading_zeros = (decimal_position - ssize(s)) + 1;
         if (leading_zeros > 0) {
             s.insert(0, leading_zeros, '0');
         }
 
-        hilet trailing_zeros = e;
+        auto const trailing_zeros = e;
         if (trailing_zeros > 0) {
             s.append(trailing_zeros, '0');
         }
@@ -536,7 +536,7 @@ private:
 
         int nr_digits = 0;
         int nr_digits_in_front_of_point = -1;
-        for (hilet c : str) {
+        for (auto const c : str) {
             if (c >= '0' && c <= '9') {
                 mantissa_str += c;
                 nr_digits++;
@@ -556,7 +556,7 @@ private:
         auto first = mantissa_str.data();
         auto last = first + mantissa_str.size();
         long long mantissa;
-        hilet result = std::from_chars(first, last, mantissa, 10);
+        auto const result = std::from_chars(first, last, mantissa, 10);
         if (result.ptr == first) {
             throw parse_error(std::format("Could not parse mantissa '{}'", mantissa_str));
         } else if (result.ec == std::errc::result_out_of_range) {

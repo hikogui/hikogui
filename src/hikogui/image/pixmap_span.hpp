@@ -110,7 +110,7 @@ public:
     template<std::same_as<std::remove_const_t<value_type>> O, typename Allocator>
     [[nodiscard]] constexpr pixmap_span(pixmap<O, Allocator>&& other) = delete;
 
-    [[nodiscard]] constexpr size_type empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
         return _width == 0 and _height == 0;
     }
@@ -196,8 +196,8 @@ public:
             std::copy(src.data(), src.data() + src.width() * src.height(), dst.data());
         } else {
             for (auto y = 0_uz; y != src.height(); ++y) {
-                hilet src_line = src[y];
-                hilet dst_line = dst[y];
+                auto const src_line = src[y];
+                auto const dst_line = dst[y];
                 std::copy(src_line.begin(), src_line.end(), dst_line.begin());
             }
         }

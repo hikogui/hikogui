@@ -186,7 +186,7 @@ public:
             // We need a heap allocated pointer with a fully constructed object
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
-            hilet new_ptr = new Value(std::forward<Args>(args)...);
+            auto const new_ptr = new Value(std::forward<Args>(args)...);
             hi_assert_not_null(new_ptr);
 
             _pointer.store(new_ptr, std::memory_order::release);
@@ -272,7 +272,7 @@ public:
             }
 
             // Overwrite the buffer with the new slot.
-            hilet new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
+            auto const new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
             hi_assume(new_ptr != nullptr);
             hi_axiom(equal_ptr(new_ptr, this));
 
@@ -296,7 +296,7 @@ public:
             // We need a heap allocated pointer with a fully constructed object
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
-            hilet new_ptr = new Value(std::forward<Args>(args)...);
+            auto const new_ptr = new Value(std::forward<Args>(args)...);
             hi_assert_not_null(new_ptr);
 
             // Wait until the slot.pointer is a nullptr.

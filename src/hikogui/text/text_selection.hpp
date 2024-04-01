@@ -69,7 +69,7 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        hilet[first_index, last_index] = selection_indices();
+        auto const[first_index, last_index] = selection_indices();
         return first_index >= last_index;
     }
 

@@ -58,8 +58,8 @@ hi_inline void gfx_pipeline_override::draw_in_command_buffer(vk::CommandBuffer c
         sizeof(push_constants),
         &pushConstants);
 
-    hilet numberOfRectangles = vertexBufferData.size() / 4;
-    hilet numberOfTriangles = numberOfRectangles * 2;
+    auto const numberOfRectangles = vertexBufferData.size() / 4;
+    auto const numberOfTriangles = numberOfRectangles * 2;
 
     device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw alpha overlays");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
@@ -150,7 +150,7 @@ hi_inline void gfx_pipeline_override::device_shared::drawInCommandBuffer(vk::Com
 
 hi_inline void gfx_pipeline_override::device_shared::place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, quad_color color, quad_color blend_factor)
 {
-    hilet clipping_rectangle_ = sfloat_rgba32{clipping_rectangle};
+    auto const clipping_rectangle_ = sfloat_rgba32{clipping_rectangle};
 
     vertices.emplace_back(box.p0, clipping_rectangle_, color.p0, blend_factor.p0);
     vertices.emplace_back(box.p1, clipping_rectangle_, color.p1, blend_factor.p1);

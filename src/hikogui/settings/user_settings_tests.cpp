@@ -5,56 +5,54 @@
 #include "user_settings.hpp"
 #include "../path/path.hpp"
 #include "../concurrency/concurrency.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 #include <format>
 
-class user_settings_tests : public ::testing::Test {
-protected:
-    void SetUp() override
-    {
-        hi::set_application_name(std::format("hikogui_tests thread={}", hi::current_thread_id()));
-        hi::set_application_vendor("HikoGUI");
+TEST_SUITE(user_settings) {
+user_settings()
+{
+    hi::set_application_name(std::format("hikogui_tests thread={}", hi::current_thread_id()));
+    hi::set_application_vendor("HikoGUI");
 
-        hi::delete_user_settings();
-    }
+    hi::delete_user_settings();
+}
 
-    void TearDown() override
-    {
-        hi::delete_user_settings();
-    }
-};
+~user_settings()
+{
+    hi::delete_user_settings();
+}
 
-TEST_F(user_settings_tests, is_null)
+TEST_CASE(is_null)
 {
     auto result = hi::get_user_setting<int>("foo");
-    ASSERT_FALSE(result);
-    ASSERT_EQ(result.error(), std::errc::no_such_file_or_directory);
+    REQUIRE(not result);
+    REQUIRE(result.error() == std::errc::no_such_file_or_directory);
 }
 
-TEST_F(user_settings_tests, set_int_value)
+TEST_CASE(set_int_value)
 {
     hi::set_user_setting("foo", 1);
-    ASSERT_EQ(hi::get_user_setting<int>("foo"), 1);
+    REQUIRE((hi::get_user_setting<int>("foo") == 1));
 }
 
-
-TEST_F(user_settings_tests, overwrite_int_value)
+TEST_CASE(overwrite_int_value)
 {
     hi::set_user_setting("foo", 1);
-    ASSERT_EQ(hi::get_user_setting<int>("foo"), 1);
+    REQUIRE((hi::get_user_setting<int>("foo") == 1));
 
     hi::set_user_setting("foo", 42);
-    ASSERT_EQ(hi::get_user_setting<int>("foo"), 42);
+    REQUIRE((hi::get_user_setting<int>("foo") == 42));
 }
 
-TEST_F(user_settings_tests, delete_int_value)
+TEST_CASE(delete_int_value)
 {
     hi::set_user_setting("foo", 1);
-    ASSERT_EQ(hi::get_user_setting<int>("foo"), 1);
+    REQUIRE((hi::get_user_setting<int>("foo") == 1));
 
     hi::delete_user_setting("foo");
     auto result = hi::get_user_setting<int>("foo");
-    ASSERT_FALSE(result);
-    ASSERT_EQ(result.error(), std::errc::no_such_file_or_directory);
+    REQUIRE(not result);
+    REQUIRE(result.error() == std::errc::no_such_file_or_directory);
 }
+
+}; // TEST_SUITE(user_settings)

@@ -5,52 +5,49 @@
 #include "URL.hpp"
 #include "glob.hpp"
 #include "../algorithm/algorithm.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace std::literals;
-using namespace hi;
+TEST_SUITE(URL_suite) {
 
-TEST(URL, parsing)
+TEST_CASE(parsing)
 {
-    hilet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
+    auto const a = hi::URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
-    ASSERT_EQ(a.scheme(), "scheme");
-    ASSERT_EQ(a.path().absolute(), true);
-    ASSERT_EQ(a.path().at(0), "");
-    ASSERT_EQ(a.path().at(1), "path1");
-    ASSERT_EQ(a.path().at(2), "path2");
-    ASSERT_EQ(a.query(), "query");
-    ASSERT_EQ(a.fragment(), "fragment");
+    REQUIRE(a.scheme() == "scheme");
+    REQUIRE(a.path().absolute() == true);
+    REQUIRE(a.path().at(0) == "");
+    REQUIRE(a.path().at(1) == "path1");
+    REQUIRE(a.path().at(2) == "path2");
+    REQUIRE(a.query() == "query");
+    REQUIRE(a.fragment() == "fragment");
 }
 
-TEST(URL, relativePath)
+TEST_CASE(relativePath)
 {
-    hilet a = URL("file:foo/bar.txt");
+    auto const a = hi::URL("file:foo/bar.txt");
 
-    ASSERT_EQ(a.filesystem_path(), "foo/bar.txt");
+    REQUIRE(a.filesystem_path() == "foo/bar.txt");
 }
 
-TEST(URL, glob1)
+TEST_CASE(glob1)
 {
-    auto txt_files = make_vector(glob(library_source_dir() / "tests" / "data" / "*.txt"));
+    auto txt_files = hi::make_vector(hi::glob(hi::library_test_data_dir() / "*.txt"));
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
+    REQUIRE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
         return x.filename() == "file_view.txt";
     }));
-    ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
+    REQUIRE(not std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
         return x.filename() == "HikoGUI_Foundation.lib";
     }));
 }
 
-TEST(URL, glob2)
+TEST_CASE(glob2)
 {
-    auto txt_files = make_vector(glob(library_source_dir() / "tests" / "data" / "**" / "*.txt"));
+    auto txt_files = hi::make_vector(hi::glob(hi::library_test_data_dir() / "**" / "*.txt"));
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
+    REQUIRE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
         return x.filename() == "glob2.txt";
     }));
 }
+
+};

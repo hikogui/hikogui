@@ -37,7 +37,7 @@ public:
     {
         _layout = {};
 
-        hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
+        auto const size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
         return {size, size, size};
     }
 
@@ -62,12 +62,12 @@ public:
             minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
             maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMacOS);
             restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
-            hilet glyph_size = 5.0f;
+            auto const glyph_size = 5.0f;
 
-            hilet closeWindowGlyphBB = closeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            hilet restoreWindowGlyphBB = restoreWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const closeWindowGlyphBB = closeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const minimizeWindowGlyphBB = minimizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const maximizeWindowGlyphBB = maximizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const restoreWindowGlyphBB = restoreWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
 
             closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
             minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
@@ -79,17 +79,17 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            hilet close_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
+            auto const close_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
                 pressedClose                                               ? color(1.0f, 0.242f, 0.212f) :
                                                                              color(1.0f, 0.1f, 0.082f);
             context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
-            hilet minimize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
+            auto const minimize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
                 pressedMinimize                                               ? color(1.0f, 0.847f, 0.093f) :
                                                                                 color(0.784f, 0.521f, 0.021f);
             context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
-            hilet maximize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
+            auto const maximize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
                 pressedMaximize                                               ? color(0.223f, 0.863f, 0.1f) :
                                                                                 color(0.082f, 0.533f, 0.024f);
 

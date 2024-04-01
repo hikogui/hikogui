@@ -129,8 +129,8 @@ public:
         }
 
         // Make sure the offsets are limited to the scrollable area.
-        hilet offset_x_max = std::max(*content_width - *aperture_width, 0.0f);
-        hilet offset_y_max = std::max(*content_height - *aperture_height, 0.0f);
+        auto const offset_x_max = std::max(*content_width - *aperture_width, 0.0f);
+        auto const offset_y_max = std::max(*content_height - *aperture_height, 0.0f);
         offset_x = std::clamp(*offset_x, 0.0f, offset_x_max);
         offset_y = std::clamp(*offset_y, 0.0f, offset_y_max);
 
@@ -179,10 +179,10 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + std::round(event.mouse().wheel_delta.x() * theme().scale);
-            hilet new_offset_y = *offset_y + std::round(event.mouse().wheel_delta.y() * theme().scale);
-            hilet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
-            hilet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
+            auto const new_offset_x = *offset_x + std::round(event.mouse().wheel_delta.x() * theme().scale);
+            auto const new_offset_y = *offset_y + std::round(event.mouse().wheel_delta.y() * theme().scale);
+            auto const max_offset_x = std::max(0.0f, *content_width - *aperture_width);
+            auto const max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 
             offset_x = std::clamp(new_offset_x, 0.0f, max_offset_x);
             offset_y = std::clamp(new_offset_y, 0.0f, max_offset_y);

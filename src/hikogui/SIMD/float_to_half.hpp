@@ -88,7 +88,7 @@ hi_target("sse,sse2,f16c")
 [[nodiscard]] inline std::array<uint16_t,4> float_to_half_f16c(std::array<float,4> a) noexcept
 {
     auto const a_ = _mm_loadu_ps(a.data());
-    auto const r = _mm_cvtps_ph(a_, _MM_FROUND_CUR_DIRECTION);
+    auto const r = _mm_cvtps_ph(a_, _MM_FROUND_TO_ZERO);
     return std::bit_cast<std::array<uint16_t,4>>(_mm_cvtsi128_si64(r));
 }
 

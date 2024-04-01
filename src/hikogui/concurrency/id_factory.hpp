@@ -52,7 +52,7 @@ public:
                     hi_axiom(not _released.empty());
 
                     // std::vector::pop_back() should be wait-free since there are no reallocations.
-                    hilet tmp = _released.back();
+                    auto const tmp = _released.back();
                     _released.pop_back();
 
                     _mutex.unlock();
@@ -66,7 +66,7 @@ public:
             }
         }
 
-        hilet tmp = _v.fetch_add(1, std::memory_order::relaxed) + 1;
+        auto const tmp = _v.fetch_add(1, std::memory_order::relaxed) + 1;
         hi_assert(tmp != 0, "id_factory overflow.");
         return tmp;
     }
@@ -81,7 +81,7 @@ public:
      */
     void release(value_type v) noexcept
     {
-        hilet lock = std::scoped_lock(_mutex);
+        auto const lock = std::scoped_lock(_mutex);
         _released.push_back(v);
         _released_count.fetch_add(1, std::memory_order::release);
     }

@@ -3,142 +3,140 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "URI.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <string>
+#include <hikotest/hikotest.hpp>
 
-using namespace std;
-using namespace hi;
+TEST_SUITE(URI) {
 
-TEST(URI, percent_decode)
+TEST_CASE(percent_decode)
 {
-    ASSERT_EQ(URI::decode("Program%20Files"), "Program Files");
+    REQUIRE(hi::URI::decode("Program%20Files") == "Program Files");
 }
 
-TEST(URI, scheme_only)
+TEST_CASE(scheme_only)
 {
-    hilet u = URI("file:");
-    ASSERT_EQ(u.scheme(), "file");
+    auto const u = hi::URI("file:");
+    REQUIRE(u.scheme() == "file");
 }
 
-TEST(URI, file_absolute_dir)
+TEST_CASE(file_absolute_dir)
 {
-    hilet u = URI("file:///C:/Program%20Files/RenderDoc/");
-    ASSERT_EQ(u.scheme(), "file");
-    ASSERT_TRUE(u.authority());
-    ASSERT_EQ(u.authority()->host(), "");
+    auto const u = hi::URI("file:///C:/Program%20Files/RenderDoc/");
+    REQUIRE(u.scheme() == "file");
+    REQUIRE(static_cast<bool>(u.authority()));
+    REQUIRE(u.authority()->host() == "");
     auto path = u.path();
-    ASSERT_TRUE(path.absolute());
-    ASSERT_EQ(path.size(), 5);
-    ASSERT_EQ(path[0], "");
-    ASSERT_EQ(path[1], "C:");
-    ASSERT_EQ(path[2], "Program Files");
-    ASSERT_EQ(path[3], "RenderDoc");
-    ASSERT_EQ(path[4], "");
+    REQUIRE(path.absolute());
+    REQUIRE(path.size() == 5);
+    REQUIRE(path[0] == "");
+    REQUIRE(path[1] == "C:");
+    REQUIRE(path[2] == "Program Files");
+    REQUIRE(path[3] == "RenderDoc");
+    REQUIRE(path[4] == "");
 }
 
-TEST(URI, file_absolute_dir_file)
+TEST_CASE(file_absolute_dir_file)
 {
-    hilet u = URI("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
-    ASSERT_EQ(u.scheme(), "file");
-    ASSERT_TRUE(u.authority());
-    ASSERT_EQ(u.authority()->host(), "");
+    auto const u = hi::URI("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
+    REQUIRE(u.scheme() == "file");
+    REQUIRE(static_cast<bool>(u.authority()));
+    REQUIRE(u.authority()->host() == "");
     auto path = u.path();
-    ASSERT_TRUE(path.absolute());
-    ASSERT_EQ(path.size(), 5);
-    ASSERT_EQ(path[0], "");
-    ASSERT_EQ(path[1], "C:");
-    ASSERT_EQ(path[2], "Program Files");
-    ASSERT_EQ(path[3], "RenderDoc");
-    ASSERT_EQ(path[4], "renderdoc.dll");
+    REQUIRE(path.absolute());
+    REQUIRE(path.size() == 5);
+    REQUIRE(path[0] == "");
+    REQUIRE(path[1] == "C:");
+    REQUIRE(path[2] == "Program Files");
+    REQUIRE(path[3] == "RenderDoc");
+    REQUIRE(path[4] == "renderdoc.dll");
 }
 
-TEST(URI, file_relative_dir)
+TEST_CASE(file_relative_dir)
 {
-    hilet u = URI("file:C:/Program%20Files/RenderDoc/");
-    ASSERT_EQ(u.scheme(), "file");
-    ASSERT_FALSE(u.authority());
+    auto const u = hi::URI("file:C:/Program%20Files/RenderDoc/");
+    REQUIRE(u.scheme() == "file");
+    REQUIRE(not u.authority());
     auto path = u.path();
-    ASSERT_FALSE(path.absolute());
-    ASSERT_EQ(path.size(), 4);
-    ASSERT_EQ(path[0], "C:");
-    ASSERT_EQ(path[1], "Program Files");
-    ASSERT_EQ(path[2], "RenderDoc");
-    ASSERT_EQ(path[3], "");
+    REQUIRE(not path.absolute());
+    REQUIRE(path.size() == 4);
+    REQUIRE(path[0] == "C:");
+    REQUIRE(path[1] == "Program Files");
+    REQUIRE(path[2] == "RenderDoc");
+    REQUIRE(path[3] == "");
 }
 
-TEST(URI, file_relative_dir_file)
+TEST_CASE(file_relative_dir_file)
 {
-    hilet u = URI("file:C:/Program%20Files/RenderDoc/renderdoc.dll");
-    ASSERT_EQ(u.scheme(), "file");
-    ASSERT_FALSE(u.authority());
+    auto const u = hi::URI("file:C:/Program%20Files/RenderDoc/renderdoc.dll");
+    REQUIRE(u.scheme() == "file");
+    REQUIRE(not u.authority());
     auto path = u.path();
-    ASSERT_FALSE(path.absolute());
-    ASSERT_EQ(path.size(), 4);
-    ASSERT_EQ(path[0], "C:");
-    ASSERT_EQ(path[1], "Program Files");
-    ASSERT_EQ(path[2], "RenderDoc");
-    ASSERT_EQ(path[3], "renderdoc.dll");
+    REQUIRE(not path.absolute());
+    REQUIRE(path.size() == 4);
+    REQUIRE(path[0] == "C:");
+    REQUIRE(path[1] == "Program Files");
+    REQUIRE(path[2] == "RenderDoc");
+    REQUIRE(path[3] == "renderdoc.dll");
 }
 
-TEST(URI, reference_resolution_normal)
+TEST_CASE(reference_resolution_normal)
 {
     // RFC-3986 Chapter 5.4.1.
-    hilet base = URI("http://a/b/c/d;p?q");
+    auto const base = hi::URI("http://a/b/c/d;p?q");
 
-    ASSERT_EQ(base / "g:h", "g:h");
-    ASSERT_EQ(base / "g", "http://a/b/c/g");
-    ASSERT_EQ(base / "./g", "http://a/b/c/g");
-    ASSERT_EQ(base / "g/", "http://a/b/c/g/");
-    ASSERT_EQ(base / "/g", "http://a/g");
-    ASSERT_EQ(base / "//g", "http://g");
-    ASSERT_EQ(base / "?y", "http://a/b/c/d;p?y");
-    ASSERT_EQ(base / "g?y", "http://a/b/c/g?y");
-    ASSERT_EQ(base / "#s", "http://a/b/c/d;p?q#s");
-    ASSERT_EQ(base / "g#s", "http://a/b/c/g#s");
-    ASSERT_EQ(base / "g?y#s", "http://a/b/c/g?y#s");
-    ASSERT_EQ(base / ";x", "http://a/b/c/;x");
-    ASSERT_EQ(base / "g;x", "http://a/b/c/g;x");
-    ASSERT_EQ(base / "g;x?y#s", "http://a/b/c/g;x?y#s");
-    ASSERT_EQ(base / "", "http://a/b/c/d;p?q");
-    ASSERT_EQ(base / ".", "http://a/b/c/");
-    ASSERT_EQ(base / "./", "http://a/b/c/");
-    ASSERT_EQ(base / "..", "http://a/b/");
-    ASSERT_EQ(base / "../", "http://a/b/");
-    ASSERT_EQ(base / "../g", "http://a/b/g");
-    ASSERT_EQ(base / "../..", "http://a/");
-    ASSERT_EQ(base / "../../", "http://a/");
-    ASSERT_EQ(base / "../../g", "http://a/g");
+    REQUIRE(base / "g:h" == "g:h");
+    REQUIRE(base / "g" == "http://a/b/c/g");
+    REQUIRE(base / "./g" == "http://a/b/c/g");
+    REQUIRE(base / "g/" == "http://a/b/c/g/");
+    REQUIRE(base / "/g" == "http://a/g");
+    REQUIRE(base / "//g" == "http://g");
+    REQUIRE(base / "?y" == "http://a/b/c/d;p?y");
+    REQUIRE(base / "g?y" == "http://a/b/c/g?y");
+    REQUIRE(base / "#s" == "http://a/b/c/d;p?q#s");
+    REQUIRE(base / "g#s" == "http://a/b/c/g#s");
+    REQUIRE(base / "g?y#s" == "http://a/b/c/g?y#s");
+    REQUIRE(base / ";x" == "http://a/b/c/;x");
+    REQUIRE(base / "g;x" == "http://a/b/c/g;x");
+    REQUIRE(base / "g;x?y#s" == "http://a/b/c/g;x?y#s");
+    REQUIRE(base / "" == "http://a/b/c/d;p?q");
+    REQUIRE(base / "." == "http://a/b/c/");
+    REQUIRE(base / "./" == "http://a/b/c/");
+    REQUIRE(base / ".." == "http://a/b/");
+    REQUIRE(base / "../" == "http://a/b/");
+    REQUIRE(base / "../g" == "http://a/b/g");
+    REQUIRE(base / "../.." == "http://a/");
+    REQUIRE(base / "../../" == "http://a/");
+    REQUIRE(base / "../../g" == "http://a/g");
 }
 
-TEST(URI, reference_resolution_abnormal)
+TEST_CASE(reference_resolution_abnormal)
 {
     // RFC-3986 Chapter 5.4.2.
-    hilet base = URI("http://a/b/c/d;p?q");
+    auto const base = hi::URI("http://a/b/c/d;p?q");
 
-    ASSERT_EQ(base / "../../../g", "http://a/g");
-    ASSERT_EQ(base / "../../../../g", "http://a/g");
+    REQUIRE(base / "../../../g" == "http://a/g");
+    REQUIRE(base / "../../../../g" == "http://a/g");
 
-    ASSERT_EQ(base / "/./g", "http://a/g");
-    ASSERT_EQ(base / "/../g", "http://a/g");
-    ASSERT_EQ(base / "g.", "http://a/b/c/g.");
-    ASSERT_EQ(base / ".g", "http://a/b/c/.g");
-    ASSERT_EQ(base / "g..", "http://a/b/c/g..");
-    ASSERT_EQ(base / "..g", "http://a/b/c/..g");
+    REQUIRE(base / "/./g" == "http://a/g");
+    REQUIRE(base / "/../g" == "http://a/g");
+    REQUIRE(base / "g." == "http://a/b/c/g.");
+    REQUIRE(base / ".g" == "http://a/b/c/.g");
+    REQUIRE(base / "g.." == "http://a/b/c/g..");
+    REQUIRE(base / "..g" == "http://a/b/c/..g");
 
-    ASSERT_EQ(base / "./../g", "http://a/b/g");
-    ASSERT_EQ(base / "./g/.", "http://a/b/c/g/");
-    ASSERT_EQ(base / "g/./h", "http://a/b/c/g/h");
-    ASSERT_EQ(base / "g/../h", "http://a/b/c/h");
-    ASSERT_EQ(base / "g;x=1/./y", "http://a/b/c/g;x=1/y");
-    ASSERT_EQ(base / "g;x=1/../y", "http://a/b/c/y");
+    REQUIRE(base / "./../g" == "http://a/b/g");
+    REQUIRE(base / "./g/." == "http://a/b/c/g/");
+    REQUIRE(base / "g/./h" == "http://a/b/c/g/h");
+    REQUIRE(base / "g/../h" == "http://a/b/c/h");
+    REQUIRE(base / "g;x=1/./y" == "http://a/b/c/g;x=1/y");
+    REQUIRE(base / "g;x=1/../y" == "http://a/b/c/y");
 
-    ASSERT_EQ(base / "g?y/./x", "http://a/b/c/g?y/./x");
-    ASSERT_EQ(base / "g?y/../x", "http://a/b/c/g?y/../x");
-    ASSERT_EQ(base / "g#s/./x", "http://a/b/c/g#s/./x");
-    ASSERT_EQ(base / "g#s/../x", "http://a/b/c/g#s/../x");
+    REQUIRE(base / "g?y/./x" == "http://a/b/c/g?y/./x");
+    REQUIRE(base / "g?y/../x" == "http://a/b/c/g?y/../x");
+    REQUIRE(base / "g#s/./x" == "http://a/b/c/g#s/./x");
+    REQUIRE(base / "g#s/../x" == "http://a/b/c/g#s/../x");
 
     // Strict.
-    ASSERT_EQ(base / "http:g", "http:g");
+    REQUIRE(base / "http:g" == "http:g");
 }
+
+};

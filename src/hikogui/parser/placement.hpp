@@ -109,7 +109,7 @@ public:
             throw std::bad_alloc();
         }
 
-        hilet ptr = bytes.data() + offset;
+        auto const ptr = bytes.data() + offset;
         offset += sizeof(T) * n;
 
         std::uninitialized_default_construct_n(reinterpret_cast<value_type *>(ptr), n);
@@ -171,7 +171,7 @@ template<typename T, byte_like Byte>
 template<typename T, byte_like Byte>
 [[nodiscard]] auto make_placement_array(std::span<Byte> bytes, std::size_t& offset)
 {
-    hilet n = bytes.size() / ssizeof(T);
+    auto const n = bytes.size() / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 

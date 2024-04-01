@@ -236,8 +236,8 @@ public:
     {
         open_string = false;
 
-        hilet f32 = static_cast<float>(value);
-        hilet f32_64 = static_cast<double>(f32);
+        auto const f32 = static_cast<float>(value);
+        auto const f32_64 = static_cast<double>(f32);
 
         if (value == -1.0) {
             output += static_cast<std::byte>(BON8_code_float_min_one);
@@ -313,8 +313,8 @@ public:
         } else {
             int multi_byte = 0;
 
-            for (hilet _c : value) {
-                hilet c = truncate<uint8_t>(_c);
+            for (auto const _c : value) {
+                auto const c = truncate<uint8_t>(_c);
 
 #ifndef NDEBUG
                 if (multi_byte == 0) {
@@ -381,7 +381,7 @@ public:
             output += static_cast<std::byte>(BON8_code_array);
         }
 
-        for (hilet& item : items) {
+        for (auto const& item : items) {
             add(item);
         }
 
@@ -408,7 +408,7 @@ public:
             output += static_cast<std::byte>(BON8_code_object);
         }
 
-        for (hilet& item : items) {
+        for (auto const& item : items) {
             if (auto *s = get_if<std::string>(item.first)) {
                 add(*s);
             } else {
@@ -458,12 +458,12 @@ void hi_inline BON8_encoder::add(datum const& value)
     hi_assert_not_null(ptr);
     hi_assert_not_null(last);
 
-    hilet c0 = static_cast<uint8_t>(*ptr);
-    hilet count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
+    auto const c0 = static_cast<uint8_t>(*ptr);
+    auto const count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
 
     hi_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
-    hilet c1 = static_cast<uint8_t>(*(ptr + 1));
+    auto const c1 = static_cast<uint8_t>(*(ptr + 1));
     return (c1 < 0x80 or c1 > 0xbf) ? -count : count;
 }
 
@@ -489,11 +489,11 @@ void hi_inline BON8_encoder::add(datum const& value)
     }
 
     if (count == 4) {
-        hilet u32 = truncate<uint32_t>(u64);
-        hilet i32 = truncate<int32_t>(u32);
+        auto const u32 = truncate<uint32_t>(u64);
+        auto const i32 = truncate<int32_t>(u32);
         return datum{i32};
     } else {
-        hilet i64 = truncate<int64_t>(u64);
+        auto const i64 = truncate<int64_t>(u64);
         return datum{i64};
     }
 }
@@ -512,7 +512,7 @@ void hi_inline BON8_encoder::add(datum const& value)
     }
 
     if (count == 4) {
-        hilet u32 = truncate<uint32_t>(u64);
+        auto const u32 = truncate<uint32_t>(u64);
         float f32;
         std::memcpy(&f32, &u32, sizeof(f32));
         return datum{f32};
@@ -600,9 +600,9 @@ void hi_inline BON8_encoder::add(datum const& value)
     hi_assert_not_null(last);
     hi_assert(count >= 2 && count <= 4);
     hi_assert(ptr != last);
-    hilet c0 = static_cast<uint8_t>(*(ptr++));
+    auto const c0 = static_cast<uint8_t>(*(ptr++));
 
-    hilet mask = uint8_t{0b0111'1111} >> count;
+    auto const mask = uint8_t{0b0111'1111} >> count;
     auto value = static_cast<long long>(c0 & mask);
     if (count == 2) {
         // The two byte sequence starts with 0xc2, leaving only 30 entries in the first byte.
@@ -611,8 +611,8 @@ void hi_inline BON8_encoder::add(datum const& value)
 
     // The second byte determines the sign, and adds 6 or 7 bits to the number.
     hi_assert(ptr != last);
-    hilet c1 = static_cast<uint8_t>(*(ptr++));
-    hilet is_positive = c1 <= 0x7f;
+    auto const c1 = static_cast<uint8_t>(*(ptr++));
+    auto const is_positive = c1 <= 0x7f;
     if (is_positive) {
         value <<= 7;
         value |= static_cast<long long>(c1);
@@ -669,7 +669,7 @@ void hi_inline BON8_encoder::add(datum const& value)
     std::string str;
 
     while (ptr != last) {
-        hilet c = static_cast<uint8_t>(*ptr);
+        auto const c = static_cast<uint8_t>(*ptr);
 
         if (c == BON8_code_eot) {
             // End of string found, return the current string.
@@ -682,7 +682,7 @@ void hi_inline BON8_encoder::add(datum const& value)
             continue;
 
         } else if (c >= 0xc2 && c <= 0xf7) {
-            hilet count = BON8_multibyte_count(ptr, last);
+            auto const count = BON8_multibyte_count(ptr, last);
             if (count > 0) {
                 // Multibyte UTF-8 code-point, The count includes the first code-unit.
                 for (int i = 0; i != count; ++i) {

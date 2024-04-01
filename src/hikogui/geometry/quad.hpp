@@ -37,7 +37,7 @@ public:
 
     constexpr quad(aarectangle const &rhs) noexcept
     {
-        hilet tmp = f32x4{rhs};
+        auto const tmp = f32x4{rhs};
         p0 = point3{tmp.xy01()};
         p1 = point3{tmp.zy01()};
         p2 = point3{tmp.xw01()};
@@ -80,7 +80,7 @@ public:
      */
     [[nodiscard]] constexpr f32x4 edge_hypots() const noexcept
     {
-        hilet[x, y, z, zeros] = transpose(f32x4{bottom()}, f32x4{left()}, f32x4{top()}, f32x4{right()});
+        auto const[x, y, z, zeros] = transpose(f32x4{bottom()}, f32x4{left()}, f32x4{top()}, f32x4{right()});
         return sqrt(x * x + y * y + z * z);
     }
 
@@ -148,30 +148,30 @@ public:
      */
     [[nodiscard]] friend constexpr std::pair<quad, f32x4> expand_and_edge_hypots(quad const &lhs, f32x4 const &rhs) noexcept
     {
-        hilet t = f32x4{lhs.top()};
-        hilet l = f32x4{lhs.left()};
-        hilet b = f32x4{lhs.bottom()};
-        hilet r = f32x4{lhs.right()};
+        auto const t = f32x4{lhs.top()};
+        auto const l = f32x4{lhs.left()};
+        auto const b = f32x4{lhs.bottom()};
+        auto const r = f32x4{lhs.right()};
 
-        hilet[x, y, z, ones] = transpose(t, l, b, r);
-        hilet square_lengths = x * x + y * y + z * z;
-        hilet inv_lengths = rsqrt(square_lengths);
-        hilet norm_t = t * inv_lengths.xxxx();
-        hilet norm_l = l * inv_lengths.yyyy();
-        hilet norm_b = b * inv_lengths.zzzz();
-        hilet norm_r = r * inv_lengths.wwww();
+        auto const[x, y, z, ones] = transpose(t, l, b, r);
+        auto const square_lengths = x * x + y * y + z * z;
+        auto const inv_lengths = rsqrt(square_lengths);
+        auto const norm_t = t * inv_lengths.xxxx();
+        auto const norm_l = l * inv_lengths.yyyy();
+        auto const norm_b = b * inv_lengths.zzzz();
+        auto const norm_r = r * inv_lengths.wwww();
 
-        hilet extra_width = rhs.xxxx();
-        hilet extra_height = rhs.yyyy();
+        auto const extra_width = rhs.xxxx();
+        auto const extra_height = rhs.yyyy();
 
-        hilet top_extra = vector3{norm_t * extra_width};
-        hilet left_extra = vector3{norm_l * extra_height};
-        hilet bottom_extra = vector3{norm_b * extra_width};
-        hilet right_extra = vector3{norm_r * extra_height};
+        auto const top_extra = vector3{norm_t * extra_width};
+        auto const left_extra = vector3{norm_l * extra_height};
+        auto const bottom_extra = vector3{norm_b * extra_width};
+        auto const right_extra = vector3{norm_r * extra_height};
 
-        hilet lengths = rcp(inv_lengths);
+        auto const lengths = rcp(inv_lengths);
 
-        hilet rhs_times_2 = rhs + rhs;
+        auto const rhs_times_2 = rhs + rhs;
 
         return {
             quad{
@@ -218,7 +218,7 @@ public:
      */
     [[nodiscard]] friend constexpr quad operator+(quad const &lhs, extent2 const &rhs) noexcept
     {
-        hilet[expanded_quad, new_lengths] = expand_and_edge_hypots(lhs, rhs);
+        auto const[expanded_quad, new_lengths] = expand_and_edge_hypots(lhs, rhs);
         return expanded_quad;
     }
 
@@ -237,7 +237,7 @@ public:
      */
     [[nodiscard]] friend constexpr quad operator-(quad const &lhs, extent2 const &rhs) noexcept
     {
-        hilet[expanded_quad, new_lengths] = shrink_and_edge_hypots(lhs, rhs);
+        auto const[expanded_quad, new_lengths] = shrink_and_edge_hypots(lhs, rhs);
         return expanded_quad;
     }
 

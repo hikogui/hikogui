@@ -132,7 +132,7 @@ public:
             _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
 
-        for (hilet& cell : _grid) {
+        for (auto const& cell : _grid) {
             auto shape = cell.shape;
 
             if (cell.value.get() == _aperture) {
@@ -154,7 +154,7 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible) {
-            for (hilet& cell : _grid) {
+            for (auto const& cell : _grid) {
                 cell.value->draw(context);
             }
         }

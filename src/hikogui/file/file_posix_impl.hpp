@@ -71,7 +71,7 @@ File::File(std::filesystem::path const &path, AccessMode accessMode) : accessMod
 
     int permissions = 0666;
 
-    hilet fileName = location.nativePath();
+    auto const fileName = location.nativePath();
     if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
         throw io_error("{}: Could not open file. '{}'", location(), get_last_error_message());
     }
@@ -94,7 +94,7 @@ void File::close()
 
 std::size_t File::fileSize(std::filesystem::path const &path)
 {
-    hilet name = url.nativePath();
+    auto const name = url.nativePath();
 
     struct ::stat statbuf;
 

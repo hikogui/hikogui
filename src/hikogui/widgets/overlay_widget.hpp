@@ -101,7 +101,7 @@ public:
         // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
         _layout.clipping_rectangle = context.rectangle() + theme().border_width();
 
-        hilet content_rectangle = context.rectangle();
+        auto const content_rectangle = context.rectangle();
         _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
 
         // The content should not draw in the border of the overlay, so give a tight clipping rectangle.

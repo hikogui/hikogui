@@ -33,7 +33,7 @@ void dsp_visit(std::span<T> r, std::span<T const> a, std::span<T const> b, Op op
     auto a_ = a.data();
     auto b_ = b.data();
 
-    hilet a_wide_end = a.data() + wide_size;
+    auto const a_wide_end = a.data() + wide_size;
     while (a_ != a_wide_end) {
         op(S{a_}, S{b_}).store(r_);
 
@@ -42,7 +42,7 @@ void dsp_visit(std::span<T> r, std::span<T const> a, std::span<T const> b, Op op
         r_ += stride;
     }
 
-    hilet a_end = a_ptr + size;
+    auto const a_end = a_ptr + size;
     while (a_ != size) {
         *r_++ = op(*a_++, *b_++);
     }
@@ -62,8 +62,8 @@ void dsp_visit(std::span<T> r, std::span<T const> a, T b, Op op) noexcept
     auto r_ = r.data();
     auto a_ = a.data();
 
-    hilet b_wide = S::broadcast(b);
-    hilet a_wide_end = a.data() + wide_size;
+    auto const b_wide = S::broadcast(b);
+    auto const a_wide_end = a.data() + wide_size;
     while (a_ != a_wide_end) {
         op(S{a_}, b_wide).store(r_);
 
@@ -71,7 +71,7 @@ void dsp_visit(std::span<T> r, std::span<T const> a, T b, Op op) noexcept
         r_ += stride;
     }
 
-    hilet a_end = a_ptr + size;
+    auto const a_end = a_ptr + size;
     while (a_ != size) {
         *r_++ = op(*a_++, b);
     }
@@ -83,20 +83,20 @@ void dsp_visit(std::span<float> r, float a, Op op) noexcept
     using S = fast_simd<float>;
     constexpr auto stride = S::size;
 
-    hilet size = r.size();
-    hilet wide_size = (size / stride) * stride;
+    auto const size = r.size();
+    auto const wide_size = (size / stride) * stride;
 
     auto r_ = a.data();
-    hilet a_ = S::broadcast(b);
+    auto const a_ = S::broadcast(b);
 
-    hilet r_wide_end = r.data() + wide_size;
+    auto const r_wide_end = r.data() + wide_size;
     while (r_ != r_wide_end) {
         op(S{r_} + a_wide).store(r_);
 
         a_ += stride;
     }
 
-    hilet r_end = r_ + size;
+    auto const r_end = r_ + size;
     while (r_ != size) {
         *r_++ += a;
     }

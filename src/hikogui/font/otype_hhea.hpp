@@ -44,7 +44,7 @@ hi_export namespace hi { inline namespace v1 {
         uint16_t number_of_h_metrics;
     };
 
-    hilet& header = implicit_cast<header_type>(bytes);
+    auto const& header = implicit_cast<header_type>(bytes);
     hi_check(*header.major_version == 1 && *header.minor_version == 0, "'hhea' version is not 1.0");
 
     auto r = return_type{};

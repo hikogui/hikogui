@@ -29,21 +29,21 @@ struct gzip_member_header {
 
 [[nodiscard]] hi_inline bstring gzip_decompress_member(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size)
 {
-    hilet header = make_placement_ptr<gzip_member_header>(bytes, offset);
+    auto const header = make_placement_ptr<gzip_member_header>(bytes, offset);
 
     hi_check(header->ID1 == 31, "GZIP Member header ID1 must be 31");
     hi_check(header->ID2 == 139, "GZIP Member header ID2 must be 139");
     hi_check(header->CM == 8, "GZIP Member header CM must be 8");
     hi_check((header->FLG & 0xe0) == 0, "GZIP Member header FLG reserved bits must be 0");
     hi_check(header->XFL == 2 or header->XFL == 4, "GZIP Member header XFL must be 2 or 4");
-    [[maybe_unused]] hilet FTEXT = to_bool(header->FLG & 1);
-    hilet FHCRC = to_bool(header->FLG & 2);
-    hilet FEXTRA = to_bool(header->FLG & 4);
-    hilet FNAME = to_bool(header->FLG & 8);
-    hilet FCOMMENT = to_bool(header->FLG & 16);
+    [[maybe_unused]] auto const FTEXT = to_bool(header->FLG & 1);
+    auto const FHCRC = to_bool(header->FLG & 2);
+    auto const FEXTRA = to_bool(header->FLG & 4);
+    auto const FNAME = to_bool(header->FLG & 8);
+    auto const FCOMMENT = to_bool(header->FLG & 16);
 
     if (FEXTRA) {
-        hilet XLEN = **make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+        auto const XLEN = **make_placement_ptr<little_uint16_buf_t>(bytes, offset);
         offset += XLEN;
     }
 
@@ -64,7 +64,7 @@ struct gzip_member_header {
     }
 
     if (FHCRC) {
-        [[maybe_unused]] hilet CRC16 = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+        [[maybe_unused]] auto const CRC16 = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
     }
 
     auto r = inflate(bytes, offset, max_size);

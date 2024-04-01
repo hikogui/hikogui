@@ -56,9 +56,9 @@ public:
 
     constexpr rectangle(aarectangle rhs) noexcept
     {
-        hilet p0 = get<0>(rhs);
-        hilet p3 = get<3>(rhs);
-        hilet diagonal = static_cast<f32x4>(p3 - p0);
+        auto const p0 = get<0>(rhs);
+        auto const p3 = get<3>(rhs);
+        auto const diagonal = static_cast<f32x4>(p3 - p0);
 
         origin = p0;
         right = vector3{diagonal.x000()};
@@ -72,9 +72,9 @@ public:
 
     constexpr rectangle& operator=(aarectangle rhs) noexcept
     {
-        hilet p0 = get<0>(rhs);
-        hilet p3 = get<3>(rhs);
-        hilet diagonal = static_cast<f32x4>(p3 - p0);
+        auto const p0 = get<0>(rhs);
+        auto const p3 = get<3>(rhs);
+        auto const diagonal = static_cast<f32x4>(p3 - p0);
 
         origin = p0;
         right = vector3{diagonal.x000()};
@@ -91,19 +91,19 @@ public:
         auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
         auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
 
-        hilet p0 = rhs.origin;
+        auto const p0 = rhs.origin;
         left_bottom = min(left_bottom, static_cast<f32x4>(p0));
         right_top = max(right_top, static_cast<f32x4>(p0));
 
-        hilet p1 = p0 + rhs.right;
+        auto const p1 = p0 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p1));
         right_top = max(right_top, static_cast<f32x4>(p1));
 
-        hilet p2 = p0 + rhs.up;
+        auto const p2 = p0 + rhs.up;
         left_bottom = min(left_bottom, static_cast<f32x4>(p2));
         right_top = max(right_top, static_cast<f32x4>(p2));
 
-        hilet p3 = p2 + rhs.right;
+        auto const p3 = p2 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p3));
         right_top = max(right_top, static_cast<f32x4>(p3));
 
@@ -126,7 +126,7 @@ public:
      */
     [[nodiscard]] constexpr bool is_rectangle() const noexcept
     {
-        hilet dp = dot(right, up);
+        auto const dp = dot(right, up);
         return -std::numeric_limits<float>::min() <= dp and dp <= std::numeric_limits<float>::min();
     }
 
@@ -136,7 +136,7 @@ public:
      */
     [[nodiscard]] constexpr bool is_axis_aligned() const noexcept
     {
-        hilet should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
+        auto const should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
         return equal(should_be_zeroes, f32x4{});
     }
 
@@ -212,9 +212,9 @@ public:
      */
     [[nodiscard]] friend constexpr rectangle operator+(rectangle const& lhs, extent2 rhs) noexcept
     {
-        hilet extra_right = normalize(lhs.right) * rhs.width();
-        hilet extra_up = normalize(lhs.up) * rhs.height();
-        hilet extra_diagonal = extra_right + extra_up;
+        auto const extra_right = normalize(lhs.right) * rhs.width();
+        auto const extra_up = normalize(lhs.up) * rhs.height();
+        auto const extra_diagonal = extra_right + extra_up;
 
         return rectangle{lhs.origin - extra_diagonal, lhs.right + 2.0f * extra_right, lhs.up + 2.0f * extra_up};
     }
@@ -234,9 +234,9 @@ public:
      */
     [[nodiscard]] friend constexpr rectangle operator-(rectangle const& lhs, extent2 rhs) noexcept
     {
-        hilet extra_right = normalize(lhs.right) * rhs.width();
-        hilet extra_up = normalize(lhs.up) * rhs.height();
-        hilet extra_diagonal = extra_right + extra_up;
+        auto const extra_right = normalize(lhs.right) * rhs.width();
+        auto const extra_up = normalize(lhs.up) * rhs.height();
+        auto const extra_diagonal = extra_right + extra_up;
 
         return rectangle{lhs.origin + extra_diagonal, lhs.right - 2.0f * extra_right, lhs.up - 2.0f * extra_up};
     }

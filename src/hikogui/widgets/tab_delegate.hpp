@@ -68,7 +68,8 @@ public:
      *
      * @param value The observer value which represents the selected tab.
      */
-    default_tab_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    default_tab_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -103,11 +104,12 @@ private:
  * @param value The observer value which represents the selected tab.
  * @return shared pointer to a tab delegate
  */
-std::shared_ptr<tab_delegate> make_default_tab_delegate(auto&& value) noexcept
-    requires requires { default_tab_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)}; }
+template<typename Value>
+std::shared_ptr<tab_delegate> make_default_tab_delegate(Value&& value) noexcept
+    requires requires { default_tab_delegate<observer_decay_t<Value>>{std::forward<Value>(value)}; }
 {
-    using value_type = observer_decay_t<decltype(value)>;
-    return std::make_shared<default_tab_delegate<value_type>>(hi_forward(value));
+    using value_type = observer_decay_t<Value>;
+    return std::make_shared<default_tab_delegate<value_type>>(std::forward<Value>(value));
 }
 
 }} // namespace hi::v1

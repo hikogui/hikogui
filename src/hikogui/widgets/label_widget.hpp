@@ -81,9 +81,10 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(not_null<widget_intf const *> parent, label_widget_attribute auto&&...attributes) noexcept : label_widget(parent)
+    template<label_widget_attribute... Attributes>
+    label_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept : label_widget(parent)
     {
-        set_attributes(hi_forward(attributes)...);
+        set_attributes(std::forward<Attributes>(attributes)...);
     }
 
     /// @privatesection
@@ -98,7 +99,7 @@ public:
         _layout = {};
 
         // Resolve as if in left-to-right mode, the grid will flip itself.
-        hilet resolved_alignment = resolve(*alignment, true);
+        auto const resolved_alignment = resolve(*alignment, true);
 
         _grid.clear();
         if (to_bool(label->icon) and to_bool(label->text)) {
@@ -132,7 +133,7 @@ public:
             _grid.add_cell(0, 0, _text_widget.get());
         }
 
-        hilet icon_size =
+        auto const icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme().large_icon_size() :
             theme().text_style(*text_style)->size * theme().scale;
@@ -152,14 +153,14 @@ public:
             _grid.set_layout(context.shape, theme().baseline_adjustment());
         }
 
-        for (hilet& cell : _grid) {
+        for (auto const& cell : _grid) {
             cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            for (hilet& cell : _grid) {
+            for (auto const& cell : _grid) {
                 cell.value->draw(context);
             }
         }
@@ -188,19 +189,21 @@ private:
     callback<void(hi::alignment)> _alignment_cbt;
 
     void set_attributes() noexcept {}
-    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+
+    template<label_widget_attribute First, label_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
-            label = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        if constexpr (forward_of<First, observer<hi::label>>) {
+            label = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+            text_style = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
 
-        set_attributes(hi_forward(rest)...);
+        set_attributes(std::forward<Rest>(rest)...);
     }
 
     label_widget(not_null<widget_intf const *> parent) noexcept : super(parent)

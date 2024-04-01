@@ -212,7 +212,7 @@ public:
      */
     [[nodiscard]] friend constexpr point2 ceil(point2 const& lhs, extent2 rhs) noexcept
     {
-        hilet rhs_ = array_type{rhs}.xy11();
+        auto const rhs_ = array_type{rhs}.xy11();
         return point2{ceil(lhs._v / rhs_) * rhs_};
     }
 
@@ -220,7 +220,7 @@ public:
      */
     [[nodiscard]] friend constexpr point2 floor(point2 const& lhs, extent2 rhs) noexcept
     {
-        hilet rhs_ = array_type{rhs}.xy11();
+        auto const rhs_ = array_type{rhs}.xy11();
         return point2{floor(lhs._v / rhs_) * rhs_};
     }
 
@@ -255,14 +255,9 @@ private:
 
 // XXX #617 MSVC bug does not handle partial specialization in modules.
 hi_export template<>
-struct std::formatter<hi::point2, char> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
+struct std::formatter<hi::point2, char> : std::formatter<std::string, char> {
     auto format(hi::point2 const& t, auto& fc) const
     {
-        return std::vformat_to(fc.out(), "<{}, {}>", std::make_format_args(t.x(), t.y()));
+        return std::formatter<std::string, char>::format(std::format("<{}, {}>", t.x(), t.y()), fc);
     }
 };

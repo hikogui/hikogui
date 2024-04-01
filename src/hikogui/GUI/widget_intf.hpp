@@ -328,7 +328,7 @@ hi_inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_inv
         return start;
     }
     for (auto& child : start->children(include_invisible)) {
-        if (hilet r = get_if(&child, id, include_invisible); r != nullptr) {
+        if (auto const r = get_if(&child, id, include_invisible); r != nullptr) {
             return r;
         }
     }

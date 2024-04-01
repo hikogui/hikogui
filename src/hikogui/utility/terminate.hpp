@@ -34,7 +34,7 @@ hi_inline std::vector<std::function<void()>> atterminate_functions;
 
 hi_inline void call_atterminate() noexcept
 {
-    hilet lock = std::scoped_lock(terminate_mutex);
+    auto const lock = std::scoped_lock(terminate_mutex);
     for (auto it = atterminate_functions.rbegin(); it != atterminate_functions.rend(); ++it) {
         (*it)();
     }
@@ -47,7 +47,7 @@ hi_inline void call_atterminate() noexcept
  */
 hi_inline void atterminate(std::function<void()> f) noexcept
 {
-    hilet lock = std::scoped_lock(detail::terminate_mutex);
+    auto const lock = std::scoped_lock(detail::terminate_mutex);
     detail::atterminate_functions.push_back(std::move(f));
 }
 
@@ -72,7 +72,7 @@ hi_inline void terminate_handler() noexcept
     auto title = std::string{};
     auto message = std::string{};
 
-    hilet ep = std::current_exception();
+    auto const ep = std::current_exception();
     if (ep) {
         try {
             std::rethrow_exception(ep);

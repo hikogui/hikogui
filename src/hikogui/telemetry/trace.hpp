@@ -50,7 +50,7 @@ public:
             log();
         }
 
-        hilet current_time_stamp = time_stamp_count{time_stamp_count::inplace{}};
+        auto const current_time_stamp = time_stamp_count{time_stamp_count::inplace{}};
         global_counter<Tag>.add_duration(current_time_stamp.count() - _time_stamp.count());
     }
 

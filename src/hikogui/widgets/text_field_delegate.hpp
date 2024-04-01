@@ -104,7 +104,8 @@ public:
 
     observer<value_type> value;
 
-    default_text_field_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    default_text_field_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -155,7 +156,8 @@ public:
 
     observer<value_type> value;
 
-    default_text_field_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
+    template<forward_of<observer<value_type>> Value>
+    default_text_field_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -199,11 +201,12 @@ private:
  * @param value The observer value which is editable by the text field widget.
  * @return shared pointer to a text field delegate
  */
-[[nodiscard]] std::shared_ptr<text_field_delegate> make_default_text_field_delegate(auto&& value) noexcept
-    requires requires { default_text_field_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)}; }
+template<typename Value>
+[[nodiscard]] std::shared_ptr<text_field_delegate> make_default_text_field_delegate(Value&& value) noexcept
+    requires requires { default_text_field_delegate<observer_decay_t<decltype(value)>>{std::forward<Value>(value)}; }
 {
-    using value_type = observer_decay_t<decltype(value)>;
-    return std::make_shared<default_text_field_delegate<value_type>>(hi_forward(value));
+    using value_type = observer_decay_t<Value>;
+    return std::make_shared<default_text_field_delegate<value_type>>(std::forward<Value>(value));
 }
 
 }} // namespace hi::v1

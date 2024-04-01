@@ -87,9 +87,10 @@ public:
         return _grid[index];
     }
 
-    cell_type& insert(const_iterator pos, std::convertible_to<T> auto&& value) noexcept
+    template<std::convertible_to<T> Value>
+    cell_type& insert(const_iterator pos, Value&& value) noexcept
     {
-        hilet index = std::distance(cbegin(), pos);
+        auto const index = std::distance(cbegin(), pos);
 
         for (auto it = begin() + index; it != end(); ++it) {
             if constexpr (Axis == axis::x) {
@@ -102,20 +103,22 @@ public:
         }
 
         if constexpr (Axis == axis::x) {
-            return _grid.add_cell(index, 0, hi_forward(value));
+            return _grid.add_cell(index, 0, std::forward<Value>(value));
         } else {
-            return _grid.add_cell(0, index, hi_forward(value));
+            return _grid.add_cell(0, index, std::forward<Value>(value));
         }
     }
 
-    cell_type& push_front(std::convertible_to<T> auto&& value) noexcept
+    template<std::convertible_to<T> Value>
+    cell_type& push_front(Value&& value) noexcept
     {
-        return insert(cbegin(), hi_forward(value));
+        return insert(cbegin(), std::forward<Value>(value));
     }
 
-    cell_type& push_back(std::convertible_to<T> auto&& value) noexcept
+    template<std::convertible_to<T> Value>
+    cell_type& push_back(Value&& value) noexcept
     {
-        return insert(cend(), hi_forward(value));
+        return insert(cend(), std::forward<Value>(value));
     }
 
     void clear() noexcept

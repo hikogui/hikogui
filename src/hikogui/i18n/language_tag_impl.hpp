@@ -1941,8 +1941,8 @@ constexpr auto language_tag_expansions = language_tag_expansions_init();
 
 hi_inline std::optional<std::string_view> expand_language_tag(std::string_view from) noexcept
 {
-    hilet from_lower = to_lower(from);
-    hilet it = std::lower_bound(language_tag_expansions.begin(), language_tag_expansions.end(), std::string_view{from_lower}, [](hilet& item, hilet& value) {
+    auto const from_lower = to_lower(from);
+    auto const it = std::lower_bound(language_tag_expansions.begin(), language_tag_expansions.end(), std::string_view{from_lower}, [](auto const& item, auto const& value) {
         return item.first < value;
     });
 
@@ -1983,8 +1983,8 @@ hi_inline language_tag::language_tag(std::string_view str) : language(), script(
     }
     str = std::string_view{str_};
 
-    for (hilet element_view : std::views::split(str, std::string_view{"-"})) {
-        hilet element = std::string_view{element_view.begin(), element_view.end()};
+    for (auto const element_view : std::views::split(str, std::string_view{"-"})) {
+        auto const element = std::string_view{element_view.begin(), element_view.end()};
         if (extension_first_char) {
             // Once inside the extensions portion of a language tag you can no
             // longer determine validity based on just the element size.
@@ -2078,9 +2078,9 @@ hi_inline language_tag::language_tag(std::string_view str) : language(), script(
 {
     auto tmp = std::vector<std::vector<language_tag>>{};
 
-    for (hilet& language : languages) {
+    for (auto const& language : languages) {
         auto& lang_tmp = tmp.emplace_back();
-        for (hilet& variant : language.all_variants()) {
+        for (auto const& variant : language.all_variants()) {
             lang_tmp.push_back(variant);
         }
     }
@@ -2088,7 +2088,7 @@ hi_inline language_tag::language_tag(std::string_view str) : language(), script(
     for (auto it = tmp.rbegin(); it != tmp.rend(); ++it) {
         // Remove duplicates in previous language-variant lists.
         for (auto jt = it + 1; jt != tmp.rend(); ++jt) {
-            for (hilet& tag : *it) {
+            for (auto const& tag : *it) {
                 std::erase(*jt, tag);
             }
         }
@@ -2096,13 +2096,13 @@ hi_inline language_tag::language_tag(std::string_view str) : language(), script(
 
     auto r = std::vector<language_tag>{};
 
-    hilet count = std::accumulate(tmp.begin(), tmp.end(), 0_uz, [](hilet& value, hilet& item) {
+    auto const count = std::accumulate(tmp.begin(), tmp.end(), 0_uz, [](auto const& value, auto const& item) {
         return value + item.size();
     });
     r.reserve(count);
 
-    for (hilet& variants : tmp) {
-        for (hilet& tag : variants) {
+    for (auto const& variants : tmp) {
+        for (auto const& tag : variants) {
             r.push_back(tag);
         }
     }
