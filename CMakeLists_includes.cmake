@@ -374,19 +374,10 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/random/seed.hpp
     src/hikogui/random/seed_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_win32_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_generic.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_generic.hpp>
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_x86.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/float_to_half.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/half_to_float.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/SIMD.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/simd_intf.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_intf.hpp
+    src/hikogui/random/seed_win32_impl.hpp
+    src/hikogui/random/xorshift128p.hpp
+    src/hikogui/security/security.hpp
+    src/hikogui/security/security_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/security_win32_impl.hpp>
     src/hikogui/security/security_win32_impl.hpp
     src/hikogui/security/sip_hash.hpp
@@ -418,6 +409,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_shaper_char.hpp
     src/hikogui/text/text_shaper_line.hpp
     src/hikogui/text/text_style.hpp
+    src/hikogui/theme/theme_length.hpp
+    src/hikogui/theme/theme_value.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp
     src/hikogui/time/time_stamp_count.hpp
@@ -464,84 +457,14 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/utility/debugger_generic_impl.hpp
     src/hikogui/utility/debugger_intf.hpp
     src/hikogui/utility/debugger_utils.hpp
-    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_maxos_impl.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/endian.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_intf.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception_win32_impl.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/exception.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/fixed_string.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/forward_value.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/hash.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/initialize.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/math.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/memory.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/misc.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/utility.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/not_null.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/numbers.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/policy.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/tagged_id.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/terminate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/time_zone.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/value_traits.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/abstract_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/async_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/async_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/audio_device_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/button_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/checkbox_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/grid_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/icon_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/label_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/menu_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widgets.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/momentary_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/overlay_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/radio_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_aperture_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_bar_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/scroll_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/selection_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/selection_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/spacer_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/system_menu_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/tab_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/tab_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_field_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_field_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toggle_delegate.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toggle_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_tab_button_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/toolbar_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_macos_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_controls_win32_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/window_widget.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/with_label_widget.hpp
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/base.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/libloaderapi.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/processthreadsapi.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/synchapi.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/win32.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winnls.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winreg.hpp>
-    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32/winuser.hpp>
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/macros.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/hikogui.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/test.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/win32_headers.hpp
-=======
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp>
+    src/hikogui/utility/debugger_win32_impl.hpp
+    src/hikogui/utility/defer.hpp
+    src/hikogui/utility/dialog.hpp
+    src/hikogui/utility/dialog_intf.hpp
+    $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_macos_impl.hpp>
+    src/hikogui/utility/dialog_macos_impl.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_win32_impl.hpp>
     src/hikogui/utility/dialog_win32_impl.hpp
     src/hikogui/utility/endian.hpp
     src/hikogui/utility/enum_metadata.hpp
