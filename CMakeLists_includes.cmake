@@ -20,6 +20,25 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_generated_include_files TYPE H
 )
 
 target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src/"  FILES
+    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_generic.hpp>
+    src/hikocpu/array_generic.hpp
+    src/hikocpu/array_intrinsic.hpp
+    src/hikocpu/array_intrinsic_f16x4.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_intrinsic_f32x4_x86.hpp>
+    src/hikocpu/array_intrinsic_f32x4_x86.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_intrinsic_f64x2_x86.hpp>
+    src/hikocpu/array_intrinsic_f64x2_x86.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_intrinsic_f64x4_x86.hpp>
+    src/hikocpu/array_intrinsic_f64x4_x86.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/cpu_id_generic.hpp>
+    src/hikocpu/cpu_id_generic.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/cpu_id_x86.hpp>
+    src/hikocpu/cpu_id_x86.hpp
+    src/hikocpu/float_to_half.hpp
+    src/hikocpu/half.hpp
+    src/hikocpu/half_to_float.hpp
+    src/hikocpu/hikocpu.hpp
+    src/hikocpu/simd_intf.hpp
     src/hikogui/DSP/DSP.hpp
     src/hikogui/DSP/dsp_float.hpp
     src/hikogui/DSP/dsp_mul.hpp
@@ -76,25 +95,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/GUI/widget_intf.hpp
     src/hikogui/GUI/widget_layout.hpp
     src/hikogui/GUI/widget_state.hpp
-    src/hikogui/SIMD/SIMD.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_generic.hpp>
-    src/hikogui/SIMD/array_generic.hpp
-    src/hikogui/SIMD/array_intrinsic.hpp
-    src/hikogui/SIMD/array_intrinsic_f16x4.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp>
-    src/hikogui/SIMD/array_intrinsic_f32x4_x86.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f64x2_x86.hpp>
-    src/hikogui/SIMD/array_intrinsic_f64x2_x86.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/array_intrinsic_f64x4_x86.hpp>
-    src/hikogui/SIMD/array_intrinsic_f64x4_x86.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_generic.hpp>
-    src/hikogui/SIMD/cpu_id_generic.hpp
-    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/SIMD/cpu_id_x86.hpp>
-    src/hikogui/SIMD/cpu_id_x86.hpp
-    src/hikogui/SIMD/float_to_half.hpp
-    src/hikogui/SIMD/half.hpp
-    src/hikogui/SIMD/half_to_float.hpp
-    src/hikogui/SIMD/simd_intf.hpp
     src/hikogui/algorithm/algorithm.hpp
     src/hikogui/algorithm/algorithm_misc.hpp
     src/hikogui/algorithm/animator.hpp
@@ -409,8 +409,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_shaper_char.hpp
     src/hikogui/text/text_shaper_line.hpp
     src/hikogui/text/text_style.hpp
-    src/hikogui/theme/theme_length.hpp
-    src/hikogui/theme/theme_value.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp
     src/hikogui/time/time_stamp_count.hpp
