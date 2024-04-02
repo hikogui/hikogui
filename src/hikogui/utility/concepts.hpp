@@ -15,7 +15,8 @@
 
 hi_export_module(hikogui.utility.concepts);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename T>
 concept numeric = is_numeric_v<T>;
@@ -42,14 +43,14 @@ template<typename T>
 concept trivially_copyable = std::is_trivially_copyable_v<T>;
 
 /** Different from
- * 
+ *
  * Not std::same_as.
  */
 template<typename Context, typename Expected>
 concept different_from = not std::same_as<Context, Expected>;
 
 /** Incompatible with another type
- * 
+ *
  * Not std::convertible_to.
  */
 template<typename Context, typename Expected>
@@ -126,7 +127,7 @@ template<typename T>
 concept scoped_enum = std::is_enum_v<T>;
 
 template<typename Context, typename... Expected>
-concept same_as_any = (std::same_as<Context, Expected> or...);
+concept same_as_any = (std::same_as<Context, Expected> or ...);
 
 /** True if T is a forwarded type of Forward.
  *
@@ -145,15 +146,14 @@ concept byte_like = is_byte_like_v<Context>;
 /** True if T can be assigned with a nullptr.
  */
 template<typename T>
-concept nullable = requires (T &a) { a = nullptr; };
+concept nullable = requires(T& a) { a = nullptr; };
 
 /** True if T is dereferenceable.
- * 
+ *
  * Either it is a pointer, or it implements both operator*() and operator->().
  */
 template<typename T>
-concept dereferenceable = std::is_pointer_v<T> or requires (T &a)
-{
+concept dereferenceable = std::is_pointer_v<T> or requires(T& a) {
     a.operator*();
     a.operator->();
 };
@@ -163,4 +163,5 @@ concept dereferenceable = std::is_pointer_v<T> or requires (T &a)
 template<typename T>
 concept nullable_pointer = nullable<T> and dereferenceable<T>;
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

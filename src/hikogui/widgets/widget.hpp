@@ -247,7 +247,7 @@ public:
             handled |= child.handle_event_recursive(event, reject_list);
         }
 
-        if (!std::ranges::any_of(reject_list, [&](hilet& x) {
+        if (!std::ranges::any_of(reject_list, [&](auto const& x) {
                 return x == id;
             })) {
             handled |= handle_event(event);
@@ -346,7 +346,7 @@ public:
 
     [[nodiscard]] hi::theme const& theme() const noexcept
     {
-        hilet w = window();
+        auto const w = window();
         hi_assert_not_null(w);
         return w->theme;
     }
@@ -434,9 +434,9 @@ protected:
         hi_axiom(loop::main().on_thread());
 
         // Move the request_rectangle to window coordinates.
-        hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
-        hilet window_bounds = aarectangle{layout().window_size} - theme().margin<float>();
-        hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
+        auto const requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
+        auto const window_bounds = aarectangle{layout().window_size} - theme().margin<float>();
+        auto const response_window_rectangle = fit(window_bounds, requested_window_rectangle);
         return layout().from_window * response_window_rectangle;
     }
 };

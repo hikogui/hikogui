@@ -89,14 +89,14 @@ constexpr auto font_weight_metadata = enum_metadata{
 
 [[nodiscard]] constexpr char to_char(font_weight const& x) noexcept
 {
-    hilet x_ = static_cast<int>(x);
+    auto const x_ = static_cast<int>(x);
     hi_axiom(x_ >= 0 && x_ <= 9);
     return char_cast<char>('0' + x_);
 }
 
 [[nodiscard]] constexpr int to_int(font_weight const& x) noexcept
 {
-    hilet x_ = (static_cast<int>(x) + 1) * 100;
+    auto const x_ = (static_cast<int>(x) + 1) * 100;
     return (x_ == 1000) ? 950 : x_;
 }
 

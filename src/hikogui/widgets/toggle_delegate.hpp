@@ -9,7 +9,8 @@
 
 hi_export_module(hikogui.widgets.toggle_delegate);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A button delegate controls the state of a button widget.
  * @ingroup widget_delegates
@@ -70,11 +71,12 @@ public:
      * @param on_value The value or observer-value that mean 'on'.
      * @param off_value The value or observer-value that mean 'off'.
      */
-    default_toggle_delegate(
-        forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<value_type>> auto&& on_value,
-        forward_of<observer<value_type>> auto&& off_value) noexcept :
-        value(hi_forward(value)), on_value(hi_forward(on_value)), off_value(hi_forward(off_value))
+    template<
+        forward_of<observer<value_type>> Value,
+        forward_of<observer<value_type>> OnValue,
+        forward_of<observer<value_type>> OffValue>
+    default_toggle_delegate(Value&& value, OnValue&& on_value, OffValue&& off_value) noexcept :
+        value(std::forward<Value>(value)), on_value(std::forward<OnValue>(on_value)), off_value(std::forward<OffValue>(off_value))
     {
         // clang-format off
         _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
@@ -88,11 +90,11 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      * @param on_value The value or observer-value that mean 'on'.
      */
+    template<forward_of<observer<value_type>> Value, forward_of<observer<value_type>> OnValue>
     default_toggle_delegate(
-        forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<value_type>> auto&& on_value) noexcept
-        requires can_make_defaults
-        : default_toggle_delegate(hi_forward(value), hi_forward(on_value), value_type{})
+        Value&& value,
+        OnValue&& on_value) noexcept requires can_make_defaults
+        : default_toggle_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), value_type{})
     {
     }
 
@@ -100,9 +102,9 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      */
-    default_toggle_delegate(forward_of<observer<value_type>> auto&& value) noexcept
-        requires can_make_defaults
-        : default_toggle_delegate(hi_forward(value), value_type{1}, value_type{})
+    template<forward_of<observer<value_type>> Value>
+    default_toggle_delegate(Value&& value) noexcept requires can_make_defaults
+        : default_toggle_delegate(std::forward<Value>(value), value_type{1}, value_type{})
     {
     }
 
@@ -142,4 +144,5 @@ default_toggle_delegate(Value&&, OnValue&&) -> default_toggle_delegate<observer_
 template<typename Value, typename OnValue, typename OffValue>
 default_toggle_delegate(Value&&, OnValue&&, OffValue&&) -> default_toggle_delegate<observer_decay_t<Value>>;
 
-}}
+} // namespace v1
+}

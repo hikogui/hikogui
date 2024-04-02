@@ -99,7 +99,7 @@ public:
     [[nodiscard]] constexpr std::u32string u32string() noexcept
     {
         auto r = std::u32string{};
-        for (hilet& token : _tokens) {
+        for (auto const& token : _tokens) {
             r += token.u32string();
         }
         return r;
@@ -123,7 +123,7 @@ public:
     [[nodiscard]] constexpr std::u32string debug_u32string() noexcept
     {
         auto r = std::u32string{};
-        for (hilet& token : _tokens) {
+        for (auto const& token : _tokens) {
             r += token.debug_u32string();
         }
         return r;
@@ -330,7 +330,7 @@ private:
         {
             constexpr bool Right = not Left;
 
-            if (hilet text_ptr = std::get_if<text_type>(&_value)) {
+            if (auto const text_ptr = std::get_if<text_type>(&_value)) {
                 if (Left and str.starts_with(*text_ptr)) {
                     str.remove_prefix(text_ptr->size());
                     return match_result_type::success;
@@ -343,12 +343,12 @@ private:
                     return match_result_type::fail;
                 }
 
-            } else if (hilet character_class_ptr = std::get_if<character_class_type>(&_value)) {
+            } else if (auto const character_class_ptr = std::get_if<character_class_type>(&_value)) {
                 if (str.empty()) {
                     return match_result_type::fail;
                 }
-                hilet c = Left ? str.front() : str.back();
-                for (hilet[first_char, last_char] : *character_class_ptr) {
+                auto const c = Left ? str.front() : str.back();
+                for (auto const[first_char, last_char] : *character_class_ptr) {
                     if (c >= first_char and c <= last_char) {
                         if constexpr (Left) {
                             str.remove_prefix(1);
@@ -378,7 +378,7 @@ private:
 
         [[nodiscard]] constexpr match_result_type matches(std::u32string_view& str, size_t iteration) const noexcept
         {
-            if (hilet text_ptr = std::get_if<text_type>(&_value)) {
+            if (auto const text_ptr = std::get_if<text_type>(&_value)) {
                 if (iteration != 0) {
                     return match_result_type::fail;
 
@@ -390,12 +390,12 @@ private:
                     return match_result_type::fail;
                 }
 
-            } else if (hilet character_class_ptr = std::get_if<character_class_type>(&_value)) {
+            } else if (auto const character_class_ptr = std::get_if<character_class_type>(&_value)) {
                 if (iteration != 0 or str.empty()) {
                     return match_result_type::fail;
                 } else {
-                    hilet c = str.front();
-                    for (hilet[first_char, last_char] : *character_class_ptr) {
+                    auto const c = str.front();
+                    for (auto const[first_char, last_char] : *character_class_ptr) {
                         if (c >= first_char and c <= last_char) {
                             str.remove_prefix(1);
                             return match_result_type::success;
@@ -404,7 +404,7 @@ private:
                     return match_result_type::fail;
                 }
 
-            } else if (hilet alternation_ptr = std::get_if<alternation_type>(&_value)) {
+            } else if (auto const alternation_ptr = std::get_if<alternation_type>(&_value)) {
                 if (iteration >= alternation_ptr->size()) {
                     return match_result_type::fail;
                 } else if (str.starts_with((*alternation_ptr)[iteration])) {
@@ -457,7 +457,7 @@ private:
 
             } else if (auto character_class_ptr = std::get_if<character_class_type>(&_value)) {
                 r += U'[';
-                for (hilet[first_char, last_char] : *character_class_ptr) {
+                for (auto const[first_char, last_char] : *character_class_ptr) {
                     if (first_char == last_char) {
                         r += first_char;
                     } else {
@@ -470,7 +470,7 @@ private:
 
             } else if (auto alternation_ptr = std::get_if<alternation_type>(&_value)) {
                 r += U'{';
-                for (hilet& text : *alternation_ptr) {
+                for (auto const& text : *alternation_ptr) {
                     if (r.size() > 1) {
                         r += U',';
                     }
@@ -505,7 +505,7 @@ private:
 
             } else if (auto character_class_ptr = std::get_if<character_class_type>(&_value)) {
                 r += U'[';
-                for (hilet[first_char, last_char] : *character_class_ptr) {
+                for (auto const[first_char, last_char] : *character_class_ptr) {
                     if (first_char == last_char) {
                         r += first_char;
                     } else {
@@ -518,7 +518,7 @@ private:
 
             } else if (auto alternation_ptr = std::get_if<alternation_type>(&_value)) {
                 r += U'{';
-                for (hilet& text : *alternation_ptr) {
+                for (auto const& text : *alternation_ptr) {
                     if (r.size() > 1) {
                         r += U',';
                     }
@@ -783,7 +783,7 @@ private:
     matches_strip(const_iterator& first, const_iterator& last, std::u32string_view& str) noexcept
     {
         while (first != last) {
-            hilet it = Left ? first : last - 1;
+            auto const it = Left ? first : last - 1;
             switch (it->strip<Left>(str)) {
             case match_result_type::fail:
                 return false;
@@ -881,7 +881,7 @@ hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(glob_pat
 {
     auto path = pattern.base_path();
 
-    hilet last = std::filesystem::recursive_directory_iterator{};
+    auto const last = std::filesystem::recursive_directory_iterator{};
 
     auto first = last;
     try {
@@ -958,8 +958,8 @@ hi_export [[nodiscard]] hi_inline generator<std::filesystem::path> glob(std::fil
 hi_export template<path_range Locations>
 [[nodiscard]] hi_inline generator<std::filesystem::path> glob(Locations&& locations, std::filesystem::path ref) noexcept
 {
-    for (hilet& directory : locations) {
-        for (hilet& path : glob(directory / ref)) {
+    for (auto const& directory : locations) {
+        for (auto const& path : glob(directory / ref)) {
             co_yield path;
         }
     }

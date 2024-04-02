@@ -55,53 +55,53 @@ public:
 
         // Calculate a conservative number of samples that can be copied quickly
         // without overflowing the dst buffer.
-        hilet src_end = src + num_samples;
-        hilet src_fast_end = src + _format.num_fast_quads(_stride, num_samples) * 4;
+        auto const src_end = src + num_samples;
+        auto const src_fast_end = src + _format.num_fast_quads(_stride, num_samples) * 4;
 
-        hilet store_shuffle_indices = _store_shuffle_indices;
-        hilet concat_shuffle_indices = _concat_shuffle_indices;
-        hilet num_chunks_per_quad = _num_chunks_per_quad;
-        hilet chunk_stride = _chunk_stride;
+        auto const store_shuffle_indices = _store_shuffle_indices;
+        auto const concat_shuffle_indices = _concat_shuffle_indices;
+        auto const num_chunks_per_quad = _num_chunks_per_quad;
+        auto const chunk_stride = _chunk_stride;
 
         if (_format.is_float) {
             while (src != src_fast_end) {
-                hilet float_samples = load_samples(src);
-                hilet int_samples = i8x16::cast_from(float_samples);
+                auto const float_samples = load_samples(src);
+                auto const int_samples = i8x16::cast_from(float_samples);
                 store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
             }
             while (src != src_end) {
-                hilet float_sample = load_sample(src);
-                hilet int_sample = std::bit_cast<int32_t>(float_sample);
+                auto const float_sample = load_sample(src);
+                auto const int_sample = std::bit_cast<int32_t>(float_sample);
                 store_sample(int_sample, dst, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
             }
 
         } else {
-            hilet multiplier = _multiplier;
-            hilet one = f32x4::broadcast(1);
-            hilet min_one = f32x4::broadcast(-1);
+            auto const multiplier = _multiplier;
+            auto const one = f32x4::broadcast(1);
+            auto const min_one = f32x4::broadcast(-1);
 
             auto dither = _dither;
 
             while (src != src_fast_end) {
-                hilet dither_value = dither.next();
+                auto const dither_value = dither.next();
 
                 auto float_samples = load_samples(src);
                 float_samples += dither_value;
                 float_samples = min(float_samples, one);
                 float_samples = max(float_samples, min_one);
                 float_samples *= multiplier;
-                hilet int_samples = i8x16::cast_from(static_cast<i32x4>(float_samples));
+                auto const int_samples = i8x16::cast_from(static_cast<i32x4>(float_samples));
                 store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
             }
             while (src != src_end) {
-                hilet dither_value = dither.next();
+                auto const dither_value = dither.next();
 
                 auto float_sample = f32x4::broadcast(load_sample(src));
                 float_sample += dither_value;
                 float_sample = min(float_sample, one);
                 float_sample = max(float_sample, min_one);
                 float_sample *= multiplier;
-                hilet int_sample = get<0>(static_cast<i32x4>(float_sample));
+                auto const int_sample = get<0>(static_cast<i32x4>(float_sample));
                 store_sample(int_sample, dst, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
             }
 
@@ -153,7 +153,7 @@ private:
         // Read out the samples from the other channels, that where packed before.
         auto tmp = i8x16::load(dst);
 
-        hilet packed_samples = permute(int_samples, store_shuffle_indices);
+        auto const packed_samples = permute(int_samples, store_shuffle_indices);
 
         // When the shuffle-index is -1 use the samples from the other channels.
         tmp = blend(packed_samples, tmp, store_shuffle_indices);
@@ -191,7 +191,7 @@ private:
 
     [[nodiscard]] static f32x4 load_samples(float const * hi_restrict & src) noexcept
     {
-        hilet r = f32x4::load(src);
+        auto const r = f32x4::load(src);
         src += 4;
         return r;
     }

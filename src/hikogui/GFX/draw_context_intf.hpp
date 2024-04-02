@@ -284,7 +284,7 @@ public:
     template<std::same_as<widget_layout> WidgetLayout>
     void draw_line(WidgetLayout const& layout, line_segment const& line, draw_attributes const& attributes) const noexcept
     {
-        hilet box = make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
+        auto const box = make_rectangle(line, attributes.line_width, attributes.begin_line_cap, attributes.end_line_cap);
 
         auto box_attributes = attributes;
         box_attributes.line_width = 0.0f;
@@ -633,15 +633,15 @@ private:
     {
         auto right = line.direction();
 
-        hilet radius = width * 0.5f;
-        hilet n = normal(right, 0.0f);
-        hilet up = n * width;
-        hilet t = normalize(right);
+        auto const radius = width * 0.5f;
+        auto const n = normal(right, 0.0f);
+        auto const up = n * width;
+        auto const t = normalize(right);
 
         auto origin = line.origin() - n * radius;
 
         // Extend the line by the radius for rounded end-caps.
-        hilet radius_offset = t * radius;
+        auto const radius_offset = t * radius;
         if (c1 == line_end_cap::round) {
             origin -= radius_offset;
             right += radius_offset;
@@ -655,10 +655,10 @@ private:
 
     [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const& circle) noexcept
     {
-        hilet circle_ = f32x4{circle};
-        hilet origin = point3{circle_.xyz1() - circle_.ww00()};
-        hilet right = vector3{circle_.w000() * f32x4::broadcast(2.0f)};
-        hilet up = vector3{circle_._0w00() * f32x4::broadcast(2.0f)};
+        auto const circle_ = f32x4{circle};
+        auto const origin = point3{circle_.xyz1() - circle_.ww00()};
+        auto const right = vector3{circle_.w000() * f32x4::broadcast(2.0f)};
+        auto const up = vector3{circle_._0w00() * f32x4::broadcast(2.0f)};
         return rectangle{origin, right, up};
     }
 

@@ -124,13 +124,14 @@ public:
         });
     }
 
+    template<text_field_widget_attribute... Attributes>
     text_field_widget(
         not_null<widget_intf const *> parent,
         std::shared_ptr<delegate_type> delegate,
-        text_field_widget_attribute auto&&...attributes) noexcept :
+        Attributes&&...attributes) noexcept :
         text_field_widget(parent, std::move(delegate))
     {
-        set_attributes(hi_forward(attributes)...);
+        set_attributes(std::forward<Attributes>(attributes)...);
     }
 
     /** Construct a text field widget.
@@ -139,13 +140,14 @@ public:
      * @param value The value or `observer` value which represents the state of the text-field.
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
+    template<incompatible_with<std::shared_ptr<delegate_type>> Value, text_field_widget_attribute... Attributes>
     text_field_widget(
         not_null<widget_intf const *> parent,
-        incompatible_with<std::shared_ptr<delegate_type>> auto&& value,
-        text_field_widget_attribute auto&&...attributes) noexcept requires requires
+        Value&& value,
+        Attributes&&...attributes) noexcept requires requires
     {
-        make_default_text_field_delegate(hi_forward(value));
-    } : text_field_widget(parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
+        make_default_text_field_delegate(std::forward<Value>(value));
+    } : text_field_widget(parent, make_default_text_field_delegate(std::forward<Value>(value)), std::forward<Attributes>(attributes)...) {}
 
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
@@ -171,8 +173,8 @@ public:
         _layout = {};
         _scroll_constraints = _scroll_widget->update_constraints();
 
-        hilet scroll_width = 100;
-        hilet box_size = extent2{
+        auto const scroll_width = 100;
+        auto const box_size = extent2{
             _scroll_constraints.margins.left() + scroll_width + _scroll_constraints.margins.right(),
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
@@ -193,23 +195,23 @@ public:
         }
 
         // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
-        hilet resolved_alignment = resolve_mirror(*alignment, os_settings::left_to_right());
+        auto const resolved_alignment = resolve_mirror(*alignment, os_settings::left_to_right());
 
         return {size, size, size, resolved_alignment, margins};
     }
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet scroll_size = extent2{
+            auto const scroll_size = extent2{
                 context.width(),
                 _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() +
                     _scroll_constraints.margins.bottom()};
 
-            hilet scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
+            auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
             _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment()};
 
             if (_error_label_widget->mode() > widget_mode::invisible) {
-                hilet error_label_rectangle =
+                auto const error_label_rectangle =
                     aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
                 _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment()};
             }
@@ -317,17 +319,19 @@ private:
     callback<void(label)> _error_label_cbt;
 
     void set_attributes() noexcept {}
-    void set_attributes(text_field_widget_attribute auto&& first, text_field_widget_attribute auto&&...rest) noexcept
+
+    template<text_field_widget_attribute First, text_field_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
+        if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+            text_style = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
 
-        set_attributes(hi_forward(rest)...);
+        set_attributes(std::forward<Rest>(rest)...);
     }
 
     void revert(bool force) noexcept
@@ -356,12 +360,12 @@ private:
     }
     void draw_background_box(draw_context const& context) const noexcept
     {
-        hilet outline = _scroll_shape.rectangle;
+        auto const outline = _scroll_shape.rectangle;
 
-        hilet corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
+        auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
         context.draw_box(layout(), outline, background_color(), corner_radii);
 
-        hilet line = line_segment(get<0>(outline), get<1>(outline));
+        auto const line = line_segment(get<0>(outline), get<1>(outline));
         context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width(), focus_color());
     }
 };

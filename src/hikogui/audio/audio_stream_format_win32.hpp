@@ -70,8 +70,8 @@ hi_export [[nodiscard]] hi_inline audio_stream_format audio_stream_format_from_w
         r.format = pcm_format{true, std::endian::native, true, 4, 8, 23};
 
     } else if (wave_format.SubFormat == KSDATAFORMAT_SUBTYPE_PCM) {
-        hilet num_bytes = narrow_cast<uint8_t>(wave_format.Format.wBitsPerSample / 8);
-        hilet num_minor_bits = narrow_cast<uint8_t>(wave_format.Samples.wValidBitsPerSample - 1);
+        auto const num_bytes = narrow_cast<uint8_t>(wave_format.Format.wBitsPerSample / 8);
+        auto const num_minor_bits = narrow_cast<uint8_t>(wave_format.Samples.wValidBitsPerSample - 1);
         r.format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
     } else {
         throw parse_error("Unknown SubFormat");
@@ -107,8 +107,8 @@ hi_export [[nodiscard]] hi_inline audio_stream_format audio_stream_format_from_w
         r.format = pcm_format{true, std::endian::native, true, 4, 8, 23};
 
     } else if (wave_format.wFormatTag == WAVE_FORMAT_IEEE_FLOAT) {
-        hilet num_bytes = narrow_cast<uint8_t>(wave_format.wBitsPerSample / 8);
-        hilet num_minor_bits = narrow_cast<uint8_t>(wave_format.wBitsPerSample);
+        auto const num_bytes = narrow_cast<uint8_t>(wave_format.wBitsPerSample / 8);
+        auto const num_minor_bits = narrow_cast<uint8_t>(wave_format.wBitsPerSample);
         r.format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
 
     } else {

@@ -57,28 +57,28 @@ public:
 
         if (_format.is_float) {
             while (dst != dst_fast_end) {
-                hilet int_samples =
+                auto const int_samples =
                     load_samples(src, _load_shuffle_indices, _concat_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
-                hilet float_samples = f32x4::cast_from(int_samples);
+                auto const float_samples = f32x4::cast_from(int_samples);
                 store_samples(dst, float_samples);
             }
             while (dst != dst_end) {
-                hilet int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
-                hilet float_sample = std::bit_cast<float>(int_sample);
+                auto const int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
+                auto const float_sample = std::bit_cast<float>(int_sample);
                 store_sample(dst, float_sample);
             }
 
         } else {
-            hilet multiplier = _multiplier;
+            auto const multiplier = _multiplier;
             while (dst != dst_fast_end) {
-                hilet int_samples =
+                auto const int_samples =
                     load_samples(src, _load_shuffle_indices, _concat_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
-                hilet float_samples = static_cast<f32x4>(int_samples) * multiplier;
+                auto const float_samples = static_cast<f32x4>(int_samples) * multiplier;
                 store_samples(dst, float_samples);
             }
             while (dst != dst_end) {
-                hilet int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
-                hilet float_sample = static_cast<float>(int_sample) * get<0>(multiplier);
+                auto const int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
+                auto const float_sample = static_cast<float>(int_sample) * get<0>(multiplier);
                 store_sample(dst, float_sample);
             }
         }

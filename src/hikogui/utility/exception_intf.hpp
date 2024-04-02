@@ -92,7 +92,7 @@ public:
         auto c32 = char32_t{};
         auto continue_count = int{};
         while (first != last) {
-            hilet c8 = char_cast<char8_t>(*first++);
+            auto const c8 = char_cast<char8_t>(*first++);
 
             if ((c8 & 0xc0) == 0x80) {
                 --continue_count;
@@ -139,7 +139,7 @@ private:
     [[nodiscard]] constexpr static std::string
     make_what(It first, It last, size_t tab_size, char const *msg, Args const&...args) noexcept
     {
-        hilet[line_nr, column_nr] = get_line_position(first, last, tab_size);
+        auto const[line_nr, column_nr] = get_line_position(first, last, tab_size);
         return {std::format("{}:{}: {}", line_nr + 1, column_nr + 1, std::format(msg, args...))};
     }
 };

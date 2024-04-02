@@ -88,14 +88,14 @@ public:
             desired_access |= DELETE;
         }
 
-        hilet file_name = path.native();
+        auto const file_name = path.native();
         if ((_file_handle = CreateFileW(
                  file_name.data(), desired_access, share_mode, NULL, creation_disposition, flags_and_attributes, NULL)) !=
             INVALID_HANDLE_VALUE) {
             return;
         }
 
-        hilet error = GetLastError();
+        auto const error = GetLastError();
         if (to_bool(access_mode & access_mode::create_directories) and error == ERROR_PATH_NOT_FOUND and
             (creation_disposition == CREATE_ALWAYS or creation_disposition == OPEN_ALWAYS or
              creation_disposition == CREATE_NEW)) {
@@ -193,7 +193,7 @@ public:
         auto dst_filename = destination.native();
         auto dst_filename_wsize = (dst_filename.size() + 1) * sizeof(WCHAR);
 
-        hilet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
+        auto const rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
         auto rename_info_alloc = std::string{};
         rename_info_alloc.resize(rename_info_size);

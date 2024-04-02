@@ -27,9 +27,9 @@ public:
 
     [[nodiscard]] rotate2(float angle) noexcept : _v()
     {
-        hilet half_angle = angle * 0.5f;
-        hilet C = std::cos(half_angle);
-        hilet S = std::sin(half_angle);
+        auto const half_angle = angle * 0.5f;
+        auto const C = std::cos(half_angle);
+        auto const S = std::sin(half_angle);
 
         _v = f32x4{0.0f, 0.0f, S, C};
     }
@@ -41,8 +41,8 @@ public:
 
     //std::pair<float, vector3> angle_and_axis() const noexcept
     //{
-    //    hilet rcp_length = rcp_hypot<0b0111>(_v);
-    //    hilet length = 1.0f / rcp_length;
+    //    auto const rcp_length = rcp_hypot<0b0111>(_v);
+    //    auto const length = 1.0f / rcp_length;
     //
     //    return {2.0f * std::atan2(length), vector3{_v.xyz0() * rcp_length}};
     //}

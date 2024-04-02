@@ -37,11 +37,11 @@ public:
     template<forward_of<void()> Func>
     [[nodiscard]] std::pair<callback<void()>, bool> delay_function(utc_nanoseconds time_point, Func &&func) noexcept
     {
-        hilet it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
+        auto const it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](auto const& x, auto const& time_point) {
             return x.time_point > time_point;
         });
 
-        hilet next_to_call = it == _functions.end();
+        auto const next_to_call = it == _functions.end();
 
         auto token = callback<void()>{std::forward<Func>(func)};
         _functions.emplace(it, time_point, std::chrono::nanoseconds::max(), token);
@@ -61,7 +61,7 @@ public:
         utc_nanoseconds time_point,
         Func &&func) noexcept
     {
-        auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
+        auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](auto const& x, auto const& time_point) {
             return x.time_point > time_point;
         });
 
@@ -157,7 +157,7 @@ private:
             }
 
             // Reinsert the function in the sorted list of functions.
-            hilet it = std::lower_bound(_functions.begin(), _functions.end(), item.time_point, [](hilet& x, hilet& time_point) {
+            auto const it = std::lower_bound(_functions.begin(), _functions.end(), item.time_point, [](auto const& x, auto const& time_point) {
                 return x.time_point > time_point;
             });
 

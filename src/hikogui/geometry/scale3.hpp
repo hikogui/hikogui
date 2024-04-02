@@ -60,8 +60,8 @@ public:
      */
     [[nodiscard]] constexpr static scale3 uniform(extent3 src_extent, extent3 dst_extent) noexcept
     {
-        hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
-        hilet uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
+        auto const non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
+        auto const uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
         return scale3{uniform_scale};
     }
 

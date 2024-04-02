@@ -54,7 +54,7 @@ public:
 
     [[nodiscard]] generator<audio_device&> devices() noexcept override
     {
-        for (hilet& device : _devices) {
+        for (auto const& device : _devices) {
             co_yield *device;
         }
     }

@@ -56,10 +56,10 @@ public:
 
     [[nodiscard]] constexpr operator matrix3() noexcept
     {
-        hilet a = _aspect_ratio;
-        hilet t = _tan_half_fov_y;
-        hilet f = _zfar;
-        hilet n = _znear;
+        auto const a = _aspect_ratio;
+        auto const t = _tan_half_fov_y;
+        auto const f = _zfar;
+        auto const n = _znear;
 
         // clang-format off
         return {

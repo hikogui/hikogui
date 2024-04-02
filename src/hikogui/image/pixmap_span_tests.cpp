@@ -4,16 +4,17 @@
 
 #include "pixmap_span.hpp"
 #include "pixmap.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
 
-TEST(pixmap_span, construct_empty)
+TEST_SUITE(pixmap_span) {
+
+TEST_CASE(construct_empty)
 {
     auto a = hi::pixmap_span<uint8_t>{};
-    ASSERT_TRUE(a.empty());
-    ASSERT_EQ(a.width(), 0);
-    ASSERT_EQ(a.height(), 0);
-    ASSERT_EQ(a.stride(), 0);
+    REQUIRE(a.empty());
+    REQUIRE(a.width() == 0);
+    REQUIRE(a.height() == 0);
+    REQUIRE(a.stride() == 0);
 }
 
 static auto make_test_pixmap()
@@ -26,112 +27,112 @@ static auto make_test_pixmap()
     return r;
 }
 
-TEST(pixmap_span, convert_from_pixmap)
+TEST_CASE(convert_from_pixmap)
 {
     auto a = make_test_pixmap();
     auto b = hi::pixmap_span{a};
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.stride(), 4);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.stride() == 4);
 
-    ASSERT_EQ(b(0, 0), 0);
-    ASSERT_EQ(b(1, 0), 1);
-    ASSERT_EQ(b(2, 0), 2);
-    ASSERT_EQ(b(3, 0), 3);
-    ASSERT_EQ(b(0, 1), 4);
-    ASSERT_EQ(b(1, 1), 5);
-    ASSERT_EQ(b(2, 1), 6);
-    ASSERT_EQ(b(3, 1), 7);
-    ASSERT_EQ(b(0, 2), 8);
-    ASSERT_EQ(b(1, 2), 9);
-    ASSERT_EQ(b(2, 2), 10);
-    ASSERT_EQ(b(3, 2), 11);
+    REQUIRE(b(0, 0) == 0);
+    REQUIRE(b(1, 0) == 1);
+    REQUIRE(b(2, 0) == 2);
+    REQUIRE(b(3, 0) == 3);
+    REQUIRE(b(0, 1) == 4);
+    REQUIRE(b(1, 1) == 5);
+    REQUIRE(b(2, 1) == 6);
+    REQUIRE(b(3, 1) == 7);
+    REQUIRE(b(0, 2) == 8);
+    REQUIRE(b(1, 2) == 9);
+    REQUIRE(b(2, 2) == 10);
+    REQUIRE(b(3, 2) == 11);
 }
 
-TEST(pixmap_span, convert_to_pixmap)
+TEST_CASE(convert_to_pixmap)
 {
     auto a = make_test_pixmap();
     auto b = hi::pixmap_span<uint8_t>{a};
     auto c = b.subimage(1, 0, 2, 2);
 
-    ASSERT_FALSE(c.empty());
-    ASSERT_EQ(c.width(), 2);
-    ASSERT_EQ(c.height(), 2);
-    ASSERT_EQ(c.stride(), 4);
-    ASSERT_EQ(c(0, 0), 1);
-    ASSERT_EQ(c(1, 0), 2);
-    ASSERT_EQ(c(0, 1), 5);
-    ASSERT_EQ(c(1, 1), 6);
+    REQUIRE(not c.empty());
+    REQUIRE(c.width() == 2);
+    REQUIRE(c.height() == 2);
+    REQUIRE(c.stride() == 4);
+    REQUIRE(c(0, 0) == 1);
+    REQUIRE(c(1, 0) == 2);
+    REQUIRE(c(0, 1) == 5);
+    REQUIRE(c(1, 1) == 6);
 
     auto d = hi::pixmap{c};
 
-    ASSERT_FALSE(d.empty());
-    ASSERT_EQ(d.width(), 2);
-    ASSERT_EQ(d.height(), 2);
-    ASSERT_EQ(d.capacity(), 4);
-    ASSERT_EQ(d(0, 0), 1);
-    ASSERT_EQ(d(1, 0), 2);
-    ASSERT_EQ(d(0, 1), 5);
-    ASSERT_EQ(d(1, 1), 6);
+    REQUIRE(not d.empty());
+    REQUIRE(d.width() == 2);
+    REQUIRE(d.height() == 2);
+    REQUIRE(d.capacity() == 4);
+    REQUIRE(d(0, 0) == 1);
+    REQUIRE(d(1, 0) == 2);
+    REQUIRE(d(0, 1) == 5);
+    REQUIRE(d(1, 1) == 6);
 }
 
-TEST(pixmap_span, construct_from_data)
+TEST_CASE(construct_from_data)
 {
     auto a = make_test_pixmap();
 
     // Create a smaller image_view, last argument is the stride.
     auto b = hi::pixmap_span<uint8_t>{a.data(), 3, 3, 4};
 
-    ASSERT_FALSE(b.empty());
-    ASSERT_EQ(b.width(), 3);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.stride(), 4);
+    REQUIRE(not b.empty());
+    REQUIRE(b.width() == 3);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.stride() == 4);
 
-    ASSERT_EQ(b(0, 0), 0);
-    ASSERT_EQ(b(1, 0), 1);
-    ASSERT_EQ(b(2, 0), 2);
-    ASSERT_EQ(b(0, 1), 4);
-    ASSERT_EQ(b(1, 1), 5);
-    ASSERT_EQ(b(2, 1), 6);
-    ASSERT_EQ(b(0, 2), 8);
-    ASSERT_EQ(b(1, 2), 9);
-    ASSERT_EQ(b(2, 2), 10);
+    REQUIRE(b(0, 0) == 0);
+    REQUIRE(b(1, 0) == 1);
+    REQUIRE(b(2, 0) == 2);
+    REQUIRE(b(0, 1) == 4);
+    REQUIRE(b(1, 1) == 5);
+    REQUIRE(b(2, 1) == 6);
+    REQUIRE(b(0, 2) == 8);
+    REQUIRE(b(1, 2) == 9);
+    REQUIRE(b(2, 2) == 10);
 }
 
-TEST(pixmap_span, copy_assign)
+TEST_CASE(copy_assign)
 {
     auto a = make_test_pixmap();
     auto b = hi::pixmap_span<uint8_t>{};
 
-    ASSERT_EQ(b.width(), 0);
-    ASSERT_EQ(b.height(), 0);
-    ASSERT_EQ(b.stride(), 0);
-    ASSERT_EQ(b.data(), nullptr);
+    REQUIRE(b.width() == 0);
+    REQUIRE(b.height() == 0);
+    REQUIRE(b.stride() == 0);
+    REQUIRE(b.data() == nullptr);
 
     b = hi::pixmap_span<uint8_t>{a};
 
-    ASSERT_EQ(b.width(), 4);
-    ASSERT_EQ(b.height(), 3);
-    ASSERT_EQ(b.stride(), 4);
-    ASSERT_EQ(b.data(), a.data());
+    REQUIRE(b.width() == 4);
+    REQUIRE(b.height() == 3);
+    REQUIRE(b.stride() == 4);
+    REQUIRE(b.data() == a.data());
 
-    ASSERT_EQ(b(0, 0), 0);
-    ASSERT_EQ(b(1, 0), 1);
-    ASSERT_EQ(b(2, 0), 2);
-    ASSERT_EQ(b(3, 0), 3);
-    ASSERT_EQ(b(0, 1), 4);
-    ASSERT_EQ(b(1, 1), 5);
-    ASSERT_EQ(b(2, 1), 6);
-    ASSERT_EQ(b(3, 1), 7);
-    ASSERT_EQ(b(0, 2), 8);
-    ASSERT_EQ(b(1, 2), 9);
-    ASSERT_EQ(b(2, 2), 10);
-    ASSERT_EQ(b(3, 2), 11);
+    REQUIRE(b(0, 0) == 0);
+    REQUIRE(b(1, 0) == 1);
+    REQUIRE(b(2, 0) == 2);
+    REQUIRE(b(3, 0) == 3);
+    REQUIRE(b(0, 1) == 4);
+    REQUIRE(b(1, 1) == 5);
+    REQUIRE(b(2, 1) == 6);
+    REQUIRE(b(3, 1) == 7);
+    REQUIRE(b(0, 2) == 8);
+    REQUIRE(b(1, 2) == 9);
+    REQUIRE(b(2, 2) == 10);
+    REQUIRE(b(3, 2) == 11);
 }
 
-TEST(pixmap_span, subimage)
+TEST_CASE(subimage)
 {
     auto a_ = make_test_pixmap();
     auto a = hi::pixmap_span<uint8_t>{a_};
@@ -139,81 +140,83 @@ TEST(pixmap_span, subimage)
     {
         auto b = a.subimage(0, 0, 4, 3);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 4);
-        ASSERT_EQ(b.height(), 3);
-        ASSERT_EQ(b.stride(), 4);
-        ASSERT_EQ(b(0, 0), 0);
-        ASSERT_EQ(b(1, 0), 1);
-        ASSERT_EQ(b(2, 0), 2);
-        ASSERT_EQ(b(3, 0), 3);
-        ASSERT_EQ(b(0, 1), 4);
-        ASSERT_EQ(b(1, 1), 5);
-        ASSERT_EQ(b(2, 1), 6);
-        ASSERT_EQ(b(3, 1), 7);
-        ASSERT_EQ(b(0, 2), 8);
-        ASSERT_EQ(b(1, 2), 9);
-        ASSERT_EQ(b(2, 2), 10);
-        ASSERT_EQ(b(3, 2), 11);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 4);
+        REQUIRE(b.height() == 3);
+        REQUIRE(b.stride() == 4);
+        REQUIRE(b(0, 0) == 0);
+        REQUIRE(b(1, 0) == 1);
+        REQUIRE(b(2, 0) == 2);
+        REQUIRE(b(3, 0) == 3);
+        REQUIRE(b(0, 1) == 4);
+        REQUIRE(b(1, 1) == 5);
+        REQUIRE(b(2, 1) == 6);
+        REQUIRE(b(3, 1) == 7);
+        REQUIRE(b(0, 2) == 8);
+        REQUIRE(b(1, 2) == 9);
+        REQUIRE(b(2, 2) == 10);
+        REQUIRE(b(3, 2) == 11);
     }
 
     {
         auto b = a.subimage(0, 0, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.stride(), 4);
-        ASSERT_EQ(b(0, 0), 0);
-        ASSERT_EQ(b(1, 0), 1);
-        ASSERT_EQ(b(0, 1), 4);
-        ASSERT_EQ(b(1, 1), 5);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.stride() == 4);
+        REQUIRE(b(0, 0) == 0);
+        REQUIRE(b(1, 0) == 1);
+        REQUIRE(b(0, 1) == 4);
+        REQUIRE(b(1, 1) == 5);
     }
 
     {
         auto b = a.subimage(1, 0, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.stride(), 4);
-        ASSERT_EQ(b(0, 0), 1);
-        ASSERT_EQ(b(1, 0), 2);
-        ASSERT_EQ(b(0, 1), 5);
-        ASSERT_EQ(b(1, 1), 6);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.stride() == 4);
+        REQUIRE(b(0, 0) == 1);
+        REQUIRE(b(1, 0) == 2);
+        REQUIRE(b(0, 1) == 5);
+        REQUIRE(b(1, 1) == 6);
     }
 
     {
         auto b = a.subimage(0, 1, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.stride(), 4);
-        ASSERT_EQ(b(0, 0), 4);
-        ASSERT_EQ(b(1, 0), 5);
-        ASSERT_EQ(b(0, 1), 8);
-        ASSERT_EQ(b(1, 1), 9);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.stride() == 4);
+        REQUIRE(b(0, 0) == 4);
+        REQUIRE(b(1, 0) == 5);
+        REQUIRE(b(0, 1) == 8);
+        REQUIRE(b(1, 1) == 9);
     }
 
     {
         auto b = a.subimage(1, 1, 2, 2);
 
-        ASSERT_FALSE(b.empty());
-        ASSERT_EQ(b.width(), 2);
-        ASSERT_EQ(b.height(), 2);
-        ASSERT_EQ(b.stride(), 4);
-        ASSERT_EQ(b(0, 0), 5);
-        ASSERT_EQ(b(1, 0), 6);
-        ASSERT_EQ(b(0, 1), 9);
-        ASSERT_EQ(b(1, 1), 10);
+        REQUIRE(not b.empty());
+        REQUIRE(b.width() == 2);
+        REQUIRE(b.height() == 2);
+        REQUIRE(b.stride() == 4);
+        REQUIRE(b(0, 0) == 5);
+        REQUIRE(b(1, 0) == 6);
+        REQUIRE(b(0, 1) == 9);
+        REQUIRE(b(1, 1) == 10);
 
         auto c = b.subimage(0, 1, 2, 1);
-        ASSERT_FALSE(c.empty());
-        ASSERT_EQ(c.width(), 2);
-        ASSERT_EQ(c.height(), 1);
-        ASSERT_EQ(c.stride(), 4);
-        ASSERT_EQ(c(0, 0), 9);
-        ASSERT_EQ(c(1, 0), 10);
+        REQUIRE(not c.empty());
+        REQUIRE(c.width() == 2);
+        REQUIRE(c.height() == 1);
+        REQUIRE(c.stride() == 4);
+        REQUIRE(c(0, 0) == 9);
+        REQUIRE(c(1, 0) == 10);
     }
 }
+
+};

@@ -45,9 +45,9 @@ hi_no_inline typename T::value_type start_subsystem(
 {
     hi_assert_not_null(init_function);
     hi_assert_not_null(deinit_function);
-    hilet lock = std::scoped_lock(subsystem_mutex);
+    auto const lock = std::scoped_lock(subsystem_mutex);
 
-    hilet old_value = check_variable.load(std::memory_order::acquire);
+    auto const old_value = check_variable.load(std::memory_order::acquire);
     if (old_value != off_value) {
         // In the short time before the lock the subsystem became available.
         return old_value;
@@ -75,9 +75,9 @@ hi_no_inline hi_inline bool start_subsystem(global_state_type state_bit, bool (*
     hi_assert_not_null(init_function);
     hi_assert_not_null(deinit_function);
 
-    hilet lock = std::scoped_lock(subsystem_mutex);
+    auto const lock = std::scoped_lock(subsystem_mutex);
 
-    hilet old_state = global_state.load(std::memory_order::acquire);
+    auto const old_state = global_state.load(std::memory_order::acquire);
     if (not is_system_running(old_state)) {
         // Only when the system is running can subsystems be started.
         // otherwise they have to run in degraded mode.
@@ -124,7 +124,7 @@ typename T::value_type start_subsystem(
     // We can do a relaxed load, if:
     //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed
     //  - not off_value, The system is started. If the subsystem is turning off we can't deal with that anyway.
-    hilet old_value = check_variable.load(std::memory_order::relaxed);
+    auto const old_value = check_variable.load(std::memory_order::relaxed);
     if (old_value == off_value) {
         return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
     } else {
@@ -204,7 +204,7 @@ hi_inline void stop_subsystem(void (*deinit_function)())
 {
     hi_assert_not_null(deinit_function);
 
-    hilet lock = std::scoped_lock(detail::subsystem_mutex);
+    auto const lock = std::scoped_lock(detail::subsystem_mutex);
 
     std::erase(detail::subsystem_deinit_list, deinit_function);
     return deinit_function();

@@ -66,18 +66,18 @@ public:
 
         hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
 
-        hilet glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
+        auto const glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
 
         if (otype_glyf_is_compound(glyph_bytes)) {
             auto r = graphic_path{};
 
-            for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
+            for (auto const& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
                 auto component_path = component.scale * get_path(component.glyph_id);
 
                 if (component.use_points) {
-                    hilet compound_point = hi_check_at(r.points, component.compound_point_index).p;
-                    hilet component_point = hi_check_at(component_path.points, component.component_point_index).p;
-                    hilet offset = translate2{compound_point - component_point};
+                    auto const compound_point = hi_check_at(r.points, component.compound_point_index).p;
+                    auto const component_point = hi_check_at(component_path.points, component.component_point_index).p;
+                    auto const offset = translate2{compound_point - component_point};
                     component_path = offset * component_path;
                 } else {
                     component_path = translate2{component.offset} * component_path;
@@ -97,7 +97,7 @@ public:
         load_view();
 
         hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
-        hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
+        auto const[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
         return advance_width;
     }
 
@@ -107,10 +107,10 @@ public:
 
         hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
 
-        hilet glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
+        auto const glyph_bytes = otype_loca_get(_loca_table_bytes, _glyf_table_bytes, glyph_id, _loca_is_offset32);
 
         if (otype_glyf_is_compound(glyph_bytes)) {
-            for (hilet& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
+            for (auto const& component : otype_glyf_get_compound(glyph_bytes, _em_scale)) {
                 if (component.use_for_metrics) {
                     return get_metrics(component.glyph_id);
                 }
@@ -119,7 +119,7 @@ public:
 
         auto r = glyph_metrics{};
         r.bounding_rectangle = otype_glyf_get_bounding_box(glyph_bytes, _em_scale);
-        hilet[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
+        auto const[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
 
         r.advance = advance_width;
         r.left_side_bearing = left_side_bearing;
@@ -320,7 +320,7 @@ private:
         if (OS2_x_height > 0.0f) {
             metrics.x_height = OS2_x_height;
         } else {
-            hilet glyph_id = find_glyph('x');
+            auto const glyph_id = find_glyph('x');
             if (glyph_id) {
                 metrics.x_height = get_metrics(glyph_id).bounding_rectangle.height();
             }
@@ -329,13 +329,13 @@ private:
         if (OS2_cap_height > 0.0f) {
             metrics.cap_height = OS2_cap_height;
         } else {
-            hilet glyph_id = find_glyph('H');
+            auto const glyph_id = find_glyph('H');
             if (glyph_id) {
                 metrics.cap_height = get_metrics(glyph_id).bounding_rectangle.height();
             }
         }
 
-        hilet glyph_id = find_glyph('8');
+        auto const glyph_id = find_glyph('8');
         if (glyph_id) {
             metrics.digit_advance = get_metrics(glyph_id).advance;
         }
@@ -348,14 +348,14 @@ private:
         auto r = font::shape_run_result_type{};
         r.reserve(run.size());
 
-        for (hilet grapheme : run) {
-            hilet glyphs = find_glyph(grapheme);
+        for (auto const grapheme : run) {
+            auto const glyphs = find_glyph(grapheme);
 
             // At this point ligature substitution has not been done. So we should
             // have at least one glyph per grapheme.
             hi_axiom(not glyphs.empty());
-            hilet base_glyph_id = glyphs.front();
-            hilet base_glyph_metrics = get_metrics(base_glyph_id);
+            auto const base_glyph_id = glyphs.front();
+            auto const base_glyph_metrics = get_metrics(base_glyph_id);
 
             r.advances.push_back(base_glyph_metrics.advance);
             r.glyph_count.push_back(glyphs.size());
@@ -368,9 +368,9 @@ private:
             // Position the mark-glyphs.
             auto glyph_position = point2{base_glyph_metrics.advance, 0.0f};
             for (auto i = 1_uz; i != glyphs.size(); ++i) {
-                hilet glyph_id = glyphs[i];
+                auto const glyph_id = glyphs[i];
 
-                hilet glyph_metrics = get_metrics(glyph_id);
+                auto const glyph_metrics = get_metrics(glyph_id);
 
                 r.glyphs.push_back(glyph_id);
                 r.glyph_positions.push_back(glyph_position);
@@ -384,7 +384,7 @@ private:
 
     void shape_run_kern(font::shape_run_result_type& shape_result) const
     {
-        hilet num_graphemes = shape_result.advances.size();
+        auto const num_graphemes = shape_result.advances.size();
 
         auto prev_base_glyph_id = hi::glyph_id{};
         auto glyph_index = 0_uz;
@@ -392,10 +392,10 @@ private:
             // Kerning is done between base-glyphs of consecutive graphemes.
             // Marks should be handled by the Unicode mark positioning algorithm.
             // Or by the more stateful GPOS table.
-            hilet base_glyph_id = shape_result.glyphs[glyph_index];
+            auto const base_glyph_id = shape_result.glyphs[glyph_index];
 
             if (prev_base_glyph_id) {
-                hilet kerning = otype_kern_find(_kern_table_bytes, prev_base_glyph_id, base_glyph_id, _em_scale);
+                auto const kerning = otype_kern_find(_kern_table_bytes, prev_base_glyph_id, base_glyph_id, _em_scale);
 
                 hi_axiom(grapheme_index != 0);
                 shape_result.advances[grapheme_index - 1] += kerning.x();

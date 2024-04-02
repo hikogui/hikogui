@@ -39,10 +39,10 @@ hi_export namespace hi::inline v1 {
 template<typename Iterator>
 [[nodiscard]] auto mean(Iterator first, Iterator last)
 {
-    hilet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
+    auto const init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
-    hilet sum = std::reduce(first, last, init);
-    hilet count = static_cast<decltype(sum)>(std::distance(first, last));
+    auto const sum = std::reduce(first, last, init);
+    auto const count = static_cast<decltype(sum)>(std::distance(first, last));
 
     return count > 0.0 ? sum / count : sum;
 }
@@ -50,14 +50,14 @@ template<typename Iterator>
 template<typename Iterator, typename T>
 [[nodiscard]] auto stddev(Iterator first, Iterator last, T mean)
 {
-    hilet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
+    auto const init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
-    hilet sum = std::accumulate(first, last, init, [=](hilet& acc, hilet& value) {
-        hilet tmp = value - mean;
+    auto const sum = std::accumulate(first, last, init, [=](auto const& acc, auto const& value) {
+        auto const tmp = value - mean;
         return acc + tmp * tmp;
     });
 
-    hilet count = static_cast<decltype(sum)>(std::distance(first, last));
+    auto const count = static_cast<decltype(sum)>(std::distance(first, last));
     return count > 0.0 ? sum / count : sum;
 }
 
@@ -178,9 +178,9 @@ template<std::unsigned_integral T>
     };
     // clang-format on
 
-    hilet num_bits = std::bit_width(x);
+    auto const num_bits = std::bit_width(x);
     hi_axiom_bounds(num_bits, guess_table);
-    hilet guess = guess_table[num_bits];
+    auto const guess = guess_table[num_bits];
     return guess + wide_cast<unsigned int>(x >= pow10(guess));
 }
 

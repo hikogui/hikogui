@@ -65,10 +65,11 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      * @param on_value The value or observer-value that mean 'on'.
      */
+    template<forward_of<observer<value_type>> Value, forward_of<observer<value_type>> OnValue>
     default_radio_delegate(
-        forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<value_type>> auto&& on_value) noexcept :
-        value(hi_forward(value)), on_value(hi_forward(on_value))
+        Value&& value,
+        OnValue&& on_value) noexcept :
+        value(std::forward<Value>(value)), on_value(std::forward<OnValue>(on_value))
     {
         // clang-format off
         _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });

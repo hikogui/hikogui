@@ -84,7 +84,7 @@ public:
     ~gfx_surface()
     {
         if (state != gfx_surface_state::no_window) {
-            hilet lock = std::scoped_lock(gfx_system_mutex);
+            auto const lock = std::scoped_lock(gfx_system_mutex);
             loss = gfx_surface_loss::window_lost;
             teardown();
             hi_assert(state == gfx_surface_state::no_window);

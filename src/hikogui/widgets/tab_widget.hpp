@@ -74,9 +74,10 @@ public:
      * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
-    tab_widget(not_null<widget_intf const *> parent, incompatible_with<std::shared_ptr<delegate_type>> auto&& value) noexcept
-        requires requires { make_default_tab_delegate(hi_forward(value)); }
-        : tab_widget(parent, make_default_tab_delegate(hi_forward(value)))
+    template<incompatible_with<std::shared_ptr<delegate_type>> Value>
+    tab_widget(not_null<widget_intf const *> parent, Value&& value) noexcept
+        requires requires { make_default_tab_delegate(std::forward<Value>(value)); }
+        : tab_widget(parent, make_default_tab_delegate(std::forward<Value>(value)))
     {
     }
 
@@ -107,7 +108,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
-        for (hilet& child : _children) {
+        for (auto const& child : _children) {
             co_yield *child;
         }
     }
@@ -124,7 +125,7 @@ public:
             process_event({gui_event_type::window_resize});
         }
 
-        for (hilet& child : _children) {
+        for (auto const& child : _children) {
             child->set_mode(child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible);
         }
 
@@ -135,7 +136,7 @@ public:
     {
         _layout = context;
 
-        for (hilet& child : _children) {
+        for (auto const& child : _children) {
             if (child->mode() > widget_mode::invisible) {
                 child->set_layout(context);
             }
@@ -145,7 +146,7 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible) {
-            for (hilet& child : _children) {
+            for (auto const& child : _children) {
                 child->draw(context);
             }
         }
@@ -157,7 +158,7 @@ public:
 
         if (mode() >= widget_mode::partial) {
             auto r = hitbox{};
-            for (hilet& child : _children) {
+            for (auto const& child : _children) {
                 r = child->hitbox_test_from_parent(position, r);
             }
             return r;

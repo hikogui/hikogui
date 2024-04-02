@@ -64,7 +64,7 @@ hi_inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
     }
 
     // Remove the canonical trailing '+'.
-    hilet s_lower = to_lower((s.back() == '+') ? s.substr(0, ssize(s) - 1) : s);
+    auto const s_lower = to_lower((s.back() == '+') ? s.substr(0, ssize(s) - 1) : s);
 
     if (s_lower == "shift") {
         return keyboard_modifiers::shift;

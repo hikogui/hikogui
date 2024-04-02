@@ -28,13 +28,13 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
 
     std::size_t offset = 0;
 
-    hilet& header = implicit_cast<header_type>(offset, bytes);
+    auto const& header = implicit_cast<header_type>(offset, bytes);
     hi_check(*header.version == 0, "CMAP version is not 0");
 
-    hilet entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
+    auto const entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
 
     auto key = (truncate<uint32_t>(platform_id) << 16) | truncate<uint32_t>(platform_specific_id);
-    if (hilet entry = fast_binary_search_eq<std::endian::big>(entries, key)) {
+    if (auto const entry = fast_binary_search_eq<std::endian::big>(entries, key)) {
         return hi_check_subspan(bytes, *entry->offset);
     } else {
         return {};
@@ -54,30 +54,30 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     };
 
     auto offset = 0_uz;
-    hilet& header = implicit_cast<header_type>(offset, over_sized_bytes);
+    auto const& header = implicit_cast<header_type>(offset, over_sized_bytes);
     hi_axiom(*header.format == 4);
-    hilet length = *header.length;
-    hilet bytes = hi_check_subspan(over_sized_bytes, 0, length);
+    auto const length = *header.length;
+    auto const bytes = hi_check_subspan(over_sized_bytes, 0, length);
 
-    hilet seg_count = *header.seg_count_x2 / 2;
+    auto const seg_count = *header.seg_count_x2 / 2;
 
-    hilet end_codes = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
+    auto const end_codes = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
     offset += sizeof(uint16_t); // reservedPad
-    hilet start_codes = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
+    auto const start_codes = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
 
-    hilet id_deltas = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
+    auto const id_deltas = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
 
-    hilet id_range_offsets = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
+    auto const id_range_offsets = implicit_cast<big_uint16_buf_t>(offset, bytes, seg_count);
 
-    hilet glyph_id_array_count = (bytes.size() - offset) / sizeof(big_uint16_buf_t);
-    hilet glyph_id_array = implicit_cast<big_uint16_buf_t>(offset, bytes, glyph_id_array_count);
+    auto const glyph_id_array_count = (bytes.size() - offset) / sizeof(big_uint16_buf_t);
+    auto const glyph_id_array = implicit_cast<big_uint16_buf_t>(offset, bytes, glyph_id_array_count);
 
     auto r = font_char_map{};
     r.reserve(seg_count);
     auto prev_end_code_point = char32_t{0};
     for (auto i = 0_uz; i != seg_count; ++i) {
-        hilet end_code_point = char_cast<char32_t>(*end_codes[i]);
-        hilet start_code_point = char_cast<char32_t>(*start_codes[i]);
+        auto const end_code_point = char_cast<char32_t>(*end_codes[i]);
+        auto const start_code_point = char_cast<char32_t>(*start_codes[i]);
 
         hi_check(start_code_point <= end_code_point, "'cmap' subtable 4, start code-point must come before end code-point.");
         hi_check(
@@ -110,11 +110,11 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
             id_range_offset -= seg_count - i;
 
             // When using the glyph_index_table, add glyphs one by one.
-            hilet code_point_count = end_code_point - start_code_point + 1;
+            auto const code_point_count = end_code_point - start_code_point + 1;
             for (auto j = 0_uz; j != code_point_count; ++j) {
-                hilet code_point = char_cast<char32_t>(start_code_point + j);
+                auto const code_point = char_cast<char32_t>(start_code_point + j);
 
-                hilet glyph_id = *hi_check_at(glyph_id_array, id_range_offset + j);
+                auto const glyph_id = *hi_check_at(glyph_id_array, id_range_offset + j);
                 hi_check(glyph_id < 0xfffe, "'cmap' subtable 4, glyph_id must be in range 0 to 0xfffe.");
                 r.add(code_point, code_point, glyph_id);
             }
@@ -138,18 +138,18 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     };
 
     auto offset = 0_uz;
-    hilet& header = implicit_cast<header_type>(offset, over_sized_bytes);
+    auto const& header = implicit_cast<header_type>(offset, over_sized_bytes);
     hi_axiom(*header.format == 6);
-    hilet bytes = hi_check_subspan(over_sized_bytes, 0, *header.length);
+    auto const bytes = hi_check_subspan(over_sized_bytes, 0, *header.length);
 
-    hilet entry_count = *header.entry_count;
-    hilet entries = implicit_cast<big_uint16_buf_t>(offset, bytes, entry_count);
+    auto const entry_count = *header.entry_count;
+    auto const entries = implicit_cast<big_uint16_buf_t>(offset, bytes, entry_count);
 
     auto r = font_char_map{};
     r.reserve(entry_count);
     auto code_point = char_cast<char32_t>(*header.first_code);
     for (auto i = 0_uz; i != entry_count; ++i, ++code_point) {
-        hilet glyph_id = *entries[i];
+        auto const glyph_id = *entries[i];
         hi_check(glyph_id < 0xfffe, "'cmap' subtable 6, glyph_id must be in range 0 to 0xfffe.");
         r.add(code_point, code_point, glyph_id);
     }
@@ -176,20 +176,20 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
     };
 
     auto offset = 0_uz;
-    hilet& header = implicit_cast<header_type>(offset, over_sized_bytes);
+    auto const& header = implicit_cast<header_type>(offset, over_sized_bytes);
     hi_axiom(*header.format == 12);
-    hilet bytes = hi_check_subspan(over_sized_bytes, 0, *header.length);
+    auto const bytes = hi_check_subspan(over_sized_bytes, 0, *header.length);
 
-    hilet entries = implicit_cast<entry_type>(offset, bytes, *header.num_groups);
+    auto const entries = implicit_cast<entry_type>(offset, bytes, *header.num_groups);
 
     auto r = font_char_map{};
     r.reserve(*header.num_groups);
-    for (hilet& entry : entries) {
-        hilet start_code_point = char_cast<char32_t>(*entry.start_char_code);
-        hilet end_code_point = char_cast<char32_t>(*entry.end_char_code);
+    for (auto const& entry : entries) {
+        auto const start_code_point = char_cast<char32_t>(*entry.start_char_code);
+        auto const end_code_point = char_cast<char32_t>(*entry.end_char_code);
         hi_check(start_code_point <= end_code_point, "'cmap' subtable 12, has invalid code-point range.");
 
-        hilet start_glyph_id = *entry.start_glyph_id;
+        auto const start_glyph_id = *entry.start_glyph_id;
         hi_check(
             start_glyph_id + (end_code_point - start_code_point) + 1_uz < 0xffff,
             "'cmap' subtable 12, glyph_id must be in range 0 to 0xfffe.");
@@ -204,7 +204,7 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
 [[nodiscard]] hi_inline font_char_map otype_cmap_parse_map(std::span<std::byte const> bytes)
 {
     // The first 16 bits of a cmap sub-table always contain the format.
-    hilet format = *implicit_cast<big_uint16_buf_t>(bytes);
+    auto const format = *implicit_cast<big_uint16_buf_t>(bytes);
 
     switch (format) {
     case 4:
@@ -231,8 +231,8 @@ otype_cmap_find(std::span<std::byte const> bytes, uint16_t platform_id, uint16_t
         std::pair{uint16_t{3}, uint16_t{0}} // Microsoft Windows - Symbol.
     };
 
-    for (hilet[platform_id, platform_specific_id] : search_order) {
-        if (hilet map_bytes = otype_cmap_find(bytes, platform_id, platform_specific_id); not map_bytes.empty()) {
+    for (auto const[platform_id, platform_specific_id] : search_order) {
+        if (auto const map_bytes = otype_cmap_find(bytes, platform_id, platform_specific_id); not map_bytes.empty()) {
             if (auto r = otype_cmap_parse_map(map_bytes); not r.empty()) {
                 return r;
             }

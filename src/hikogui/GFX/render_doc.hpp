@@ -63,13 +63,13 @@ hi_inline void start_render_doc() noexcept
 {
 #ifndef NDEBUG
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-    hilet dll_urls = std::vector{
+    auto const dll_urls = std::vector{
         std::filesystem::path{"renderdoc.dll"},
         std::filesystem::path{"C:/Program Files/RenderDoc/renderdoc.dll"},
         std::filesystem::path{"C:/Program Files (x86)/RenderDoc/renderdoc.dll"}};
 
     auto mod = [&]() -> HMODULE {
-        for (hilet& dll_url : dll_urls) {
+        for (auto const& dll_url : dll_urls) {
             hi_log_debug("Trying to load: {}", dll_url.string());
 
             if (auto mod = LoadLibraryW(dll_url.native().c_str())) {

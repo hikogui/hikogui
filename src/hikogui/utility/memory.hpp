@@ -233,14 +233,14 @@ constexpr bool is_aligned(T *p)
 template<typename T>
 constexpr T *ceil(T *ptr, std::size_t alignment) noexcept
 {
-    hilet aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), wide_cast<uintptr_t>(alignment));
+    auto const aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), wide_cast<uintptr_t>(alignment));
     return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
 template<typename T>
 constexpr T *floor(T *ptr, std::size_t alignment) noexcept
 {
-    hilet aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), wide_cast<uintptr_t>(alignment));
+    auto const aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), wide_cast<uintptr_t>(alignment));
     return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
@@ -313,7 +313,7 @@ hi_inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args
 {
     std::shared_ptr<Value> value;
 
-    hilet i = map.find(key);
+    auto const i = map.find(key);
     if (i == map.end()) {
         value = std::make_shared<Value>(std::forward<Args>(args)...);
         map.insert_or_assign(key, value);
@@ -365,7 +365,7 @@ constexpr void unaligned_store(T src, B *dst) noexcept
 {
     using unsigned_type = std::make_unsigned_t<T>;
 
-    hilet src_ = static_cast<unsigned_type>(src);
+    auto const src_ = static_cast<unsigned_type>(src);
 
     if (not std::is_constant_evaluated()) {
         std::memcpy(dst, &src, sizeof(T));

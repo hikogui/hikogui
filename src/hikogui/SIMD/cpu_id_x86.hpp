@@ -267,13 +267,13 @@ enum class cpu_feature_mask : uint64_t {
 
 [[nodiscard]] constexpr cpu_feature_mask operator|(cpu_feature_mask const& lhs, cpu_feature const& rhs) noexcept
 {
-    hilet rhs_ = static_cast<cpu_feature_mask>(1 << rhs);
+    auto const rhs_ = static_cast<cpu_feature_mask>(1 << rhs);
     return lhs | rhs_;
 }
 
 [[nodiscard]] constexpr cpu_feature_mask operator&(cpu_feature_mask const& lhs, cpu_feature const& rhs) noexcept
 {
-    hilet rhs_ = static_cast<cpu_feature_mask>(1 << rhs);
+    auto const rhs_ = static_cast<cpu_feature_mask>(1 << rhs);
     return lhs & rhs_;
 }
 
@@ -294,7 +294,7 @@ struct std::formatter<::hi::cpu_feature_mask, char> : std::formatter<std::string
         auto str = std::string{};
         for (mask_type mask = 1; mask != 0; mask <<= 1) {
             if ((std::to_underlying(t) & mask) != 0) {
-                hilet feature = static_cast<::hi::cpu_feature>(std::countr_zero(mask));
+                auto const feature = static_cast<::hi::cpu_feature>(std::countr_zero(mask));
 
                 if (str.empty()) {
                     str = std::format("{}", feature);
@@ -491,11 +491,11 @@ namespace detail {
     // clang-format off
     auto r = cpu_feature_mask{};
 
-    hilet leaf0 = cpu_id(0);
-    hilet max_leaf = leaf0.eax;
+    auto const leaf0 = cpu_id(0);
+    auto const max_leaf = leaf0.eax;
 
     if (max_leaf >= 1) {
-        hilet leaf1 = cpu_id(1);
+        auto const leaf1 = cpu_id(1);
 
         if (leaf1.ecx_bit( 0)) { r |= cpu_feature::sse3; }
         if (leaf1.ecx_bit( 1)) { r |= cpu_feature::pclmul; }
@@ -527,7 +527,7 @@ namespace detail {
     }
 
     if (max_leaf >= 7) {
-        hilet leaf7 = cpu_id(7);
+        auto const leaf7 = cpu_id(7);
 
         if (leaf7.ebx_bit( 3)) { r |= cpu_feature::bmi1; }
         if (leaf7.ebx_bit( 5)) { r |= cpu_feature::avx2; }
@@ -543,11 +543,11 @@ namespace detail {
         if (leaf7.ebx_bit(31)) { r |= cpu_feature::avx512vl; }
     }
 
-    hilet leaf80 = cpu_id(0x8000'0000);
-    hilet max_leaf8 = leaf80.eax;
+    auto const leaf80 = cpu_id(0x8000'0000);
+    auto const max_leaf8 = leaf80.eax;
 
     if (max_leaf8 >= 1) {
-        hilet leaf81 = cpu_id(0x8000'0001);
+        auto const leaf81 = cpu_id(0x8000'0001);
 
         if (leaf81.ecx_bit( 0)) { r |= cpu_feature::lahf; }
         if (leaf81.ecx_bit( 5)) { r |= cpu_feature::lzcnt; }

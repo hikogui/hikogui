@@ -34,15 +34,15 @@ template<fixed_string Name>
     };
 
     std::size_t offset = 0;
-    hilet& header = implicit_cast<header_type>(offset, bytes);
+    auto const& header = implicit_cast<header_type>(offset, bytes);
 
     if (not (*header.scaler_type == "true"_fcc or *header.scaler_type == 0x00010000)) {
         throw parse_error("sfnt.scalerType is not 'true' or 0x00010000");
     }
 
-    hilet entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
+    auto const entries = implicit_cast<entry_type>(offset, bytes, *header.num_tables);
 
-    if (hilet entry = fast_binary_search_eq<std::endian::big>(entries, fourcc<Name>())) {
+    if (auto const entry = fast_binary_search_eq<std::endian::big>(entries, fourcc<Name>())) {
         return hi_check_subspan(bytes, *entry->offset, *entry->length);
     } else {
         return {};

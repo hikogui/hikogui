@@ -26,8 +26,8 @@ hi_export namespace hi { inline namespace v1 {
  */
 [[nodiscard]] hi_inline bool get_bit(std::span<std::byte const> buffer, std::size_t &index) noexcept
 {
-    hilet byte_index = index >> 3;
-    hilet bit_index = index & 7;
+    auto const byte_index = index >> 3;
+    auto const bit_index = index & 7;
     ++index;
 
     hi_axiom(byte_index < buffer.size());
@@ -61,16 +61,16 @@ hi_export namespace hi { inline namespace v1 {
     auto todo = length;
     auto done = 0_uz;
     while (todo) {
-        hilet byte_index = index >> 3;
-        hilet bit_index = index & 7;
+        auto const byte_index = index >> 3;
+        auto const bit_index = index & 7;
         hi_axiom(byte_index < buffer.size());
 
-        hilet available_bits = 8 - bit_index;
-        hilet nr_bits = std::min(available_bits, todo);
+        auto const available_bits = 8 - bit_index;
+        auto const nr_bits = std::min(available_bits, todo);
 
-        hilet mask = (1 << nr_bits) - 1;
+        auto const mask = (1 << nr_bits) - 1;
 
-        hilet tmp = static_cast<int>(buffer[byte_index] >> bit_index) & mask;
+        auto const tmp = static_cast<int>(buffer[byte_index] >> bit_index) & mask;
         value |= tmp << done;
 
         todo -= nr_bits;

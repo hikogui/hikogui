@@ -114,8 +114,8 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
 {
     using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
 
-    hilet lhs_ = common_type{lhs};
-    hilet rhs_ = common_type{rhs};
+    auto const lhs_ = common_type{lhs};
+    auto const rhs_ = common_type{rhs};
 
     return lhs_.count() == rhs_.count();
 }
@@ -125,8 +125,8 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
 {
     using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
 
-    hilet lhs_ = common_type{lhs};
-    hilet rhs_ = common_type{rhs};
+    auto const lhs_ = common_type{lhs};
+    auto const rhs_ = common_type{rhs};
 
     return lhs_.count() <=> rhs_.count();
 }
@@ -136,8 +136,8 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
 {
     using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
 
-    hilet lhs_ = common_type{lhs};
-    hilet rhs_ = common_type{rhs};
+    auto const lhs_ = common_type{lhs};
+    auto const rhs_ = common_type{rhs};
 
     return common_type{lhs_.count() + rhs_.count()};
 }
@@ -147,8 +147,8 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
 {
     using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
 
-    hilet lhs_ = common_type{lhs};
-    hilet rhs_ = common_type{rhs};
+    auto const lhs_ = common_type{lhs};
+    auto const rhs_ = common_type{rhs};
 
     return common_type{lhs_.count() - rhs_.count()};
 }
@@ -158,8 +158,8 @@ template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio
 {
     using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
 
-    hilet lhs_ = common_type{lhs};
-    hilet rhs_ = common_type{rhs};
+    auto const lhs_ = common_type{lhs};
+    auto const rhs_ = common_type{rhs};
 
     return lhs_.count() / rhs_.count();
 }

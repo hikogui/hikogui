@@ -60,18 +60,18 @@ otype_glyf_get_path(std::span<std::byte const> bytes, float em_scale)
     }
 
     auto offset = 0_uz;
-    hilet& header = implicit_cast<detail::otype_glyf_header>(offset, bytes);
-    hilet num_contours = *header.num_contours;
+    auto const& header = implicit_cast<detail::otype_glyf_header>(offset, bytes);
+    auto const num_contours = *header.num_contours;
 
     hi_check(num_contours >= 0, "'glyph' path requested on a compound glyph.");
 
     // Check includes instructionLength.
-    hilet end_points = implicit_cast<big_uint16_buf_t>(offset, bytes, num_contours);
+    auto const end_points = implicit_cast<big_uint16_buf_t>(offset, bytes, num_contours);
 
     r.contourEndPoints.reserve(end_points.size());
     uint16_t max_end_point = 0;
-    for (hilet end_point : end_points) {
-        hilet end_point_ = *end_point;
+    for (auto const end_point : end_points) {
+        auto const end_point_ = *end_point;
 
         hi_check(end_point_ >= max_end_point, "'glyf' end-point indices must be increasing");
         max_end_point = end_point_;
@@ -79,20 +79,20 @@ otype_glyf_get_path(std::span<std::byte const> bytes, float em_scale)
         r.contourEndPoints.push_back(end_point_);
     }
 
-    hilet num_points = wide_cast<size_t>(max_end_point) + 1;
+    auto const num_points = wide_cast<size_t>(max_end_point) + 1;
 
     // Skip over the instructions.
-    hilet instruction_size = *implicit_cast<big_uint16_buf_t>(offset, bytes);
+    auto const instruction_size = *implicit_cast<big_uint16_buf_t>(offset, bytes);
     offset += instruction_size;
 
     // Extract all the flags.
     auto flags = std::vector<uint8_t>(num_points, uint8_t{0});
     for (auto i = 0_uz; i != num_points; ++i) {
-        hilet flag = implicit_cast<uint8_t>(offset, bytes);
+        auto const flag = implicit_cast<uint8_t>(offset, bytes);
 
         flags[i] = flag;
         if (to_bool(flag & detail::otype_glyf_flag_repeat)) {
-            hilet repeat = implicit_cast<uint8_t>(offset, bytes);
+            auto const repeat = implicit_cast<uint8_t>(offset, bytes);
 
             hi_check(i + repeat <= num_points, "'glyf' repeating flags out-of-bound");
             for (std::size_t j = 0; j != repeat; ++j) {
@@ -104,7 +104,7 @@ otype_glyf_get_path(std::span<std::byte const> bytes, float em_scale)
     // Get xCoordinates
     auto x_deltas = std::vector<int16_t>(num_points, int16_t{0});
     for (auto i = 0_uz; i != num_points; ++i) {
-        hilet flag = flags[i];
+        auto const flag = flags[i];
 
         if (to_bool(flag & detail::otype_glyf_flag_x_short)) {
             if (to_bool(flag & detail::otype_glyf_flag_x_same)) {
@@ -126,7 +126,7 @@ otype_glyf_get_path(std::span<std::byte const> bytes, float em_scale)
     // Get yCoordinates
     auto y_deltas = std::vector<int16_t>(num_points, int16_t{0});
     for (auto i = 0_uz; i != num_points; ++i) {
-        hilet flag = flags[i];
+        auto const flag = flags[i];
 
         if (to_bool(flag & detail::otype_glyf_flag_y_short)) {
             if (to_bool(flag & detail::otype_glyf_flag_y_same)) {
@@ -150,11 +150,11 @@ otype_glyf_get_path(std::span<std::byte const> bytes, float em_scale)
     int y = 0;
     r.points.reserve(num_points);
     for (auto i = 0_uz; i != num_points; ++i) {
-        hilet flag = flags[i];
+        auto const flag = flags[i];
         x += x_deltas[i];
         y += y_deltas[i];
 
-        hilet type =
+        auto const type =
             to_bool(flag & detail::otype_glyf_flag_on_curve) ? bezier_point::Type::Anchor : bezier_point::Type::QuadraticControl;
 
         r.points.emplace_back(x * em_scale, y * em_scale, type);
@@ -198,7 +198,7 @@ struct otype_glyf_component {
     }
 
     auto offset = 0_uz;
-    hilet& header = implicit_cast<detail::otype_glyf_header>(offset, bytes);
+    auto const& header = implicit_cast<detail::otype_glyf_header>(offset, bytes);
 
     hi_check(*header.num_contours < 0, "'glyph' compound requested on a simple glyph.");
 
@@ -211,20 +211,20 @@ struct otype_glyf_component {
 
         if (to_bool(flags & detail::otype_glyf_flag_args_are_xy_values)) {
             if (to_bool(flags & detail::otype_glyf_flag_arg1_and_arg2_are_words)) {
-                hilet tmp = implicit_cast<otype_fword_buf_t>(offset, bytes, 2);
+                auto const tmp = implicit_cast<otype_fword_buf_t>(offset, bytes, 2);
                 component.offset = vector2{tmp[0] * em_scale, tmp[1] * em_scale};
             } else {
-                hilet tmp = implicit_cast<otype_fbyte_buf_t>(offset, bytes, 2);
+                auto const tmp = implicit_cast<otype_fbyte_buf_t>(offset, bytes, 2);
                 component.offset = vector2{tmp[0] * em_scale, tmp[1] * em_scale};
             }
         } else {
             component.use_points = true;
             if (to_bool(flags & detail::otype_glyf_flag_arg1_and_arg2_are_words)) {
-                hilet tmp = implicit_cast<big_uint16_buf_t>(offset, bytes, 2);
+                auto const tmp = implicit_cast<big_uint16_buf_t>(offset, bytes, 2);
                 component.compound_point_index = *tmp[0];
                 component.component_point_index = *tmp[1];
             } else {
-                hilet tmp = implicit_cast<uint8_t>(offset, bytes, 2);
+                auto const tmp = implicit_cast<uint8_t>(offset, bytes, 2);
                 component.compound_point_index = tmp[0];
                 component.component_point_index = tmp[1];
             }
@@ -235,11 +235,11 @@ struct otype_glyf_component {
             component.scale = scale2(*implicit_cast<otype_fixed1_14_buf_t>(offset, bytes));
 
         } else if (to_bool(flags & detail::otype_glyf_flag_has_xy_scale)) {
-            hilet tmp = implicit_cast<otype_fixed1_14_buf_t>(offset, bytes, 2);
+            auto const tmp = implicit_cast<otype_fixed1_14_buf_t>(offset, bytes, 2);
             component.scale = scale2(*tmp[0], *tmp[1]);
 
         } else if (to_bool(flags & detail::otype_glyf_flag_has_2x2)) {
-            hilet tmp = implicit_cast<otype_fixed1_14_buf_t>(offset, bytes, 4);
+            auto const tmp = implicit_cast<otype_fixed1_14_buf_t>(offset, bytes, 4);
             component.scale = matrix2{vector2{*tmp[0], *tmp[1]}, vector2{*tmp[2], *tmp[3]}};
         }
 
@@ -275,7 +275,7 @@ struct otype_glyf_component {
         return false;
     }
 
-    hilet& header = implicit_cast<detail::otype_glyf_header>(bytes);
+    auto const& header = implicit_cast<detail::otype_glyf_header>(bytes);
     return *header.num_contours < 0;
 }
 
@@ -299,12 +299,12 @@ struct otype_glyf_component {
         return aarectangle{};
     }
 
-    hilet& header = implicit_cast<detail::otype_glyf_header>(bytes);
+    auto const& header = implicit_cast<detail::otype_glyf_header>(bytes);
 
-    hilet x_min = header.x_min * em_scale;
-    hilet y_min = header.y_min * em_scale;
-    hilet x_max = header.x_max * em_scale;
-    hilet y_max = header.y_max * em_scale;
+    auto const x_min = header.x_min * em_scale;
+    auto const y_min = header.y_min * em_scale;
+    auto const x_max = header.x_max * em_scale;
+    auto const y_max = header.y_max * em_scale;
 
     hi_check(x_min <= x_max, "'glyf' bounding box is invalid.");
     hi_check(y_min <= y_max, "'glyf' bounding box is invalid.");

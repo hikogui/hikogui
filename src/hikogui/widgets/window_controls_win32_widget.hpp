@@ -37,7 +37,7 @@ public:
     {
         _layout = {};
 
-        hilet size = extent2{theme().large_size() * 3.0f, theme().large_size()};
+        auto const size = extent2{theme().large_size() * 3.0f, theme().large_size()};
         return {size, size, size};
     }
 
@@ -62,12 +62,12 @@ public:
             minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
             maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMS);
             restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
-            hilet glyph_size = theme().icon_size();
+            auto const glyph_size = theme().icon_size();
 
-            hilet closeWindowGlyphBB = closeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            hilet restoreWindowGlyphBB = restoreWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const closeWindowGlyphBB = closeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const minimizeWindowGlyphBB = minimizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const maximizeWindowGlyphBB = maximizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const restoreWindowGlyphBB = restoreWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
 
             closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
             minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
@@ -103,7 +103,7 @@ public:
                 context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer));
             }
 
-            hilet glyph_color = phase() >= widget_phase::normal ? label_color() : foreground_color();
+            auto const glyph_color = phase() >= widget_phase::normal ? label_color() : foreground_color();
 
             context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, glyph_color);
             context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, minimizeWindowGlyph, glyph_color);

@@ -304,7 +304,7 @@ constexpr auto iso_3166_infos = iso_3166_infos_init();
         r[i] = "ZZ";
     }
 
-    for (hilet& info : iso_3166_infos) {
+    for (auto const& info : iso_3166_infos) {
         r[info.number] = info.code2;
     }
     return r;
@@ -317,7 +317,7 @@ constexpr auto iso_3166_infos = iso_3166_infos_init();
         r[i] = "ZZZ";
     }
 
-    for (hilet& info : iso_3166_infos) {
+    for (auto const& info : iso_3166_infos) {
         r[info.number] = info.code3;
     }
     return r;
@@ -330,11 +330,11 @@ constexpr auto iso_3166_infos = iso_3166_infos_init();
 
     auto r = std::array<type, size>{};
     for (auto i = 0_uz; i != iso_3166_infos.size(); ++i) {
-        hilet& info = iso_3166_infos[i];
+        auto const& info = iso_3166_infos[i];
         r[i] = {info.code2, info.number};
     }
 
-    std::sort(r.begin(), r.end(), [](hilet& a, hilet& b) {
+    std::sort(r.begin(), r.end(), [](auto const& a, auto const& b) {
         return a.first < b.first;
     });
     return r;
@@ -347,11 +347,11 @@ constexpr auto iso_3166_infos = iso_3166_infos_init();
 
     auto r = std::array<type, size>{};
     for (auto i = 0_uz; i != iso_3166_infos.size(); ++i) {
-        hilet& info = iso_3166_infos[i];
+        auto const& info = iso_3166_infos[i];
         r[i] = {info.code3, info.number};
     }
 
-    std::sort(r.begin(), r.end(), [](hilet& a, hilet& b) {
+    std::sort(r.begin(), r.end(), [](auto const& a, auto const& b) {
         return a.first < b.first;
     });
     return r;
@@ -373,11 +373,11 @@ constexpr iso_3166::iso_3166(std::string_view str)
     } else if (str.size() == 2) {
         auto str_up = to_upper(str);
 
-        hilet it = std::lower_bound(
+        auto const it = std::lower_bound(
             detail::iso_3166_number_by_code2.begin(),
             detail::iso_3166_number_by_code2.end(),
             str_up,
-            [](hilet& item, hilet& value) {
+            [](auto const& item, auto const& value) {
                 return item.first < value;
             });
 
@@ -391,11 +391,11 @@ constexpr iso_3166::iso_3166(std::string_view str)
     } else if (str.size() == 3) {
         auto str_up = to_upper(str);
 
-        hilet it = std::lower_bound(
+        auto const it = std::lower_bound(
             detail::iso_3166_number_by_code3.begin(),
             detail::iso_3166_number_by_code3.end(),
             str_up,
-            [](hilet& item, hilet& value) {
+            [](auto const& item, auto const& value) {
                 return item.first < value;
             });
 

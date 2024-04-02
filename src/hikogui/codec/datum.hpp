@@ -32,7 +32,8 @@ hi_warning_ignore_msvc(26492);
 
 hi_export_module(hikogui.codec.datum);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 namespace detail {
 
 /** Promotion result.
@@ -43,15 +44,11 @@ template<typename To>
 class datum_promotion_result {
 public:
     using value_type = To;
-    constexpr static bool data_is_pointer = sizeof(value_type) > sizeof(void *);
+    constexpr static bool data_is_pointer = sizeof(value_type) > sizeof(void*);
     constexpr static bool data_is_scalar = not data_is_pointer;
 
-    constexpr void clear() noexcept
-        requires(data_is_scalar)
-    {
-    }
-    constexpr void clear() noexcept
-        requires(data_is_pointer)
+    constexpr void clear() noexcept requires(data_is_scalar) {}
+    constexpr void clear() noexcept requires(data_is_pointer)
     {
         if (_owns_lhs) {
             delete _lhs;
@@ -96,24 +93,21 @@ public:
         return _is_result;
     }
 
-    constexpr void set(value_type lhs, value_type rhs) noexcept
-        requires(data_is_scalar)
+    constexpr void set(value_type lhs, value_type rhs) noexcept requires(data_is_scalar)
     {
         _lhs = lhs;
         _rhs = rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept
-        requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = &rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept
-        requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = &rhs;
@@ -121,8 +115,7 @@ public:
         _owns_lhs = true;
     }
 
-    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept
-        requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = new value_type(std::move(rhs));
@@ -130,8 +123,7 @@ public:
         _owns_rhs = true;
     }
 
-    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept
-        requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = new value_type(std::move(rhs));
@@ -140,36 +132,32 @@ public:
         _owns_rhs = true;
     }
 
-    [[nodiscard]] constexpr value_type const& lhs() const noexcept
-        requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& lhs() const noexcept requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_lhs;
     }
 
-    [[nodiscard]] constexpr value_type const& rhs() const noexcept
-        requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& rhs() const noexcept requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_rhs;
     }
 
-    [[nodiscard]] constexpr value_type lhs() const noexcept
-        requires(data_is_scalar)
+    [[nodiscard]] constexpr value_type lhs() const noexcept requires(data_is_scalar)
     {
         hi_axiom(_is_result);
         return _lhs;
     }
 
-    [[nodiscard]] constexpr value_type rhs() const noexcept
-        requires(data_is_scalar)
+    [[nodiscard]] constexpr value_type rhs() const noexcept requires(data_is_scalar)
     {
         hi_axiom(_is_result);
         return _rhs;
     }
 
 private:
-    using data_type = std::conditional_t<data_is_pointer, value_type const *, value_type>;
+    using data_type = std::conditional_t<data_is_pointer, value_type const*, value_type>;
     data_type _lhs = data_type{};
     data_type _rhs = data_type{};
     bool _is_result = false;
@@ -274,19 +262,19 @@ public:
     constexpr explicit datum(std::chrono::year_month_day value) noexcept : _tag(tag_type::year_month_day), _value(value) {}
     explicit datum(std::string value) noexcept : _tag(tag_type::string), _value(new std::string{std::move(value)}) {}
     explicit datum(std::string_view value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
-    explicit datum(char const *value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
+    explicit datum(char const* value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
     explicit datum(vector_type value) noexcept : _tag(tag_type::vector), _value(new vector_type{std::move(value)}) {}
     explicit datum(map_type value) noexcept : _tag(tag_type::map), _value(new map_type{std::move(value)}) {}
     explicit datum(bstring value) noexcept : _tag(tag_type::bstring), _value(new bstring{std::move(value)}) {}
 
     template<typename... Args>
-    [[nodiscard]] static datum make_vector(Args const&...args) noexcept
+    [[nodiscard]] static datum make_vector(Args const&... args) noexcept
     {
         return datum{vector_type{datum{args}...}};
     }
 
     template<typename Key, typename Value, typename... Args>
-    static void populate_map(map_type& r, Key const& key, Value const& value, Args const&...args) noexcept
+    static void populate_map(map_type& r, Key const& key, Value const& value, Args const&... args) noexcept
     {
         r.insert(std::pair<datum, datum>{datum{key}, datum{value}});
         if constexpr (sizeof...(Args) > 0) {
@@ -295,7 +283,7 @@ public:
     }
 
     template<typename... Args>
-    [[nodiscard]] static datum make_map(Args const&...args) noexcept
+    [[nodiscard]] static datum make_map(Args const&... args) noexcept
     {
         static_assert(sizeof...(Args) % 2 == 0, "Expect key value pairs for the arguments of make_map()");
 
@@ -392,7 +380,7 @@ public:
         return *this;
     }
 
-    datum& operator=(char const *value) noexcept
+    datum& operator=(char const* value) noexcept
     {
         delete_pointer();
         _tag = tag_type::string;
@@ -492,7 +480,7 @@ public:
     {
         if (auto f = get_if<double>(*this)) {
             errno = 0;
-            hilet r = std::round(*f);
+            auto const r = std::round(*f);
             if (errno == EDOM or errno == ERANGE or r < narrow_cast<double>(std::numeric_limits<T>::min()) or
                 r > narrow_cast<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
@@ -546,7 +534,7 @@ public:
         case tag_type::vector:
             {
                 auto r = std::string{"["};
-                for (hilet& item : *_value._vector) {
+                for (auto const& item : *_value._vector) {
                     r += repr(item);
                     r += ',';
                 }
@@ -556,7 +544,7 @@ public:
         case tag_type::map:
             {
                 auto r = std::string{"{"};
-                for (hilet& item : *_value._map) {
+                for (auto const& item : *_value._map) {
                     r += repr(item.first);
                     r += ':';
                     r += repr(item.second);
@@ -608,7 +596,7 @@ public:
         return get<bstring>(*this);
     }
 
-    [[nodiscard]] constexpr char const *type_name() const noexcept
+    [[nodiscard]] constexpr char const* type_name() const noexcept
     {
         switch (_tag) {
         case tag_type::floating_point:
@@ -677,7 +665,7 @@ public:
         case tag_type::vector:
             {
                 std::size_t r = 0;
-                for (hilet& v : *_value._vector) {
+                for (auto const& v : *_value._vector) {
                     r = hash_mix(r, v.hash());
                 }
                 return r;
@@ -685,7 +673,7 @@ public:
         case tag_type::map:
             {
                 std::size_t r = 0;
-                for (hilet& kv : *_value._map) {
+                for (auto const& kv : *_value._map) {
                     r = hash_mix(r, kv.first.hash(), kv.second.hash());
                 }
                 return r;
@@ -699,13 +687,13 @@ public:
 
     [[nodiscard]] constexpr std::size_t size() const
     {
-        if (hilet *s = get_if<std::string>(*this)) {
+        if (auto const* s = get_if<std::string>(*this)) {
             return s->size();
-        } else if (hilet *v = get_if<vector_type>(*this)) {
+        } else if (auto const* v = get_if<vector_type>(*this)) {
             return v->size();
-        } else if (hilet *m = get_if<map_type>(*this)) {
+        } else if (auto const* m = get_if<map_type>(*this)) {
             return m->size();
-        } else if (hilet *b = get_if<bstring>(*this)) {
+        } else if (auto const* b = get_if<bstring>(*this)) {
             return b->size();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.size()", repr(*this)));
@@ -719,7 +707,7 @@ public:
 
     [[nodiscard]] constexpr datum const& back() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.back()", repr(*this)));
             }
@@ -731,7 +719,7 @@ public:
 
     [[nodiscard]] constexpr datum& back()
     {
-        if (auto *v = get_if<vector_type>(*this)) {
+        if (auto* v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.back()", repr(*this)));
             }
@@ -743,7 +731,7 @@ public:
 
     [[nodiscard]] constexpr datum const& front() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.front()", repr(*this)));
             }
@@ -755,7 +743,7 @@ public:
 
     [[nodiscard]] constexpr datum& front()
     {
-        if (auto *v = get_if<vector_type>(*this)) {
+        if (auto* v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.front()", repr(*this)));
             }
@@ -767,7 +755,7 @@ public:
 
     [[nodiscard]] constexpr auto cbegin() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             return v->cbegin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.cbegin()", repr(*this)));
@@ -776,7 +764,7 @@ public:
 
     [[nodiscard]] constexpr auto begin() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             return v->begin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
@@ -785,7 +773,7 @@ public:
 
     [[nodiscard]] constexpr auto begin()
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             return v->begin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
@@ -794,7 +782,7 @@ public:
 
     [[nodiscard]] constexpr auto cend() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             return v->cend();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.cend()", repr(*this)));
@@ -803,7 +791,7 @@ public:
 
     [[nodiscard]] constexpr auto end() const
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             return v->end();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
@@ -812,7 +800,7 @@ public:
 
     [[nodiscard]] constexpr auto end()
     {
-        if (hilet *v = get_if<vector_type>(*this)) {
+        if (auto const* v = get_if<vector_type>(*this)) {
             return v->end();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
@@ -823,10 +811,10 @@ public:
      */
     [[nodiscard]] vector_type keys() const
     {
-        if (hilet *m = get_if<map_type>(*this)) {
+        if (auto const* m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (hilet& kv : *m) {
+            for (auto const& kv : *m) {
                 r.push_back(kv.first);
             }
             return r;
@@ -839,10 +827,10 @@ public:
      */
     [[nodiscard]] vector_type values() const
     {
-        if (hilet *m = get_if<map_type>(*this)) {
+        if (auto const* m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (hilet& kv : *m) {
+            for (auto const& kv : *m) {
                 r.push_back(kv.second);
             }
             return r;
@@ -855,11 +843,11 @@ public:
      */
     [[nodiscard]] vector_type items() const
     {
-        if (hilet *m = get_if<map_type>(*this)) {
+        if (auto const* m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
 
-            for (hilet& item : *m) {
+            for (auto const& item : *m) {
                 r.push_back(make_vector(item.first, item.second));
             }
             return r;
@@ -870,7 +858,7 @@ public:
 
     constexpr void push_back(datum const& rhs)
     {
-        if (auto *v = get_if<vector_type>(*this)) {
+        if (auto* v = get_if<vector_type>(*this)) {
             return v->push_back(rhs);
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.push_back({})", repr(*this), repr(rhs)));
@@ -879,7 +867,7 @@ public:
 
     constexpr void push_back(datum&& rhs)
     {
-        if (auto *v = get_if<vector_type>(*this)) {
+        if (auto* v = get_if<vector_type>(*this)) {
             return v->push_back(std::move(rhs));
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.push_back({})", repr(*this), repr(rhs)));
@@ -894,7 +882,7 @@ public:
 
     constexpr void pop_back()
     {
-        if (auto *v = get_if<vector_type>(*this)) {
+        if (auto* v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.pop_back()", repr(*this)));
             }
@@ -906,7 +894,7 @@ public:
 
     [[nodiscard]] constexpr bool contains(datum const& rhs) const
     {
-        if (auto *m = get_if<map_type>(*this)) {
+        if (auto* m = get_if<map_type>(*this)) {
             return m->contains(rhs);
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.contains({})", repr(*this), repr(rhs)));
@@ -919,18 +907,18 @@ public:
         return contains(datum{arg});
     }
 
-    [[nodiscard]] std::vector<datum *> find(jsonpath const& path) noexcept
+    [[nodiscard]] std::vector<datum*> find(jsonpath const& path) noexcept
     {
-        auto r = std::vector<datum *>{};
+        auto r = std::vector<datum*>{};
         find(path.cbegin(), path.cend(), r);
         return r;
     }
 
-    [[nodiscard]] std::vector<datum const *> find(jsonpath const& path) const noexcept
+    [[nodiscard]] std::vector<datum const*> find(jsonpath const& path) const noexcept
     {
-        auto tmp = std::vector<datum *>{};
-        const_cast<datum *>(this)->find(path.cbegin(), path.cend(), tmp);
-        auto r = std::vector<datum const *>{};
+        auto tmp = std::vector<datum*>{};
+        const_cast<datum*>(this)->find(path.cbegin(), path.cend(), tmp);
+        auto r = std::vector<datum const*>{};
         std::copy(tmp.begin(), tmp.end(), std::back_inserter(r));
         return r;
     }
@@ -953,7 +941,7 @@ public:
      * @param path The json path to use to find an object. Path must be singular.
      * @return A pointer to the object found, or nullptr.
      */
-    [[nodiscard]] datum *find_one(jsonpath const& path) noexcept
+    [[nodiscard]] datum* find_one(jsonpath const& path) noexcept
     {
         hi_axiom(path.is_singular());
         return find_one(path.cbegin(), path.cend(), false);
@@ -964,7 +952,7 @@ public:
      * @param path The json path to use to find an object. Path must be singular.
      * @return A pointer to the object found, or nullptr.
      */
-    [[nodiscard]] datum *find_one_or_create(jsonpath const& path) noexcept
+    [[nodiscard]] datum* find_one_or_create(jsonpath const& path) noexcept
     {
         hi_axiom(path.is_singular());
         return find_one(path.cbegin(), path.cend(), true);
@@ -975,16 +963,16 @@ public:
      * @param path The json path to use to find an object. Path must be singular.
      * @return A pointer to the object found, or nullptr.
      */
-    [[nodiscard]] datum const *find_one(jsonpath const& path) const noexcept
+    [[nodiscard]] datum const* find_one(jsonpath const& path) const noexcept
     {
         hi_axiom(path.is_singular());
-        return const_cast<datum *>(this)->find_one(path.cbegin(), path.cend(), false);
+        return const_cast<datum*>(this)->find_one(path.cbegin(), path.cend(), false);
     }
 
     [[nodiscard]] datum const& operator[](datum const& rhs) const
     {
         if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
-            hilet& v = get<vector_type>(*this);
+            auto const& v = get<vector_type>(*this);
 
             auto index = get<long long>(rhs);
             if (index < 0) {
@@ -997,8 +985,8 @@ public:
             return v[index];
 
         } else if (holds_alternative<map_type>(*this)) {
-            hilet& m = get<map_type>(*this);
-            hilet it = m.find(rhs);
+            auto const& m = get<map_type>(*this);
+            auto const it = m.find(rhs);
             if (it == m.end()) {
                 throw std::overflow_error(std::format("Key {} not found in map", repr(rhs)));
             }
@@ -1114,25 +1102,25 @@ public:
 
     [[nodiscard]] friend constexpr bool operator==(datum const& lhs, datum const& rhs) noexcept
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() == doubles.rhs();
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() == long_longs.rhs();
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return bools.lhs() == bools.rhs();
 
-        } else if (hilet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+        } else if (auto const ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return ymds.lhs() == ymds.rhs();
 
-        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (auto const strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() == strings.rhs();
 
-        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (auto const vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() == vectors.rhs();
 
-        } else if (hilet maps = promote_if<map_type>(lhs, rhs)) {
+        } else if (auto const maps = promote_if<map_type>(lhs, rhs)) {
             return maps.lhs() == maps.rhs();
 
         } else {
@@ -1168,28 +1156,28 @@ public:
      */
     [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const& lhs, datum const& rhs) noexcept
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() <=> doubles.rhs();
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() <=> long_longs.rhs();
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return bools.lhs() <=> bools.rhs();
 
-        } else if (hilet year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+        } else if (auto const year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return year_month_days.lhs() <=> year_month_days.rhs();
 
-        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (auto const strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() <=> strings.rhs();
 
-        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (auto const vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() <=> vectors.rhs();
 
-        } else if (hilet maps = promote_if<map_type>(lhs, rhs)) {
+        } else if (auto const maps = promote_if<map_type>(lhs, rhs)) {
             return maps.lhs() <=> maps.rhs();
 
-        } else if (hilet bstrings = promote_if<bstring>(lhs, rhs)) {
+        } else if (auto const bstrings = promote_if<bstring>(lhs, rhs)) {
             return bstrings.lhs() <=> bstrings.rhs();
 
         } else {
@@ -1209,10 +1197,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator-(datum const& rhs)
     {
-        if (hilet rhs_double = get_if<double>(rhs)) {
+        if (auto const rhs_double = get_if<double>(rhs)) {
             return datum{-*rhs_double};
 
-        } else if (hilet rhs_long_long = get_if<long long>(rhs)) {
+        } else if (auto const rhs_long_long = get_if<long long>(rhs)) {
             return datum{-*rhs_long_long};
 
         } else {
@@ -1231,7 +1219,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator~(datum const& rhs)
     {
-        if (hilet rhs_long_long = get_if<long long>(rhs)) {
+        if (auto const rhs_long_long = get_if<long long>(rhs)) {
             return datum{~*rhs_long_long};
 
         } else {
@@ -1255,16 +1243,16 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator+(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() + doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() + long_longs.rhs()};
 
-        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (auto const strings = promote_if<std::string>(lhs, rhs)) {
             return datum{strings.lhs() + strings.rhs()};
 
-        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (auto const vectors = promote_if<vector_type>(lhs, rhs)) {
             auto r = vectors.lhs();
             r.insert(r.end(), vectors.rhs().begin(), vectors.rhs().end());
             return datum{std::move(r)};
@@ -1287,10 +1275,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator-(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() - doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() - long_longs.rhs()};
 
         } else {
@@ -1311,10 +1299,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator*(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() * doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() * long_longs.rhs()};
 
         } else {
@@ -1335,13 +1323,13 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator/(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             if (doubles.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{doubles.lhs() / doubles.rhs()};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
@@ -1365,7 +1353,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator%(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '%' {}", repr(lhs), repr(rhs)));
             }
@@ -1388,10 +1376,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum pow(datum const& lhs, datum const& rhs)
     {
-        if (hilet doubles = promote_if<double>(lhs, rhs)) {
+        if (auto const doubles = promote_if<double>(lhs, rhs)) {
             return datum{pow(doubles.lhs(), doubles.rhs())};
 
-        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{pow(long_longs.lhs(), long_longs.rhs())};
 
         } else {
@@ -1411,10 +1399,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator&(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() & long_longs.rhs()};
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() and bools.rhs()};
 
         } else {
@@ -1434,10 +1422,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator|(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() | long_longs.rhs()};
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() or bools.rhs()};
 
         } else {
@@ -1457,10 +1445,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator^(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() ^ long_longs.rhs()};
 
-        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (auto const bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() != bools.rhs()};
 
         } else {
@@ -1482,7 +1470,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator<<(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
                 throw std::domain_error(std::format("Invalid shift count {} '<<' {}", repr(lhs), repr(rhs)));
             }
@@ -1506,7 +1494,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator>>(datum const& lhs, datum const& rhs)
     {
-        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (auto const long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
                 throw std::domain_error(std::format("Invalid shift count {} '>>' {}", repr(lhs), repr(rhs)));
             }
@@ -1523,13 +1511,17 @@ public:
     }
 
 #define X(op) \
-    [[nodiscard]] friend constexpr auto operator op(datum const& lhs, auto const& rhs) \
+    template<typename RHS> \
+    [[nodiscard]] friend constexpr auto operator op(datum const& lhs, RHS&& rhs) \
+        requires( requires { datum{std::forward<RHS>(rhs)}; } and not std::same_as<std::remove_cvref_t<RHS>, datum>) \
     { \
-        return lhs op datum{rhs}; \
+        return lhs op datum{std::forward<RHS>(rhs)}; \
     } \
-    [[nodiscard]] friend constexpr auto operator op(auto const& lhs, datum const& rhs) \
+    template<typename LHS> \
+    [[nodiscard]] friend constexpr auto operator op(LHS&& lhs, datum const& rhs) \
+        requires( requires { datum{std::forward<LHS>(lhs)}; } and not std::same_as<std::remove_cvref_t<LHS>, datum>) \
     { \
-        return datum{lhs} op rhs; \
+        return datum{std::forward<LHS>(lhs)} op rhs; \
     }
 
     X(==)
@@ -1541,12 +1533,14 @@ public:
     X(%)
     X(&)
     X(|)
-    X(^) X(<<) X(>>)
+    X(^)
+    X(<<)
+    X(>>)
 #undef X
 
-        /** Get the string representation of the value.
-         */
-        [[nodiscard]] friend std::string repr(datum const& rhs) noexcept
+    /** Get the string representation of the value.
+     */
+    [[nodiscard]] friend std::string repr(datum const& rhs) noexcept
     {
         switch (rhs._tag) {
         case tag_type::monostate:
@@ -1570,7 +1564,7 @@ public:
         case tag_type::vector:
             {
                 auto r = std::string{"["};
-                for (hilet& item : *rhs._value._vector) {
+                for (auto const& item : *rhs._value._vector) {
                     r += repr(item);
                     r += ',';
                 }
@@ -1580,7 +1574,7 @@ public:
         case tag_type::map:
             {
                 auto r = std::string{"{"};
-                for (hilet& item : *rhs._value._map) {
+                for (auto const& item : *rhs._value._map) {
                     r += repr(item.first);
                     r += ':';
                     r += repr(item.second);
@@ -1654,8 +1648,7 @@ public:
     [[nodiscard]] friend constexpr bool promotable_to(datum const& rhs) noexcept
     {
         if constexpr (std::is_same_v<To, double>) {
-            return holds_alternative<double>(rhs) or holds_alternative<long long>(rhs) or
-                holds_alternative<bool>(rhs);
+            return holds_alternative<double>(rhs) or holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
         } else if constexpr (std::is_same_v<To, long long>) {
             return holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
         } else {
@@ -1738,7 +1731,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T *get_if(datum& rhs) noexcept
+    [[nodiscard]] friend constexpr T* get_if(datum& rhs) noexcept
     {
         if (holds_alternative<T>(rhs)) {
             return &get<T>(rhs);
@@ -1756,7 +1749,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T const *get_if(datum const& rhs) noexcept
+    [[nodiscard]] friend constexpr T const* get_if(datum const& rhs) noexcept
     {
         if (holds_alternative<T>(rhs)) {
             return &get<T>(rhs);
@@ -1775,9 +1768,9 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend T *get_if(datum& rhs, jsonpath const& path) noexcept
+    [[nodiscard]] friend T* get_if(datum& rhs, jsonpath const& path) noexcept
     {
-        if (auto *value = rhs.find_one(path)) {
+        if (auto* value = rhs.find_one(path)) {
             if (holds_alternative<T>(*value)) {
                 return &get<T>(*value);
             } else {
@@ -1798,9 +1791,9 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend T const *get_if(datum const& rhs, jsonpath const& path) noexcept
+    [[nodiscard]] friend T const* get_if(datum const& rhs, jsonpath const& path) noexcept
     {
-        if (auto *value = const_cast<datum&>(rhs).find_one(path)) {
+        if (auto* value = const_cast<datum&>(rhs).find_one(path)) {
             if (holds_alternative<T>(*value)) {
                 return &get<T>(*value);
             } else {
@@ -1836,19 +1829,19 @@ private:
         long long _long_long;
         bool _bool;
         std::chrono::year_month_day _year_month_day;
-        std::string *_string;
-        vector_type *_vector;
-        map_type *_map;
-        bstring *_bstring;
+        std::string* _string;
+        vector_type* _vector;
+        map_type* _map;
+        bstring* _bstring;
 
         constexpr value_type(numeric_integral auto value) noexcept : _long_long(narrow_cast<long long>(value)) {}
         constexpr value_type(std::floating_point auto value) noexcept : _double(narrow_cast<double>(value)) {}
         constexpr value_type(bool value) noexcept : _bool(value) {}
         constexpr value_type(std::chrono::year_month_day value) noexcept : _year_month_day(value) {}
-        constexpr value_type(std::string *value) noexcept : _string(value) {}
-        constexpr value_type(vector_type *value) noexcept : _vector(value) {}
-        constexpr value_type(map_type *value) noexcept : _map(value) {}
-        constexpr value_type(bstring *value) noexcept : _bstring(value) {}
+        constexpr value_type(std::string* value) noexcept : _string(value) {}
+        constexpr value_type(vector_type* value) noexcept : _vector(value) {}
+        constexpr value_type(map_type* value) noexcept : _map(value) {}
+        constexpr value_type(bstring* value) noexcept : _bstring(value) {}
     };
 
     value_type _value;
@@ -1912,7 +1905,7 @@ private:
         }
     }
 
-    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *>& r) noexcept
+    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum*>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             for (auto& item : *vector) {
@@ -1926,7 +1919,7 @@ private:
         }
     }
 
-    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *>& r) noexcept
+    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum*>& r) noexcept
     {
         this->find(it + 1, it_end, r);
 
@@ -1946,10 +1939,10 @@ private:
         jsonpath::indices const& indices,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
-        std::vector<datum *>& r) noexcept
+        std::vector<datum*>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (hilet index : indices.filter(ssize(*vector))) {
+            for (auto const index : indices.filter(ssize(*vector))) {
                 (*vector)[index].find(it + 1, it_end, r);
             }
         }
@@ -1959,11 +1952,11 @@ private:
         jsonpath::names const& names,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
-        std::vector<datum *>& r) noexcept
+        std::vector<datum*>& r) noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
-            for (hilet& name : names) {
-                hilet name_ = datum{name};
+            for (auto const& name : names) {
+                auto const name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
                     jt->second.find(it + 1, it_end, r);
@@ -1976,11 +1969,11 @@ private:
         jsonpath::slice const& slice,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
-        std::vector<datum *>& r) noexcept
+        std::vector<datum*>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            hilet first = slice.begin(vector->size());
-            hilet last = slice.end(vector->size());
+            auto const first = slice.begin(vector->size());
+            auto const last = slice.end(vector->size());
 
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
@@ -1990,7 +1983,7 @@ private:
         }
     }
 
-    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *>& r) noexcept
+    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum*>& r) noexcept
     {
         if (it == it_end) {
             r.push_back(this);
@@ -2028,7 +2021,7 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             auto jt = vector->begin();
             while (jt != vector->end()) {
-                hilet match = jt->remove(it + 1, it_end);
+                auto const match = jt->remove(it + 1, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2042,7 +2035,7 @@ private:
         } else if (auto map = get_if<datum::map_type>(*this)) {
             auto jt = map->begin();
             while (jt != map->end()) {
-                hilet match = jt->second.remove(it + 1, it_end);
+                auto const match = jt->second.remove(it + 1, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2063,7 +2056,7 @@ private:
         int r = 0;
 
         {
-            hilet match = this->remove(it + 1, it_end);
+            auto const match = this->remove(it + 1, it_end);
             if (match == 2) {
                 return 2;
             }
@@ -2073,7 +2066,7 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             auto jt = vector->begin();
             while (jt != vector->end()) {
-                hilet match = jt->remove(it, it_end);
+                auto const match = jt->remove(it, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2087,7 +2080,7 @@ private:
         } else if (auto map = get_if<datum::map_type>(*this)) {
             auto jt = map->begin();
             while (jt != map->end()) {
-                hilet match = jt->second.remove(it, it_end);
+                auto const match = jt->second.remove(it, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2110,8 +2103,8 @@ private:
             int r = 0;
             std::size_t offset = 0;
 
-            for (hilet index : indices.filter(ssize(*vector))) {
-                hilet match = (*vector)[index - offset].remove(it + 1, it_end);
+            for (auto const index : indices.filter(ssize(*vector))) {
+                auto const match = (*vector)[index - offset].remove(it + 1, it_end);
                 r |= match ? 1 : 0;
                 if (match == 2) {
                     vector->erase(vector->begin() + (index - offset));
@@ -2132,11 +2125,11 @@ private:
         if (auto map = get_if<datum::map_type>(*this)) {
             int r = 0;
 
-            for (hilet& name : names) {
-                hilet name_ = datum{name};
+            for (auto const& name : names) {
+                auto const name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
-                    hilet match = jt->second.remove(it + 1, it_end);
+                    auto const match = jt->second.remove(it + 1, it_end);
                     r |= match ? 1 : 0;
                     if (match == 2) {
                         map->erase(jt);
@@ -2157,13 +2150,13 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
 
-            hilet first = slice.begin(vector->size());
-            hilet last = slice.end(vector->size());
+            auto const first = slice.begin(vector->size());
+            auto const last = slice.end(vector->size());
 
             std::size_t offset = 0;
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
-                    hilet match = (*this)[index - offset].remove(it + 1, it_end);
+                    auto const match = (*this)[index - offset].remove(it + 1, it_end);
                     r |= match ? 1 : 0;
 
                     if (match == 2) {
@@ -2212,12 +2205,12 @@ private:
         }
     }
 
-    [[nodiscard]] datum *
+    [[nodiscard]] datum*
     find_one_name(datum const& name, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
     {
         hi_axiom(holds_alternative<std::string>(name));
 
-        if (auto *map = get_if<map_type>(*this)) {
+        if (auto* map = get_if<map_type>(*this)) {
             auto i = map->find(name);
             if (i != map->end()) {
                 return i->second.find_one(it + 1, it_end, create);
@@ -2239,10 +2232,10 @@ private:
         }
     }
 
-    [[nodiscard]] datum *
+    [[nodiscard]] datum*
     find_one_index(std::size_t index, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
     {
-        if (auto *vector = get_if<vector_type>(*this)) {
+        if (auto* vector = get_if<vector_type>(*this)) {
             if (index < vector->size()) {
                 return (*vector)[index].find_one(it + 1, it_end, create);
             } else if (index == vector->size() and create) {
@@ -2261,7 +2254,7 @@ private:
         }
     }
 
-    [[nodiscard]] datum *find_one(jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
+    [[nodiscard]] datum* find_one(jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
     {
         if (it == it_end) {
             return this;
@@ -2272,11 +2265,11 @@ private:
         } else if (std::holds_alternative<jsonpath::current>(*it)) {
             return find_one(it + 1, it_end, create);
 
-        } else if (hilet *indices = std::get_if<jsonpath::indices>(&*it)) {
+        } else if (auto const* indices = std::get_if<jsonpath::indices>(&*it)) {
             hi_axiom(indices->size() == 1);
             return find_one_index(indices->front(), it, it_end, create);
 
-        } else if (hilet *names = std::get_if<jsonpath::names>(&*it)) {
+        } else if (auto const* names = std::get_if<jsonpath::names>(&*it)) {
             hi_axiom(names->size() == 1);
             return find_one_name(datum{names->front()}, it, it_end, create);
 
@@ -2286,7 +2279,8 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
 
 hi_export template<>
 struct std::hash<hi::datum> {

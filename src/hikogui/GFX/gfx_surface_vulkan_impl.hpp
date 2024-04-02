@@ -27,7 +27,7 @@ hi_inline void gfx_surface::set_device(gfx_device *new_device) noexcept
 {
     hi_assert_not_null(new_device);
 
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -48,7 +48,7 @@ hi_inline void gfx_surface::set_device(gfx_device *new_device) noexcept
 
 hi_inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcept
 {
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     hi_assert_not_null(delegate);
     auto& delegate_info = _delegates.emplace_back(delegate, _device->createSemaphore());
@@ -62,7 +62,7 @@ hi_inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcep
     if (state >= gfx_surface_state::has_swapchain) {
         auto image_views = std::vector<vk::ImageView>{};
         image_views.reserve(swapchain_image_infos.size());
-        for (hilet& image_info : swapchain_image_infos) {
+        for (auto const& image_info : swapchain_image_infos) {
             image_views.push_back(image_info.image_view);
         }
 
@@ -72,10 +72,10 @@ hi_inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcep
 
 hi_inline void gfx_surface::remove_delegate(gfx_surface_delegate *delegate) noexcept
 {
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     hi_assert_not_null(delegate);
-    auto it = std::find_if(_delegates.begin(), _delegates.end(), [delegate](hilet& item) {
+    auto it = std::find_if(_delegates.begin(), _delegates.end(), [delegate](auto const& item) {
         return item.delegate == delegate;
     });
 
@@ -116,7 +116,7 @@ hi_inline std::optional<uint32_t> gfx_surface::acquire_next_image_from_swapchain
     uint32_t frameBufferIndex = 0;
     // hi_log_debug("acquireNextImage '{}'", title);
 
-    hilet result = _device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
+    auto const result = _device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
     // hi_log_debug("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
@@ -172,7 +172,7 @@ hi_inline void gfx_surface::present_image_to_queue(uint32_t frameBufferIndex, vk
 
     try {
         // hi_log_debug("presentQueue {}", presentImageIndices.at(0));
-        hilet result = _present_queue->queue.presentKHR(
+        auto const result = _present_queue->queue.presentKHR(
             {narrow_cast<uint32_t>(renderFinishedSemaphores.size()),
              renderFinishedSemaphores.data(),
              narrow_cast<uint32_t>(presentSwapchains.size()),
@@ -230,7 +230,7 @@ hi_inline gfx_surface_loss gfx_surface::build_for_new_device() noexcept
 hi_inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size) noexcept
 {
     try {
-        hilet[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
+        auto const[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
         if (not new_size) {
             // Minimized window, can not build a new swap chain.
             return gfx_surface_loss::swapchain_lost;
@@ -240,7 +240,7 @@ hi_inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size
             return loss;
         }
 
-        hilet[clamped_count_check, clamped_size_check] = get_image_count_and_size(clamped_count, clamped_size);
+        auto const[clamped_count_check, clamped_size_check] = get_image_count_and_size(clamped_count, clamped_size);
         if (clamped_count_check != clamped_count or clamped_size_check != clamped_size) {
             // Window has changed during swap chain creation, it is in a inconsistent bad state.
             // This is a bug in the Vulkan specification.
@@ -265,7 +265,7 @@ hi_inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size
 
         auto image_views = std::vector<vk::ImageView>{};
         image_views.reserve(swapchain_image_infos.size());
-        for (hilet& image_info : swapchain_image_infos) {
+        for (auto const& image_info : swapchain_image_infos) {
             image_views.push_back(image_info.image_view);
         }
 
@@ -298,7 +298,7 @@ hi_inline void gfx_surface::build(extent2 new_size) noexcept
     }
 
     if (state == gfx_surface_state::has_device) {
-        if (hilet tmp = build_for_new_swapchain(new_size); tmp == gfx_surface_loss::swapchain_lost) {
+        if (auto const tmp = build_for_new_swapchain(new_size); tmp == gfx_surface_loss::swapchain_lost) {
             // No new swapchain was created, state has_device is maintained.
             return;
 
@@ -376,7 +376,7 @@ hi_inline void gfx_surface::teardown() noexcept
 
 hi_inline void gfx_surface::update(extent2 new_size) noexcept
 {
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     if (size() != new_size and state == gfx_surface_state::has_swapchain) {
         // On resize lose the swapchain, which will be cleaned up at teardown().
@@ -393,7 +393,7 @@ hi_inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
     // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
     redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
 
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     auto r = draw_context{
         *_device,
@@ -407,7 +407,7 @@ hi_inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
         return r;
     }
 
-    hilet optional_frame_buffer_index = acquire_next_image_from_swapchain();
+    auto const optional_frame_buffer_index = acquire_next_image_from_swapchain();
     if (!optional_frame_buffer_index) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
@@ -424,7 +424,7 @@ hi_inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
     r.scissor_rectangle =
-        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](hilet& sum, hilet& item) {
+        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](auto const& sum, auto const& item) {
             return sum | item.redraw_rectangle;
         });
 
@@ -439,7 +439,7 @@ hi_inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
 
 hi_inline void gfx_surface::render_finish(draw_context const& context)
 {
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     auto& current_image = swapchain_image_infos.at(context.frame_buffer_index);
 
@@ -454,11 +454,11 @@ hi_inline void gfx_surface::render_finish(draw_context const& context)
     }
 
     // Clamp the scissor rectangle to the size of the window.
-    hilet clamped_scissor_rectangle = intersect(
+    auto const clamped_scissor_rectangle = intersect(
         context.scissor_rectangle,
         aarectangle{0, 0, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
 
-    hilet render_area = vk::Rect2D{
+    auto const render_area = vk::Rect2D{
         vk::Offset2D(
             round_cast<uint32_t>(clamped_scissor_rectangle.left()),
             round_cast<uint32_t>(
@@ -481,7 +481,7 @@ hi_inline void gfx_surface::render_finish(draw_context const& context)
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
-    [[maybe_unused]] hilet submit_result = _graphics_queue->queue.submit(0, nullptr, renderFinishedFence);
+    [[maybe_unused]] auto const submit_result = _graphics_queue->queue.submit(0, nullptr, renderFinishedFence);
 
     present_image_to_queue(narrow_cast<uint32_t>(context.frame_buffer_index), renderFinishedSemaphore);
 
@@ -501,20 +501,20 @@ hi_inline void gfx_surface::fill_command_buffer(
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
-    hilet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
+    auto const background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
+    auto const background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
-    hilet colorClearValue = vk::ClearColorValue{background_color_array};
-    hilet sdfClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
-    hilet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
-    hilet clearValues = std::array{
+    auto const colorClearValue = vk::ClearColorValue{background_color_array};
+    auto const sdfClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
+    auto const depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
+    auto const clearValues = std::array{
         vk::ClearValue{depthClearValue},
         vk::ClearValue{colorClearValue},
         vk::ClearValue{sdfClearValue},
         vk::ClearValue{colorClearValue}};
 
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
-    hilet scissors = std::array{render_area};
+    auto const scissors = std::array{render_area};
     commandBuffer.setScissor(0, scissors);
 
     commandBuffer.beginRenderPass(
@@ -539,16 +539,16 @@ hi_inline void gfx_surface::submit_command_buffer(vk::Semaphore delegate_semapho
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    hilet waitSemaphores = std::array{delegate_semaphore};
+    auto const waitSemaphores = std::array{delegate_semaphore};
 
-    hilet waitStages = std::array{vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}};
+    auto const waitStages = std::array{vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}};
 
     hi_assert(waitSemaphores.size() == waitStages.size());
 
-    hilet signalSemaphores = std::array{renderFinishedSemaphore};
-    hilet commandBuffersToSubmit = std::array{commandBuffer};
+    auto const signalSemaphores = std::array{renderFinishedSemaphore};
+    auto const commandBuffersToSubmit = std::array{commandBuffer};
 
-    hilet submitInfo = std::array{vk::SubmitInfo{
+    auto const submitInfo = std::array{vk::SubmitInfo{
         narrow_cast<uint32_t>(waitSemaphores.size()),
         waitSemaphores.data(),
         waitStages.data(),
@@ -564,22 +564,22 @@ hi_inline std::tuple<std::size_t, extent2> gfx_surface::get_image_count_and_size
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    hilet surfaceCapabilities = _device->getSurfaceCapabilitiesKHR(intrinsic);
+    auto const surfaceCapabilities = _device->getSurfaceCapabilitiesKHR(intrinsic);
 
-    hilet min_count = narrow_cast<std::size_t>(surfaceCapabilities.minImageCount);
-    hilet max_count = narrow_cast<std::size_t>(surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 3);
-    hilet clamped_count = std::clamp(new_count, min_count, max_count);
+    auto const min_count = narrow_cast<std::size_t>(surfaceCapabilities.minImageCount);
+    auto const max_count = narrow_cast<std::size_t>(surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 3);
+    auto const clamped_count = std::clamp(new_count, min_count, max_count);
     hi_log_info(
         "gfx_surface min_count={}, max_count={}, requested_count={}, count={}", min_count, max_count, new_count, clamped_count);
 
     // minImageExtent and maxImageExtent are always valid. currentImageExtent may be 0xffffffff.
-    hilet min_size = extent2{
+    auto const min_size = extent2{
         narrow_cast<float>(surfaceCapabilities.minImageExtent.width),
         narrow_cast<float>(surfaceCapabilities.minImageExtent.height)};
-    hilet max_size = extent2{
+    auto const max_size = extent2{
         narrow_cast<float>(surfaceCapabilities.maxImageExtent.width),
         narrow_cast<float>(surfaceCapabilities.maxImageExtent.height)};
-    hilet clamped_size = clamp(new_size, min_size, max_size);
+    auto const clamped_size = clamp(new_size, min_size, max_size);
 
     hi_log_info("gfx_surface min_size={}, max_size={}, requested_size={}, size={}", min_size, max_size, new_size, clamped_size);
     return {clamped_count, clamped_size};
@@ -591,7 +591,7 @@ hi_inline gfx_surface_loss gfx_surface::build_swapchain(std::size_t new_count, e
 
     hi_log_info("Building swap chain");
 
-    hilet sharingMode = _graphics_queue == _present_queue ? vk::SharingMode::eExclusive : vk::SharingMode::eConcurrent;
+    auto const sharingMode = _graphics_queue == _present_queue ? vk::SharingMode::eExclusive : vk::SharingMode::eConcurrent;
 
     std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = {
         _graphics_queue->family_queue_index, _present_queue->family_queue_index};
@@ -734,9 +734,9 @@ hi_inline void gfx_surface::build_frame_buffers()
              vk::ComponentMapping(),
              {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
-        hilet attachments = std::array{depthImageView, colorImageViews[0], image_view};
+        auto const attachments = std::array{depthImageView, colorImageViews[0], image_view};
 
-        hilet frame_buffer = _device->createFramebuffer({
+        auto const frame_buffer = _device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
             narrow_cast<uint32_t>(attachments.size()),
@@ -785,7 +785,7 @@ hi_inline void gfx_surface::build_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    hilet attachment_descriptions = std::array{
+    auto const attachment_descriptions = std::array{
         vk::AttachmentDescription{
             // Depth attachment
             vk::AttachmentDescriptionFlags(),
@@ -823,12 +823,12 @@ hi_inline void gfx_surface::build_render_passes()
             vk::ImageLayout::ePresentSrcKHR // finalLayout
         }};
 
-    hilet depth_attachment_reference = vk::AttachmentReference{0, vk::ImageLayout::eDepthStencilAttachmentOptimal};
-    hilet color_attachment_references = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
-    hilet color_input_attachment_references = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
-    hilet swapchain_attachment_references = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
+    auto const depth_attachment_reference = vk::AttachmentReference{0, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+    auto const color_attachment_references = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
+    auto const color_input_attachment_references = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
+    auto const swapchain_attachment_references = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
 
-    hilet subpass_descriptions = std::array{
+    auto const subpass_descriptions = std::array{
         vk::SubpassDescription{
             vk::SubpassDescriptionFlags(), // Subpass 0 Box
             vk::PipelineBindPoint::eGraphics,
@@ -883,7 +883,7 @@ hi_inline void gfx_surface::build_render_passes()
             nullptr,
             nullptr}};
 
-    hilet subpass_dependency = std::array{
+    auto const subpass_dependency = std::array{
         vk::SubpassDependency{
             VK_SUBPASS_EXTERNAL,
             0,
@@ -949,7 +949,7 @@ hi_inline void gfx_surface::build_render_passes()
     };
 
     renderPass = _device->createRenderPass(render_pass_create_info);
-    hilet granularity = _device->getRenderAreaGranularity(renderPass);
+    auto const granularity = _device->getRenderAreaGranularity(renderPass);
     _render_area_granularity = extent2{narrow_cast<float>(granularity.width), narrow_cast<float>(granularity.height)};
 }
 
@@ -986,7 +986,7 @@ hi_inline void gfx_surface::build_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    hilet commandBuffers = _device->allocateCommandBuffers({_graphics_queue->command_pool, vk::CommandBufferLevel::ePrimary, 1});
+    auto const commandBuffers = _device->allocateCommandBuffers({_graphics_queue->command_pool, vk::CommandBufferLevel::ePrimary, 1});
 
     commandBuffer = commandBuffers.at(0);
 }
@@ -994,14 +994,14 @@ hi_inline void gfx_surface::build_command_buffers()
 hi_inline void gfx_surface::teardown_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
-    hilet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
+    auto const commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
     _device->freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
 }
 
 [[nodiscard]] hi_inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window)
 {
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
     auto surface_create_info = vk::Win32SurfaceCreateInfoKHR{
         vk::Win32SurfaceCreateFlagsKHR(), reinterpret_cast<HINSTANCE>(instance), reinterpret_cast<HWND>(os_window)};

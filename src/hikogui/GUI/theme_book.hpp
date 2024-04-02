@@ -43,9 +43,9 @@ public:
     {
         themes.clear();
 
-        for (hilet& theme_directory : _theme_directories) {
-            hilet theme_directory_glob = theme_directory / "**" / "*.theme.json";
-            for (hilet& theme_path : glob(theme_directory_glob)) {
+        for (auto const& theme_directory : _theme_directories) {
+            auto const theme_directory_glob = theme_directory / "**" / "*.theme.json";
+            for (auto const& theme_path : glob(theme_directory_glob)) {
                 auto t = trace<"theme_scan">{};
 
                 try {
@@ -65,12 +65,12 @@ public:
     {
         std::vector<std::string> names;
 
-        for (hilet& t : themes) {
+        for (auto const& t : themes) {
             names.push_back(t->name);
         }
 
         std::sort(names.begin(), names.end());
-        hilet new_end = std::unique(names.begin(), names.end());
+        auto const new_end = std::unique(names.begin(), names.end());
         names.erase(new_end, names.cend());
         return names;
     }
@@ -88,7 +88,7 @@ public:
         theme *matching_theme = nullptr;
         theme *matching_theme_and_mode = nullptr;
 
-        for (hilet& t : themes) {
+        for (auto const& t : themes) {
             if (t->name == name and t->mode == mode) {
                 matching_theme_and_mode = t.get();
             } else if (t->name == name) {

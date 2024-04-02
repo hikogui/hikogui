@@ -4,107 +4,104 @@
 
 #include "JSON.hpp"
 #include "../utility/utility.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
+#include <hikotest/hikotest.hpp>
 
+TEST_SUITE(JSON_suite) {
 
-
-using namespace std;
-using namespace hi;
-
-TEST(JSON, ParseEmpty)
+TEST_CASE(ParseEmpty)
 {
-    ASSERT_EQ(parse_JSON("{}"), datum::make_map());
+    REQUIRE(hi::parse_JSON("{}") == hi::datum::make_map());
 }
 
-TEST(JSON, ParseInteger)
+TEST_CASE(ParseInteger)
 {
-    auto expected = datum::make_map();
+    auto expected = hi::datum::make_map();
     expected["foo"] = 42;
-    ASSERT_EQ(parse_JSON("{\"foo\": 42}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": 42}") == expected);
 }
 
-TEST(JSON, ParseFloat)
+TEST_CASE(ParseFloat)
 {
-    auto expected = datum::make_map();
+    auto expected = hi::datum::make_map();
     expected["foo"] = 42.0;
-    ASSERT_EQ(parse_JSON("{\"foo\": 42.0}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": 42.0}") == expected);
 }
 
-TEST(JSON, ParseString)
+TEST_CASE(ParseString)
 {
-    auto expected = datum::make_map();
+    auto expected = hi::datum::make_map();
     expected["foo"] = "bar";
-    ASSERT_EQ(parse_JSON("{\"foo\": \"bar\"}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": \"bar\"}") == expected);
 }
 
-TEST(JSON, ParseBooleanTrue)
+TEST_CASE(ParseBooleanTrue)
 {
-    auto expected = datum::make_map();
+    auto expected = hi::datum::make_map();
     expected["foo"] = true;
-    ASSERT_EQ(parse_JSON("{\"foo\": true}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": true}") == expected);
 }
 
-TEST(JSON, ParseBooleanFalse)
+TEST_CASE(ParseBooleanFalse)
 {
-    auto expected = datum::make_map();
+    auto expected = hi::datum::make_map();
     expected["foo"] = false;
-    ASSERT_EQ(parse_JSON("{\"foo\": false}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": false}") == expected);
 }
 
-TEST(JSON, ParseNull)
+TEST_CASE(ParseNull)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum{nullptr};
-    ASSERT_EQ(parse_JSON("{\"foo\": null}"), expected);
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum{nullptr};
+    REQUIRE(hi::parse_JSON("{\"foo\": null}") == expected);
 }
 
-TEST(JSON, ParseEmptyArray)
+TEST_CASE(ParseEmptyArray)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum::make_vector();
-    ASSERT_EQ(parse_JSON("{\"foo\": []}"), expected);
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum::make_vector();
+    REQUIRE(hi::parse_JSON("{\"foo\": []}") == expected);
 }
 
-TEST(JSON, ParseSingleItemArray)
+TEST_CASE(ParseSingleItemArray)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum::make_vector(42);
-    ASSERT_EQ(parse_JSON("{\"foo\": [42]}"), expected);
-    ASSERT_EQ(parse_JSON("{\"foo\": [42,]}"), expected);
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum::make_vector(42);
+    REQUIRE(hi::parse_JSON("{\"foo\": [42]}") == expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": [42,]}") == expected);
 }
 
-TEST(JSON, ParseTwoItemArray)
+TEST_CASE(ParseTwoItemArray)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum::make_vector(42, 43);
-    ASSERT_EQ(parse_JSON("{\"foo\": [42, 43]}"), expected);
-    ASSERT_EQ(parse_JSON("{\"foo\": [42, 43,]}"), expected);
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum::make_vector(42, 43);
+    REQUIRE(hi::parse_JSON("{\"foo\": [42, 43]}") == expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": [42, 43,]}") == expected);
 }
 
-TEST(JSON, ParseEmptyObject)
+TEST_CASE(ParseEmptyObject)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum::make_map();
-    ASSERT_EQ(parse_JSON("{\"foo\": {}}"), expected);
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum::make_map();
+    REQUIRE(hi::parse_JSON("{\"foo\": {}}") == expected);
 }
 
-TEST(JSON, ParseSingleItemObject)
+TEST_CASE(ParseSingleItemObject)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum::make_map();
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum::make_map();
     expected["foo"]["bar"] = 42;
-    ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42}}"), expected);
-    ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42,}}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": {\"bar\": 42}}") == expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": {\"bar\": 42,}}") == expected);
 }
 
-TEST(JSON, ParseTwoItemObject)
+TEST_CASE(ParseTwoItemObject)
 {
-    auto expected = datum::make_map();
-    expected["foo"] = datum::make_map();
+    auto expected = hi::datum::make_map();
+    expected["foo"] = hi::datum::make_map();
     expected["foo"]["bar"] = 42;
     expected["foo"]["baz"] = 43;
-    ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42, \"baz\": 43}}"), expected);
-    ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42, \"baz\": 43,}}"), expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": {\"bar\": 42, \"baz\": 43}}") == expected);
+    REQUIRE(hi::parse_JSON("{\"foo\": {\"bar\": 42, \"baz\": 43,}}") == expected);
 }
+
+};

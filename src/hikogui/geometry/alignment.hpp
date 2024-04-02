@@ -67,9 +67,9 @@ enum class vertical_alignment : uint8_t {
     hi_axiom(bottom <= top);
     hi_axiom(guideline_width >= 0.0f);
 
-    hilet guideline_bottom = bottom;
-    hilet guideline_top = top - guideline_width;
-    hilet guideline_middle = (bottom + top - guideline_width) / 2.0f;
+    auto const guideline_bottom = bottom;
+    auto const guideline_top = top - guideline_width;
+    auto const guideline_middle = (bottom + top - guideline_width) / 2.0f;
 
     switch (alignment) {
     case vertical_alignment::none:
@@ -164,9 +164,9 @@ enum class horizontal_alignment : uint8_t {
     hi_axiom(left <= right);
     hi_axiom(guideline_width >= 0.0f);
 
-    hilet guideline_left = left;
-    hilet guideline_right = right - guideline_width;
-    hilet guideline_center = (left + right - guideline_width) / 2.0f;
+    auto const guideline_left = left;
+    auto const guideline_right = right - guideline_width;
+    auto const guideline_center = (left + right - guideline_width) / 2.0f;
 
     switch (alignment) {
     case horizontal_alignment::none:

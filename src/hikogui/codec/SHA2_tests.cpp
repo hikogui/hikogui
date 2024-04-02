@@ -6,159 +6,153 @@
 #include "base_n.hpp"
 #include "../utility/utility.hpp"
 #include "../algorithm/algorithm.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
-#include <iostream>
+#include <hikotest/hikotest.hpp>
 
-
-
-using namespace std;
-using namespace hi;
+TEST_SUITE(SHA2_suite) {
 
 template<typename T>
-std::string test_sha2(bstring value)
+static std::string test_sha2(hi::bstring value)
 {
     auto hash = T();
     hash.add(value);
 
-    return base16::encode(hash.get_bytes());
+    return hi::to_lower(hi::base16::encode(hash.get_bytes()));
 }
 
 template<typename T>
-std::string test_sha2(std::string value)
+static std::string test_sha2(std::string value)
 {
-    return test_sha2<T>(to_bstring(value));
+    return test_sha2<T>(hi::to_bstring(value));
 }
 
-#define ASSERT_CASEEQ(a, b) ASSERT_EQ(to_lower(a), to_lower(b))
-
-TEST(SHA2, Empty)
+TEST_CASE(empty)
 {
-    ASSERT_CASEEQ(test_sha2<SHA224>(""), "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f");
-    ASSERT_CASEEQ(test_sha2<SHA256>(""), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-    ASSERT_CASEEQ(
-        test_sha2<SHA384>(""),
+    REQUIRE(test_sha2<hi::SHA224>("") == "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f");
+    REQUIRE(test_sha2<hi::SHA256>("") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    REQUIRE(
+        test_sha2<hi::SHA384>("") ==
         "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b");
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>(""),
+    REQUIRE(
+        test_sha2<hi::SHA512>("") ==
         "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327a"
         "f927da3e");
-    ASSERT_CASEEQ(test_sha2<SHA512_224>(""), "6ed0dd02806fa89e25de060c19d3ac86cabb87d6a0ddd05c333b84f4");
-    ASSERT_CASEEQ(test_sha2<SHA512_256>(""), "c672b8d1ef56ed28ab87c3622c5114069bdd3ad7b8f9737498d0c01ecef0967a");
+    REQUIRE(test_sha2<hi::SHA512_224>("") == "6ed0dd02806fa89e25de060c19d3ac86cabb87d6a0ddd05c333b84f4");
+    REQUIRE(test_sha2<hi::SHA512_256>("") == "c672b8d1ef56ed28ab87c3622c5114069bdd3ad7b8f9737498d0c01ecef0967a");
 }
 
-TEST(SHA2, NESSIE256Set1)
+TEST_CASE(NESSIE256Set1)
 {
-    ASSERT_CASEEQ(test_sha2<SHA256>(""), "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855");
+    REQUIRE(test_sha2<hi::SHA256>("") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 
-    ASSERT_CASEEQ(test_sha2<SHA256>("a"), "CA978112CA1BBDCAFAC231B39A23DC4DA786EFF8147C4E72B9807785AFEE48BB");
+    REQUIRE(test_sha2<hi::SHA256>("a") == "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb");
 
-    ASSERT_CASEEQ(test_sha2<SHA256>("abc"), "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD");
+    REQUIRE(test_sha2<hi::SHA256>("abc") == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 
-    ASSERT_CASEEQ(test_sha2<SHA256>("message digest"), "F7846F55CF23E14EEBEAB5B4E1550CAD5B509E3348FBC4EFA3A1413D393CB650");
+    REQUIRE(test_sha2<hi::SHA256>("message digest") == "f7846f55cf23e14eebeab5b4e1550cad5b509e3348fbc4efa3a1413d393cb650");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA256>("abcdefghijklmnopqrstuvwxyz"), "71C480DF93D6AE2F1EFAD1447C66C9525E316218CF51FC8D9ED832F2DAF18B73");
+    REQUIRE(
+        test_sha2<hi::SHA256>("abcdefghijklmnopqrstuvwxyz") == "71c480df93d6ae2f1efad1447c66c9525e316218cf51fc8d9ed832f2daf18b73");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA256>("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
-        "248D6A61D20638B8E5C026930C3E6039A33CE45964FF2167F6ECEDD419DB06C1");
+    REQUIRE(
+        test_sha2<hi::SHA256>("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") ==
+        "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA256>("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
-        "DB4BFCBD4DA0CD85A60C3C37D3FBD8805C77F15FC6B1FDFE614EE0A7C8FDB4C0");
+    REQUIRE(
+        test_sha2<hi::SHA256>("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") ==
+        "db4bfcbd4da0cd85a60c3c37d3fbd8805c77f15fc6b1fdfe614ee0a7c8fdb4c0");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA256>("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-        "F371BC4A311F2B009EEF952DD83CA80E2B60026C8E935592D0F9C308453C813E");
+    REQUIRE(
+        test_sha2<hi::SHA256>("12345678901234567890123456789012345678901234567890123456789012345678901234567890") ==
+        "f371bc4a311f2b009eef952dd83ca80e2b60026c8e935592d0f9c308453c813e");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA256>(std::string(1'000'000, 'a')), "CDC76E5C9914FB9281A1C7E284D73E67F1809A48A497200E046D39CCC7112CD0");
+    REQUIRE(test_sha2<hi::SHA256>(std::string(1'000'000, 'a')) == "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
 
     // Same test, but with chunks of 10 characters.
-    auto h = SHA256();
+    auto h = hi::SHA256();
     for (int i = 0; i != 99'999; i++) {
-        h.add(to_bstring("aaaaaaaaaa"), false);
+        h.add(hi::to_bstring("aaaaaaaaaa"), false);
     }
-    h.add(to_bstring("aaaaaaaaaa"));
-    ASSERT_CASEEQ(base16::encode(h.get_bytes()), "CDC76E5C9914FB9281A1C7E284D73E67F1809A48A497200E046D39CCC7112CD0");
+    h.add(hi::to_bstring("aaaaaaaaaa"));
+    REQUIRE(hi::to_lower(hi::base16::encode(h.get_bytes())) == "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0");
 }
 
-TEST(SHA2, NESSIE512Set1)
+TEST_CASE(NESSIE512Set1)
 {
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>(""),
-        "CF83E1357EEFB8BDF1542850D66D8007"
-        "D620E4050B5715DC83F4A921D36CE9CE"
-        "47D0D13C5D85F2B0FF8318D2877EEC2F"
-        "63B931BD47417A81A538327AF927DA3E");
+    REQUIRE(
+        test_sha2<hi::SHA512>("") ==
+        "cf83e1357eefb8bdf1542850d66d8007"
+        "d620e4050b5715dc83f4a921d36ce9ce"
+        "47d0d13c5d85f2b0ff8318d2877eec2f"
+        "63b931bd47417a81a538327af927da3e");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("a"),
-        "1F40FC92DA241694750979EE6CF582F2"
-        "D5D7D28E18335DE05ABC54D0560E0F53"
-        "02860C652BF08D560252AA5E74210546"
-        "F369FBBBCE8C12CFC7957B2652FE9A75");
+    REQUIRE(
+        test_sha2<hi::SHA512>("a") ==
+        "1f40fc92da241694750979ee6cf582f2"
+        "d5d7d28e18335de05abc54d0560e0f53"
+        "02860c652bf08d560252aa5e74210546"
+        "f369fbbbce8c12cfc7957b2652fe9a75");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("abc"),
-        "DDAF35A193617ABACC417349AE204131"
-        "12E6FA4E89A97EA20A9EEEE64B55D39A"
-        "2192992A274FC1A836BA3C23A3FEEBBD"
-        "454D4423643CE80E2A9AC94FA54CA49F");
+    REQUIRE(
+        test_sha2<hi::SHA512>("abc") ==
+        "ddaf35a193617abacc417349ae204131"
+        "12e6fa4e89a97ea20a9eeee64b55d39a"
+        "2192992a274fc1a836ba3c23a3feebbd"
+        "454d4423643ce80e2a9ac94fa54ca49f");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("message digest"),
-        "107DBF389D9E9F71A3A95F6C055B9251"
-        "BC5268C2BE16D6C13492EA45B0199F33"
-        "09E16455AB1E96118E8A905D5597B720"
-        "38DDB372A89826046DE66687BB420E7C");
+    REQUIRE(
+        test_sha2<hi::SHA512>("message digest") ==
+        "107dbf389d9e9f71a3a95f6c055b9251"
+        "bc5268c2be16d6c13492ea45b0199f33"
+        "09e16455ab1e96118e8a905d5597b720"
+        "38ddb372a89826046de66687bb420e7c");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("abcdefghijklmnopqrstuvwxyz"),
-        "4DBFF86CC2CA1BAE1E16468A05CB9881"
-        "C97F1753BCE3619034898FAA1AABE429"
-        "955A1BF8EC483D7421FE3C1646613A59"
-        "ED5441FB0F321389F77F48A879C7B1F1");
+    REQUIRE(
+        test_sha2<hi::SHA512>("abcdefghijklmnopqrstuvwxyz") ==
+        "4dbff86cc2ca1bae1e16468a05cb9881"
+        "c97f1753bce3619034898faa1aabe429"
+        "955a1bf8ec483d7421fe3c1646613a59"
+        "ed5441fb0f321389f77f48a879c7b1f1");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
-        "204A8FC6DDA82F0A0CED7BEB8E08A416"
-        "57C16EF468B228A8279BE331A703C335"
-        "96FD15C13B1B07F9AA1D3BEA57789CA0"
-        "31AD85C7A71DD70354EC631238CA3445");
+    REQUIRE(
+        test_sha2<hi::SHA512>("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") ==
+        "204a8fc6dda82f0a0ced7beb8e08a416"
+        "57c16ef468b228a8279be331a703c335"
+        "96fd15c13b1b07f9aa1d3bea57789ca0"
+        "31ad85c7a71dd70354ec631238ca3445");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
-        "1E07BE23C26A86EA37EA810C8EC78093"
-        "52515A970E9253C26F536CFC7A9996C4"
-        "5C8370583E0A78FA4A90041D71A4CEAB"
-        "7423F19C71B9D5A3E01249F0BEBD5894");
+    REQUIRE(
+        test_sha2<hi::SHA512>("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") ==
+        "1e07be23c26a86ea37ea810c8ec78093"
+        "52515a970e9253c26f536cfc7a9996c4"
+        "5c8370583e0a78fa4a90041d71a4ceab"
+        "7423f19c71b9d5a3e01249f0bebd5894");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-        "72EC1EF1124A45B047E8B7C75A932195"
-        "135BB61DE24EC0D1914042246E0AEC3A"
-        "2354E093D76F3048B456764346900CB1"
-        "30D2A4FD5DD16ABB5E30BCB850DEE843");
+    REQUIRE(
+        test_sha2<hi::SHA512>("12345678901234567890123456789012345678901234567890123456789012345678901234567890") ==
+        "72ec1ef1124a45b047e8b7c75a932195"
+        "135bb61de24ec0d1914042246e0aec3a"
+        "2354e093d76f3048b456764346900cb1"
+        "30d2a4fd5dd16abb5e30bcb850dee843");
 
-    ASSERT_CASEEQ(
-        test_sha2<SHA512>(std::string(1'000'000, 'a')),
-        "E718483D0CE769644E2E42C7BC15B463"
-        "8E1F98B13B2044285632A803AFA973EB"
-        "DE0FF244877EA60A4CB0432CE577C31B"
-        "EB009C5C2C49AA2E4EADB217AD8CC09B");
+    REQUIRE(
+        test_sha2<hi::SHA512>(std::string(1'000'000, 'a')) ==
+        "e718483d0ce769644e2e42c7bc15b463"
+        "8e1f98b13b2044285632a803afa973eb"
+        "de0ff244877ea60a4cb0432ce577c31b"
+        "eb009c5c2c49aa2e4eadb217ad8cc09b");
 
     // Same test, but with chunks of 10 characters.
-    auto h = SHA512();
+    auto h = hi::SHA512();
     for (int i = 0; i != 99'999; i++) {
-        h.add(to_bstring("aaaaaaaaaa"), false);
+        h.add(hi::to_bstring("aaaaaaaaaa"), false);
     }
-    h.add(to_bstring("aaaaaaaaaa"));
-    ASSERT_CASEEQ(
-        base16::encode(h.get_bytes()),
-        "E718483D0CE769644E2E42C7BC15B463"
-        "8E1F98B13B2044285632A803AFA973EB"
-        "DE0FF244877EA60A4CB0432CE577C31B"
-        "EB009C5C2C49AA2E4EADB217AD8CC09B");
+    h.add(hi::to_bstring("aaaaaaaaaa"));
+    REQUIRE(
+        hi::to_lower(hi::base16::encode(h.get_bytes())) ==
+        "e718483d0ce769644e2e42c7bc15b463"
+        "8e1f98b13b2044285632a803afa973eb"
+        "de0ff244877ea60a4cb0432ce577c31b"
+        "eb009c5c2c49aa2e4eadb217ad8cc09b");
 }
+
+}; // TEST_SUITE(SHA2_suite)

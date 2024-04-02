@@ -67,8 +67,8 @@ hi_inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer comman
         sizeof(push_constants),
         &pushConstants);
 
-    hilet numberOfRectangles = vertexBufferData.size() / 4;
-    hilet numberOfTriangles = numberOfRectangles * 2;
+    auto const numberOfRectangles = vertexBufferData.size() / 4;
+    auto const numberOfTriangles = numberOfRectangles * 2;
     device()->cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw glyphs");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
@@ -117,7 +117,7 @@ hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_SDF::createDe
 hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_SDF::createWriteDescriptorSet() const
 {
     hi_axiom_not_null(device());
-    hilet& sharedImagePipeline = device()->SDF_pipeline;
+    auto const& sharedImagePipeline = device()->SDF_pipeline;
 
     return {
         {
@@ -289,7 +289,7 @@ hi_inline void gfx_pipeline_SDF::device_shared::prepareStagingPixmapForDrawing()
 
 hi_inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
 {
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
     for (auto& atlasTexture : atlasTextures) {
         atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
@@ -313,27 +313,27 @@ hi_inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
  */
 hi_inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font const &font, glyph_id glyph, glyph_atlas_info& info) noexcept
 {
-    hilet glyph_metrics = font.get_metrics(glyph);
-    hilet glyph_path = font.get_path(glyph);
-    hilet glyph_bounding_box = glyph_metrics.bounding_rectangle;
+    auto const glyph_metrics = font.get_metrics(glyph);
+    auto const glyph_path = font.get_path(glyph);
+    auto const glyph_bounding_box = glyph_metrics.bounding_rectangle;
 
-    hilet draw_scale = scale2{drawfontSize, drawfontSize};
-    hilet draw_bounding_box = draw_scale * glyph_bounding_box;
+    auto const draw_scale = scale2{drawfontSize, drawfontSize};
+    auto const draw_bounding_box = draw_scale * glyph_bounding_box;
 
     // We will draw the font at a fixed size into the texture. And we need a border for the texture to
     // allow proper bi-linear interpolation on the edges.
 
     // Determine the size of the image in the atlas.
     // This is the bounding box sized to the fixed font size and a border
-    hilet draw_offset = point2{drawBorder, drawBorder} - get<0>(draw_bounding_box);
-    hilet draw_extent = draw_bounding_box.size() + 2.0f * drawBorder;
-    hilet image_size = ceil(draw_extent);
+    auto const draw_offset = point2{drawBorder, drawBorder} - get<0>(draw_bounding_box);
+    auto const draw_extent = draw_bounding_box.size() + 2.0f * drawBorder;
+    auto const image_size = ceil(draw_extent);
 
     // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
-    hilet draw_path = (translate2{draw_offset} * draw_scale) * glyph_path;
+    auto const draw_path = (translate2{draw_offset} * draw_scale) * glyph_path;
 
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
-    hilet lock = std::scoped_lock(gfx_system_mutex);
+    auto const lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
     auto pixmap =
@@ -349,9 +349,9 @@ hi_inline bool gfx_pipeline_SDF::device_shared::place_vertices(
     hi::font const &font, glyph_id glyph,
     quad_color colors) noexcept
 {
-    hilet[atlas_rect, glyph_was_added] = this->get_glyph_from_atlas(font, glyph);
+    auto const[atlas_rect, glyph_was_added] = this->get_glyph_from_atlas(font, glyph);
 
-    hilet box_with_border = scale_from_center(box, atlas_rect->border_scale);
+    auto const box_with_border = scale_from_center(box, atlas_rect->border_scale);
 
     auto image_index = atlas_rect->position.z();
     auto t0 = point3(get<0>(atlas_rect->texture_coordinates), image_index);
@@ -401,7 +401,7 @@ hi_inline void gfx_pipeline_SDF::device_shared::teardownShaders(gfx_device const
 
 hi_inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
 {
-    hilet current_image_index = atlasTextures.size();
+    auto const current_image_index = atlasTextures.size();
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -424,17 +424,17 @@ hi_inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
     allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    hilet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    auto const[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
-    hilet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
-    hilet clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
+    auto const clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
+    auto const clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
 
     device.transition_layout(
         atlasImage, imageCreateInfo.format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
     device.clearColorImage(atlasImage, vk::ImageLayout::eTransferDstOptimal, clearValue, clearRange);
 
-    hilet atlasImageView = device.createImageView(
+    auto const atlasImageView = device.createImageView(
         {vk::ImageViewCreateFlags(),
          atlasImage,
          vk::ImageViewType::e2D,
@@ -482,9 +482,9 @@ hi_inline void gfx_pipeline_SDF::device_shared::buildAtlas()
     allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
     allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    hilet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    auto const[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(image, "sdf-pipeline staging image");
-    hilet data = device.mapMemory<sdf_r8>(allocation);
+    auto const data = device.mapMemory<sdf_r8>(allocation);
 
     stagingTexture = {
         image,

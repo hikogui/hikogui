@@ -29,7 +29,7 @@ hi_export namespace hi { inline namespace v1 {
 [[nodiscard]] hi_inline std::expected<std::string, std::error_code> get_user_setting_string(std::string_view name) noexcept
 {
     // First check the registry of the current-user.
-    if (hilet value = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
+    if (auto const value = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
         return *value;
     } else if (value.error() != win32_error::file_not_found) {
         return std::unexpected{std::error_code{value.error()}};
@@ -37,7 +37,7 @@ hi_export namespace hi { inline namespace v1 {
 
     // Now check the registry for the local-machine.
     // These are settings that where made by the Administrator of the machine.
-    if (hilet value = win32_RegGetValue<std::string>(HKEY_LOCAL_MACHINE, user_setting_registry_path(), name)) {
+    if (auto const value = win32_RegGetValue<std::string>(HKEY_LOCAL_MACHINE, user_setting_registry_path(), name)) {
         return *value;
     } else {
         return std::unexpected{std::error_code{value.error()}};
@@ -47,7 +47,7 @@ hi_export namespace hi { inline namespace v1 {
 [[nodiscard]] hi_inline std::expected<long long, std::error_code> get_user_setting_integral(std::string_view name) noexcept
 {
     // First check the registry of the current-user.
-    if (hilet value = win32_RegGetValue<long long>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
+    if (auto const value = win32_RegGetValue<long long>(HKEY_CURRENT_USER, user_setting_registry_path(), name)) {
         return *value;
     } else if (value.error() != win32_error::file_not_found) {
         return std::unexpected{std::error_code{value.error()}};
@@ -55,7 +55,7 @@ hi_export namespace hi { inline namespace v1 {
 
     // Now check the registry for the local-machine.
     // These are settings that where made by the Administrator of the machine.
-    if (hilet value = win32_RegGetValue<long long>(HKEY_LOCAL_MACHINE, user_setting_registry_path(), name)) {
+    if (auto const value = win32_RegGetValue<long long>(HKEY_LOCAL_MACHINE, user_setting_registry_path(), name)) {
         return *value;
     } else {
         return std::unexpected{std::error_code{value.error()}};

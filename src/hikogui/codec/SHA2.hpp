@@ -69,9 +69,9 @@ class SHA2 {
         [[nodiscard]] constexpr std::byte get_byte(std::size_t i) const noexcept
         {
             hi_axiom(i < 8 * sizeof(T));
-            hilet word_nr = i / sizeof(T);
-            hilet byte_nr = i % sizeof(T);
-            hilet word = get_word(word_nr);
+            auto const word_nr = i / sizeof(T);
+            auto const byte_nr = i % sizeof(T);
+            auto const word = get_word(word_nr);
             return static_cast<std::byte>(word >> (sizeof(T) - 1 - byte_nr) * 8);
         }
 
@@ -108,11 +108,11 @@ class SHA2 {
 
         constexpr void set_byte(std::size_t i, std::byte value) noexcept
         {
-            hilet word_nr = i / sizeof(T);
-            hilet byte_nr = i % sizeof(T);
+            auto const word_nr = i / sizeof(T);
+            auto const byte_nr = i % sizeof(T);
             auto& word = v[word_nr];
 
-            hilet valueT = static_cast<T>(static_cast<uint8_t>(value));
+            auto const valueT = static_cast<T>(static_cast<uint8_t>(value));
             word |= valueT << (sizeof(T) - 1 - byte_nr) * 8;
         }
 
@@ -241,9 +241,9 @@ class SHA2 {
 
     constexpr static state_type round(state_type const& tmp, T K, T W) noexcept
     {
-        hilet T1 = tmp.h + S1(tmp.e) + Ch(tmp.e, tmp.f, tmp.g) + K + W;
+        auto const T1 = tmp.h + S1(tmp.e) + Ch(tmp.e, tmp.f, tmp.g) + K + W;
 
-        hilet T2 = S0(tmp.a) + Maj(tmp.a, tmp.b, tmp.c);
+        auto const T2 = S0(tmp.a) + Maj(tmp.a, tmp.b, tmp.c);
 
         return {T1 + T2, tmp.a, tmp.b, tmp.c, tmp.d + T1, tmp.e, tmp.f, tmp.g};
     }
@@ -256,7 +256,7 @@ class SHA2 {
         }
 
         for (std::size_t i = 16; i != nr_rounds; ++i) {
-            hilet W_ = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
+            auto const W_ = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
 
             tmp = round(tmp, K(i), W_);
 
@@ -284,7 +284,7 @@ class SHA2 {
 
         // Complete the current block if there is not enough room
         // for the length in this block.
-        hilet overflow_left = overflow.end() - overflow_it;
+        auto const overflow_left = overflow.end() - overflow_it;
         if (overflow_left < pad_length_of_length) {
             while (overflow_it != overflow.end()) {
                 *(overflow_it++) = std::byte{0x00};
@@ -294,7 +294,7 @@ class SHA2 {
         }
 
         // Pad until the start of length.
-        hilet overflow_length_start = overflow.end() - pad_length_of_length;
+        auto const overflow_length_start = overflow.end() - pad_length_of_length;
         while (overflow_it != overflow_length_start) {
             *(overflow_it++) = std::byte{0x00};
         }
@@ -348,36 +348,36 @@ public:
 
     constexpr SHA2& add(bstring const& str, bool finish = true) noexcept
     {
-        hilet first = str.data();
-        hilet last = first + str.size();
+        auto const first = str.data();
+        auto const last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr SHA2& add(bstring_view str, bool finish = true) noexcept
     {
-        hilet first = str.data();
-        hilet last = first + str.size();
+        auto const first = str.data();
+        auto const last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr SHA2& add(std::string const& str, bool finish = true) noexcept
     {
-        hilet first = reinterpret_cast<std::byte const *>(str.data());
-        hilet last = first + str.size();
+        auto const first = reinterpret_cast<std::byte const *>(str.data());
+        auto const last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr SHA2& add(std::string_view str, bool finish = true) noexcept
     {
-        hilet first = reinterpret_cast<std::byte const *>(str.data());
-        hilet last = first + str.size();
+        auto const first = reinterpret_cast<std::byte const *>(str.data());
+        auto const last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr void add(std::span<std::byte const> str, bool finish = true) noexcept
     {
-        hilet first = reinterpret_cast<std::byte const *>(str.data());
-        hilet last = first + str.size();
+        auto const first = reinterpret_cast<std::byte const *>(str.data());
+        auto const last = first + str.size();
         add(first, last, finish);
     }
 

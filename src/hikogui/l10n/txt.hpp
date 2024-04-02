@@ -186,8 +186,8 @@ public:
         std::vector<language_tag> const& languages = os_settings::language_tags()) const noexcept
     {
         hi_axiom_not_null(_args);
-        hilet[fmt, language_tag] = ::hi::get_translation(_msg_id, _first_integer_argument, languages);
-        hilet msg = _args->format(loc, fmt);
+        auto const[fmt, language_tag] = ::hi::get_translation(_msg_id, _first_integer_argument, languages);
+        auto const msg = _args->format(loc, fmt);
         return apply_markup(msg, language_tag);
     }
 
@@ -205,7 +205,7 @@ public:
     [[nodiscard]] gstring original() const noexcept
     {
         hi_axiom_not_null(_args);
-        hilet msg = _args->format(std::locale::classic(), _msg_id);
+        auto const msg = _args->format(std::locale::classic(), _msg_id);
         return apply_markup(msg, language_tag{"en-US"});
     }
 

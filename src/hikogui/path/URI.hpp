@@ -176,7 +176,7 @@ public:
         [[nodiscard]] constexpr const_iterator parse_userinfo(const_iterator first, const_iterator last) noexcept
         {
             for (auto it = first; it != last; ++it) {
-                if (hilet c = *it; c == '@') {
+                if (auto const c = *it; c == '@') {
                     set_userinfo(URI::decode(first, it));
                     return it + 1; // Skip over '@'.
                 }
@@ -211,7 +211,7 @@ public:
 
             } else {
                 for (; it != last; ++it) {
-                    if (hilet c = *it; c == ':') {
+                    if (auto const c = *it; c == ':') {
                         // End of host.
                         set_host(URI::decode(first, it));
                         return it;
@@ -447,7 +447,7 @@ public:
         [[nodiscard]] constexpr friend size_t to_string_size(path_type const& rhs) noexcept
         {
             size_t r = 0_uz;
-            for (hilet& segment : rhs) {
+            for (auto const& segment : rhs) {
                 r += segment.size();
             }
             r += rhs.size() + 1;
@@ -769,7 +769,7 @@ public:
         }
 
         for (auto it = first; it != last; ++it) {
-            hilet c = *it;
+            auto const c = *it;
             // clang-format off
             if (((
                     (c >= 'a' and c <= 'z') or
@@ -884,7 +884,7 @@ private:
     [[nodiscard]] constexpr const_iterator parse_scheme(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; ++it) {
-            if (hilet c = *it; c == ':') {
+            if (auto const c = *it; c == ':') {
                 set_scheme(std::string{first, it});
                 return it + 1; // Skip over ':'.
 
@@ -901,7 +901,7 @@ private:
     [[nodiscard]] constexpr const_iterator parse_authority(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; it++) {
-            if (hilet c = *it; c == '/' or c == '?' or c == '#') {
+            if (auto const c = *it; c == '/' or c == '?' or c == '#') {
                 set_authority(authority_type{std::string_view{first, it}});
                 return it;
             }
@@ -914,7 +914,7 @@ private:
     [[nodiscard]] constexpr const_iterator parse_path(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; it++) {
-            if (hilet c = *it; c == '?' or c == '#') {
+            if (auto const c = *it; c == '?' or c == '#') {
                 set_path(path_type{std::string_view{first, it}});
                 return it;
             }
@@ -927,7 +927,7 @@ private:
     [[nodiscard]] constexpr const_iterator parse_query(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; it++) {
-            if (hilet c = *it; c == '#') {
+            if (auto const c = *it; c == '#') {
                 set_query(URI::decode(first, it));
                 return it;
             }

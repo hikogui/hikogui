@@ -20,7 +20,8 @@
 
 hi_export_module(hikogui.widgets.window_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** The top-level window widget.
  * This widget is the top-level widget that is owned by the `gui_window`.
@@ -34,7 +35,8 @@ public:
 
     observer<label> title;
 
-    window_widget(forward_of<observer<label>> auto&& title) noexcept : super(nullptr), title(hi_forward(title))
+    template<forward_of<observer<label>> Title>
+    window_widget(Title&& title) noexcept : super(nullptr), title(std::forward<Title>(title))
     {
         _toolbar = std::make_unique<toolbar_widget>(this);
 
@@ -149,14 +151,14 @@ public:
 
         return r;
     }
-    
+
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet toolbar_height = _toolbar_constraints.preferred.height();
-            hilet between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
+            auto const toolbar_height = _toolbar_constraints.preferred.height();
+            auto const between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
-            hilet toolbar_rectangle = aarectangle{
+            auto const toolbar_rectangle = aarectangle{
                 point2{
                     _toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
                 point2{
@@ -164,7 +166,7 @@ public:
                     context.height() - _toolbar_constraints.margins.top()}};
             _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment()};
 
-            hilet content_rectangle = aarectangle{
+            auto const content_rectangle = aarectangle{
                 point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
                 point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
             _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
@@ -190,10 +192,10 @@ public:
         auto r = _toolbar->hitbox_test_from_parent(position);
         r = _content->hitbox_test_from_parent(position, r);
 
-        hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
-        hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
-        hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
-        hilet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
+        auto const is_on_l_edge = position.x() <= BORDER_WIDTH;
+        auto const is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
+        auto const is_on_b_edge = position.y() <= BORDER_WIDTH;
+        auto const is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
         // Corner resize has always priority.
         if (is_on_l_edge and is_on_b_edge) {
@@ -267,20 +269,20 @@ public:
             return true;
         }
     }
-    void set_window(gui_window *window) noexcept override
+    void set_window(gui_window* window) noexcept override
     {
         _window = window;
         if (_window) {
             _window->set_title(*title);
         }
     }
-    [[nodiscard]] gui_window *window() const noexcept override
+    [[nodiscard]] gui_window* window() const noexcept override
     {
         return _window;
     }
     /// @endprivatesection
 private:
-    gui_window *_window = nullptr;
+    gui_window* _window = nullptr;
 
     std::unique_ptr<grid_widget> _content;
     box_constraints _content_constraints;
@@ -294,8 +296,9 @@ private:
     mutable bool _can_resize_height;
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-    system_menu_widget *_system_menu = nullptr;
+    system_menu_widget* _system_menu = nullptr;
 #endif
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

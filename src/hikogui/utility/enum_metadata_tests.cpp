@@ -3,8 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "enum_metadata.hpp"
-#include "../macros.hpp"
-#include <gtest/gtest.h>
+#include <hikotest/hikotest.hpp>
+
+TEST_SUITE(enum_metadata_suite) {
 
 enum class continues_type {
     off,
@@ -12,13 +13,13 @@ enum class continues_type {
     maybe
 };
 
-constexpr auto continues_type_names = hi::enum_metadata{
+constexpr static auto continues_type_names = hi::enum_metadata{
     continues_type::on, "on",
     continues_type::off, "off",
     continues_type::maybe, "maybe",
 };
 
-TEST(enum_metadata, continues_constants)
+TEST_CASE(continues_constants)
 {
     static_assert(continues_type_names.count == 3);
     static_assert(continues_type_names.minimum() == continues_type::off);
@@ -26,7 +27,7 @@ TEST(enum_metadata, continues_constants)
     static_assert(continues_type_names.values_are_continues == true);
 }
 
-TEST(enum_metadata, continues_by_value)
+TEST_CASE(continues_by_value)
 {
     static_assert(continues_type_names[continues_type::off] == "off");
     static_assert(continues_type_names[continues_type::on] == "on");
@@ -35,7 +36,7 @@ TEST(enum_metadata, continues_by_value)
     static_assert(continues_type_names.at(continues_type::off) == "off");
     static_assert(continues_type_names.at(continues_type::on) == "on");
     static_assert(continues_type_names.at(continues_type::maybe) == "maybe");
-    ASSERT_THROW((void)continues_type_names.at(continues_type{42}), std::out_of_range);
+    REQUIRE_THROWS((void)continues_type_names.at(continues_type{42}), std::out_of_range);
 
     static_assert(continues_type_names.at(continues_type::off, "default") == "off");
     static_assert(continues_type_names.at(continues_type::on, "default") == "on");
@@ -43,7 +44,7 @@ TEST(enum_metadata, continues_by_value)
     static_assert(continues_type_names.at(continues_type{42}, "default") == "default");
 }
 
-TEST(enum_metadata, continues_by_name)
+TEST_CASE(continues_by_name)
 {
     static_assert(continues_type_names["off"] == continues_type::off);
     static_assert(continues_type_names["on"] == continues_type::on);
@@ -52,7 +53,7 @@ TEST(enum_metadata, continues_by_name)
     static_assert(continues_type_names.at("off") == continues_type::off);
     static_assert(continues_type_names.at("on") == continues_type::on);
     static_assert(continues_type_names.at("maybe") == continues_type::maybe);
-    ASSERT_THROW((void)continues_type_names.at("foo"), std::out_of_range);
+    REQUIRE_THROWS((void)continues_type_names.at("foo"), std::out_of_range);
 
     static_assert(continues_type_names.at("off", continues_type{42}) == continues_type::off);
     static_assert(continues_type_names.at("on", continues_type{42}) == continues_type::on);
@@ -60,7 +61,7 @@ TEST(enum_metadata, continues_by_name)
     static_assert(continues_type_names.at("foo", continues_type{42}) == continues_type{42});
 }
 
-TEST(enum_metadata, continues_contains)
+TEST_CASE(continues_contains)
 {
     static_assert(continues_type_names.contains("off") == true);
     static_assert(continues_type_names.contains("foo") == false);
@@ -74,7 +75,7 @@ enum class offset_type {
     on,
 };
 
-constexpr auto offset_type_names = hi::enum_metadata{
+constexpr static auto offset_type_names = hi::enum_metadata{
     offset_type::on,
     "on",
     offset_type::off,
@@ -83,7 +84,7 @@ constexpr auto offset_type_names = hi::enum_metadata{
     "maybe",
 };
 
-TEST(enum_metadata, offset_constants)
+TEST_CASE(offset_constants)
 {
     static_assert(offset_type_names.count == 3);
     static_assert(offset_type_names.minimum() == offset_type::maybe);
@@ -91,7 +92,7 @@ TEST(enum_metadata, offset_constants)
     static_assert(offset_type_names.values_are_continues == true);
 }
 
-TEST(enum_metadata, offset_by_value)
+TEST_CASE(offset_by_value)
 {
     static_assert(offset_type_names[offset_type::off] == "off");
     static_assert(offset_type_names[offset_type::on] == "on");
@@ -100,7 +101,7 @@ TEST(enum_metadata, offset_by_value)
     static_assert(offset_type_names.at(offset_type::off) == "off");
     static_assert(offset_type_names.at(offset_type::on) == "on");
     static_assert(offset_type_names.at(offset_type::maybe) == "maybe");
-    ASSERT_THROW((void)offset_type_names.at(offset_type{42}), std::out_of_range);
+    REQUIRE_THROWS((void)offset_type_names.at(offset_type{42}), std::out_of_range);
 
     static_assert(offset_type_names.at(offset_type::off, "default") == "off");
     static_assert(offset_type_names.at(offset_type::on, "default") == "on");
@@ -108,7 +109,7 @@ TEST(enum_metadata, offset_by_value)
     static_assert(offset_type_names.at(offset_type{42}, "default") == "default");
 }
 
-TEST(enum_metadata, offset_by_name)
+TEST_CASE(offset_by_name)
 {
     static_assert(offset_type_names["off"] == offset_type::off);
     static_assert(offset_type_names["on"] == offset_type::on);
@@ -117,7 +118,7 @@ TEST(enum_metadata, offset_by_name)
     static_assert(offset_type_names.at("off") == offset_type::off);
     static_assert(offset_type_names.at("on") == offset_type::on);
     static_assert(offset_type_names.at("maybe") == offset_type::maybe);
-    ASSERT_THROW((void)offset_type_names.at("foo"), std::out_of_range);
+    REQUIRE_THROWS((void)offset_type_names.at("foo"), std::out_of_range);
 
     static_assert(offset_type_names.at("off", offset_type{42}) == offset_type::off);
     static_assert(offset_type_names.at("on", offset_type{42}) == offset_type::on);
@@ -125,7 +126,7 @@ TEST(enum_metadata, offset_by_name)
     static_assert(offset_type_names.at("foo", offset_type{42}) == offset_type{42});
 }
 
-TEST(enum_metadata, offset_contains)
+TEST_CASE(offset_contains)
 {
     static_assert(offset_type_names.contains("off") == true);
     static_assert(offset_type_names.contains("foo") == false);
@@ -140,7 +141,7 @@ enum class discontinues_type {
     on = 1,
 };
 
-constexpr auto discontinues_type_names = hi::enum_metadata{
+constexpr static auto discontinues_type_names = hi::enum_metadata{
     discontinues_type::on,
     "on",
     discontinues_type::off,
@@ -149,7 +150,7 @@ constexpr auto discontinues_type_names = hi::enum_metadata{
     "maybe",
 };
 
-TEST(enum_metadata, discontinues_constants)
+TEST_CASE(discontinues_constants)
 {
     static_assert(discontinues_type_names.count == 3);
     static_assert(discontinues_type_names.minimum() == discontinues_type::maybe);
@@ -157,7 +158,7 @@ TEST(enum_metadata, discontinues_constants)
     static_assert(discontinues_type_names.values_are_continues == false);
 }
 
-TEST(enum_metadata, discontinues_by_value)
+TEST_CASE(discontinues_by_value)
 {
     static_assert(discontinues_type_names[discontinues_type::off] == "off");
     static_assert(discontinues_type_names[discontinues_type::on] == "on");
@@ -166,7 +167,7 @@ TEST(enum_metadata, discontinues_by_value)
     static_assert(discontinues_type_names.at(discontinues_type::off) == "off");
     static_assert(discontinues_type_names.at(discontinues_type::on) == "on");
     static_assert(discontinues_type_names.at(discontinues_type::maybe) == "maybe");
-    ASSERT_THROW((void)discontinues_type_names.at(discontinues_type{42}), std::out_of_range);
+    REQUIRE_THROWS((void)discontinues_type_names.at(discontinues_type{42}), std::out_of_range);
 
     static_assert(discontinues_type_names.at(discontinues_type::off, "default") == "off");
     static_assert(discontinues_type_names.at(discontinues_type::on, "default") == "on");
@@ -174,7 +175,7 @@ TEST(enum_metadata, discontinues_by_value)
     static_assert(discontinues_type_names.at(discontinues_type{42}, "default") == "default");
 }
 
-TEST(enum_metadata, discontinues_by_name)
+TEST_CASE(discontinues_by_name)
 {
     static_assert(discontinues_type_names["off"] == discontinues_type::off);
     static_assert(discontinues_type_names["on"] == discontinues_type::on);
@@ -183,7 +184,7 @@ TEST(enum_metadata, discontinues_by_name)
     static_assert(discontinues_type_names.at("off") == discontinues_type::off);
     static_assert(discontinues_type_names.at("on") == discontinues_type::on);
     static_assert(discontinues_type_names.at("maybe") == discontinues_type::maybe);
-    ASSERT_THROW((void)discontinues_type_names.at("foo"), std::out_of_range);
+    REQUIRE_THROWS((void)discontinues_type_names.at("foo"), std::out_of_range);
 
     static_assert(discontinues_type_names.at("off", discontinues_type{42}) == discontinues_type::off);
     static_assert(discontinues_type_names.at("on", discontinues_type{42}) == discontinues_type::on);
@@ -191,10 +192,12 @@ TEST(enum_metadata, discontinues_by_name)
     static_assert(discontinues_type_names.at("foo", discontinues_type{42}) == discontinues_type{42});
 }
 
-TEST(enum_metadata, discontinues_contains)
+TEST_CASE(discontinues_contains)
 {
     static_assert(discontinues_type_names.contains("off") == true);
     static_assert(discontinues_type_names.contains("foo") == false);
     static_assert(discontinues_type_names.contains(discontinues_type::off) == true);
     static_assert(discontinues_type_names.contains(discontinues_type{42}) == false);
 }
+
+};

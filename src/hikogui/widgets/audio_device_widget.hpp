@@ -65,7 +65,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hilet grid_rectangle = context.rectangle();
+            auto const grid_rectangle = context.rectangle();
             _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment()};
         }
 

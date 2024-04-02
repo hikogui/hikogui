@@ -271,7 +271,7 @@ constexpr auto iso_15924_infos = iso_15924_infos_init();
 {
     auto r = std::array<fixed_string<4>, 1000>{};
 
-    for (hilet& info : iso_15924_infos) {
+    for (auto const& info : iso_15924_infos) {
         r[info.number] = info.code4;
     }
 
@@ -282,7 +282,7 @@ constexpr auto iso_15924_infos = iso_15924_infos_init();
 {
     auto r = std::array<fixed_string<4>, 1000>{};
 
-    for (hilet& info : iso_15924_infos) {
+    for (auto const& info : iso_15924_infos) {
         r[info.number] = info.code4_open_type;
     }
 
@@ -298,7 +298,7 @@ constexpr auto iso_15924_infos = iso_15924_infos_init();
     for (auto i = 0_uz; i != iso_15924_infos.size(); ++i) {
         r[i] = {iso_15924_infos[i].code4, iso_15924_infos[i].number};
     }
-    std::sort(r.begin(), r.end(), [](hilet& a, hilet& b) {
+    std::sort(r.begin(), r.end(), [](auto const& a, auto const& b) {
         return a.first < b.first;
     });
 
@@ -317,13 +317,13 @@ constexpr iso_15924::iso_15924(std::string_view code4)
         throw parse_error(std::format("Invalid script '{}'", code4));
     }
 
-    hilet code4_ = to_title(code4);
+    auto const code4_ = to_title(code4);
 
-    hilet it = std::lower_bound(
+    auto const it = std::lower_bound(
         detail::iso_15924_number_by_code4.begin(),
         detail::iso_15924_number_by_code4.end(),
         code4_,
-        [](hilet& item, hilet& value) {
+        [](auto const& item, auto const& value) {
             return item.first < value;
         });
 

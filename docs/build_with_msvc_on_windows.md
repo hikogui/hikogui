@@ -62,7 +62,7 @@ mkdir build
 cd build
 
 # Optional: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang
-cmake -G "Ninja Multi-Config" -DCMAKE_INSTALL_PREFIX=../install -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF ..
+cmake -G "Ninja Multi-Config" "-DCMAKE_INSTALL_PREFIX=../install" -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF ..
 
 cmake --build . --config Debug
 cmake --build . --config Release

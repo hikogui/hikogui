@@ -160,12 +160,12 @@ public:
         if (compare_store(_layout, context)) {
             _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
 
-            hilet button_square =
+            auto const button_square =
                 aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
             _pip_circle = align(button_square, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
 
-            hilet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
+            auto const pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
             _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
         }
         super::set_layout(context);
@@ -196,9 +196,9 @@ public:
                 hi_no_default();
             }
 
-            hilet positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
+            auto const positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
 
-            hilet foreground_color_ = value() == widget_value::on ? accent_color() : foreground_color();
+            auto const foreground_color_ = value() == widget_value::on ? accent_color() : foreground_color();
             context.draw_circle(layout(), positioned_pip_circle * 1.02f, foreground_color_);
         }
     }
@@ -289,12 +289,12 @@ private:
     {
     }
 
-    template<size_t I>
-    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    template<size_t I, button_widget_attribute First, button_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
         if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
+            alignment = std::forward<First>(first);
+            set_attributes<I>(std::forward<Rest>(rest)...);
 
         } else {
             hi_static_no_default();

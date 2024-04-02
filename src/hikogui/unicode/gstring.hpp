@@ -224,7 +224,7 @@ constexpr void fix_language(It first, ItEnd last, language_tag default_language_
         return;
     }
 
-    hilet first_language_it = std::find_if(first, last, [](auto &x) { return x.language(); });
+    auto const first_language_it = std::find_if(first, last, [](auto &x) { return x.language(); });
     if (first_language_it != last) {
         default_language_tag = first_language_it->language_tag().expand();
     } else {
@@ -262,13 +262,13 @@ constexpr void fix_language(It first, ItEnd last, language_tag default_language_
 [[nodiscard]] constexpr gstring
 to_gstring(std::u32string_view rhs, unicode_normalize_config config = unicode_normalize_config::NFC()) noexcept
 {
-    hilet normalized_string = unicode_normalize(rhs, config);
+    auto const normalized_string = unicode_normalize(rhs, config);
 
     auto r = gstring{};
     auto break_state = detail::grapheme_break_state{};
     auto cluster = std::u32string{};
 
-    for (hilet code_point : normalized_string) {
+    for (auto const code_point : normalized_string) {
         if (detail::breaks_grapheme(code_point, break_state)) {
             if (cluster.size() > 0) {
                 r += grapheme(composed_t{}, cluster);
@@ -308,7 +308,7 @@ to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_norma
 {
     auto r = std::string{};
     r.reserve(rhs.size());
-    for (hilet c : rhs) {
+    for (auto const c : rhs) {
         r += to_string(c);
     }
     return r;
@@ -323,7 +323,7 @@ to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_norma
 {
     auto r = std::wstring{};
     r.reserve(rhs.size());
-    for (hilet c : rhs) {
+    for (auto const c : rhs) {
         r += to_wstring(c);
     }
     return r;
@@ -338,7 +338,7 @@ to_gstring(std::string_view rhs, unicode_normalize_config config = unicode_norma
 {
     auto r = std::u32string{};
     r.reserve(rhs.size());
-    for (hilet c : rhs) {
+    for (auto const c : rhs) {
         r += to_u32string(c);
     }
     return r;
@@ -363,7 +363,7 @@ struct hash<hi::gstring> {
     [[nodiscard]] std::size_t operator()(hi::gstring const& rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
-        for (hilet c : rhs) {
+        for (auto const c : rhs) {
             r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
         }
         return r;

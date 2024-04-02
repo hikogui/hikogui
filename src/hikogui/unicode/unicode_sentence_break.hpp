@@ -79,8 +79,8 @@ hi_inline void unicode_sentence_break_SB1_SB4(
     r.back() = yes; // SB2
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        hilet prev = infos[i - 1];
-        hilet next = infos[i];
+        auto const prev = infos[i - 1];
+        auto const next = infos[i];
 
         r[i] = [&] () {
             if (prev == CR and next == LF) {
@@ -104,7 +104,7 @@ hi_inline void unicode_sentence_break_SB5(
     hi_axiom(r.size() == infos.size() + 1);
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        hilet prev = infos[i - 1];
+        auto const prev = infos[i - 1];
         auto &next = infos[i];
 
         if ((not is_ParaSep(prev) and prev != CR and prev != LF) and (next == Extend or next == Format)) {
@@ -126,7 +126,7 @@ hi_inline void unicode_sentence_break_SB6_SB998(
     hi_axiom(r.size() == infos.size() + 1);
 
     for (auto i = 0_z; i < std::ssize(infos); ++i) {
-        hilet &next = infos[i];
+        auto const &next = infos[i];
         if (r[i] != unassigned) {
             continue;
         }
@@ -135,7 +135,7 @@ hi_inline void unicode_sentence_break_SB6_SB998(
 
         std::ptrdiff_t k;
 
-        hilet prev = [&] {
+        auto const prev = [&] {
             for (k = i - 1; k >= 0; --k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -144,7 +144,7 @@ hi_inline void unicode_sentence_break_SB6_SB998(
             return unicode_sentence_break_info{};
         }();
 
-        hilet prev_prev = [&] {
+        auto const prev_prev = [&] {
             for (--k; k >= 0; --k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -158,7 +158,7 @@ hi_inline void unicode_sentence_break_SB6_SB998(
         // 1 - ends in ParSep
         // 2 - includes SP
         // 4 - includes Close
-        hilet [prefix, close_sp_par_found] = [&]() {
+        auto const [prefix, close_sp_par_found] = [&]() {
             using enum unicode_break_opportunity;
 
             auto found = 0;
@@ -205,11 +205,11 @@ hi_inline void unicode_sentence_break_SB6_SB998(
             }
             return std::make_pair(unicode_sentence_break_info{}, 0);
         }();
-        hilet optional_close = (close_sp_par_found & 3) == 0;
-        hilet optional_close_sp = (close_sp_par_found & 1) == 0;
-        hilet optional_close_sp_par = true;
+        auto const optional_close = (close_sp_par_found & 3) == 0;
+        auto const optional_close_sp = (close_sp_par_found & 1) == 0;
+        auto const optional_close_sp_par = true;
 
-        hilet end_in_lower = [&]{
+        auto const end_in_lower = [&]{
             for (auto j = i; j < std::ssize(infos); ++j) {
                 if (not infos[j].is_skip()) {
                     if (infos[j] == Lower) {
@@ -262,8 +262,8 @@ unicode_sentence_break(It first, ItEnd last, CodePointFunc const& code_point_fun
 
     auto infos = std::vector<detail::unicode_sentence_break_info>{};
     infos.reserve(size);
-    std::transform(first, last, std::back_inserter(infos), [&] (hilet &item) {
-        hilet code_point = code_point_func(item);
+    std::transform(first, last, std::back_inserter(infos), [&] (auto const &item) {
+        auto const code_point = code_point_func(item);
         return detail::unicode_sentence_break_info{ucd_get_sentence_break_property(code_point)};
         });
 

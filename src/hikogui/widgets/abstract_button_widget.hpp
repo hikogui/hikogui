@@ -203,32 +203,32 @@ protected:
     {
     }
 
-    template<size_t I>
-    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    template<size_t I, button_widget_attribute First, button_widget_attribute... Rest>
+    void set_attributes(First&& first, Rest&&...rest) noexcept
     {
-        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+        if constexpr (forward_of<First, observer<hi::label>>) {
             if constexpr (I == 0) {
                 on_label = first;
                 off_label = first;
-                other_label = hi_forward(first);
+                other_label = std::forward<First>(first);
             } else if constexpr (I == 1) {
                 other_label.reset();
                 off_label.reset();
-                off_label = hi_forward(first);
+                off_label = std::forward<First>(first);
             } else if constexpr (I == 2) {
-                other_label = hi_forward(first);
+                other_label = std::forward<First>(first);
             } else {
                 hi_static_no_default();
             }
-            set_attributes<I + 1>(hi_forward(rest)...);
+            set_attributes<I + 1>(std::forward<Rest>(rest)...);
 
-        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
+        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
+            alignment = std::forward<First>(first);
+            set_attributes<I>(std::forward<Rest>(rest)...);
 
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
-            set_attributes<I>(hi_forward(rest)...);
+        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
+            text_style = std::forward<First>(first);
+            set_attributes<I>(std::forward<Rest>(rest)...);
 
         } else {
             hi_static_no_default();
