@@ -47,12 +47,16 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/float_to_half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/half_to_float_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f16x4_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f32x2_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f32x4_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f64x2_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f64x4_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/GUI/widget_state_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/algorithm_misc_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/algorithm/strings_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_packer_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_unpacker_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_packer_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/audio/audio_sample_unpacker_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/ascii_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/char_converter_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/char_maps/cp_1252_tests.cpp
@@ -70,7 +74,7 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/unfair_mutex_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/async_task_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
@@ -107,7 +111,7 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/URI_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/URL_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/path/glob_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/dither_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/dither_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/seed_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/random/xorshift128p_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/security/sip_hash_tests.cpp
@@ -131,7 +135,7 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/units_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
 )
 
 show_build_target_properties(hikogui_htests)

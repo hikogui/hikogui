@@ -6,9 +6,9 @@
 
 #include "vector2.hpp"
 #include "extent2.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <format>
 #include <concepts>
 #include <exception>

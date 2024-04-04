@@ -6,10 +6,10 @@
 #include "../macros.hpp"
 #include <hikotest/hikotest.hpp>
 
-TEST_SUITE(simd_suite)
+TEST_SUITE(simd_f32x4_suite)
 {
 
-TEST_CASE(arithmatic_test)
+TEST_CASE(arithmetic_test)
 {
     auto const tmp1 = hi::f32x4{9.0f, 6.0f, 4.0f, 14.0f};
     auto const tmp2 = hi::f32x4{3.0f, -2.0f, 8.0f, 7.0f};
@@ -105,32 +105,7 @@ TEST_CASE(setters_test)
     REQUIRE(tmp == hi::f32x4(22.0f, 23.0f, 24.0f, 25.0f));
 }
 
-TEST_CASE(swizzle2_test)
-{
-    auto const tmp = hi::f32x2{2.0f, 3.0f};
-
-    REQUIRE(tmp.xx() == hi::f32x2(2.0f, 2.0f));
-    REQUIRE(tmp.xy() == hi::f32x2(2.0f, 3.0f));
-    REQUIRE(tmp.x0() == hi::f32x2(2.0f, 0.0f));
-    REQUIRE(tmp.x1() == hi::f32x2(2.0f, 1.0f));
-
-    REQUIRE(tmp.yx() == hi::f32x2(3.0f, 2.0f));
-    REQUIRE(tmp.yy() == hi::f32x2(3.0f, 3.0f));
-    REQUIRE(tmp.y0() == hi::f32x2(3.0f, 0.0f));
-    REQUIRE(tmp.y1() == hi::f32x2(3.0f, 1.0f));
-
-    REQUIRE(tmp._0x() == hi::f32x2(0.0f, 2.0f));
-    REQUIRE(tmp._0y() == hi::f32x2(0.0f, 3.0f));
-    REQUIRE(tmp._00() == hi::f32x2(0.0f, 0.0f));
-    REQUIRE(tmp._01() == hi::f32x2(0.0f, 1.0f));
-
-    REQUIRE(tmp._1x() == hi::f32x2(1.0f, 2.0f));
-    REQUIRE(tmp._1y() == hi::f32x2(1.0f, 3.0f));
-    REQUIRE(tmp._10() == hi::f32x2(1.0f, 0.0f));
-    REQUIRE(tmp._11() == hi::f32x2(1.0f, 1.0f));
-}
-
-TEST_CASE(swizzle4_test)
+TEST_CASE(swizzle_test)
 {
     auto const tmp = hi::f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 

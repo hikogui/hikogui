@@ -26,16 +26,18 @@ struct simd : std::array<T, N> {
     constexpr simd& operator=(simd const&) noexcept = default;
     constexpr simd& operator=(simd&&) noexcept = default;
 
-    template<std::same_as<value_type>... Args>
-    constexpr simd(Args... args) noexcept
-        requires(sizeof...(Args) == N)
-        : array_type(generic_type::set(args...))
+    template<array_generic_convertible_to<value_type>... Args>
+    constexpr simd(Args... args) noexcept requires(sizeof...(Args) == N)
+        : array_type(generic_type::set(static_cast<value_type>(args)...))
     {
     }
 
-    constexpr explicit simd(value_type a) noexcept : array_type(generic_type::set(a)) {}
+    template<array_generic_convertible_to<value_type> Arg>
+    constexpr explicit simd(Arg arg) noexcept : array_type(generic_type::set(static_cast<value_type>(arg)))
+    {
+    }
 
-    template<typename O>
+    template<array_generic_convertible_to<value_type> O>
     constexpr simd(std::array<O, N> a) noexcept : array_type(generic_type::convert(a))
     {
     }
@@ -60,14 +62,15 @@ struct simd : std::array<T, N> {
         return simd{generic_type::set_all_ones()};
     }
 
-    [[nodiscard]] constexpr static simd broadcast(value_type a) noexcept
+    template<array_generic_convertible_to<value_type> Arg>
+    [[nodiscard]] constexpr static simd broadcast(Arg arg) noexcept
     {
-        return simd{generic_type::broadcast(a)};
+        return simd{generic_type::broadcast(static_cast<value_type>(arg))};
     }
 
-    [[nodiscard]] constexpr static simd broadcast(array_type a) noexcept
+    [[nodiscard]] constexpr static simd broadcast(array_type arg) noexcept
     {
-        return simd{generic_type::broadcast(a)};
+        return simd{generic_type::broadcast(arg)};
     }
 
     [[nodiscard]] constexpr static simd make_mask(std::size_t mask) noexcept
@@ -485,8 +488,7 @@ struct simd : std::array<T, N> {
     }
 
 #define X_SWIZZLE_2D(NAME, X, Y) \
-    [[nodiscard]] constexpr simd NAME() const noexcept \
-        requires(N == 2) \
+    [[nodiscard]] constexpr simd NAME() const noexcept requires(N == 2) \
     { \
         return swizzle<X, Y>(*this); \
     }
@@ -503,8 +505,7 @@ struct simd : std::array<T, N> {
     X_SWIZZLE_2D_Y(y, 1)
 
 #define X_SWIZZLE_4D(NAME, X, Y, Z, W) \
-    [[nodiscard]] constexpr simd NAME() const noexcept \
-        requires(N == 4) \
+    [[nodiscard]] constexpr simd NAME() const noexcept requires(N == 4) \
     { \
         return swizzle<X, Y, Z, W>(*this); \
     }
@@ -626,10 +627,8 @@ static_assert(equal(f32x2{2.0f, 3.0f}._1y(), f32x2{1.0f, 3.0f}));
 static_assert(equal(f32x2{2.0f, 3.0f}._10(), f32x2{1.0f, 0.0f}));
 static_assert(equal(f32x2{2.0f, 3.0f}._11(), f32x2{1.0f, 1.0f}));
 
-
 } // namespace v1
 }
-
 
 template<class T, size_t N>
 struct std::tuple_size<::hi::simd<T, N>> : std::integral_constant<size_t, N> {};
@@ -664,4 +663,3 @@ struct std::formatter<::hi::simd<T, N>, char> : std::formatter<std::string, char
         return std::formatter<std::string, char>::format(str, fc);
     }
 };
-

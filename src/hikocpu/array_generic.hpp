@@ -20,6 +20,9 @@ hi_warning_ignore_msvc(4702);
 hi_export namespace hi {
 inline namespace v1 {
 
+template<typename Context, typename T>
+concept array_generic_convertible_to = requires (Context a) { static_cast<T>(a); };
+
 /** Intrinsic operations on arrays.
  *
  */
@@ -77,7 +80,7 @@ struct array_generic {
         return r;
     }
 
-    template<std::same_as<T>... Args>
+    template<std::same_as<value_type>... Args>
     [[nodiscard]] hi_force_inline constexpr static array_type set(Args... args) noexcept
         requires(sizeof...(Args) == N)
     {
@@ -89,15 +92,15 @@ struct array_generic {
         return array_type{args...};
     }
 
-    [[nodiscard]] hi_force_inline constexpr static array_type set(value_type value) noexcept
+    [[nodiscard]] hi_force_inline constexpr static array_type set(value_type arg) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (requires { intrinsic_type::set(value); }) {
-                return intrinsic_type::set(value);
+            if constexpr (requires { intrinsic_type::set(arg); }) {
+                return intrinsic_type::set(arg);
             }
         }
         auto r = array_type{};
-        std::get<0>(r) = value;
+        std::get<0>(r) = arg;
         return r;
     }
 
@@ -220,7 +223,7 @@ struct array_generic {
         return mask;
     }
 
-    template<typename O>
+    template<array_generic_convertible_to<value_type> O>
     [[nodiscard]] hi_force_inline constexpr static array_type convert(std::array<O, N> a) noexcept
     {
         if (not std::is_constant_evaluated()) {

@@ -9,10 +9,10 @@
 #pragma once
 
 #include "semantic_color.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <cstdint>
 #include <bit>
 #include <functional>

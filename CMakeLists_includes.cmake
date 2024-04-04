@@ -342,8 +342,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/metadata/semantic_version.hpp
     src/hikogui/net/net.hpp
     src/hikogui/net/packet.hpp
-    src/hikogui/net/packet_buffer.hpp
-    src/hikogui/net/stream.hpp
+    #src/hikogui/net/packet_buffer.hpp
+    #src/hikogui/net/stream.hpp
     src/hikogui/numeric/bigint.hpp
     src/hikogui/numeric/decimal.hpp
     src/hikogui/numeric/int_carry.hpp

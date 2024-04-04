@@ -5,10 +5,10 @@
 #pragma once
 
 #include "../numeric/numeric.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../geometry/geometry.hpp"
 #include "../container/container.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <array>
 #include <optional>
 #include <concepts>

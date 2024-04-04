@@ -126,9 +126,9 @@ def make_cmakelist_tests_text(test_files, suppressed_test_files):
     for test_file in test_files:
         if test_file in suppressed_test_files:
             r += "    #${CMAKE_CURRENT_SOURCE_DIR}/%s\n" % test_file.replace("\\", "/")
-
         else:
             r += "    ${CMAKE_CURRENT_SOURCE_DIR}/%s\n" % test_file.replace("\\", "/")
+            
     r += ")\n"
     r += "\n"
     r += "show_build_target_properties(hikogui_htests)\n"
@@ -141,6 +141,8 @@ def generate_cmakelists_includes():
         "src/hikogui/net/packet_buffer.hpp",
         "src/hikogui/net/stream.hpp"
     ]
+
+    suppressed_header_files = set(os.path.normcase(x) for x in suppressed_header_files)
 
     with open("CMakeLists_includes.cmake", "w") as fd:
         fd.write(make_cmakelist_includes_text(header_files, suppressed_header_files))
@@ -155,6 +157,8 @@ def generate_cmakelists_tests():
         # Disabled until C++23
         "src/hikogui/container/lean_vector_tests.cpp"
     ]
+
+    suppressed_test_files = set(os.path.normcase(x) for x in suppressed_test_files)
 
     with open("CMakeLists_tests.cmake", "w") as fd:
         fd.write(make_cmakelist_tests_text(test_files, suppressed_test_files))

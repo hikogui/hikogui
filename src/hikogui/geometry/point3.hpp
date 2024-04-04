@@ -7,9 +7,9 @@
 #include "point2.hpp"
 #include "vector3.hpp"
 #include "extent3.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <format>
 #include <concepts>
 #include <exception>

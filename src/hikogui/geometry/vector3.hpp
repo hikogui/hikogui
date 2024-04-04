@@ -5,8 +5,8 @@
 #pragma once
 
 #include "vector2.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <exception>
 #include <format>
 #include <ostream>

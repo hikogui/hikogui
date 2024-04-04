@@ -69,7 +69,7 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type set_all_ones() noexcept
     {
 #if defined(HI_HAS_AVX2)
-        return S(_mm256_castsi128_pd(_mm256_cmpeq_epi32(_mm256_setzero_si128(), _mm256_setzero_si128())));
+        return S(_mm256_castsi256_pd(_mm256_cmpeq_epi32(_mm256_setzero_si256(), _mm256_setzero_si256())));
 #else
         return S(_mm256_cmpeq_pd(_mm256_setzero_pd(), _mm256_setzero_pd()));
 #endif
@@ -78,8 +78,8 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type set_one() noexcept
     {
 #if defined(HI_HAS_AVX2)
-        auto const ones = _mm256_cmpeq_epi32(_mm256_setzero_si128(), _mm256_setzero_si128());
-        return S(_mm256_castsi128_pd(_mm256_srli_epi32(_mm256_slli_epi32(ones, 25), 2)));
+        auto const ones = _mm256_cmpeq_epi32(_mm256_setzero_si256(), _mm256_setzero_si256());
+        return S(_mm256_castsi256_pd(_mm256_srli_epi32(_mm256_slli_epi32(ones, 25), 2)));
 #else
         return S(_mm256_set1_pd(1.0f));
 #endif
@@ -153,7 +153,7 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type rcp(array_type a) noexcept
     {
-        return S(_mm256_rcp_pd(L(a)));
+        return S(_mm256_div_pd(_mm256_set1_pd(1.0), L(a)));
     }
 
     [[nodiscard]] hi_force_inline static array_type sqrt(array_type a) noexcept
@@ -163,7 +163,7 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type rsqrt(array_type a) noexcept
     {
-        return S(_mm256_rsqrt_pd(L(a)));
+        return S(_mm256_div_pd(_mm256_set1_pd(1.0), _mm256_sqrt_pd(L(a))));
     }
 
 #if defined(HI_HAS_SSE2)
@@ -235,40 +235,40 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type eq(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpeq_pd(L(a), L(b)));
+        return S(_mm256_cmp_pd(L(a), L(b), _CMP_EQ_OS));
     }
 
     [[nodiscard]] hi_force_inline static array_type ne(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpneq_pd(L(a), L(b)));
+        return S(_mm256_cmp_pd(L(a), L(b), _CMP_NEQ_OS));
     }
 
     [[nodiscard]] hi_force_inline static array_type lt(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmplt_pd(L(a), L(b)));
+        return S(_mm256_cmp_pd(L(a), L(b), _CMP_LT_OS));
     }
 
     [[nodiscard]] hi_force_inline static array_type gt(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpgt_pd(L(a), L(b)));
+        return S(_mm256_cmp_pd(L(a), L(b), _CMP_GT_OS));
     }
 
     [[nodiscard]] hi_force_inline static array_type le(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmple_pd(L(a), L(b)));
+        return S(_mm256_cmp_pd(L(a), L(b), _CMP_LE_OS));
     }
 
     [[nodiscard]] hi_force_inline static array_type ge(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpge_pd(L(a), L(b)));
+        return S(_mm256_cmp_pd(L(a), L(b), _CMP_GE_OS));
     }
 
     [[nodiscard]] hi_force_inline static bool test(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE4_1)
-        return static_cast<bool>(_mm256_testz_si128(_mm256_castps_si128(L(a)), _mm256_castps_si128(L(b))));
+        return static_cast<bool>(_mm256_testz_si256(_mm256_castps_si256(L(a)), _mm256_castps_si256(L(b))));
 #elif defined(HI_HAS_SSE2)
-        return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castps_si128(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si128())) == 0xffff;
+        return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castps_si256(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si256())) == 0xffff;
 #else
         auto tmp = std::array<float, 4>{};
         _mm256_store_pd(tmp.data(), _mm256_and_pd(L(a), L(b)));
@@ -316,24 +316,24 @@ struct array_intrinsic<double, 4> {
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type sll(array_type a, unsigned int b) noexcept
     {
-        auto const b_ = _mm256_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi128_pd(_mm256_sll_epi32(_mm256_castps_si128(L(a)), b_)));
+        auto const b_ = _mm_set_epi32(0, 0, 0, b);
+        return S(_mm256_castsi256_pd(_mm256_sll_epi32(_mm256_castps_si256(L(a)), b_)));
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type srl(array_type a, unsigned int b) noexcept
     {
-        auto const b_ = _mm256_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi128_pd(_mm256_srl_epi32(_mm256_castps_si128(L(a)), b_)));
+        auto const b_ = _mm_set_epi32(0, 0, 0, b);
+        return S(_mm256_castsi256_pd(_mm256_srl_epi32(_mm256_castps_si256(L(a)), b_)));
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type sra(array_type a, unsigned int b) noexcept
     {
-        auto const b_ = _mm256_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi128_pd(_mm256_sra_epi32(_mm256_castps_si128(L(a)), b_)));
+        auto const b_ = _mm_set_epi32(0, 0, 0, b);
+        return S(_mm256_castsi256_pd(_mm256_sra_epi32(_mm256_castps_si256(L(a)), b_)));
     }
 #endif
 
@@ -400,26 +400,6 @@ struct array_intrinsic<double, 4> {
         // clang-format on
         return S(_mm256_shuffle_pd(lo, hi, indices));
 #endif
-    }
-
-    [[nodiscard]] hi_force_inline static std::array<array_type, 4> transpose(array_type a, array_type b, array_type c, array_type d)
-    {
-        auto a_ = L(a);
-        auto b_ = L(b);
-        auto c_ = L(c);
-        auto d_ = L(d);
-        _MM_TRANSPOSE4_PS(a_, b_, c_, d_);
-        return {S(a_), S(b_), S(c_), S(d_)};
-    }
-
-    [[nodiscard]] hi_force_inline static array_type sum(array_type a) noexcept
-    {
-        auto const x_y_z_w = L(a);
-        auto const y_x_w_z = _mm256_shuffle_pd(x_y_z_w, x_y_z_w, 0b10'11'00'01);
-        auto const xy_yx_zw_wz = _mm256_add_pd(x_y_z_w, y_x_w_z);
-        auto const zw_wz_w_z = _mm256_movehl_pd(y_x_w_z, xy_yx_zw_wz);
-        auto const xyzw_0_0_0 = _mm256_add_ss(xy_yx_zw_wz, zw_wz_w_z);
-        return S(_mm256_shuffle_pd(xyzw_0_0_0, xyzw_0_0_0, 0));
     }
 
     template<size_t Mask>

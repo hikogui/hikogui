@@ -20,7 +20,7 @@
 #include <nmmintrin.h>
 #include <immintrin.h>
 
-hi_export_module(hikogui.SIMD.array_intrinsic_f32x4);
+hi_export_module(hikogui.SIMD.array_intrinsic_f16x4);
 
 hi_export namespace hi {
 inline namespace v1 {
@@ -126,7 +126,7 @@ struct array_intrinsic<half, 4> {
     [[nodiscard]] hi_force_inline static array_type sra(array_type a, unsigned int b) noexcept
     {
         auto const b_ = _mm_set_epi32(0, 0, 0, b);
-        return S(_mm_sra_epi16(L(a), b_)));
+        return S(_mm_sra_epi16(L(a), b_));
     }
 
 #if defined(HI_HAS_SSE4_1)

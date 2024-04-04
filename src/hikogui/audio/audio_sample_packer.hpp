@@ -4,11 +4,11 @@
 
 #pragma once
 
-//#include "audio_sample_format.hpp"
+#include "audio_sample_format.hpp"
 #include "../utility/utility.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../random/random.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <cstddef>
 #include <bit>
 

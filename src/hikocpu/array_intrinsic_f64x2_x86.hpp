@@ -101,7 +101,7 @@ struct array_intrinsic<double, 2> {
     [[nodiscard]] hi_force_inline static array_type set_mask(std::size_t mask) noexcept
     {
         // clang-format off
-        auto auto tmp = _mm_set_epi32(
+        auto const tmp = _mm_set_epi32(
             static_cast<int32_t>(mask) << 30,
             static_cast<int32_t>(mask) << 30,
             static_cast<int32_t>(mask) << 31,
@@ -344,7 +344,7 @@ struct array_intrinsic<double, 2> {
     [[nodiscard]] hi_force_inline static array_type sum(array_type a) noexcept
     {
         auto const tmp = _mm_shuffle_pd(L(a), L(a), 0b01);
-        return S(_mm_add_pd(a, tmp));
+        return S(_mm_add_pd(L(a), tmp));
     }
 
     template<size_t Mask>
