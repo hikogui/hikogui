@@ -23,7 +23,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<STREQUAL:${ARCHITECTURE_ID},none>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_generic.hpp>
     src/hikocpu/array_generic.hpp
     src/hikocpu/array_intrinsic.hpp
-    src/hikocpu/array_intrinsic_f16x4.hpp
+    $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_intrinsic_f16x4_x86.hpp>
+    src/hikocpu/array_intrinsic_f16x4_x86.hpp
     $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_intrinsic_f32x4_x86.hpp>
     src/hikocpu/array_intrinsic_f32x4_x86.hpp
     $<$<STREQUAL:${ARCHITECTURE_ID},x86>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/array_intrinsic_f64x2_x86.hpp>

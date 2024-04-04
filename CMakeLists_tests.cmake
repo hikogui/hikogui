@@ -45,7 +45,6 @@ endif()
 
 target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/float_to_half_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/half_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/half_to_float_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f16x4_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikocpu/simd_f32x2_tests.cpp
