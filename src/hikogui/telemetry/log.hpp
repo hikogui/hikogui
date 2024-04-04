@@ -133,10 +133,10 @@ public:
         _fifo.emplace<detail::log_message<Level, SourcePath, SourceLine, Fmt, forward_value_t<Args>...>>(
             std::forward<Args>(args)...);
 
-        if (to_bool(Level & global_state_type::log_fatal) or not to_bool(state & global_state_type::log_is_running)) {
+        if (to_bool(Level & global_state_type::log_fatal) or not to_bool(state & global_state_type::log_is_running)) [[unlikely]] {
             // If the logger did not start we will log in degraded mode and log from the current thread.
             // On fatal error we also want to log from the current thread.
-            [[unlikely]] flush();
+            flush();
         }
     }
 

@@ -8,20 +8,6 @@
 #include "reflection.hpp"
 #include "cast.hpp"
 #include "../macros.hpp"
-
-#ifdef HI_HAS_SSE
-#include <immintrin.h>
-#endif
-#ifdef HI_HAS_SSE2
-#include <emmintrin.h>
-#endif
-#ifdef HI_HAS_SSE4_1
-#include <smmintrin.h>
-#endif
-#if HI_COMPILER == HI_CC_MSVC
-#include <stdlib.h>
-#endif
-
 #include <bit>
 #include <concepts>
 

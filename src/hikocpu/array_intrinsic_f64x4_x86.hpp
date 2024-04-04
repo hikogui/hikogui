@@ -92,8 +92,8 @@ struct array_intrinsic<double, 4> {
 
         if constexpr (I == 0) {
             return _mm256_cvtsd_f64(L(a));
-        } else constexpr (I == 1) {
-            return _mm256_cvtsd_f64(_mm256_shuffle_pd(L(a), L(a), 0b1);
+        } else if constexpr (I == 1) {
+            return _mm256_cvtsd_f64(_mm256_shuffle_pd(L(a), L(a), 0b1));
         } else {
             auto const tmp = _mm256_extractf128_pd(L(a), 0b1);
             if constexpr (I == 2) {
@@ -266,9 +266,9 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static bool test(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE4_1)
-        return static_cast<bool>(_mm256_testz_si256(_mm256_castps_si256(L(a)), _mm256_castps_si256(L(b))));
+        return static_cast<bool>(_mm256_testz_si256(_mm256_castpd_si256(L(a)), _mm256_castpd_si256(L(b))));
 #elif defined(HI_HAS_SSE2)
-        return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castps_si256(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si256())) == 0xffff;
+        return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castpd_si256(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si256())) == 0xffff;
 #else
         auto tmp = std::array<float, 4>{};
         _mm256_store_pd(tmp.data(), _mm256_and_pd(L(a), L(b)));
@@ -317,7 +317,7 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type sll(array_type a, unsigned int b) noexcept
     {
         auto const b_ = _mm_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi256_pd(_mm256_sll_epi32(_mm256_castps_si256(L(a)), b_)));
+        return S(_mm256_castsi256_pd(_mm256_sll_epi32(_mm256_castpd_si256(L(a)), b_)));
     }
 #endif
 
@@ -325,7 +325,7 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type srl(array_type a, unsigned int b) noexcept
     {
         auto const b_ = _mm_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi256_pd(_mm256_srl_epi32(_mm256_castps_si256(L(a)), b_)));
+        return S(_mm256_castsi256_pd(_mm256_srl_epi32(_mm256_castpd_si256(L(a)), b_)));
     }
 #endif
 
@@ -333,7 +333,7 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type sra(array_type a, unsigned int b) noexcept
     {
         auto const b_ = _mm_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi256_pd(_mm256_sra_epi32(_mm256_castps_si256(L(a)), b_)));
+        return S(_mm256_castsi256_pd(_mm256_sra_epi32(_mm256_castpd_si256(L(a)), b_)));
     }
 #endif
 
