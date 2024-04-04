@@ -16,7 +16,7 @@ hi_export_module(hikogui.win32 : winuser);
 
 namespace hi { inline namespace v1 {
 
-hi_inline std::expected<UINT, win32_error> win32_MessageBox(HWND handle, std::string_view text, std::string_view caption, UINT type) noexcept
+inline std::expected<UINT, win32_error> win32_MessageBox(HWND handle, std::string_view text, std::string_view caption, UINT type) noexcept
 {
     auto const wtext = win32_MultiByteToWideChar(text);
     if (not wtext) {

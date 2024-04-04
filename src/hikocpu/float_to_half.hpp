@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../macros.hpp"
+#include "macros.hpp"
 #if defined(HI_HAS_X86)
 #include "cpu_id_x86.hpp"
 #else
@@ -20,7 +20,7 @@
 #include <smmintrin.h>
 #endif
 
-hi_export_module(hikogui.utility.float_to_half);
+hi_export_module(hikocpu : float_to_half);
 
 hi_export namespace hi { inline namespace v1 {
 

@@ -199,7 +199,7 @@ private:
 
     /** The global logger thread.
      */
-    static hi_inline std::jthread _log_thread;
+    static inline std::jthread _log_thread;
 
     /** The function of the logger thread.
      *
@@ -223,9 +223,9 @@ private:
     }
 };
 
-hi_inline log log_global;
+inline log log_global;
 
-hi_inline bool log::start_subsystem(global_state_type log_level)
+inline bool log::start_subsystem(global_state_type log_level)
 {
     set_log_level(log_level);
     if (hi::start_subsystem(global_state_type::log_is_running, log::subsystem_init, log::subsystem_deinit)) {
@@ -240,7 +240,7 @@ hi_inline bool log::start_subsystem(global_state_type log_level)
 
 /** Deinitalize the logger system.
  */
-hi_inline void log::subsystem_deinit() noexcept
+inline void log::subsystem_deinit() noexcept
 {
     if (global_state_disable(global_state_type::log_is_running)) {
         if (_log_thread.joinable()) {

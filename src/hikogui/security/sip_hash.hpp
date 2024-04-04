@@ -26,7 +26,7 @@ struct sip_hash_seed_type {
     sip_hash_seed_type() noexcept : sip_hash_seed_type(seed<uint64_t>{}(), seed<uint64_t>{}()) {}
 };
 
-hi_inline auto sip_hash_seed = sip_hash_seed_type();
+inline auto sip_hash_seed = sip_hash_seed_type();
 
 struct sip_hash_seed_tag {};
 
@@ -239,7 +239,7 @@ private:
 
 namespace detail {
 template<size_t C, size_t D>
-hi_inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
+inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
 }
 
 template<size_t C, size_t D>

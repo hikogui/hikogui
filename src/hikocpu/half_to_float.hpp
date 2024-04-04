@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../macros.hpp"
+#include "macros.hpp"
 #if defined(HI_HAS_X86)
 #include "cpu_id_x86.hpp"
 #else
@@ -21,7 +21,7 @@
 #include <smmintrin.h>
 #endif
 
-hi_export_module(hikogui.utility.half_to_float);
+hi_export_module(hikocpu : half_to_float);
 
 hi_export namespace hi { inline namespace v1 {
 
@@ -86,7 +86,7 @@ constexpr auto half_to_float_table = half_to_float_table_init();
 }
 
 #if HI_HAS_X86
-hi_target("sse,sse2,f16c") [[nodiscard]] hi_inline std::array<float, 4> half_to_float_f16c(std::array<uint16_t, 4> v) noexcept
+hi_target("sse,sse2,f16c") [[nodiscard]] inline std::array<float, 4> half_to_float_f16c(std::array<uint16_t, 4> v) noexcept
 {
     auto const r = _mm_cvtph_ps(_mm_set1_epi64x(std::bit_cast<int64_t>(v)));
 

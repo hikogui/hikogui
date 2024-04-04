@@ -16,7 +16,7 @@ hi_export_module(hikogui.win32 : winbase);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
+[[nodiscard]] inline std::expected<std::string, win32_error> win32_FormatMessage(win32_error error_code) noexcept
 {
     auto const error_code_ = static_cast<DWORD>(std::to_underlying(error_code));
 

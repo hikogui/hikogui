@@ -16,7 +16,7 @@ hi_export_module(hikogui.win32 : libloaderapi);
 hi_export namespace hi {
 inline namespace v1 {
 
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, win32_error> win32_GetModuleFileName(HMODULE module_handle = NULL) noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, win32_error> win32_GetModuleFileName(HMODULE module_handle = NULL) noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256

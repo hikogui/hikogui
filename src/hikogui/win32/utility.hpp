@@ -22,7 +22,7 @@ hi_export namespace hi { inline namespace v1 {
  * This function is used to pass a HANDLE of an Event Object to be passed
  * on the command-line to vsjitdebugger.exe.
  */
-[[nodiscard]] hi_inline uint32_t win32_HANDLE_to_int(HANDLE handle) noexcept
+[[nodiscard]] inline uint32_t win32_HANDLE_to_int(HANDLE handle) noexcept
 {
     auto i = std::bit_cast<uintptr_t>(handle);
     if (std::cmp_greater(i, std::numeric_limits<uint32_t>::max())) {
@@ -31,7 +31,7 @@ hi_export namespace hi { inline namespace v1 {
     return static_cast<uint32_t>(i);
 }
 
-[[nodiscard]] hi_inline HANDLE win32_int_to_HANDLE(uint32_t i) noexcept
+[[nodiscard]] inline HANDLE win32_int_to_HANDLE(uint32_t i) noexcept
 {
     return std::bit_cast<HANDLE>(static_cast<uintptr_t>(i));
 }

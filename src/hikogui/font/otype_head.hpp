@@ -14,7 +14,7 @@ hi_export_module(hikogui.font.otype_head);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] hi_inline auto otype_head_parse(std::span<std::byte const> bytes)
+[[nodiscard]] inline auto otype_head_parse(std::span<std::byte const> bytes)
 {
     struct header_type {
         big_uint16_buf_t major_version;

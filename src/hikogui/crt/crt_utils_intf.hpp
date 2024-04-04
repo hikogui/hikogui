@@ -21,7 +21,7 @@ hi_export namespace hi::inline v1 {
 *  - on windows this is the hInstance of WinMain(), and is used to create
 *    windows that are owned by the current application.
 */
-hi_inline os_handle crt_application_instance;
+inline os_handle crt_application_instance;
 
 /** Start the hikogui system.
  *
@@ -45,7 +45,7 @@ std::pair<int, char **> crt_start(int argc, char **argv, void *instance, int sho
  * @return argc, argv Normalized command line arguments in UTF-8 format.
  *                    These need to be passed to `crt_finish()` to free the memory.
  */
-hi_inline std::pair<int, char **> crt_start(void *instance, int show_cmd)
+inline std::pair<int, char **> crt_start(void *instance, int show_cmd)
 {
     return crt_start(0, nullptr, instance, show_cmd);
 }
@@ -59,7 +59,7 @@ hi_inline std::pair<int, char **> crt_start(void *instance, int show_cmd)
  * @return argc, argv Normalized command line arguments in UTF-8 format.
  *                    These need to be passed to `crt_finish()` to free the memory.
  */
-hi_inline std::pair<int, char **> crt_start(int argc, char **argv)
+inline std::pair<int, char **> crt_start(int argc, char **argv)
 {
     return crt_start(argc, argv, nullptr, 0);
 }

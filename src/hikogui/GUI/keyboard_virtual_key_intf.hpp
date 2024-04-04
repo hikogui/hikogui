@@ -301,12 +301,12 @@ constexpr std::string_view to_string_view(keyboard_virtual_key key) noexcept
     return keyboard_virtual_key_metadata[key];
 }
 
-hi_inline std::string to_string(keyboard_virtual_key key) noexcept
+inline std::string to_string(keyboard_virtual_key key) noexcept
 {
     return std::string{to_string_view(key)};
 }
 
-hi_inline std::ostream& operator<<(std::ostream& lhs, keyboard_virtual_key const& rhs)
+inline std::ostream& operator<<(std::ostream& lhs, keyboard_virtual_key const& rhs)
 {
     return lhs << to_string_view(rhs);
 }

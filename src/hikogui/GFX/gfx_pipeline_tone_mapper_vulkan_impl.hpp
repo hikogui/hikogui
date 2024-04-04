@@ -15,7 +15,7 @@ hi_export_module(hikogui.GFX : gfx_pipeline_tone_mapper_impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_inline void gfx_pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+inline void gfx_pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
 
@@ -30,13 +30,13 @@ hi_inline void gfx_pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffe
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
-hi_inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_tone_mapper::createShaderStages() const
+inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_tone_mapper::createShaderStages() const
 {
     hi_axiom_not_null(device());
     return device()->tone_mapper_pipeline->shaderStages;
 }
 
-hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_tone_mapper::createDescriptorSetLayoutBindings() const
+inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_tone_mapper::createDescriptorSetLayoutBindings() const
 {
     return {
         {0, // binding
@@ -45,7 +45,7 @@ hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_tone_mapper::
          vk::ShaderStageFlagBits::eFragment}};
 }
 
-hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_tone_mapper::createWriteDescriptorSet() const
+inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_tone_mapper::createWriteDescriptorSet() const
 {
     return {{
         descriptorSet,
@@ -59,17 +59,17 @@ hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_tone_mapper::createWr
     }};
 }
 
-hi_inline size_t gfx_pipeline_tone_mapper::getDescriptorSetVersion() const
+inline size_t gfx_pipeline_tone_mapper::getDescriptorSetVersion() const
 {
     return 1;
 }
 
-hi_inline std::vector<vk::PushConstantRange> gfx_pipeline_tone_mapper::createPushConstantRanges() const
+inline std::vector<vk::PushConstantRange> gfx_pipeline_tone_mapper::createPushConstantRanges() const
 {
     return push_constants::pushConstantRanges();
 }
 
-hi_inline vk::PipelineDepthStencilStateCreateInfo gfx_pipeline_tone_mapper::getPipelineDepthStencilStateCreateInfo() const
+inline vk::PipelineDepthStencilStateCreateInfo gfx_pipeline_tone_mapper::getPipelineDepthStencilStateCreateInfo() const
 {
     // No depth buffering in the Tone Mapper
     return {
@@ -86,26 +86,26 @@ hi_inline vk::PipelineDepthStencilStateCreateInfo gfx_pipeline_tone_mapper::getP
     };
 }
 
-hi_inline gfx_pipeline_tone_mapper::device_shared::device_shared(gfx_device const &device) : device(device)
+inline gfx_pipeline_tone_mapper::device_shared::device_shared(gfx_device const &device) : device(device)
 {
     buildShaders();
 }
 
-hi_inline gfx_pipeline_tone_mapper::device_shared::~device_shared() {}
+inline gfx_pipeline_tone_mapper::device_shared::~device_shared() {}
 
-hi_inline void gfx_pipeline_tone_mapper::device_shared::destroy(gfx_device const *vulkanDevice)
+inline void gfx_pipeline_tone_mapper::device_shared::destroy(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
     teardownShaders(vulkanDevice);
 }
 
-hi_inline void gfx_pipeline_tone_mapper::device_shared::drawInCommandBuffer(vk::CommandBuffer const &commandBuffer)
+inline void gfx_pipeline_tone_mapper::device_shared::drawInCommandBuffer(vk::CommandBuffer const &commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-hi_inline void gfx_pipeline_tone_mapper::device_shared::buildShaders()
+inline void gfx_pipeline_tone_mapper::device_shared::buildShaders()
 {
     vertexShaderModule = device.loadShader(URL("resource:tone_mapper_vulkan.vert.spv"));
     fragmentShaderModule = device.loadShader(URL("resource:tone_mapper_vulkan.frag.spv"));
@@ -115,7 +115,7 @@ hi_inline void gfx_pipeline_tone_mapper::device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-hi_inline void gfx_pipeline_tone_mapper::device_shared::teardownShaders(gfx_device const*vulkanDevice)
+inline void gfx_pipeline_tone_mapper::device_shared::teardownShaders(gfx_device const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 

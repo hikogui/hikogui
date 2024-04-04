@@ -17,7 +17,7 @@ hi_export_module(hikogui.GFX : gfx_device_impl);
 
 hi_export namespace hi::inline v1 {
 
-hi_inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
+inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
     physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
@@ -43,7 +43,7 @@ hi_inline gfx_device::gfx_device(vk::PhysicalDevice physicalDevice) :
     initialize_device();
 }
 
-hi_inline int gfx_device::score(vk::SurfaceKHR surface) const
+inline int gfx_device::score(vk::SurfaceKHR surface) const
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -147,7 +147,7 @@ hi_inline int gfx_device::score(vk::SurfaceKHR surface) const
     return total_score;
 }
 
-hi_inline void gfx_device::initialize_device()
+inline void gfx_device::initialize_device()
 {
     auto const device_queue_create_infos = make_device_queue_create_infos();
 
@@ -205,7 +205,7 @@ hi_inline void gfx_device::initialize_device()
     tone_mapper_pipeline = std::make_unique<gfx_pipeline_tone_mapper::device_shared>(*this);
 }
 
-hi_inline void gfx_device::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const
+inline void gfx_device::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const
 {
 #ifndef NDEBUG
     hi_axiom(gfx_system_mutex.recurse_lock_count());
@@ -213,14 +213,14 @@ hi_inline void gfx_device::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameIn
 #endif
 }
 
-hi_inline void gfx_device::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
+inline void gfx_device::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
 {
 #ifndef NDEBUG
     buffer.beginDebugUtilsLabelEXT(create_info, vulkan_loader());
 #endif
 }
 
-hi_inline void gfx_device::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
+inline void gfx_device::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
 {
 #ifndef NDEBUG
     buffer.endDebugUtilsLabelEXT(vulkan_loader());

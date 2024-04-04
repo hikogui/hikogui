@@ -39,6 +39,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikocpu/half.hpp
     src/hikocpu/half_to_float.hpp
     src/hikocpu/hikocpu.hpp
+    src/hikocpu/macros.hpp
     src/hikocpu/simd_intf.hpp
     src/hikogui/DSP/DSP.hpp
     src/hikogui/DSP/dsp_float.hpp

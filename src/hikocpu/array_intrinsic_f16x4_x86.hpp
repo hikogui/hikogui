@@ -7,7 +7,7 @@
 #include "array_intrinsic.hpp"
 #include "float_to_half.hpp"
 #include "half.hpp"
-#include "../macros.hpp"
+#include "macros.hpp"
 #include <cstddef>
 #include <array>
 #include <limits>
@@ -20,7 +20,7 @@
 #include <nmmintrin.h>
 #include <immintrin.h>
 
-hi_export_module(hikogui.SIMD.array_intrinsic_f16x4);
+hi_export_module(hikocpu : array_intrinsic_f16x4);
 
 hi_export namespace hi {
 inline namespace v1 {

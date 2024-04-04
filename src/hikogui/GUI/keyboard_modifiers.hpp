@@ -57,7 +57,7 @@ bool operator>=(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) = 
 /** Parse a key-binding modifier name.
  * @param s The modifier name, with or without the canonical trailing '+'
  */
-hi_inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
+inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
 {
     if (ssize(s) == 0) {
         throw parse_error("Empty keyboard modifier");
@@ -79,7 +79,7 @@ hi_inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
     }
 }
 
-hi_inline std::string to_string(keyboard_modifiers modifiers)
+inline std::string to_string(keyboard_modifiers modifiers)
 {
     auto r = std::string{};
 
@@ -99,7 +99,7 @@ hi_inline std::string to_string(keyboard_modifiers modifiers)
     return r;
 }
 
-hi_inline std::ostream& operator<<(std::ostream& lhs, keyboard_modifiers const& rhs)
+inline std::ostream& operator<<(std::ostream& lhs, keyboard_modifiers const& rhs)
 {
     return lhs << to_string(rhs);
 }

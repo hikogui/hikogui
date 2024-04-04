@@ -3,13 +3,13 @@
 
 #include "array_generic.hpp"
 #include "half.hpp"
-#include "../macros.hpp"
+#include "macros.hpp"
 #include <cstddef>
 #include <utility>
 #include <tuple>
 #include <concepts>
 
-hi_export_module(hikogui.SIMD.simd_intf);
+hi_export_module(hikocpu : simd_intf);
 
 hi_export namespace hi {
 inline namespace v1 {

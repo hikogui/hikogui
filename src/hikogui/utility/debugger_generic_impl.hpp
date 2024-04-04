@@ -14,7 +14,7 @@ hi_export namespace hi {
 inline namespace v1 {
 
 
-hi_inline void enable_debugger() noexcept
+inline void enable_debugger() noexcept
 {
 }
 

@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "../macros.hpp"
+#include "macros.hpp"
 #include <cstddef>
 
-hi_export_module(hikogui.SIMD.array_intrinsic);
+hi_export_module(hikocpu : array_intrinsic);
 
 hi_export namespace hi { inline namespace v1 {
 

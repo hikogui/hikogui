@@ -23,7 +23,7 @@ hi_export_module(hikogui.GFX : gfx_surface_impl);
 
 hi_export namespace hi::inline v1 {
 
-hi_inline void gfx_surface::set_device(gfx_device *new_device) noexcept
+inline void gfx_surface::set_device(gfx_device *new_device) noexcept
 {
     hi_assert_not_null(new_device);
 
@@ -46,7 +46,7 @@ hi_inline void gfx_surface::set_device(gfx_device *new_device) noexcept
     _graphics_queue = std::addressof(_device->get_graphics_queue(intrinsic));
 }
 
-hi_inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcept
+inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcept
 {
     auto const lock = std::scoped_lock(gfx_system_mutex);
 
@@ -70,7 +70,7 @@ hi_inline void gfx_surface::add_delegate(gfx_surface_delegate *delegate) noexcep
     }
 }
 
-hi_inline void gfx_surface::remove_delegate(gfx_surface_delegate *delegate) noexcept
+inline void gfx_surface::remove_delegate(gfx_surface_delegate *delegate) noexcept
 {
     auto const lock = std::scoped_lock(gfx_system_mutex);
 
@@ -91,12 +91,12 @@ hi_inline void gfx_surface::remove_delegate(gfx_surface_delegate *delegate) noex
     _delegates.erase(it);
 }
 
-[[nodiscard]] hi_inline extent2 gfx_surface::size() const noexcept
+[[nodiscard]] inline extent2 gfx_surface::size() const noexcept
 {
     return {narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
 }
 
-hi_inline void gfx_surface::wait_idle()
+inline void gfx_surface::wait_idle()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -108,7 +108,7 @@ hi_inline void gfx_surface::wait_idle()
     hi_log_info("/waitIdle");
 }
 
-hi_inline std::optional<uint32_t> gfx_surface::acquire_next_image_from_swapchain()
+inline std::optional<uint32_t> gfx_surface::acquire_next_image_from_swapchain()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -159,7 +159,7 @@ hi_inline std::optional<uint32_t> gfx_surface::acquire_next_image_from_swapchain
     }
 }
 
-hi_inline void gfx_surface::present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
+inline void gfx_surface::present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -204,7 +204,7 @@ hi_inline void gfx_surface::present_image_to_queue(uint32_t frameBufferIndex, vk
     }
 }
 
-hi_inline gfx_surface_loss gfx_surface::build_for_new_device() noexcept
+inline gfx_surface_loss gfx_surface::build_for_new_device() noexcept
 {
     if (_device->score(intrinsic) <= 0) {
         return gfx_surface_loss::device_lost;
@@ -227,7 +227,7 @@ hi_inline gfx_surface_loss gfx_surface::build_for_new_device() noexcept
     return gfx_surface_loss::none;
 }
 
-hi_inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size) noexcept
+inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size) noexcept
 {
     try {
         auto const[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
@@ -283,7 +283,7 @@ hi_inline gfx_surface_loss gfx_surface::build_for_new_swapchain(extent2 new_size
     }
 }
 
-hi_inline void gfx_surface::build(extent2 new_size) noexcept
+inline void gfx_surface::build(extent2 new_size) noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hi_assert(loss == gfx_surface_loss::none);
@@ -310,7 +310,7 @@ hi_inline void gfx_surface::build(extent2 new_size) noexcept
     }
 }
 
-hi_inline void gfx_surface::teardown_for_swapchain_lost() noexcept
+inline void gfx_surface::teardown_for_swapchain_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the swapchain.");
     wait_idle();
@@ -332,7 +332,7 @@ hi_inline void gfx_surface::teardown_for_swapchain_lost() noexcept
     teardown_swapchain();
 }
 
-hi_inline void gfx_surface::teardown_for_device_lost() noexcept
+inline void gfx_surface::teardown_for_device_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the vulkan device.");
     for (auto [delegate, semaphore] : _delegates) {
@@ -347,12 +347,12 @@ hi_inline void gfx_surface::teardown_for_device_lost() noexcept
     _device = nullptr;
 }
 
-hi_inline void gfx_surface::teardown_for_window_lost() noexcept
+inline void gfx_surface::teardown_for_window_lost() noexcept
 {
     gfx_system::global().destroySurfaceKHR(intrinsic);
 }
 
-hi_inline void gfx_surface::teardown() noexcept
+inline void gfx_surface::teardown() noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -374,7 +374,7 @@ hi_inline void gfx_surface::teardown() noexcept
     loss = gfx_surface_loss::none;
 }
 
-hi_inline void gfx_surface::update(extent2 new_size) noexcept
+inline void gfx_surface::update(extent2 new_size) noexcept
 {
     auto const lock = std::scoped_lock(gfx_system_mutex);
 
@@ -388,7 +388,7 @@ hi_inline void gfx_surface::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-hi_inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
+inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
 {
     // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
     redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
@@ -437,7 +437,7 @@ hi_inline draw_context gfx_surface::render_start(aarectangle redraw_rectangle)
     return r;
 }
 
-hi_inline void gfx_surface::render_finish(draw_context const& context)
+inline void gfx_surface::render_finish(draw_context const& context)
 {
     auto const lock = std::scoped_lock(gfx_system_mutex);
 
@@ -489,7 +489,7 @@ hi_inline void gfx_surface::render_finish(draw_context const& context)
     teardown();
 }
 
-hi_inline void gfx_surface::fill_command_buffer(
+inline void gfx_surface::fill_command_buffer(
     swapchain_image_info const& current_image,
     draw_context const& context,
     vk::Rect2D render_area)
@@ -535,7 +535,7 @@ hi_inline void gfx_surface::fill_command_buffer(
     commandBuffer.end();
 }
 
-hi_inline void gfx_surface::submit_command_buffer(vk::Semaphore delegate_semaphore)
+inline void gfx_surface::submit_command_buffer(vk::Semaphore delegate_semaphore)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -560,7 +560,7 @@ hi_inline void gfx_surface::submit_command_buffer(vk::Semaphore delegate_semapho
     _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
-hi_inline std::tuple<std::size_t, extent2> gfx_surface::get_image_count_and_size(std::size_t new_count, extent2 new_size)
+inline std::tuple<std::size_t, extent2> gfx_surface::get_image_count_and_size(std::size_t new_count, extent2 new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -585,7 +585,7 @@ hi_inline std::tuple<std::size_t, extent2> gfx_surface::get_image_count_and_size
     return {clamped_count, clamped_size};
 }
 
-hi_inline gfx_surface_loss gfx_surface::build_swapchain(std::size_t new_count, extent2 new_size)
+inline gfx_surface_loss gfx_surface::build_swapchain(std::size_t new_count, extent2 new_size)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -688,7 +688,7 @@ hi_inline gfx_surface_loss gfx_surface::build_swapchain(std::size_t new_count, e
     return gfx_surface_loss::none;
 }
 
-hi_inline void gfx_surface::teardown_swapchain()
+inline void gfx_surface::teardown_swapchain()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -700,7 +700,7 @@ hi_inline void gfx_surface::teardown_swapchain()
     }
 }
 
-hi_inline void gfx_surface::build_frame_buffers()
+inline void gfx_surface::build_frame_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -753,7 +753,7 @@ hi_inline void gfx_surface::build_frame_buffers()
     hi_assert(swapchain_image_infos.size() == swapchain_images.size());
 }
 
-hi_inline void gfx_surface::teardown_frame_buffers()
+inline void gfx_surface::teardown_frame_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -781,7 +781,7 @@ hi_inline void gfx_surface::teardown_frame_buffers()
  * Rendering is done on a float-16 RGBA color-attachment.
  * In the last subpass the color-attachment is translated to the swap-chain attachment.
  */
-hi_inline void gfx_surface::build_render_passes()
+inline void gfx_surface::build_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -953,14 +953,14 @@ hi_inline void gfx_surface::build_render_passes()
     _render_area_granularity = extent2{narrow_cast<float>(granularity.width), narrow_cast<float>(granularity.height)};
 }
 
-hi_inline void gfx_surface::teardown_render_passes()
+inline void gfx_surface::teardown_render_passes()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
     _device->destroy(renderPass);
 }
 
-hi_inline void gfx_surface::build_semaphores()
+inline void gfx_surface::build_semaphores()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -973,7 +973,7 @@ hi_inline void gfx_surface::build_semaphores()
     renderFinishedFence = _device->createFence({vk::FenceCreateFlagBits::eSignaled});
 }
 
-hi_inline void gfx_surface::teardown_semaphores()
+inline void gfx_surface::teardown_semaphores()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -982,7 +982,7 @@ hi_inline void gfx_surface::teardown_semaphores()
     _device->destroy(renderFinishedFence);
 }
 
-hi_inline void gfx_surface::build_command_buffers()
+inline void gfx_surface::build_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -991,7 +991,7 @@ hi_inline void gfx_surface::build_command_buffers()
     commandBuffer = commandBuffers.at(0);
 }
 
-hi_inline void gfx_surface::teardown_command_buffers()
+inline void gfx_surface::teardown_command_buffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     auto const commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
@@ -999,7 +999,7 @@ hi_inline void gfx_surface::teardown_command_buffers()
     _device->freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
 }
 
-[[nodiscard]] hi_inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window)
+[[nodiscard]] inline std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window)
 {
     auto const lock = std::scoped_lock(gfx_system_mutex);
 

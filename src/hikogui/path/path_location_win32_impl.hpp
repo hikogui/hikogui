@@ -22,7 +22,7 @@ hi_export_module(hikogui.path.path_location : impl);
 hi_export namespace hi {
 inline namespace v1 {
 
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> executable_file() noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, std::error_code> executable_file() noexcept
 {
     static auto r = []() -> std::expected<std::filesystem::path, std::error_code> {
         if (auto path = win32_GetModuleFileName()) {
@@ -35,7 +35,7 @@ inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> data_dir() noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, std::error_code> data_dir() noexcept
 {
     static auto r = []() -> std::expected<std::filesystem::path, std::error_code> {
         // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\"
@@ -50,7 +50,7 @@ inline namespace v1 {
     return r;
 }
 
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> log_dir() noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, std::error_code> log_dir() noexcept
 {
     // "%LOCALAPPDATA%\<Application Vendor>\<Application Name>\Log\"
     if (auto path = data_dir()) {
@@ -60,7 +60,7 @@ inline namespace v1 {
     }
 }
 
-[[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept
+[[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept
 {
     // Always look at the resource directory where the executable is located.
     if (auto path = executable_dir()) {
@@ -95,14 +95,14 @@ inline namespace v1 {
     }
 }
 
-[[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept
+[[nodiscard]] inline generator<std::filesystem::path> system_font_dirs() noexcept
 {
     if (auto path = win32_SHGetKnownFolderPath(FOLDERID_Fonts)) {
         co_yield *path;
     }
 }
 
-[[nodiscard]] hi_inline generator<std::filesystem::path> font_dirs() noexcept
+[[nodiscard]] inline generator<std::filesystem::path> font_dirs() noexcept
 {
     for (auto const& path : resource_dirs()) {
         co_yield path;
@@ -112,7 +112,7 @@ inline namespace v1 {
     }
 }
 
-[[nodiscard]] hi_inline generator<std::filesystem::path> theme_dirs() noexcept
+[[nodiscard]] inline generator<std::filesystem::path> theme_dirs() noexcept
 {
     for (auto const& path : resource_dirs()) {
         co_yield path;

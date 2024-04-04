@@ -56,14 +56,14 @@ struct win32_error_category : std::error_category {
     }
 };
 
-hi_inline auto global_win32_error_category = win32_error_category{};
+inline auto global_win32_error_category = win32_error_category{};
 
-[[nodiscard]] hi_inline std::error_code make_error_code(win32_error code) noexcept
+[[nodiscard]] inline std::error_code make_error_code(win32_error code) noexcept
 {
     return {static_cast<int>(code), global_win32_error_category};
 }
 
-[[nodiscard]] hi_inline win32_error win32_GetLastError() noexcept
+[[nodiscard]] inline win32_error win32_GetLastError() noexcept
 {
     return static_cast<win32_error>(::GetLastError());
 }

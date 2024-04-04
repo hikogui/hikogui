@@ -173,7 +173,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     return parse_po(text.begin(), text.end(), path);
 }
 
-[[nodiscard]] hi_inline po_translations parse_po(std::filesystem::path const& path)
+[[nodiscard]] inline po_translations parse_po(std::filesystem::path const& path)
 {
     return parse_po(as_string_view(file_view{path}), path.string());
 }

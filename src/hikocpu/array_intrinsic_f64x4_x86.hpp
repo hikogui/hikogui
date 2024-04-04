@@ -5,7 +5,7 @@
 #pragma once
 
 #include "array_intrinsic.hpp"
-#include "../macros.hpp"
+#include "macros.hpp"
 #include <cstddef>
 #include <array>
 #include <limits>
@@ -18,7 +18,7 @@
 #include <nmmintrin.h>
 #include <immintrin.h>
 
-hi_export_module(hikogui.SIMD.array_intrinsic_f32x4);
+hi_export_module(hikocpu : array_intrinsic_f32x4);
 
 hi_export namespace hi {
 inline namespace v1 {
@@ -270,11 +270,11 @@ struct array_intrinsic<double, 4> {
 #elif defined(HI_HAS_SSE2)
         return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castpd_si256(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si256())) == 0xffff;
 #else
-        auto tmp = std::array<float, 4>{};
+        auto tmp = std::array<double, 4>{};
         _mm256_store_pd(tmp.data(), _mm256_and_pd(L(a), L(b)));
 
-        return (std::bit_cast<uint32_t>(std::get<0>(tmp)) | std::bit_cast<uint32_t>(std::get<1>(tmp)) |
-                std::bit_cast<uint32_t>(std::get<2>(tmp)) | std::bit_cast<uint32_t>(std::get<3>(tmp))) == 0;
+        return (std::bit_cast<uint64_t>(std::get<0>(tmp)) | std::bit_cast<uint64_t>(std::get<1>(tmp)) |
+                std::bit_cast<uint64_t>(std::get<2>(tmp)) | std::bit_cast<uint64_t>(std::get<3>(tmp))) == 0;
 #endif
     }
 
@@ -336,32 +336,6 @@ struct array_intrinsic<double, 4> {
         return S(_mm256_castsi256_pd(_mm256_sra_epi32(_mm256_castpd_si256(L(a)), b_)));
     }
 #endif
-
-    [[nodiscard]] hi_force_inline static array_type hadd(array_type a, array_type b) noexcept
-    {
-#if defined(HI_HAS_SSE3)
-        return S(_mm256_hadd_pd(L(a), L(b)));
-#else
-        auto const a_ = L(a);
-        auto const b_ = L(b);
-        auto const tmp1 = _mm256_shuffle_pd(a_, b_, 0b10'00'10'00);
-        auto const tmp2 = _mm256_shuffle_pd(a_, b_, 0b11'01'11'01);
-        return S(_mm256_add_pd(tmp1, tmp2));
-#endif
-    }
-
-    [[nodiscard]] hi_force_inline static array_type hsub(array_type a, array_type b) noexcept
-    {
-#if defined(HI_HAS_SSE3)
-        return S(_mm256_hsub_pd(L(a), L(b)));
-#else
-        auto const a_ = L(a);
-        auto const b_ = L(b);
-        auto const tmp1 = _mm256_shuffle_pd(a_, b_, 0b10'00'10'00);
-        auto const tmp2 = _mm256_shuffle_pd(a_, b_, 0b11'01'11'01);
-        return S(_mm256_sub_pd(tmp1, tmp2));
-#endif
-    }
 
     template<int... Indices>
     [[nodiscard]] constexpr static unsigned int _make_indices_imm() noexcept

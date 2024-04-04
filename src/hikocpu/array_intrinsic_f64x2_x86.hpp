@@ -5,7 +5,7 @@
 #pragma once
 
 #include "array_intrinsic.hpp"
-#include "../macros.hpp"
+#include "macros.hpp"
 #include <cstddef>
 #include <array>
 #include <limits>
@@ -18,7 +18,7 @@
 #include <nmmintrin.h>
 #include <immintrin.h>
 
-hi_export_module(hikogui.SIMD.array_intrinsic_f32x4);
+hi_export_module(hikocpu : array_intrinsic_f32x4);
 
 hi_export namespace hi {
 inline namespace v1 {

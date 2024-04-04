@@ -166,8 +166,8 @@ protected:
     /** Mutex for managing _map.
      * We disable the dead_lock_detector, so that this mutex can be used before main().
      */
-    constinit static hi_inline unfair_mutex_impl<false> _mutex;
-    constinit static hi_inline atomic_unique_ptr<map_type> _map;
+    constinit static inline unfair_mutex_impl<false> _mutex;
+    constinit static inline atomic_unique_ptr<map_type> _map;
 
     std::atomic<uint64_t> _total_count = 0;
     std::atomic<uint64_t> _prev_count = 0;
@@ -197,14 +197,14 @@ public:
 } // namespace detail
 
 template<fixed_string Tag>
-hi_inline detail::tagged_counter<Tag> global_counter;
+inline detail::tagged_counter<Tag> global_counter;
 
-[[nodiscard]] hi_inline detail::counter *get_global_counter_if(std::string const& name)
+[[nodiscard]] inline detail::counter *get_global_counter_if(std::string const& name)
 {
     return detail::counter::get_if(name);
 }
 
-hi_inline void log::log_thread_main(std::stop_token stop_token) noexcept
+inline void log::log_thread_main(std::stop_token stop_token) noexcept
 {
     using namespace std::chrono_literals;
 

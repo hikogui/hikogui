@@ -25,7 +25,7 @@ struct cmake_install {
  * @retval std::nullopt if the file does not exist,
  *         or could not be parsed, or the source-dir does not exist. 
 */
-[[nodiscard]] hi_inline std::optional<cmake_install> parse_cmake_install(std::filesystem::path path) noexcept
+[[nodiscard]] inline std::optional<cmake_install> parse_cmake_install(std::filesystem::path path) noexcept
 {
     if (not std::filesystem::exists(path)) {
         return std::nullopt;

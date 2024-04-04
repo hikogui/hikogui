@@ -46,7 +46,7 @@ concept path_range = std::ranges::input_range<Context> and
  * @return full paths to the filesystem-objects found in the location.
  */
 template<path_range Locations>
-[[nodiscard]] hi_inline generator<std::filesystem::path>
+[[nodiscard]] inline generator<std::filesystem::path>
 find_path(Locations&& locations, std::filesystem::path const& ref) noexcept
 {
     if (ref.is_absolute()) {
@@ -71,7 +71,7 @@ find_path(Locations&& locations, std::filesystem::path const& ref) noexcept
  * @param ref A relative path to the filesystem-object.
  * @return full paths to the filesystem-objects found in the location.
  */
-[[nodiscard]] hi_inline generator<std::filesystem::path>
+[[nodiscard]] inline generator<std::filesystem::path>
 find_path(std::filesystem::path const& location, std::filesystem::path const& ref) noexcept
 {
     if (ref.is_absolute()) {
@@ -96,7 +96,7 @@ find_path(std::filesystem::path const& location, std::filesystem::path const& re
  * @throws io_error When a path is not found.
  */
 template<path_range Locations>
-[[nodiscard]] hi_inline std::filesystem::path get_path(Locations&& locations, std::filesystem::path const& ref)
+[[nodiscard]] inline std::filesystem::path get_path(Locations&& locations, std::filesystem::path const& ref)
 {
     for (auto const& path : find_path(locations, ref)) {
         return path;
@@ -113,7 +113,7 @@ template<path_range Locations>
  * @return The full path to the first filesystem-object found in the location.
  * @throws io_error When a path is not found.
  */
-[[nodiscard]] hi_inline std::filesystem::path get_path(std::filesystem::path const& location, std::filesystem::path const& ref)
+[[nodiscard]] inline std::filesystem::path get_path(std::filesystem::path const& location, std::filesystem::path const& ref)
 {
     for (auto const& path : find_path(location, ref)) {
         return path;
@@ -130,7 +130,7 @@ template<path_range Locations>
  * @return The full path to the first filesystem-object found in the location.
  * @throws io_error When a path is not found.
  */
-[[nodiscard]] hi_inline std::filesystem::path
+[[nodiscard]] inline std::filesystem::path
 get_path(std::expected<std::filesystem::path, std::error_code> const& location, std::filesystem::path const& ref)
 {
     if (not location) {
@@ -151,7 +151,7 @@ get_path(std::expected<std::filesystem::path, std::error_code> const& location, 
  * @return A string of semicolon ';' separated paths.
  */
 template<path_range Locations>
-[[nodiscard]] hi_inline std::string to_string(Locations&& locations) noexcept
+[[nodiscard]] inline std::string to_string(Locations&& locations) noexcept
 {
     auto r = std::string{};
     for (auto const& path : locations) {
@@ -171,7 +171,7 @@ template<path_range Locations>
 /** Get the full path to the directory when this executable is located.
  * @ingroup path
  */
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, std::error_code> executable_dir() noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, std::error_code> executable_dir() noexcept
 {
     auto path = executable_file();
     if (path) {
@@ -193,22 +193,22 @@ template<path_range Locations>
 /** The directories to search for resource files.
  * @ingroup path
  */
-[[nodiscard]] hi_inline generator<std::filesystem::path> resource_dirs() noexcept;
+[[nodiscard]] inline generator<std::filesystem::path> resource_dirs() noexcept;
 
 /** The directories to search for system font files.
  * @ingroup path
  */
-[[nodiscard]] hi_inline generator<std::filesystem::path> system_font_dirs() noexcept;
+[[nodiscard]] inline generator<std::filesystem::path> system_font_dirs() noexcept;
 
 /** The directories to search for font files of both the application and system.
  * @ingroup path
  */
-[[nodiscard]] hi_inline generator<std::filesystem::path> font_files() noexcept;
+[[nodiscard]] inline generator<std::filesystem::path> font_files() noexcept;
 
 /** The directories to search for theme files of the application.
  * @ingroup path
  */
-[[nodiscard]] hi_inline generator<std::filesystem::path> theme_files() noexcept;
+[[nodiscard]] inline generator<std::filesystem::path> theme_files() noexcept;
 
 /** Get the full path to source code of this executable.
  *
@@ -216,7 +216,7 @@ template<path_range Locations>
  * @return The path to directory of the source code.
  * @retval std::nullopt The executable is not located in its build directory.
  */
-[[nodiscard]] hi_inline std::optional<std::filesystem::path> source_dir() noexcept
+[[nodiscard]] inline std::optional<std::filesystem::path> source_dir() noexcept
 {
     static auto r = []() -> std::optional<std::filesystem::path> {
         auto const executable_dir_ = executable_dir();
@@ -242,14 +242,14 @@ template<path_range Locations>
     return r;
 }
 
-[[nodiscard]] hi_inline std::filesystem::path library_source_dir() noexcept
+[[nodiscard]] inline std::filesystem::path library_source_dir() noexcept
 {
     auto path = std::filesystem::path{__FILE__};
     path.replace_filename("../../..");
     return path.lexically_normal();
 }
 
-[[nodiscard]] hi_inline std::filesystem::path library_test_data_dir() noexcept
+[[nodiscard]] inline std::filesystem::path library_test_data_dir() noexcept
 {
     return hi::library_source_dir() / "tests" / "data";
 }

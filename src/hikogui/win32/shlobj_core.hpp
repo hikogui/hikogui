@@ -23,7 +23,7 @@ inline namespace v1 {
  * @param KNOWNFOLDERID folder_id.
  * @return The path of the folder.
  */
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, hresult_error> win32_SHGetKnownFolderPath(KNOWNFOLDERID const& folder_id) noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, hresult_error> win32_SHGetKnownFolderPath(KNOWNFOLDERID const& folder_id) noexcept
 {
     PWSTR wpath = nullptr;
     auto const result_code = SHGetKnownFolderPath(folder_id, 0, nullptr, &wpath);

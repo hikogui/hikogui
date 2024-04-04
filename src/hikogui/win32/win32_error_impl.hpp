@@ -11,7 +11,7 @@ hi_export_module(hikogui.win32 : win32_error_impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] hi_inline std::string win32_error_category::message(int code) const
+[[nodiscard]] inline std::string win32_error_category::message(int code) const
 {
     if (auto msg = win32_FormatMessage(static_cast<win32_error>(code))) {
         return *msg;

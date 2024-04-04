@@ -3,7 +3,7 @@
 #pragma once
 
 #include "array_intrinsic.hpp"
-#include "../macros.hpp"
+#include "macros.hpp"
 #include <cstddef>
 #include <cmath>
 #include <array>
@@ -11,7 +11,7 @@
 #include <bit>
 #include <algorithm>
 
-hi_export_module(hikogui.SIMD.array_generic);
+hi_export_module(hikocpu : array_generic);
 
 hi_warning_push();
 // False positive: warning C4702: unreachable code.
