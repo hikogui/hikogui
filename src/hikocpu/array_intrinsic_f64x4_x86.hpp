@@ -68,21 +68,12 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type set_all_ones() noexcept
     {
-#if defined(HI_HAS_AVX2)
-        return S(_mm256_castsi256_pd(_mm256_cmpeq_epi32(_mm256_setzero_si256(), _mm256_setzero_si256())));
-#else
-        return S(_mm256_cmpeq_pd(_mm256_setzero_pd(), _mm256_setzero_pd()));
-#endif
+        return S(_mm256_cmp_pd(_mm256_setzero_pd(), _mm256_setzero_pd(), _CMP_EQ_OS));
     }
 
     [[nodiscard]] hi_force_inline static array_type set_one() noexcept
     {
-#if defined(HI_HAS_AVX2)
-        auto const ones = _mm256_cmpeq_epi32(_mm256_setzero_si256(), _mm256_setzero_si256());
-        return S(_mm256_castsi256_pd(_mm256_srli_epi32(_mm256_slli_epi32(ones, 25), 2)));
-#else
         return S(_mm256_set1_pd(1.0f));
-#endif
     }
 
     template<size_t I>
@@ -261,21 +252,6 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type ge(array_type a, array_type b) noexcept
     {
         return S(_mm256_cmp_pd(L(a), L(b), _CMP_GE_OS));
-    }
-
-    [[nodiscard]] hi_force_inline static bool test(array_type a, array_type b) noexcept
-    {
-#if defined(HI_HAS_SSE4_1)
-        return static_cast<bool>(_mm256_testz_si256(_mm256_castpd_si256(L(a)), _mm256_castpd_si256(L(b))));
-#elif defined(HI_HAS_SSE2)
-        return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castpd_si256(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si256())) == 0xffff;
-#else
-        auto tmp = std::array<double, 4>{};
-        _mm256_store_pd(tmp.data(), _mm256_and_pd(L(a), L(b)));
-
-        return (std::bit_cast<uint64_t>(std::get<0>(tmp)) | std::bit_cast<uint64_t>(std::get<1>(tmp)) |
-                std::bit_cast<uint64_t>(std::get<2>(tmp)) | std::bit_cast<uint64_t>(std::get<3>(tmp))) == 0;
-#endif
     }
 
     [[nodiscard]] hi_force_inline static array_type max(array_type a, array_type b) noexcept

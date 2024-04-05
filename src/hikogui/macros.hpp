@@ -4,13 +4,9 @@
 
 #pragma once
 
-#ifndef hi_export_module
-#define hi_export_module(...)
+#if defined(_MSC_BUILD)
+#include <intrin.h>
 #endif
-#ifndef hi_export
-#define hi_export
-#endif
-
 #include <version>
 #include <exception>
 

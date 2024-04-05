@@ -4,6 +4,11 @@
 
 #pragma once
 
+#if defined(_MSC_BUILD)
+#include <intrin.h>
+#endif
+#include <version>
+#include <exception>
 
 // All the HI_HAS_* macros tell us if the compiler will generate code with these instructions.
 // Therefor we can use intrinsics for these instructions without checking the cpu-id.
