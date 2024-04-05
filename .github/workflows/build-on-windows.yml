@@ -51,8 +51,8 @@ jobs:
 
       # https://community.chocolatey.org/packages/ninja
       # https://community.chocolatey.org/packages/ccache
-      - name: 🔽 Install Ninja
-        run: choco install ninja ccache
+      #- name: 🔽 Install Ninja
+      #  run: choco install ninja ccache
 
       - name: 🛠️ Setup Visual Studio Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
@@ -68,16 +68,16 @@ jobs:
 
       # Reminder: This step requires that the CMakePresets for CI contain
       # "CMAKE_CXX_COMPILER_LAUNCHER": "sccache".
-      - name: 🎯 Setup Build Cache
-        uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
-        with:
-          variant: sccache
-          key: win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
-          restore-keys: |
-            win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
-            win-ci-build-${{github.ref}}
-            win-ci-build-refs/heads/main
-            win-ci-build-
+      #- name: 🎯 Setup Build Cache
+      #  uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
+      #  with:
+      #    variant: sccache
+      #    key: win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
+      #    restore-keys: |
+      #      win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
+      #      win-ci-build-${{github.ref}}
+      #      win-ci-build-refs/heads/main
+      #      win-ci-build-
 
       # Build Artifact Name: hikogui-0.3.0-0cda6a2-x64-windows-Debug-cl
       - name: ✏ Fetch Versioning Data & Set Artifact Name
