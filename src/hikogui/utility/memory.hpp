@@ -250,7 +250,7 @@ constexpr T *floor(T *ptr, std::size_t alignment) noexcept
  * @param ptr The pointer to advance.
  * @param distance The number of bytes to advance the pointer, may be negative.
  */
-hi_inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
+inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
 {
     hi_axiom_not_null(ptr);
     return static_cast<char *>(ptr) + distance;
@@ -262,14 +262,14 @@ hi_inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
  * @param ptr The pointer to advance.
  * @param distance The number of bytes to advance the pointer, may be negative.
  */
-hi_inline void const *advance_bytes(void const *ptr, std::ptrdiff_t distance) noexcept
+inline void const *advance_bytes(void const *ptr, std::ptrdiff_t distance) noexcept
 {
     hi_axiom_not_null(ptr);
     return static_cast<char const *>(ptr) + distance;
 }
 
 template<typename T>
-hi_inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
+inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -282,7 +282,7 @@ hi_inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
 }
 
 template<typename K, typename T>
-hi_inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) noexcept
+inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -295,7 +295,7 @@ hi_inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) n
 }
 
 template<typename K, typename T>
-hi_inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>>& v) noexcept
+inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -309,7 +309,7 @@ hi_inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_p
 }
 
 template<typename Value, typename Map, typename Key, typename... Args>
-hi_inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
+inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 {
     std::shared_ptr<Value> value;
 
@@ -355,7 +355,7 @@ template<numeric T, byte_like B>
 }
 
 template<numeric T>
-[[nodiscard]] hi_inline T unaligned_load(void const *src) noexcept
+[[nodiscard]] inline T unaligned_load(void const *src) noexcept
 {
     return unaligned_load<T>(static_cast<std::byte const *>(src));
 }

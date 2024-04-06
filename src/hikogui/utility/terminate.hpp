@@ -28,11 +28,11 @@ hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 
-hi_inline std::mutex terminate_mutex;
+inline std::mutex terminate_mutex;
 
-hi_inline std::vector<std::function<void()>> atterminate_functions;
+inline std::vector<std::function<void()>> atterminate_functions;
 
-hi_inline void call_atterminate() noexcept
+inline void call_atterminate() noexcept
 {
     auto const lock = std::scoped_lock(terminate_mutex);
     for (auto it = atterminate_functions.rbegin(); it != atterminate_functions.rend(); ++it) {
@@ -45,7 +45,7 @@ hi_inline void call_atterminate() noexcept
 /** Register functions that need to be called on std::terminate().
  *
  */
-hi_inline void atterminate(std::function<void()> f) noexcept
+inline void atterminate(std::function<void()> f) noexcept
 {
     auto const lock = std::scoped_lock(detail::terminate_mutex);
     detail::atterminate_functions.push_back(std::move(f));
@@ -55,7 +55,7 @@ hi_inline void atterminate(std::function<void()> f) noexcept
  *
  * This is the handler returned by `std::set_terminate()`.
  */
-hi_inline std::terminate_handler old_terminate_handler;
+inline std::terminate_handler old_terminate_handler;
 
 /** The HikoGUI terminate handler.
  *
@@ -63,7 +63,7 @@ hi_inline std::terminate_handler old_terminate_handler;
  *
  * @note Use `set_debug_message()` to set a message.
  */
-hi_inline void terminate_handler() noexcept
+inline void terminate_handler() noexcept
 {
     using namespace std::literals;
 

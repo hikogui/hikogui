@@ -188,7 +188,7 @@ private:
 
 [[nodiscard]] std::unique_ptr<gfx_surface> make_unique_gfx_surface(os_handle instance, void *os_window);
 
-[[nodiscard]] hi_inline gfx_device *find_best_device(gfx_surface const &surface)
+[[nodiscard]] inline gfx_device *find_best_device(gfx_surface const &surface)
 {
     return find_best_device(surface.intrinsic);
 }

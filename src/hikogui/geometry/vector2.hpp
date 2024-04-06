@@ -5,8 +5,8 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <exception>
 #include <format>
 #include <ostream>
@@ -14,7 +14,8 @@
 
 hi_export_module(hikogui.geometry : vector2);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A high-level geometric vector
  * Part of the high-level vector, point, mat and color types.
@@ -316,7 +317,8 @@ private:
     array_type _v;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
 
 // XXX #617 MSVC bug does not handle partial specialization in modules.
 hi_export template<>

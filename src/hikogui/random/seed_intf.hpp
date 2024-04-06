@@ -8,8 +8,8 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <random>
 #include <concepts>
 #include <type_traits>

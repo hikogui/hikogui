@@ -14,7 +14,7 @@ hi_export_module(hikogui.GFX : gfx_pipeline_box_impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_inline void gfx_pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+inline void gfx_pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     gfx_pipeline::draw_in_command_buffer(commandBuffer, context);
 
@@ -46,43 +46,43 @@ hi_inline void gfx_pipeline_box::draw_in_command_buffer(vk::CommandBuffer comman
     device()->cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
-hi_inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_box::createShaderStages() const
+inline std::vector<vk::PipelineShaderStageCreateInfo> gfx_pipeline_box::createShaderStages() const
 {
     hi_axiom_not_null(device());
     return device()->box_pipeline->shaderStages;
 }
 
-hi_inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_box::createDescriptorSetLayoutBindings() const
+inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_box::createDescriptorSetLayoutBindings() const
 {
     return {};
 }
 
-hi_inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_box::createWriteDescriptorSet() const
+inline std::vector<vk::WriteDescriptorSet> gfx_pipeline_box::createWriteDescriptorSet() const
 {
     return {};
 }
 
-hi_inline size_t gfx_pipeline_box::getDescriptorSetVersion() const
+inline size_t gfx_pipeline_box::getDescriptorSetVersion() const
 {
     return 0;
 }
 
-hi_inline std::vector<vk::PushConstantRange> gfx_pipeline_box::createPushConstantRanges() const
+inline std::vector<vk::PushConstantRange> gfx_pipeline_box::createPushConstantRanges() const
 {
     return push_constants::pushConstantRanges();
 }
 
-hi_inline vk::VertexInputBindingDescription gfx_pipeline_box::createVertexInputBindingDescription() const
+inline vk::VertexInputBindingDescription gfx_pipeline_box::createVertexInputBindingDescription() const
 {
     return vertex::inputBindingDescription();
 }
 
-hi_inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_box::createVertexInputAttributeDescriptions() const
+inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_box::createVertexInputAttributeDescriptions() const
 {
     return vertex::inputAttributeDescriptions();
 }
 
-hi_inline void gfx_pipeline_box::build_vertex_buffers()
+inline void gfx_pipeline_box::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -103,32 +103,32 @@ hi_inline void gfx_pipeline_box::build_vertex_buffers()
     vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
 
-hi_inline void gfx_pipeline_box::teardown_vertex_buffers()
+inline void gfx_pipeline_box::teardown_vertex_buffers()
 {
     hi_axiom_not_null(device());
     device()->unmapMemory(vertexBufferAllocation);
     device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-hi_inline gfx_pipeline_box::device_shared::device_shared(gfx_device const &device) : device(device)
+inline gfx_pipeline_box::device_shared::device_shared(gfx_device const &device) : device(device)
 {
     buildShaders();
 }
 
-hi_inline gfx_pipeline_box::device_shared::~device_shared() {}
+inline gfx_pipeline_box::device_shared::~device_shared() {}
 
-hi_inline void gfx_pipeline_box::device_shared::destroy(gfx_device const *vulkanDevice)
+inline void gfx_pipeline_box::device_shared::destroy(gfx_device const *vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     teardownShaders(vulkanDevice);
 }
 
-hi_inline void gfx_pipeline_box::device_shared::drawInCommandBuffer(vk::CommandBuffer const &commandBuffer)
+inline void gfx_pipeline_box::device_shared::drawInCommandBuffer(vk::CommandBuffer const &commandBuffer)
 {
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-hi_inline void gfx_pipeline_box::device_shared::place_vertices(
+inline void gfx_pipeline_box::device_shared::place_vertices(
     vector_span<vertex> &vertices,
     aarectangle clipping_rectangle,
     quad box,
@@ -164,7 +164,7 @@ hi_inline void gfx_pipeline_box::device_shared::place_vertices(
     vertices.emplace_back(box_.p3, clipping_rectangle_, t3, corner_radii_, fill_colors.p3, line_colors.p3, line_width);
 }
 
-hi_inline void gfx_pipeline_box::device_shared::buildShaders()
+inline void gfx_pipeline_box::device_shared::buildShaders()
 {
     vertexShaderModule = device.loadShader(URL("resource:box_vulkan.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline vertex shader");
@@ -177,7 +177,7 @@ hi_inline void gfx_pipeline_box::device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-hi_inline void gfx_pipeline_box::device_shared::teardownShaders(gfx_device const*vulkanDevice)
+inline void gfx_pipeline_box::device_shared::teardownShaders(gfx_device const*vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);

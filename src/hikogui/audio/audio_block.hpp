@@ -6,8 +6,8 @@
 
 #include "../time/time.hpp"
 #include "../utility/utility.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <span>
 
 hi_export_module(hikogui.audio.audio_block);

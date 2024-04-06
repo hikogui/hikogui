@@ -17,13 +17,13 @@ hi_export_module(hikogui.GFX : gfx_pipeline_impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-[[nodiscard]] hi_inline gfx_device *gfx_pipeline::device() const noexcept
+[[nodiscard]] inline gfx_device *gfx_pipeline::device() const noexcept
 {
     hi_axiom_not_null(surface);
     return surface->device();
 }
 
-hi_inline void gfx_pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
+inline void gfx_pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
@@ -39,7 +39,7 @@ hi_inline void gfx_pipeline::draw_in_command_buffer(vk::CommandBuffer commandBuf
     }
 }
 
-hi_inline void gfx_pipeline::build_descriptor_sets()
+inline void gfx_pipeline::build_descriptor_sets()
 {
     auto const descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
@@ -77,7 +77,7 @@ hi_inline void gfx_pipeline::build_descriptor_sets()
     descriptorSetVersion = 0;
 }
 
-hi_inline void gfx_pipeline::teardown_descriptor_sets()
+inline void gfx_pipeline::teardown_descriptor_sets()
 {
     if (!descriptorSet) {
         return;
@@ -89,7 +89,7 @@ hi_inline void gfx_pipeline::teardown_descriptor_sets()
     descriptorSet = nullptr;
 }
 
-hi_inline vk::PipelineDepthStencilStateCreateInfo gfx_pipeline::getPipelineDepthStencilStateCreateInfo() const
+inline vk::PipelineDepthStencilStateCreateInfo gfx_pipeline::getPipelineDepthStencilStateCreateInfo() const
 {
     // Reverse-z depth configuration
     return {
@@ -108,7 +108,7 @@ hi_inline vk::PipelineDepthStencilStateCreateInfo gfx_pipeline::getPipelineDepth
 
 /* pre-multiplied alpha blending.
  */
-hi_inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline::getPipelineColorBlendAttachmentStates() const
+inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline::getPipelineColorBlendAttachmentStates() const
 {
     return {
         {VK_TRUE, // blendEnable
@@ -122,7 +122,7 @@ hi_inline std::vector<vk::PipelineColorBlendAttachmentState> gfx_pipeline::getPi
              vk::ColorComponentFlagBits::eA}};
 }
 
-hi_inline void gfx_pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+inline void gfx_pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     hi_log_info("buildPipeline previous size ({}, {})", extent.width, extent.height);
     extent = _extent;
@@ -242,24 +242,24 @@ hi_inline void gfx_pipeline::build_pipeline(vk::RenderPass renderPass, uint32_t 
     hi_log_info("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
-hi_inline void gfx_pipeline::teardown_pipeline()
+inline void gfx_pipeline::teardown_pipeline()
 {
     hi_axiom_not_null(device());
     device()->destroy(intrinsic);
     device()->destroy(pipelineLayout);
 }
 
-hi_inline void gfx_pipeline::build_for_new_device()
+inline void gfx_pipeline::build_for_new_device()
 {
     build_vertex_buffers();
 }
 
-hi_inline void gfx_pipeline::teardown_for_device_lost()
+inline void gfx_pipeline::teardown_for_device_lost()
 {
     teardown_vertex_buffers();
 }
 
-hi_inline void gfx_pipeline::build_for_new_swapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+inline void gfx_pipeline::build_for_new_swapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     // Input attachments described by the descriptor set will change when a
     // new swap chain is created.
@@ -267,7 +267,7 @@ hi_inline void gfx_pipeline::build_for_new_swapchain(vk::RenderPass renderPass, 
     build_pipeline(renderPass, renderSubpass, _extent);
 }
 
-hi_inline void gfx_pipeline::teardown_for_swapchain_lost()
+inline void gfx_pipeline::teardown_for_swapchain_lost()
 {
     teardown_pipeline();
     teardown_descriptor_sets();

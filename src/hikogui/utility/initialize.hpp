@@ -34,7 +34,7 @@ inline thread_local uint16_t initialize_thread_id_dummy;
 /** Get a thread id.
  * @return A unique id for a thread, which is never 0 or 1.
  */
-[[nodiscard]] hi_inline uintptr_t initialize_thread_id() noexcept
+[[nodiscard]] inline uintptr_t initialize_thread_id() noexcept
 {
     // The following is guaranteed:
     //  - 0: An address can never be a nullptr.
@@ -53,7 +53,7 @@ inline std::atomic<uintptr_t> initialize_state = 0;
  *  - Every function from hikogui.metadata.application_metadata.
  *  - When using the hikogui.crt.
  */
-hi_inline void initialize() noexcept
+inline void initialize() noexcept
 {
     using namespace std::literals;
 

@@ -27,13 +27,13 @@ namespace detail {
 
 /** A list of deinit function to be called on shutdown.
  */
-hi_inline std::vector<void (*)()> subsystem_deinit_list;
+inline std::vector<void (*)()> subsystem_deinit_list;
 
 /** Mutex to be held when writing to system_status or accessing system_status_deinit_list.
  * The system status is also an atomic variable so that reads on system_status
  * without holding the mutex is still possible.
  */
-hi_inline unfair_recursive_mutex subsystem_mutex;
+inline unfair_recursive_mutex subsystem_mutex;
 
 template<typename T>
 hi_no_inline typename T::value_type start_subsystem(
@@ -69,7 +69,7 @@ hi_no_inline typename T::value_type start_subsystem(
     return new_value;
 }
 
-hi_no_inline hi_inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
+hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
     hi_assert(std::popcount(std::to_underlying(state_bit)) == 1);
     hi_assert_not_null(init_function);
@@ -145,7 +145,7 @@ typename T::value_type start_subsystem(
  * @param deinit_function the deinit function to call when shutting down the system.
  * @return return value from the init_function; off_value if the system is shutting down.
  */
-hi_inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
+inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
     // We can do a relaxed load, if:
     //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed
@@ -200,7 +200,7 @@ typename T::value_type start_subsystem_or_terminate(
  * @ingroup concurrency
  * @param deinit_function the deinit function to call.
  */
-hi_inline void stop_subsystem(void (*deinit_function)())
+inline void stop_subsystem(void (*deinit_function)())
 {
     hi_assert_not_null(deinit_function);
 
@@ -215,7 +215,7 @@ hi_inline void stop_subsystem(void (*deinit_function)())
  *
  * @ingroup concurrency
  */
-hi_inline void start_system() noexcept
+inline void start_system() noexcept
 {
     global_state |= global_state_type::system_is_running;
 }
@@ -228,7 +228,7 @@ hi_inline void start_system() noexcept
  *
  * @ingroup concurrency
  */
-hi_inline void shutdown_system() noexcept
+inline void shutdown_system() noexcept
 {
     detail::subsystem_mutex.lock();
     global_state |= global_state_type::system_is_shutting_down;

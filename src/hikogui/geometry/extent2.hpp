@@ -9,9 +9,9 @@
 #pragma once
 
 #include "vector2.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <compare>
 #include <concepts>
 #include <format>

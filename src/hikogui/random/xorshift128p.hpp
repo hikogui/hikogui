@@ -5,9 +5,9 @@
 #pragma once
 
 #include "seed.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <random>
 
 hi_export_module(hikogui.random.xorshift128p);

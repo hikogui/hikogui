@@ -202,10 +202,10 @@ private:
 };
 
 namespace detail {
-hi_inline std::unique_ptr<keyboard_bindings> keyboard_bindings_global;
+inline std::unique_ptr<keyboard_bindings> keyboard_bindings_global;
 }
 
-hi_inline keyboard_bindings& keyboard_bindings::global() noexcept
+inline keyboard_bindings& keyboard_bindings::global() noexcept
 {
     if (not detail::keyboard_bindings_global) {
         detail::keyboard_bindings_global = std::make_unique<keyboard_bindings>();
@@ -213,17 +213,17 @@ hi_inline keyboard_bindings& keyboard_bindings::global() noexcept
     return *detail::keyboard_bindings_global;
 }
 
-hi_inline void load_user_keyboard_bindings(std::filesystem::path const& path)
+inline void load_user_keyboard_bindings(std::filesystem::path const& path)
 {
     return keyboard_bindings::global().load_bindings(path, false);
 }
 
-hi_inline void load_system_keyboard_bindings(std::filesystem::path const& path)
+inline void load_system_keyboard_bindings(std::filesystem::path const& path)
 {
     return keyboard_bindings::global().load_bindings(path, true);
 }
 
-hi_inline generator<gui_event> translate_keyboard_event(gui_event event) noexcept
+inline generator<gui_event> translate_keyboard_event(gui_event event) noexcept
 {
     for (auto& e : keyboard_bindings::global().translate(event)) {
         co_yield e;

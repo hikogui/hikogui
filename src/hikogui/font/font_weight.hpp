@@ -100,7 +100,7 @@ constexpr auto font_weight_metadata = enum_metadata{
     return (x_ == 1000) ? 950 : x_;
 }
 
-hi_inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
+inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs)
 {
     return lhs << to_string(rhs);
 }
@@ -116,7 +116,7 @@ constexpr bool almost_equal(font_weight const& lhs, font_weight const& rhs) noex
  * @param start The starting font-weight.
  * @return Generated font weights, starting at start, then zig-zag toward thin and extra-black.
  */
-[[nodiscard]] hi_inline generator<font_weight> alternatives(font_weight start) noexcept
+[[nodiscard]] inline generator<font_weight> alternatives(font_weight start) noexcept
 {
     co_yield start;
 

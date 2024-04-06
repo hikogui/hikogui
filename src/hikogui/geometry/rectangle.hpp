@@ -6,8 +6,8 @@
 
 #include "aarectangle.hpp"
 #include "alignment.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <array>
 #include <exception>
 #include <compare>

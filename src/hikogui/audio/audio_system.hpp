@@ -61,7 +61,7 @@ protected:
 };
 
 namespace detail {
-hi_inline std::unique_ptr<audio_system> audio_system_global;
+inline std::unique_ptr<audio_system> audio_system_global;
 }
 
 template<typename Context>
@@ -73,7 +73,7 @@ concept audio_device_filter = std::convertible_to<Context, audio_device_state> o
 }
 
 template<audio_device_filter FirstFilter, audio_device_filter... Filters>
-[[nodiscard]] hi_inline bool match_audio_device(audio_device const &device, FirstFilter &&first_filter, Filters &&...filters) noexcept
+[[nodiscard]] inline bool match_audio_device(audio_device const &device, FirstFilter &&first_filter, Filters &&...filters) noexcept
 {
     if constexpr (std::convertible_to<FirstFilter, audio_device_state>) {
         if (device.state() != first_filter) {

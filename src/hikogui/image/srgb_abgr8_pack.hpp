@@ -78,7 +78,7 @@ public:
     }
 };
 
-//hi_inline void fill(pixmap<srgb_abgr8_pack> &dst, pixmap<sfloat_rgba16> const &src) noexcept
+//inline void fill(pixmap<srgb_abgr8_pack> &dst, pixmap<sfloat_rgba16> const &src) noexcept
 //{
 //    hi_assert(dst.width >= src.width);
 //    hi_assert(dst.height >= src.height);

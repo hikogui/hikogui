@@ -17,7 +17,7 @@ hi_export_module(hikogui.utility.dialog : impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_export hi_inline std::expected<dialog_button, std::error_code> dialog(std::string_view title, std::string_view text, dialog_button_mask button_mask) noexcept
+hi_export inline std::expected<dialog_button, std::error_code> dialog(std::string_view title, std::string_view text, dialog_button_mask button_mask) noexcept
 {
     UINT type = 0;
 

@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <cstddef>
 #include <exception>
 #include <compare>

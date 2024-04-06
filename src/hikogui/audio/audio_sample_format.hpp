@@ -5,8 +5,8 @@
 #pragma once
 
 #include "../utility/utility.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <bit>
 
 hi_export_module(hikogui.audio.audio_sample_format);

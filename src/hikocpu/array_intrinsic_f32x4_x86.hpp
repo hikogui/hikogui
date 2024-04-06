@@ -5,7 +5,9 @@
 #pragma once
 
 #include "array_intrinsic.hpp"
-#include "../macros.hpp"
+#include "half.hpp"
+#include "half_to_float.hpp"
+#include "macros.hpp"
 #include <cstddef>
 #include <array>
 #include <limits>
@@ -18,23 +20,23 @@
 #include <nmmintrin.h>
 #include <immintrin.h>
 
-hi_export_module(hikogui.SIMD.array_intrinsic_f32x4);
+hi_export_module(hikocpu : array_intrinsic_f32x4);
 
 hi_export namespace hi {
 inline namespace v1 {
 
-#if defined(HI_HAS_AVX)
+#if defined(HI_HAS_SSE)
 template<>
-struct array_intrinsic<double, 4> {
-    using value_type = double;
-    using register_type = __m256d;
-    using array_type = std::array<double, 4>;
+struct array_intrinsic<float, 4> {
+    using value_type = float;
+    using register_type = __m128;
+    using array_type = std::array<float, 4>;
 
     /** Load an array into a register.
      */
     [[nodiscard]] hi_force_inline static register_type L(array_type a) noexcept
     {
-        return _mm256_loadu_pd(a.data());
+        return _mm_loadu_ps(a.data());
     }
 
     /** Store a register into an array.
@@ -42,91 +44,99 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type S(register_type a) noexcept
     {
         auto r = array_type{};
-        _mm256_storeu_pd(r.data(), a);
+        _mm_storeu_ps(r.data(), a);
         return r;
+    }
+
+    [[nodiscard]] hi_force_inline static array_type convert(std::array<half, 4> a) noexcept
+    {
+        return half_to_float(std::bit_cast<std::array<uint16_t, 4>>(a));
     }
 
     [[nodiscard]] hi_force_inline static array_type undefined() noexcept
     {
-        return S(_mm256_undefined_pd());
+        return S(_mm_undefined_ps());
     }
 
-    [[nodiscard]] hi_force_inline static array_type set(double a, double b, double c, double d) noexcept
+    [[nodiscard]] hi_force_inline static array_type set(float a, float b, float c, float d) noexcept
     {
-        return S(_mm256_set_pd(d, c, b, a));
+        return S(_mm_set_ps(d, c, b, a));
     }
 
-    [[nodiscard]] hi_force_inline static array_type set(double a) noexcept
+    [[nodiscard]] hi_force_inline static array_type set(float a) noexcept
     {
-        return S(_mm256_set_pd(0.0, 0.0, 0.0, a));
+        return S(_mm_set_ps(0.0f, 0.0f, 0.0f, a));
     }
 
     [[nodiscard]] hi_force_inline static array_type set_zero() noexcept
     {
-        return S(_mm256_setzero_pd());
+        return S(_mm_setzero_ps());
     }
 
     [[nodiscard]] hi_force_inline static array_type set_all_ones() noexcept
     {
-#if defined(HI_HAS_AVX2)
-        return S(_mm256_castsi128_pd(_mm256_cmpeq_epi32(_mm256_setzero_si128(), _mm256_setzero_si128())));
+#if defined(HI_HAS_SSE2)
+        return S(_mm_castsi128_ps(_mm_cmpeq_epi32(_mm_setzero_si128(), _mm_setzero_si128())));
 #else
-        return S(_mm256_cmpeq_pd(_mm256_setzero_pd(), _mm256_setzero_pd()));
+        return S(_mm_cmpeq_ps(_mm_setzero_ps(), _mm_setzero_ps()));
 #endif
     }
 
     [[nodiscard]] hi_force_inline static array_type set_one() noexcept
     {
-#if defined(HI_HAS_AVX2)
-        auto const ones = _mm256_cmpeq_epi32(_mm256_setzero_si128(), _mm256_setzero_si128());
-        return S(_mm256_castsi128_pd(_mm256_srli_epi32(_mm256_slli_epi32(ones, 25), 2)));
+#if defined(HI_HAS_SSE2)
+        auto const ones = _mm_cmpeq_epi32(_mm_setzero_si128(), _mm_setzero_si128());
+        return S(_mm_castsi128_ps(_mm_srli_epi32(_mm_slli_epi32(ones, 25), 2)));
 #else
-        return S(_mm256_set1_pd(1.0f));
+        return S(_mm_set1_ps(1.0f));
 #endif
     }
 
     template<size_t I>
-    [[nodiscard]] hi_force_inline static double get(array_type a) noexcept
+    [[nodiscard]] hi_force_inline static float get(array_type a) noexcept
     {
-        static_assert(I < 4);
-
         if constexpr (I == 0) {
-            return _mm256_cvtsd_f64(L(a));
-        } else constexpr (I == 1) {
-            return _mm256_cvtsd_f64(_mm256_shuffle_pd(L(a), L(a), 0b1);
+            return _mm_cvtss_f32(L(a));
         } else {
-            auto const tmp = _mm256_extractf128_pd(L(a), 0b1);
-            if constexpr (I == 2) {
-                return _mm_cvtsd_f64(tmp);
-            } else {
-                return _mm_cvtsd_f64(_mm_permute_pd(tmp, 0b1));
-            }
+            return _mm_cvtss_f32(_mm_shuffle_ps(L(a), L(a), I));
         }
     }
 
-    [[nodiscard]] hi_force_inline static array_type broadcast(double a) noexcept
+    [[nodiscard]] hi_force_inline static array_type broadcast(float a) noexcept
     {
-        return S(_mm256_set1_pd(a));
+        return S(_mm_set1_ps(a));
     }
 
     [[nodiscard]] hi_force_inline static array_type broadcast(array_type a) noexcept
     {
-        auto tmp = L(a);
-        auto lo = _mm256_extractf128_pd(tmp, 0b0);
-        tmp = _mm256_insertf128_pd(tmp, lo, 0b1);
-        return S(_mm256_permute_pd(tmp, 0b0000));
+        return S(_mm_shuffle_ps(L(a), L(a), 0));
     }
+
+#if defined(HI_HAS_SSE2)
+    [[nodiscard]] hi_force_inline static array_type set_mask(std::size_t mask) noexcept
+    {
+        // clang-format off
+        auto const tmp = _mm_set_epi32(
+            static_cast<int32_t>(mask) << 28,
+            static_cast<int32_t>(mask) << 29,
+            static_cast<int32_t>(mask) << 30,
+            static_cast<int32_t>(mask) << 31);
+        // clang-format on
+        return S(_mm_castsi128_ps(_mm_srai_epi32(tmp, 31)));
+    }
+#endif
 
     /** Store a register as a mask-integer.
      */
     [[nodiscard]] hi_force_inline static std::size_t get_mask(array_type a) noexcept
     {
-        return _mm256_movemask_pd(L(a));
+        return _mm_movemask_ps(L(a));
     }
+
 
     [[nodiscard]] hi_force_inline static array_type neg(array_type a) noexcept
     {
-        return S(_mm256_sub_pd(_mm256_setzero_pd(), L(a)));
+        return S(_mm_sub_ps(_mm_setzero_ps(), L(a)));
     }
 
     template<std::size_t Mask>
@@ -135,13 +145,13 @@ struct array_intrinsic<double, 4> {
         if constexpr (Mask == 0) {
             return a;
         } else if constexpr (Mask == 0b1111) {
-            return S(_mm256_sub_pd(_mm256_setzero_pd(), L(a)));
+            return S(_mm_sub_ps(_mm_setzero_ps(), L(a)));
 #if defined(HI_HAS_SSE3)
         } else if constexpr (Mask == 0b0101) {
-            return S(_mm256_addsub_pd(_mm256_setzero_pd(), L(a)));
+            return S(_mm_addsub_ps(_mm_setzero_ps(), L(a)));
 #endif
         } else {
-            auto const tmp = _mm256_sub_pd(_mm256_setzero_pd(), L(a));
+            auto const tmp = _mm_sub_ps(_mm_setzero_ps(), L(a));
             return blend<Mask>(a, S(tmp));
         }
     }
@@ -153,34 +163,34 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type rcp(array_type a) noexcept
     {
-        return S(_mm256_rcp_pd(L(a)));
+        return S(_mm_rcp_ps(L(a)));
     }
 
     [[nodiscard]] hi_force_inline static array_type sqrt(array_type a) noexcept
     {
-        return S(_mm256_sqrt_pd(L(a)));
+        return S(_mm_sqrt_ps(L(a)));
     }
 
     [[nodiscard]] hi_force_inline static array_type rsqrt(array_type a) noexcept
     {
-        return S(_mm256_rsqrt_pd(L(a)));
+        return S(_mm_rsqrt_ps(L(a)));
     }
 
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type round(array_type a) noexcept
     {
 #if defined(HI_HAS_SSE4_1)
-        return S(_mm256_round_pd(L(a), _MM_FROUND_CUR_DIRECTION));
+        return S(_mm_round_ps(L(a), _MM_FROUND_CUR_DIRECTION));
 #else
         auto const a_ = L(a);
-        auto const rounded = _mm256_cvtepi32_pd(_mm256_cvtps_epi32(a_));
-        auto const check_max = _mm256_cmple_pd(a_, _mm256_set1_pd(static_cast<float>(std::numeric_limits<int32_t>::max())));
-        auto const check_min = _mm256_cmpge_pd(a_, _mm256_set1_pd(static_cast<float>(std::numeric_limits<int32_t>::min())));
-        auto const check_bounds = _mm256_and_pd(check_max, check_min);
+        auto const rounded = _mm_cvtepi32_ps(_mm_cvtps_epi32(a_));
+        auto const check_max = _mm_cmple_ps(a_, _mm_set1_ps(static_cast<float>(std::numeric_limits<int32_t>::max())));
+        auto const check_min = _mm_cmpge_ps(a_, _mm_set1_ps(static_cast<float>(std::numeric_limits<int32_t>::min())));
+        auto const check_bounds = _mm_and_ps(check_max, check_min);
 
-        auto const good_rounded = _mm256_and_pd(check_bounds, rounded);
-        auto const good_a = _mm256_andnot_pd(check_bounds, a_);
-        return S(_mm256_or_pd(good_rounded, good_a));
+        auto const good_rounded = _mm_and_ps(check_bounds, rounded);
+        auto const good_a = _mm_andnot_ps(check_bounds, a_);
+        return S(_mm_or_ps(good_rounded, good_a));
 #endif
     }
 #endif
@@ -188,23 +198,23 @@ struct array_intrinsic<double, 4> {
 #if defined(HI_HAS_SSE4_1)
     [[nodiscard]] hi_force_inline static array_type floor(array_type a) noexcept
     {
-        return S(_mm256_floor_pd(L(a)));
+        return S(_mm_floor_ps(L(a)));
     }
 
     [[nodiscard]] hi_force_inline static array_type ceil(array_type a) noexcept
     {
-        return S(_mm256_ceil_pd(L(a)));
+        return S(_mm_ceil_ps(L(a)));
     }
 #endif
 
     [[nodiscard]] hi_force_inline static array_type add(array_type a, array_type b) noexcept
     {
-        return S(_mm256_add_pd(L(a), L(b)));
+        return S(_mm_add_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type sub(array_type a, array_type b) noexcept
     {
-        return S(_mm256_sub_pd(L(a), L(b)));
+        return S(_mm_sub_ps(L(a), L(b)));
     }
 
     template<std::size_t Mask>
@@ -216,7 +226,7 @@ struct array_intrinsic<double, 4> {
             return add(a, b);
 #if defined(HI_HAS_SSE3)
         } else if constexpr (Mask == 0b1010) {
-            return S(_mm256_addsub_pd(L(a), L(b)));
+            return S(_mm_addsub_ps(L(a), L(b)));
 #endif
         } else {
             return blend<Mask>(sub(a, b), add(a, b));
@@ -225,53 +235,53 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type mul(array_type a, array_type b) noexcept
     {
-        return S(_mm256_mul_pd(L(a), L(b)));
+        return S(_mm_mul_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type div(array_type a, array_type b) noexcept
     {
-        return S(_mm256_div_pd(L(a), L(b)));
+        return S(_mm_div_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type eq(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpeq_pd(L(a), L(b)));
+        return S(_mm_cmpeq_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type ne(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpneq_pd(L(a), L(b)));
+        return S(_mm_cmpneq_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type lt(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmplt_pd(L(a), L(b)));
+        return S(_mm_cmplt_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type gt(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpgt_pd(L(a), L(b)));
+        return S(_mm_cmpgt_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type le(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmple_pd(L(a), L(b)));
+        return S(_mm_cmple_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type ge(array_type a, array_type b) noexcept
     {
-        return S(_mm256_cmpge_pd(L(a), L(b)));
+        return S(_mm_cmpge_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static bool test(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE4_1)
-        return static_cast<bool>(_mm256_testz_si128(_mm256_castps_si128(L(a)), _mm256_castps_si128(L(b))));
+        return static_cast<bool>(_mm_testz_si128(_mm_castps_si128(L(a)), _mm_castps_si128(L(b))));
 #elif defined(HI_HAS_SSE2)
-        return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_mm256_castps_si128(_mm256_and_pd(L(a), L(b))), _mm256_setzero_si128())) == 0xffff;
+        return _mm_movemask_epi8(_mm_cmpeq_epi32(_mm_castps_si128(_mm_and_ps(L(a), L(b))), _mm_setzero_si128())) == 0xffff;
 #else
         auto tmp = std::array<float, 4>{};
-        _mm256_store_pd(tmp.data(), _mm256_and_pd(L(a), L(b)));
+        _mm_store_ps(tmp.data(), _mm_and_ps(L(a), L(b)));
 
         return (std::bit_cast<uint32_t>(std::get<0>(tmp)) | std::bit_cast<uint32_t>(std::get<1>(tmp)) |
                 std::bit_cast<uint32_t>(std::get<2>(tmp)) | std::bit_cast<uint32_t>(std::get<3>(tmp))) == 0;
@@ -280,86 +290,86 @@ struct array_intrinsic<double, 4> {
 
     [[nodiscard]] hi_force_inline static array_type max(array_type a, array_type b) noexcept
     {
-        return S(_mm256_max_pd(L(a), L(b)));
+        return S(_mm_max_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type min(array_type a, array_type b) noexcept
     {
-        return S(_mm256_min_pd(L(a), L(b)));
+        return S(_mm_min_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type clamp(array_type v, array_type lo, array_type hi) noexcept
     {
-        return S(_mm256_min_pd(_mm256_max_pd(L(v), L(lo)), L(hi)));
+        return S(_mm_min_ps(_mm_max_ps(L(v), L(lo)), L(hi)));
     }
 
     [[nodiscard]] hi_force_inline static array_type _or(array_type a, array_type b) noexcept
     {
-        return S(_mm256_or_pd(L(a), L(b)));
+        return S(_mm_or_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type _and(array_type a, array_type b) noexcept
     {
-        return S(_mm256_and_pd(L(a), L(b)));
+        return S(_mm_and_ps(L(a), L(b)));
     }
 
     [[nodiscard]] hi_force_inline static array_type _xor(array_type a, array_type b) noexcept
     {
-        return S(_mm256_xor_pd(L(a), L(b)));
+        return S(_mm_xor_ps(L(a), L(b)));
     }
     
     [[nodiscard]] hi_force_inline static array_type andnot(array_type a, array_type b) noexcept
     {
-        return S(_mm256_andnot_pd(L(a), L(b)));
+        return S(_mm_andnot_ps(L(a), L(b)));
     }
 
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type sll(array_type a, unsigned int b) noexcept
     {
-        auto const b_ = _mm256_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi128_pd(_mm256_sll_epi32(_mm256_castps_si128(L(a)), b_)));
+        auto const b_ = _mm_set_epi32(0, 0, 0, b);
+        return S(_mm_castsi128_ps(_mm_sll_epi32(_mm_castps_si128(L(a)), b_)));
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type srl(array_type a, unsigned int b) noexcept
     {
-        auto const b_ = _mm256_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi128_pd(_mm256_srl_epi32(_mm256_castps_si128(L(a)), b_)));
+        auto const b_ = _mm_set_epi32(0, 0, 0, b);
+        return S(_mm_castsi128_ps(_mm_srl_epi32(_mm_castps_si128(L(a)), b_)));
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
     [[nodiscard]] hi_force_inline static array_type sra(array_type a, unsigned int b) noexcept
     {
-        auto const b_ = _mm256_set_epi32(0, 0, 0, b);
-        return S(_mm256_castsi128_pd(_mm256_sra_epi32(_mm256_castps_si128(L(a)), b_)));
+        auto const b_ = _mm_set_epi32(0, 0, 0, b);
+        return S(_mm_castsi128_ps(_mm_sra_epi32(_mm_castps_si128(L(a)), b_)));
     }
 #endif
 
     [[nodiscard]] hi_force_inline static array_type hadd(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE3)
-        return S(_mm256_hadd_pd(L(a), L(b)));
+        return S(_mm_hadd_ps(L(a), L(b)));
 #else
         auto const a_ = L(a);
         auto const b_ = L(b);
-        auto const tmp1 = _mm256_shuffle_pd(a_, b_, 0b10'00'10'00);
-        auto const tmp2 = _mm256_shuffle_pd(a_, b_, 0b11'01'11'01);
-        return S(_mm256_add_pd(tmp1, tmp2));
+        auto const tmp1 = _mm_shuffle_ps(a_, b_, 0b10'00'10'00);
+        auto const tmp2 = _mm_shuffle_ps(a_, b_, 0b11'01'11'01);
+        return S(_mm_add_ps(tmp1, tmp2));
 #endif
     }
 
     [[nodiscard]] hi_force_inline static array_type hsub(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE3)
-        return S(_mm256_hsub_pd(L(a), L(b)));
+        return S(_mm_hsub_ps(L(a), L(b)));
 #else
         auto const a_ = L(a);
         auto const b_ = L(b);
-        auto const tmp1 = _mm256_shuffle_pd(a_, b_, 0b10'00'10'00);
-        auto const tmp2 = _mm256_shuffle_pd(a_, b_, 0b11'01'11'01);
-        return S(_mm256_sub_pd(tmp1, tmp2));
+        auto const tmp1 = _mm_shuffle_ps(a_, b_, 0b10'00'10'00);
+        auto const tmp2 = _mm_shuffle_ps(a_, b_, 0b11'01'11'01);
+        return S(_mm_sub_ps(tmp1, tmp2));
 #endif
     }
 
@@ -380,17 +390,17 @@ struct array_intrinsic<double, 4> {
     template<int... Indices>
     [[nodiscard]] hi_force_inline static array_type shuffle(array_type a) noexcept
     {
-        return S(_mm256_shuffle_pd(L(a), L(a), _make_indices_imm<Indices...>()));
+        return S(_mm_shuffle_ps(L(a), L(a), _make_indices_imm<Indices...>()));
     }
 
     template<size_t Mask>
     [[nodiscard]] hi_force_inline static array_type blend(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE4_1)
-        return S(_mm256_blend_pd(L(a), L(b), Mask));
+        return S(_mm_blend_ps(L(a), L(b), Mask));
 #else
-        auto const lo = _mm256_unpacklo_pd(L(a), L(b));
-        auto const hi = _mm256_unpackhi_pd(L(a), L(b));
+        auto const lo = _mm_unpacklo_ps(L(a), L(b));
+        auto const hi = _mm_unpackhi_ps(L(a), L(b));
         // clang-format off
         constexpr auto indices =
             (Mask & 0b0001 ? 0b00'00'00'01U : 0b00'00'00'00U) |
@@ -398,7 +408,7 @@ struct array_intrinsic<double, 4> {
             (Mask & 0b0100 ? 0b00'01'00'00U : 0b00'00'00'00U) |
             (Mask & 0b1000 ? 0b11'00'00'00U : 0b10'00'00'00U);
         // clang-format on
-        return S(_mm256_shuffle_pd(lo, hi, indices));
+        return S(_mm_shuffle_ps(lo, hi, indices));
 #endif
     }
 
@@ -415,18 +425,18 @@ struct array_intrinsic<double, 4> {
     [[nodiscard]] hi_force_inline static array_type sum(array_type a) noexcept
     {
         auto const x_y_z_w = L(a);
-        auto const y_x_w_z = _mm256_shuffle_pd(x_y_z_w, x_y_z_w, 0b10'11'00'01);
-        auto const xy_yx_zw_wz = _mm256_add_pd(x_y_z_w, y_x_w_z);
-        auto const zw_wz_w_z = _mm256_movehl_pd(y_x_w_z, xy_yx_zw_wz);
-        auto const xyzw_0_0_0 = _mm256_add_ss(xy_yx_zw_wz, zw_wz_w_z);
-        return S(_mm256_shuffle_pd(xyzw_0_0_0, xyzw_0_0_0, 0));
+        auto const y_x_w_z = _mm_shuffle_ps(x_y_z_w, x_y_z_w, 0b10'11'00'01);
+        auto const xy_yx_zw_wz = _mm_add_ps(x_y_z_w, y_x_w_z);
+        auto const zw_wz_w_z = _mm_movehl_ps(y_x_w_z, xy_yx_zw_wz);
+        auto const xyzw_0_0_0 = _mm_add_ss(xy_yx_zw_wz, zw_wz_w_z);
+        return S(_mm_shuffle_ps(xyzw_0_0_0, xyzw_0_0_0, 0));
     }
 
     template<size_t Mask>
     [[nodiscard]] hi_force_inline static array_type dot(array_type a, array_type b) noexcept
     {
 #if defined(HI_HAS_SSE4_1)
-        return S(_mm256_dp_pd(L(a), L(b), (Mask << 4) | 0b1111));
+        return S(_mm_dp_ps(L(a), L(b), (Mask << 4) | 0b1111));
 #else
         auto const multiplied = blend<Mask>(set_zero(), mul(a, b));
         return sum(multiplied);

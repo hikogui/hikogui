@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <concepts>
 #include <exception>
 #include <compare>

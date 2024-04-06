@@ -23,7 +23,7 @@ hi_export namespace hi { inline namespace v1 {
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-[[nodiscard]] hi_inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+[[nodiscard]] inline std::expected<std::string, win32_error> win32_WideCharToMultiByte(std::wstring_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // WideCharToMultiByte() does not handle empty strings, if it can not also convert the null-character.
@@ -55,7 +55,7 @@ hi_export namespace hi { inline namespace v1 {
  * @param flags The flags to passing
  * @return multi-byte string.
  */
-[[nodiscard]] hi_inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
+[[nodiscard]] inline std::expected<std::wstring, win32_error> win32_MultiByteToWideChar(std::string_view s, unsigned int code_page = CP_UTF8, uint32_t flags = 0) noexcept
 {
     if (s.empty()) {
         // MultiByteToWideChar() does not handle empty strings, if it can not also convert the null-character.
@@ -89,7 +89,7 @@ hi_export namespace hi { inline namespace v1 {
  * @param last A pointer one beyond the buffer.
  * @return A vector of UTF-8 encoded strings, win32_error::invalid_data when the list is incorrectly terminated.
  */
-[[nodiscard]] hi_inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
+[[nodiscard]] inline std::expected<std::vector<std::string>, win32_error> win32_MultiSZToStringVector(wchar_t const *first, wchar_t const *last) noexcept
 {
     auto r = std::vector<std::string>{};
 

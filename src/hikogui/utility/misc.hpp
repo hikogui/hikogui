@@ -109,7 +109,7 @@ template<class T, class U>
  * @return A string containing a line of characters, excluding the line termination.
  */
 template<typename CharT, typename Traits = std::char_traits<CharT>>
-[[nodiscard]] hi_inline std::basic_string<CharT, Traits> getline(std::basic_istream<CharT, Traits>& in, size_t max_size) noexcept
+[[nodiscard]] inline std::basic_string<CharT, Traits> getline(std::basic_istream<CharT, Traits>& in, size_t max_size) noexcept
 {
     auto r = std::basic_string<CharT, Traits>{};
 

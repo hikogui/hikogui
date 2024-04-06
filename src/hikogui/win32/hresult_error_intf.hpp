@@ -46,14 +46,14 @@ struct hresult_error_category : std::error_category {
     }
 };
 
-hi_inline auto global_hresult_error_category = hresult_error_category{};
+inline auto global_hresult_error_category = hresult_error_category{};
 
-[[nodiscard]] hi_inline std::error_code make_error_code(hresult_error code) noexcept
+[[nodiscard]] inline std::error_code make_error_code(hresult_error code) noexcept
 {
     return {static_cast<int>(code), global_hresult_error_category};
 }
 
-[[nodiscard]] hi_inline hresult_error to_win32_error(win32_error code) noexcept
+[[nodiscard]] inline hresult_error to_win32_error(win32_error code) noexcept
 {
     return static_cast<hresult_error>(__HRESULT_FROM_WIN32(static_cast<DWORD>(code)));
 }

@@ -5,9 +5,7 @@
 #include "float_to_half.hpp"
 #include <hikotest/hikotest.hpp>
 
-
-TEST_SUITE(float_to_half_suite)
-{
+TEST_SUITE(float_to_half_suite) {
 
 TEST_CASE(generic_test)
 {
@@ -496,4 +494,4 @@ TEST_CASE(sse2_test)
 }
 #endif
 
-};
+}; // TEST_SUITE(float_to_half_suite)

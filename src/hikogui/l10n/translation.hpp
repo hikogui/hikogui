@@ -48,16 +48,16 @@ struct std::hash<hi::translation_key> {
 hi_export namespace hi {
 inline namespace v1 {
 
-hi_inline std::unordered_map<translation_key, std::vector<std::string>> translations;
-hi_inline std::atomic<bool> translations_loaded = false;
+inline std::unordered_map<translation_key, std::vector<std::string>> translations;
+inline std::atomic<bool> translations_loaded = false;
 
-hi_inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
+inline void add_translation(std::string_view msgid, language_tag language, std::vector<std::string> const &plural_forms) noexcept
 {
     auto key = translation_key{std::string{msgid}, language};
     translations[key] = plural_forms;
 }
 
-hi_inline void add_translations(po_translations const &po_translations) noexcept
+inline void add_translations(po_translations const &po_translations) noexcept
 {
     for (auto const &translation : po_translations.translations) {
         auto msgid = translation.msgctxt ? *translation.msgctxt + '|' + translation.msgid : translation.msgid;
@@ -65,13 +65,13 @@ hi_inline void add_translations(po_translations const &po_translations) noexcept
     }
 }
 
-hi_inline void load_translations(std::filesystem::path path)
+inline void load_translations(std::filesystem::path path)
 {
     hi_log_info("Loading translation file {}.", path.string());
     return add_translations(parse_po(path));
 }
 
-hi_inline void load_translations()
+inline void load_translations()
 {
     if (not translations_loaded.exchange(true)) {
         // XXX Waiting for C++23 to extend life-time of temporaries in for loops.
@@ -86,7 +86,7 @@ hi_inline void load_translations()
     }
 }
 
-[[nodiscard]] hi_inline std::pair<std::string_view, language_tag>
+[[nodiscard]] inline std::pair<std::string_view, language_tag>
 get_translation(std::string_view msgid, long long n, std::vector<language_tag> const &languages) noexcept
 {
     load_translations();

@@ -11,9 +11,9 @@
 #include "pixmap_span.hpp"
 #include "../color/color.hpp"
 #include "../geometry/geometry.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <algorithm>
 #include <bit>
 #include <cstdint>

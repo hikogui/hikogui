@@ -665,7 +665,7 @@ hi_export struct graphic_path {
  * @param dst An signed-distance-field which show distance toward the closest curve
  * @param path A path.
  */
-hi_export hi_inline void fill(pixmap_span<sdf_r8> dst, graphic_path const& path) noexcept
+hi_export inline void fill(pixmap_span<sdf_r8> dst, graphic_path const& path) noexcept
 {
     fill(dst, path.getBeziers());
 }

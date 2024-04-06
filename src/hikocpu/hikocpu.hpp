@@ -4,9 +4,15 @@
 
 #pragma once
 
+
+#include "macros.hpp"
+
 #include "array_generic.hpp" // export
 #ifndef HI_GENERIC
+#include "array_intrinsic_f16x4_x86.hpp" // export
 #include "array_intrinsic_f32x4_x86.hpp" // export
+#include "array_intrinsic_f64x4_x86.hpp" // export
+#include "array_intrinsic_f64x2_x86.hpp" // export
 #endif
 #include "array_intrinsic.hpp" // export
 #include "simd_intf.hpp" // export
@@ -19,4 +25,4 @@
 #include "half_to_float.hpp" // export
 #include "float_to_half.hpp" // export
 
-hi_export_module(hikogui.SIMD);
+hi_export_module(hikocpu);

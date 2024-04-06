@@ -15,21 +15,21 @@ hi_export namespace hi { inline namespace v1 {
 namespace detail {
     /** Message to show when the application is terminated because of a debug_abort.
  */
-hi_inline std::atomic<char const *> debug_message = nullptr;
+inline std::atomic<char const *> debug_message = nullptr;
 
 }
 
-hi_inline void set_debug_message(char const *str) noexcept
+inline void set_debug_message(char const *str) noexcept
 {
     detail::debug_message.store(str, std::memory_order::relaxed);
 }
 
-[[nodiscard]] hi_inline bool has_debug_message() noexcept
+[[nodiscard]] inline bool has_debug_message() noexcept
 {
     return detail::debug_message.load(std::memory_order::relaxed) != nullptr;
 }
 
-[[nodiscard]] hi_inline char const *get_debug_message() noexcept
+[[nodiscard]] inline char const *get_debug_message() noexcept
 {
     return detail::debug_message.exchange(nullptr, std::memory_order::relaxed);
 }

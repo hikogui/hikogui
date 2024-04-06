@@ -697,7 +697,7 @@ template<typename T>
 }
 
 template<typename T>
-[[nodiscard]] hi_inline T to_ptr(std::intptr_t value) noexcept
+[[nodiscard]] inline T to_ptr(std::intptr_t value) noexcept
     requires std::is_pointer_v<T>
 {
     return reinterpret_cast<T>(value);
