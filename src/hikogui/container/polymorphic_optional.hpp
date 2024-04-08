@@ -266,9 +266,9 @@ public:
             // Wait until the _pointer is a nullptr.
             // And acquire the buffer to start overwriting it.
             // There are no other threads that will make this non-null afterwards.
-            while (_pointer.load(std::memory_order_acquire)) {
+            if (_pointer.load(std::memory_order_acquire) != nullptr) [[unlikely]] {
                 // If we get here, that would suck, but nothing to do about it.
-                [[unlikely]] contended();
+                contended_read();
             }
 
             // Overwrite the buffer with the new slot.
@@ -302,9 +302,9 @@ public:
             // Wait until the slot.pointer is a nullptr.
             // We don't need to acquire since we wrote into a new heap location.
             // There are no other threads that will make this non-null afterwards.
-            while (_pointer.load(std::memory_order::relaxed)) {
+            if (_pointer.load(std::memory_order::relaxed) != nullptr) [[unlikely]] {
                 // If we get here, that would suck, but nothing to do about it.
-                [[unlikely]] contended();
+                contended_read();
             }
 
             if constexpr (std::is_same_v<func_result, void>) {
@@ -339,13 +339,15 @@ private:
      */
     std::atomic<pointer> _pointer = nullptr;
 
-    hi_no_inline void contended() noexcept
+    hi_no_inline void contended_read() noexcept
     {
         using namespace std::chrono_literals;
 
-        // If we get here, that would suck, but nothing to do about it.
-        //++global_counter<"polymorphic_optional:contended">;
-        std::this_thread::sleep_for(16ms);
+        do {
+            // If we get here, that would suck, but nothing to do about it.
+            //++global_counter<"polymorphic_optional:contended">;
+            std::this_thread::sleep_for(16ms);
+        } while (_pointer.load(std::memory_order::relaxed) != nullptr);
     }
 };
 

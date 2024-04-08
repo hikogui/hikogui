@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../macros.hpp"
+#include "macros.hpp"
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -57,7 +57,7 @@
  *
  * @module hikogui.utility.cpu_id
  */
-hi_export_module(hikogui.utility.cpu_id);
+hi_export_module(hikocpu : cpu_id);
 
 namespace hi { inline namespace v1 {
 
@@ -344,7 +344,7 @@ struct cpu_id_result {
  * @param index The index inside the leaf
  * @return aex, ebx, ecx, edx
  */
-[[nodiscard]] hi_inline cpu_id_result cpu_id(uint32_t leaf_id, uint32_t index = 0) noexcept
+[[nodiscard]] inline cpu_id_result cpu_id(uint32_t leaf_id, uint32_t index = 0) noexcept
 {
     auto r = cpu_id_result{};
 
@@ -486,7 +486,7 @@ namespace detail {
     return r;
 }
 
-[[nodiscard]] hi_inline cpu_feature_mask cpu_features_init() noexcept
+[[nodiscard]] inline cpu_feature_mask cpu_features_init() noexcept
 {
     // clang-format off
     auto r = cpu_feature_mask{};
@@ -605,7 +605,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_CMOV
 [[nodiscard]] constexpr bool has_cmov() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_cmov() noexcept { return to_bool(cpu_features() & cpu_feature::cmov); }
+[[nodiscard]] inline bool has_cmov() noexcept { return to_bool(cpu_features() & cpu_feature::cmov); }
 #endif
 
 /** This CPU has the CMPXCG8 (Compare and exchange 8 bytes) instruction.
@@ -613,7 +613,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_CX8
 [[nodiscard]] constexpr bool has_cx8() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_cx8() noexcept { return to_bool(cpu_features() & cpu_feature::cx8); }
+[[nodiscard]] inline bool has_cx8() noexcept { return to_bool(cpu_features() & cpu_feature::cx8); }
 #endif
 
 /** This CPU has a floating-point co-processor.
@@ -621,7 +621,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_FPU
 [[nodiscard]] constexpr bool has_fpu() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_fpu() noexcept { return to_bool(cpu_features() & cpu_feature::fpu); }
+[[nodiscard]] inline bool has_fpu() noexcept { return to_bool(cpu_features() & cpu_feature::fpu); }
 #endif
 
 /** This CPU has the fxsave instruction.
@@ -629,7 +629,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_FXSR
 [[nodiscard]] constexpr bool has_fxsr() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_fxsr() noexcept { return to_bool(cpu_features() & cpu_feature::fxsr); }
+[[nodiscard]] inline bool has_fxsr() noexcept { return to_bool(cpu_features() & cpu_feature::fxsr); }
 #endif
 
 /** This operating system uses the FXSAVE instruction.
@@ -637,7 +637,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_OSFXSR
 [[nodiscard]] constexpr bool has_osfxsr() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_osfxsr() noexcept { return to_bool(cpu_features() & cpu_feature::osfxsr); }
+[[nodiscard]] inline bool has_osfxsr() noexcept { return to_bool(cpu_features() & cpu_feature::osfxsr); }
 #endif
 
 /** This operating system uses the SYSCALL instruction.
@@ -645,7 +645,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SCE
 [[nodiscard]] constexpr bool has_sce() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sce() noexcept { return to_bool(cpu_features() & cpu_feature::sce); }
+[[nodiscard]] inline bool has_sce() noexcept { return to_bool(cpu_features() & cpu_feature::sce); }
 #endif
 
 /** This CPU has the MMX instruction set.
@@ -653,7 +653,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_MMX
 [[nodiscard]] constexpr bool has_mmx() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_mmx() noexcept { return to_bool(cpu_features() & cpu_feature::mmx); }
+[[nodiscard]] inline bool has_mmx() noexcept { return to_bool(cpu_features() & cpu_feature::mmx); }
 #endif
 
 /** This CPU has the SSE instruction set.
@@ -661,7 +661,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SSE
 [[nodiscard]] constexpr bool has_sse() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sse() noexcept { return to_bool(cpu_features() & cpu_feature::sse); }
+[[nodiscard]] inline bool has_sse() noexcept { return to_bool(cpu_features() & cpu_feature::sse); }
 #endif
 
 /** This CPU has the SSE2 instruction set.
@@ -669,7 +669,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SSE2
 [[nodiscard]] constexpr bool has_sse2() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sse2() noexcept { return to_bool(cpu_features() & cpu_feature::sse2); }
+[[nodiscard]] inline bool has_sse2() noexcept { return to_bool(cpu_features() & cpu_feature::sse2); }
 #endif
 
 /** This CPU has all the features for x86-64-v1 microarchitecture level.
@@ -677,7 +677,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_X86_64_V1
 [[nodiscard]] constexpr bool has_x86_64_v1() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_x86_64_v1() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v1) == cpu_feature_mask::x86_64_v1; }
+[[nodiscard]] inline bool has_x86_64_v1() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v1) == cpu_feature_mask::x86_64_v1; }
 #endif
 
 /** This CPU has the CMPXCG16 (Compare and exchange 16 bytes) instruction.
@@ -685,7 +685,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_CX16
 [[nodiscard]] constexpr bool has_cx16() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_cx16() noexcept { return to_bool(cpu_features() & cpu_feature::cx16); }
+[[nodiscard]] inline bool has_cx16() noexcept { return to_bool(cpu_features() & cpu_feature::cx16); }
 #endif
 
 /** This CPU has the LAHF and SAHF instructions.
@@ -693,7 +693,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_LAHF
 [[nodiscard]] constexpr bool has_lahf() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_lahf() noexcept { return to_bool(cpu_features() & cpu_feature::lahf); }
+[[nodiscard]] inline bool has_lahf() noexcept { return to_bool(cpu_features() & cpu_feature::lahf); }
 #endif
 
 /** This CPU has the POPCNT instructions.
@@ -701,7 +701,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_POPCNT
 [[nodiscard]] constexpr bool has_popcnt() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_popcnt() noexcept { return to_bool(cpu_features() & cpu_feature::popcnt); }
+[[nodiscard]] inline bool has_popcnt() noexcept { return to_bool(cpu_features() & cpu_feature::popcnt); }
 #endif
 
 /** This CPU has the SSE3 instruction set.
@@ -709,7 +709,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SSE3
 [[nodiscard]] constexpr bool has_sse3() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sse3() noexcept { return to_bool(cpu_features() & cpu_feature::sse3); }
+[[nodiscard]] inline bool has_sse3() noexcept { return to_bool(cpu_features() & cpu_feature::sse3); }
 #endif
 
 /** This CPU has the SSSE3 instruction set.
@@ -717,7 +717,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SSSE3
 [[nodiscard]] constexpr bool has_ssse3() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_ssse3() noexcept { return to_bool(cpu_features() & cpu_feature::ssse3); }
+[[nodiscard]] inline bool has_ssse3() noexcept { return to_bool(cpu_features() & cpu_feature::ssse3); }
 #endif
 
 /** This CPU has the SSE4.1 instruction set.
@@ -725,7 +725,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SSE4_1
 [[nodiscard]] constexpr bool has_sse4_1() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sse4_1() noexcept { return to_bool(cpu_features() & cpu_feature::sse4_1); }
+[[nodiscard]] inline bool has_sse4_1() noexcept { return to_bool(cpu_features() & cpu_feature::sse4_1); }
 #endif
 
 /** This CPU has the SSE4.2 instruction set.
@@ -733,7 +733,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SSE4_2
 [[nodiscard]] constexpr bool has_sse4_2() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sse4_2() noexcept { return to_bool(cpu_features() & cpu_feature::sse4_2); }
+[[nodiscard]] inline bool has_sse4_2() noexcept { return to_bool(cpu_features() & cpu_feature::sse4_2); }
 #endif
 
 /** This CPU has all the features for x86-64-v2 microarchitecture level.
@@ -741,7 +741,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_X86_64_V2
 [[nodiscard]] constexpr bool has_x86_64_v2() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_x86_64_v2() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v2) == cpu_feature_mask::x86_64_v2; }
+[[nodiscard]] inline bool has_x86_64_v2() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v2) == cpu_feature_mask::x86_64_v2; }
 #endif
 
 /** This CPU has float-16 conversion instructions.
@@ -749,7 +749,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_F16C
 [[nodiscard]] constexpr bool has_f16c() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_f16c() noexcept { return to_bool(cpu_features() & cpu_feature::f16c); }
+[[nodiscard]] inline bool has_f16c() noexcept { return to_bool(cpu_features() & cpu_feature::f16c); }
 #endif
 
 /** This CPU has fused-multiply-accumulate instructions.
@@ -757,7 +757,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_FMA
 [[nodiscard]] constexpr bool has_fma() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_fma() noexcept { return to_bool(cpu_features() & cpu_feature::fma); }
+[[nodiscard]] inline bool has_fma() noexcept { return to_bool(cpu_features() & cpu_feature::fma); }
 #endif
 
 /** This CPU has the BMI1 instruction set.
@@ -765,7 +765,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_BMI1
 [[nodiscard]] constexpr bool has_bmi1() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_bmi1() noexcept { return to_bool(cpu_features() & cpu_feature::bmi1); }
+[[nodiscard]] inline bool has_bmi1() noexcept { return to_bool(cpu_features() & cpu_feature::bmi1); }
 #endif
 
 /** This CPU has the BMI2 instruction set.
@@ -773,7 +773,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_BMI2
 [[nodiscard]] constexpr bool has_bmi2() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_bmi2() noexcept { return to_bool(cpu_features() & cpu_feature::bmi2); }
+[[nodiscard]] inline bool has_bmi2() noexcept { return to_bool(cpu_features() & cpu_feature::bmi2); }
 #endif
 
 /** This CPU has the LZCNT instruction.
@@ -781,7 +781,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_LZCNT
 [[nodiscard]] constexpr bool has_lzcnt() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_lzcnt() noexcept { return to_bool(cpu_features() & cpu_feature::lzcnt); }
+[[nodiscard]] inline bool has_lzcnt() noexcept { return to_bool(cpu_features() & cpu_feature::lzcnt); }
 #endif
 
 /** This CPU has the MOVBE (Move Big Endian) instruction.
@@ -789,7 +789,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_MOVBE
 [[nodiscard]] constexpr bool has_movbe() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_movbe() noexcept { return to_bool(cpu_features() & cpu_feature::movbe); }
+[[nodiscard]] inline bool has_movbe() noexcept { return to_bool(cpu_features() & cpu_feature::movbe); }
 #endif
 
 /** This operating system uses the SXSAVE instruction.
@@ -797,7 +797,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_OSXSAVE
 [[nodiscard]] constexpr bool has_osxsave() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_osxsave() noexcept { return to_bool(cpu_features() & cpu_feature::osxsave); }
+[[nodiscard]] inline bool has_osxsave() noexcept { return to_bool(cpu_features() & cpu_feature::osxsave); }
 #endif
 
 /** This CPU has the AVX instruction set.
@@ -805,7 +805,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX
 [[nodiscard]] constexpr bool has_avx() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx() noexcept { return to_bool(cpu_features() & cpu_feature::avx); }
+[[nodiscard]] inline bool has_avx() noexcept { return to_bool(cpu_features() & cpu_feature::avx); }
 #endif
 
 /** This CPU has the AVX2 instruction set.
@@ -813,7 +813,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX2
 [[nodiscard]] constexpr bool has_avx2() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx2() noexcept { return to_bool(cpu_features() & cpu_feature::avx2); }
+[[nodiscard]] inline bool has_avx2() noexcept { return to_bool(cpu_features() & cpu_feature::avx2); }
 #endif
 
 /** This CPU has all the features for x86-64-v3 microarchitecture level.
@@ -821,7 +821,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_X86_64_V3
 [[nodiscard]] constexpr bool has_x86_64_v3() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_x86_64_v3() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v3) == cpu_feature_mask::x86_64_v3; }
+[[nodiscard]] inline bool has_x86_64_v3() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v3) == cpu_feature_mask::x86_64_v3; }
 #endif
 
 /** This CPU has the AVX512F instruction set.
@@ -829,7 +829,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512F
 [[nodiscard]] constexpr bool has_avx512f() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512f() noexcept { return to_bool(cpu_features() & cpu_feature::avx512f); }
+[[nodiscard]] inline bool has_avx512f() noexcept { return to_bool(cpu_features() & cpu_feature::avx512f); }
 #endif
 
 /** This CPU has the AVX512BW instruction set.
@@ -837,7 +837,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512BW
 [[nodiscard]] constexpr bool has_avx512bw() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512bw() noexcept { return to_bool(cpu_features() & cpu_feature::avx512bw); }
+[[nodiscard]] inline bool has_avx512bw() noexcept { return to_bool(cpu_features() & cpu_feature::avx512bw); }
 #endif
 
 /** This CPU has the AVX512CD instruction set.
@@ -845,7 +845,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512CD
 [[nodiscard]] constexpr bool has_avx512cd() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512cd() noexcept { return to_bool(cpu_features() & cpu_feature::avx512cd); }
+[[nodiscard]] inline bool has_avx512cd() noexcept { return to_bool(cpu_features() & cpu_feature::avx512cd); }
 #endif
 
 /** This CPU has the AVX512DQ instruction set.
@@ -853,7 +853,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512DQ
 [[nodiscard]] constexpr bool has_avx512dq() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512dq() noexcept { return to_bool(cpu_features() & cpu_feature::avx512dq); }
+[[nodiscard]] inline bool has_avx512dq() noexcept { return to_bool(cpu_features() & cpu_feature::avx512dq); }
 #endif
 
 /** This CPU has the AVX512VL instruction set.
@@ -861,7 +861,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512VL
 [[nodiscard]] constexpr bool has_avx512vl() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512vl() noexcept { return to_bool(cpu_features() & cpu_feature::avx512vl); }
+[[nodiscard]] inline bool has_avx512vl() noexcept { return to_bool(cpu_features() & cpu_feature::avx512vl); }
 #endif
 
 /** This CPU has all the features for x86-64-v4 microarchitecture level.
@@ -869,7 +869,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_X86_64_V4
 [[nodiscard]] constexpr bool has_x86_64_v4() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_x86_64_v4() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v4) == cpu_feature_mask::x86_64_v4; }
+[[nodiscard]] inline bool has_x86_64_v4() noexcept { return (cpu_features() & cpu_feature_mask::x86_64_v4) == cpu_feature_mask::x86_64_v4; }
 #endif
 
 /** This CPU has the AVX512PF instruction set.
@@ -877,7 +877,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512PF
 [[nodiscard]] constexpr bool has_avx512pf() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512pf() noexcept { return to_bool(cpu_features() & cpu_feature::avx512pf); }
+[[nodiscard]] inline bool has_avx512pf() noexcept { return to_bool(cpu_features() & cpu_feature::avx512pf); }
 #endif
 
 /** This CPU has the AVX512ER instruction set.
@@ -885,7 +885,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AVX512ER
 [[nodiscard]] constexpr bool has_avx512er() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_avx512er() noexcept { return to_bool(cpu_features() & cpu_feature::avx512er); }
+[[nodiscard]] inline bool has_avx512er() noexcept { return to_bool(cpu_features() & cpu_feature::avx512er); }
 #endif
 
 /** This CPU has the SHA cryptographical secure hash instruction set.
@@ -893,7 +893,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_SHA
 [[nodiscard]] constexpr bool has_sha() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_sha() noexcept { return to_bool(cpu_features() & cpu_feature::sha); }
+[[nodiscard]] inline bool has_sha() noexcept { return to_bool(cpu_features() & cpu_feature::sha); }
 #endif
 
 /** This CPU has the AES-NI block cypher instruction set.
@@ -901,7 +901,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AES
 [[nodiscard]] constexpr bool has_aes() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_aes() noexcept { return to_bool(cpu_features() & cpu_feature::aes); }
+[[nodiscard]] inline bool has_aes() noexcept { return to_bool(cpu_features() & cpu_feature::aes); }
 #endif
 
 /** This CPU has the PCLMUL carry-less multiply instruction.
@@ -909,7 +909,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_AES
 [[nodiscard]] constexpr bool has_pclmul() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_pclmul() noexcept { return to_bool(cpu_features() & cpu_feature::pclmul); }
+[[nodiscard]] inline bool has_pclmul() noexcept { return to_bool(cpu_features() & cpu_feature::pclmul); }
 #endif
 
 /** This CPU has the RDRAND on-chip random number generator instruction.
@@ -917,7 +917,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_RDRND
 [[nodiscard]] constexpr bool has_rdrnd() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_rdrnd() noexcept { return to_bool(cpu_features() & cpu_feature::rdrnd); }
+[[nodiscard]] inline bool has_rdrnd() noexcept { return to_bool(cpu_features() & cpu_feature::rdrnd); }
 #endif
 
 /** This CPU has the RDSEED access to the conditioned on-chip entropy.
@@ -925,7 +925,7 @@ inline cpu_feature_mask const cpu_features = detail::cpu_features_init();
 #if HI_HAS_RDSEED
 [[nodiscard]] constexpr bool has_rdseed() noexcept { return true; }
 #else
-[[nodiscard]] hi_inline bool has_rdseed() noexcept { return to_bool(cpu_features() & cpu_feature::rdseed); }
+[[nodiscard]] inline bool has_rdseed() noexcept { return to_bool(cpu_features() & cpu_feature::rdseed); }
 #endif
 
 // clang-format on

@@ -179,7 +179,7 @@ struct std::hash<hi::detail::text_style_impl> {
 
 hi_export namespace hi::inline v1 {
 namespace detail {
-hi_inline auto text_styles = stable_set<text_style_impl>{};
+inline auto text_styles = stable_set<text_style_impl>{};
 }
 
 class text_style {

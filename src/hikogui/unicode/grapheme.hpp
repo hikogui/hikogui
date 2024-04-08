@@ -147,7 +147,7 @@ private:
     std::unordered_map<std::u32string, uint32_t> _indices = {};
 };
 
-hi_inline long_grapheme_table long_graphemes = {};
+inline long_grapheme_table long_graphemes = {};
 
 } // namespace detail
 

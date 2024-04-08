@@ -18,7 +18,7 @@ inline namespace v1 {
  * @return A runtime-depended boolean to make sure the function is started
  *         before main.
  */
-hi_inline void start_console() noexcept
+inline void start_console() noexcept
 {
     auto out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 

@@ -5,9 +5,9 @@
 #pragma once
 
 #include "xorshift128p.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <iterator>
 #include <exception>
 

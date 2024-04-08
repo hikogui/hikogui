@@ -15,17 +15,17 @@ hi_export_module(hikogui.GUI : widget_id);
 
 hi_export namespace hi { inline namespace v1 {
 namespace detail {
-hi_inline id_factory<uint32_t> widget_id_factory;
+inline id_factory<uint32_t> widget_id_factory;
 }
 
 enum class widget_id : uint32_t {};
 
-[[nodiscard]] hi_inline widget_id make_widget_id() noexcept
+[[nodiscard]] inline widget_id make_widget_id() noexcept
 {
     return static_cast<widget_id>(detail::widget_id_factory.acquire());
 }
 
-hi_inline void release_widget_id(widget_id id) noexcept
+inline void release_widget_id(widget_id id) noexcept
 {
     detail::widget_id_factory.release(std::to_underlying(id));
 }

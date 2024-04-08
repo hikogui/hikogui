@@ -629,7 +629,7 @@ unicode_LB_width(unicode_break_vector const& opportunities, std::vector<float> c
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename CodePointFunc>
-[[nodiscard]] hi_inline unicode_break_vector
+[[nodiscard]] inline unicode_break_vector
 unicode_line_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));

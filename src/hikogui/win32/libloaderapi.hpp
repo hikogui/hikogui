@@ -5,18 +5,18 @@
 #pragma once
 
 #include "../win32_headers.hpp"
-#include "base.hpp"
+#include "win32_error_intf.hpp"
 #include <expected>
 #include <string>
 #include <system_error>
 #include <filesystem>
 
-hi_export_module(hikogui.win32.libloaderapi);
+hi_export_module(hikogui.win32 : libloaderapi);
 
 hi_export namespace hi {
 inline namespace v1 {
 
-[[nodiscard]] hi_inline std::expected<std::filesystem::path, win32_error> win32_GetModuleFileName(HMODULE module_handle = NULL) noexcept
+[[nodiscard]] inline std::expected<std::filesystem::path, win32_error> win32_GetModuleFileName(HMODULE module_handle = NULL) noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256

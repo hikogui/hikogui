@@ -13,7 +13,7 @@ hi_export_module(hikogui.audio.audio_stream_format_win32);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_export [[nodiscard]] hi_inline bool win32_use_extensible(audio_stream_format x) noexcept{
+hi_export [[nodiscard]] inline bool win32_use_extensible(audio_stream_format x) noexcept{
     if (to_bool(x.speaker_mapping)) {
         // If we have an non-direct speaker mapping we MUST use extensible as it requires the
         // extra dwChannelMask field.
@@ -23,7 +23,7 @@ hi_export [[nodiscard]] hi_inline bool win32_use_extensible(audio_stream_format 
     return false;
 }
 
-hi_export [[nodiscard]] hi_inline WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format, bool extensible) noexcept{
+hi_export [[nodiscard]] inline WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format, bool extensible) noexcept{
     hi_axiom(stream_format.holds_invariant());
     hi_axiom(not win32_use_extensible(stream_format) or extensible);
 
@@ -53,7 +53,7 @@ hi_export [[nodiscard]] hi_inline WAVEFORMATEXTENSIBLE audio_stream_format_to_wi
     return r;
 }
 
-hi_export [[nodiscard]] hi_inline audio_stream_format audio_stream_format_from_win32(WAVEFORMATEXTENSIBLE const& wave_format){
+hi_export [[nodiscard]] inline audio_stream_format audio_stream_format_from_win32(WAVEFORMATEXTENSIBLE const& wave_format){
     auto r = audio_stream_format{};
 
     hi_check(wave_format.Format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
@@ -87,7 +87,7 @@ hi_export [[nodiscard]] hi_inline audio_stream_format audio_stream_format_from_w
     return r;
 }
 
-hi_export [[nodiscard]] hi_inline audio_stream_format audio_stream_format_from_win32(WAVEFORMATEX const& wave_format){
+hi_export [[nodiscard]] inline audio_stream_format audio_stream_format_from_win32(WAVEFORMATEX const& wave_format){
     auto r = audio_stream_format{};
     hi_check(wave_format.wBitsPerSample > 0, "wBitsPerSample is zero");
     hi_check(wave_format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");

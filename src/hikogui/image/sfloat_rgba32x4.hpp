@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "../SIMD/SIMD.hpp"
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <algorithm>
 #include <array>
 #include <bit>

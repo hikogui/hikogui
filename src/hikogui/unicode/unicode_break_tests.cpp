@@ -77,7 +77,7 @@ static hi::generator<test_type> parse_tests(std::filesystem::path filename)
 
 TEST_CASE(grapheme_break)
 {
-    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "GraphemeBreakTest.txt")) {
+    for (auto const& test : parse_tests(hi::library_test_data_dir() / "GraphemeBreakTest.txt")) {
         auto const result = hi::unicode_grapheme_break(test.code_points.begin(), test.code_points.end());
 
         REQUIRE(test.expected == result, test.comment);
@@ -86,7 +86,7 @@ TEST_CASE(grapheme_break)
 
 TEST_CASE(word_break)
 {
-    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "WordBreakTest.txt")) {
+    for (auto const& test : parse_tests(hi::library_test_data_dir() / "WordBreakTest.txt")) {
         auto const result =
             hi::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](auto const code_point) -> decltype(auto) {
                 return code_point;
@@ -98,7 +98,7 @@ TEST_CASE(word_break)
 
 TEST_CASE(sentence_break)
 {
-    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "SentenceBreakTest.txt")) {
+    for (auto const& test : parse_tests(hi::library_test_data_dir() / "SentenceBreakTest.txt")) {
         auto const result =
             hi::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](auto const code_point) -> decltype(auto) {
                 return code_point;
@@ -110,7 +110,7 @@ TEST_CASE(sentence_break)
 
 TEST_CASE(line_break)
 {
-    for (auto const& test : parse_tests(hi::library_source_dir() / "tests" / "data" / "LineBreakTest.txt")) {
+    for (auto const& test : parse_tests(hi::library_test_data_dir() / "LineBreakTest.txt")) {
         auto result =
             hi::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](auto const code_point) -> decltype(auto) {
                 return code_point;

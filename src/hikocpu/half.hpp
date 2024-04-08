@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../macros.hpp"
+#include "macros.hpp"
 #include "half_to_float.hpp"
 #include "float_to_half.hpp"
 #include <cstdint>
@@ -14,14 +14,15 @@
 #include <numeric>
 #include <format>
 
-hi_export_module(hikogui.utility.half);
+hi_export_module(hikocpu : half);
 
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
 // static_cast here is used to extract bits and cause sign-extension.
 hi_warning_ignore_msvc(26472);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 struct half {
     uint16_t v = 0;
@@ -31,12 +32,14 @@ struct half {
     constexpr half(half&&) noexcept = default;
     constexpr half& operator=(half const&) noexcept = default;
     constexpr half& operator=(half&&) noexcept = default;
+    constexpr half(std::in_place_t, uint16_t v) noexcept : v(v) {}
 
     constexpr explicit half(float other) noexcept : v(float_to_half(other)) {}
-    constexpr explicit half(double other) noexcept : half(static_cast<float>(other)) {}
-    constexpr explicit half(long double other) noexcept : half(static_cast<float>(other)) {}
 
-    constexpr half(std::in_place_t, uint16_t v) noexcept : v(v) {}
+    constexpr operator float() const noexcept
+    {
+        return half_to_float(v);
+    }
 
     [[nodiscard]] constexpr uint16_t const& intrinsic() const noexcept
     {
@@ -54,28 +57,35 @@ struct half {
         return *this;
     }
 
-    constexpr operator float() const noexcept
-    {
-        return half_to_float(v);
-    }
-
     [[nodiscard]] std::size_t hash() const noexcept
     {
         return std::hash<uint16_t>{}(v);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(half const& lhs, half const& rhs) noexcept
+    template<typename LHS, typename RHS>
+    [[nodiscard]] constexpr friend bool operator==(LHS lhs, RHS rhs) noexcept requires requires {
+        static_cast<float>(lhs);
+        static_cast<float>(rhs);
+    }
     {
         return static_cast<float>(lhs) == static_cast<float>(rhs);
     }
 
-    [[nodiscard]] constexpr friend auto operator<=>(half const& lhs, half const& rhs) noexcept
+    template<typename LHS, typename RHS>
+    [[nodiscard]] constexpr friend auto operator<=>(LHS lhs, RHS rhs) noexcept requires requires {
+        static_cast<float>(lhs);
+        static_cast<float>(rhs);
+    }
     {
         return static_cast<float>(lhs) <=> static_cast<float>(rhs);
     }
 
 #define HI_X_binary_math_op(op) \
-    [[nodiscard]] constexpr friend half operator op(half const& lhs, half const& rhs) noexcept \
+    template<typename LHS, typename RHS> \
+    [[nodiscard]] constexpr friend float operator op(LHS lhs, RHS rhs) noexcept requires requires { \
+        static_cast<float>(lhs); \
+        static_cast<float>(rhs); \
+    } \
     { \
         return half{static_cast<float>(lhs) op static_cast<float>(rhs)}; \
     }
@@ -121,10 +131,10 @@ static_assert(std::is_trivially_destructible_v<half>);
 static_assert(requires(half a) { std::bit_cast<uint16_t>(a); });
 static_assert(requires(uint16_t a) { std::bit_cast<half>(a); });
 
-}} // namespace hi::inline v1
+} // namespace v1
+} // namespace hi::inline v1
 
 hi_export namespace std {
-
 template<>
 struct hash<::hi::half> {
     size_t operator()(::hi::half const& rhs) noexcept
@@ -212,7 +222,6 @@ struct numeric_limits<::hi::half> {
         return ::hi::half(std::in_place, 0x0001);
     }
 };
-
 }
 
 hi_warning_pop();

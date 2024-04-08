@@ -32,7 +32,6 @@
 #include "random/random.hpp" // export
 #include "security/security.hpp" // export
 #include "settings/settings.hpp" // export
-#include "SIMD/SIMD.hpp" // export
 #include "telemetry/telemetry.hpp" // export
 #include "text/text.hpp" // export
 #include "time/time.hpp" // export

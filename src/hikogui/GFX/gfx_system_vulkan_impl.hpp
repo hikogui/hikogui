@@ -8,7 +8,7 @@ hi_export_module(hikogui.GFX : gfx_system_impl);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_inline gfx_system::~gfx_system()
+inline gfx_system::~gfx_system()
 {
     auto const lock = std::scoped_lock(gfx_system_mutex);
 #ifndef NDEBUG
@@ -16,7 +16,7 @@ hi_inline gfx_system::~gfx_system()
 #endif
 }
 
-[[nodiscard]] hi_inline gfx_system& gfx_system::global()
+[[nodiscard]] inline gfx_system& gfx_system::global()
 {
     if (not detail::gfx_system_global) {
         detail::gfx_system_global = std::make_unique<gfx_system>();

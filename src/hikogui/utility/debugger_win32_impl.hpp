@@ -55,7 +55,7 @@ inline HANDLE jit_debug_handle = NULL;
  * @retval true The debugger has been attached.
  * @retval false No JIT debugger configured, or the user pressed cancel.
  */
-hi_inline bool launch_jit_debugger() noexcept
+inline bool launch_jit_debugger() noexcept
 {
     using namespace std::literals;
 
@@ -249,7 +249,7 @@ hi_inline bool launch_jit_debugger() noexcept
     // clang-format on
 }
 
-hi_inline LONG exception_handler(EXCEPTION_POINTERS *p) noexcept
+inline LONG exception_handler(EXCEPTION_POINTERS *p) noexcept
 {
     if (not is_debugable_exception(*p)) {
         return EXCEPTION_CONTINUE_SEARCH;
@@ -319,7 +319,7 @@ hi_inline LONG exception_handler(EXCEPTION_POINTERS *p) noexcept
 
 } // namespace detail
 
-hi_inline void enable_debugger() noexcept
+inline void enable_debugger() noexcept
 {
     // Disable error messages from the Windows CRT on std::terminate().
     _CrtSetReportMode(_CRT_WARN, 0);

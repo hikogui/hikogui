@@ -12,12 +12,12 @@
 #include "extent2.hpp"
 #include "point2.hpp"
 #include "point3.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../concurrency/thread.hpp" // XXX #616
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <concepts>
 #include <mutex>
 #include <exception>

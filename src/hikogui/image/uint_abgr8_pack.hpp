@@ -9,8 +9,8 @@
 #pragma once
 
 #include "../geometry/geometry.hpp"
-#include "../SIMD/SIMD.hpp"
 #include "../macros.hpp"
+#include <hikocpu/hikocpu.hpp>
 #include <algorithm>
 #include <array>
 #include <bit>

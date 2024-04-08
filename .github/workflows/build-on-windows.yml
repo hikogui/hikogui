@@ -51,8 +51,8 @@ jobs:
 
       # https://community.chocolatey.org/packages/ninja
       # https://community.chocolatey.org/packages/ccache
-      - name: 🔽 Install Ninja
-        run: choco install ninja ccache
+      #- name: 🔽 Install Ninja
+      #  run: choco install ninja ccache
 
       - name: 🛠️ Setup Visual Studio Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1
@@ -68,16 +68,16 @@ jobs:
 
       # Reminder: This step requires that the CMakePresets for CI contain
       # "CMAKE_CXX_COMPILER_LAUNCHER": "sccache".
-      - name: 🎯 Setup Build Cache
-        uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
-        with:
-          variant: sccache
-          key: win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
-          restore-keys: |
-            win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
-            win-ci-build-${{github.ref}}
-            win-ci-build-refs/heads/main
-            win-ci-build-
+      #- name: 🎯 Setup Build Cache
+      #  uses: hendrikmuhs/ccache-action@main # https://github.com/hendrikmuhs/ccache-action/
+      #  with:
+      #    variant: sccache
+      #    key: win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
+      #    restore-keys: |
+      #      win-ci-build-${{github.ref}}-${{env.MATRIX_ID}}
+      #      win-ci-build-${{github.ref}}
+      #      win-ci-build-refs/heads/main
+      #      win-ci-build-
 
       # Build Artifact Name: hikogui-0.3.0-0cda6a2-x64-windows-Debug-cl
       - name: ✏ Fetch Versioning Data & Set Artifact Name
@@ -119,7 +119,7 @@ jobs:
     
       - name: ✔ ❌✔️ Hiko-Test Debug
         working-directory: ${{env.BUILD_DIR}}
-        run: Debug\hikogui_htests-deb "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
+        run: Debug\hikogui_htests-dbg "--gtest_output=xml:${{github.workspace}}\result_htests_deb_${{env.MATRIX_ID}}.xml"
 
       - name: 📦 CMake ➔ Install Debug
         working-directory: ${{env.BUILD_DIR}}
@@ -171,12 +171,12 @@ jobs:
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
           --working_dir=${{env.BUILD_DIR}} ^
-          -- Debug\hikogui_htests-deb
+          -- ${{env.BUILD_DIR}}\Debug\hikogui_htests-dbg
 
       # retry uploading to codecov with limit to workaround flaky upload issue
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io (Debug)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.MATRIX_ID == 'cl-x86-64'
-        uses: wandalen/wretry.action@v1 # https://github.com/wandalen/wretry.action
+        uses: wandalen/wretry.action@v3 # https://github.com/wandalen/wretry.action
         with:
           attempt_limit: 10
           action: codecov/codecov-action@v3 # https://github.com/codecov/codecov-action

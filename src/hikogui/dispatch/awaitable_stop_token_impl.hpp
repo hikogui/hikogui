@@ -16,7 +16,7 @@ hi_export_module(hikogui.dispatch : awaitable_stop_token_impl);
 
 hi_export namespace hi::inline v1 {
 
-hi_inline void awaitable_stop_token::callback_wrapper::operator()() noexcept
+inline void awaitable_stop_token::callback_wrapper::operator()() noexcept
 {
     // Stop tokens are specifically designed to be called from a different thread,
     // so we will post the function to the same thread as the co_await.
@@ -27,7 +27,7 @@ hi_inline void awaitable_stop_token::callback_wrapper::operator()() noexcept
     });
 }
 
-hi_inline void awaitable_stop_token::await_suspend(std::coroutine_handle<> handle) noexcept
+inline void awaitable_stop_token::await_suspend(std::coroutine_handle<> handle) noexcept
 {
     _stop_callback_ptr = std::make_unique<std::stop_callback<callback_wrapper>>(_stop_token, callback_wrapper{&loop::local(), handle});
 }

@@ -165,7 +165,7 @@ hi::task<> main_window(my_preferences& preferences)
     auto& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
-    auto const& hello_world_button = top->content().emplace_bottom<async_widget>([] { hi_log_info("hello world"); }, txt("Hello world AV"));
+    top->content().emplace_bottom<async_widget>([] { hi_log_info("hello world"); }, txt("Hello world AV"));
 
     auto const& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
     auto const& abort_button = top->content().emplace_bottom<momentary_button_widget>(txt("abort"));
@@ -219,7 +219,7 @@ int hi_main(int argc, char *argv[])
     log::start_subsystem(global_state_type::log_level_info);
     start_render_doc();
 
-    auto preferences = my_preferences(preferences_file());
+    auto preferences = my_preferences(get_path(data_dir(), "preferences.json"));
 
     theme_book::global().selected_theme = preferences.selected_theme;
 

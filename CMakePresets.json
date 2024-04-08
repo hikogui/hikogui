@@ -56,8 +56,10 @@
       "inherits": "x64-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-	      "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_C_COMPILER": "cl"
+	      "CMAKE_CXX_COMPILER": "cl"
+      },
+      "environment": {
+        "CXXFLAGS": "/arch:AVX2"
       },
       "environment": {
         "CXXFLAGS": "/arch:AVX2"
@@ -83,7 +85,6 @@
       "generator": "Ninja",
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "cl",
-        "CMAKE_C_COMPILER": "cl",
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "environment": {
@@ -101,8 +102,7 @@
       "inherits": "x64-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-	      "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_COMPILER": "clang"
+	      "CMAKE_CXX_COMPILER": "clang++"
       },
       "environment": {
         "CXXFLAGS": "-march=x86-64-v3"

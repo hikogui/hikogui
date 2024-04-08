@@ -224,13 +224,13 @@ private:
 };
 
 template<typename ResultType, typename... ArgTypes>
-hi_inline weak_callback<ResultType(ArgTypes...)>::weak_callback(callback<ResultType(ArgTypes...)> const& other) noexcept :
+inline weak_callback<ResultType(ArgTypes...)>::weak_callback(callback<ResultType(ArgTypes...)> const& other) noexcept :
     _impl(other._impl)
 {
 }
 
 template<typename ResultType, typename... ArgTypes>
-[[nodiscard]] hi_inline callback<ResultType(ArgTypes...)> weak_callback<ResultType(ArgTypes...)>::lock() const noexcept
+[[nodiscard]] inline callback<ResultType(ArgTypes...)> weak_callback<ResultType(ArgTypes...)>::lock() const noexcept
 {
     return {_impl.lock()};
 }

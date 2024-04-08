@@ -5,17 +5,17 @@
 #pragma once
 
 #include "../win32_headers.hpp"
-#include "base.hpp"
+#include "win32_error_intf.hpp"
 #include <expected>
 #include <string>
 #include <system_error>
 
-hi_export_module(hikogui.win32.processthreadsapi);
+hi_export_module(hikogui.win32 : processthreadsapi);
 
 hi_export namespace hi {
 inline namespace v1 {
 
-[[nodiscard]] hi_inline std::expected<uint32_t, win32_error> win32_GetExitCodeProcess(HANDLE process_handle) noexcept
+[[nodiscard]] inline std::expected<uint32_t, win32_error> win32_GetExitCodeProcess(HANDLE process_handle) noexcept
 {
     DWORD exit_code = 0;
     if (GetExitCodeProcess(process_handle, &exit_code)) {
@@ -30,7 +30,7 @@ inline namespace v1 {
 }
 
 template<typename StartupInfo>
-[[nodiscard]] hi_inline std::expected<PROCESS_INFORMATION, win32_error> win32_CreateProcess(
+[[nodiscard]] inline std::expected<PROCESS_INFORMATION, win32_error> win32_CreateProcess(
     std::optional<std::string> application_name,
     std::optional<std::string> command_line,
     SECURITY_ATTRIBUTES const *process_attributes,

@@ -16,12 +16,12 @@ hi_export_module(hikogui.metadata.metadata_application);
 
 hi_export namespace hi { inline namespace v1 {
 
-hi_inline std::optional<std::string> _application_name = std::nullopt;
-hi_inline std::optional<std::string> _application_slug = std::nullopt;
-hi_inline std::optional<std::string> _application_vendor = std::nullopt;
-hi_inline std::optional<semantic_version> _application_version = std::nullopt;
+inline std::optional<std::string> _application_name = std::nullopt;
+inline std::optional<std::string> _application_slug = std::nullopt;
+inline std::optional<std::string> _application_vendor = std::nullopt;
+inline std::optional<semantic_version> _application_version = std::nullopt;
 
-hi_export [[nodiscard]] hi_inline std::string const& get_application_name()
+hi_export [[nodiscard]] inline std::string const& get_application_name()
 {
     initialize();
 
@@ -32,7 +32,7 @@ hi_export [[nodiscard]] hi_inline std::string const& get_application_name()
     }
 }
 
-hi_export [[nodiscard]] hi_inline std::string const& get_application_slug()
+hi_export [[nodiscard]] inline std::string const& get_application_slug()
 {
     initialize();
 
@@ -43,7 +43,7 @@ hi_export [[nodiscard]] hi_inline std::string const& get_application_slug()
     }
 }
 
-hi_export [[nodiscard]] hi_inline std::string const& get_application_vendor()
+hi_export [[nodiscard]] inline std::string const& get_application_vendor()
 {
     initialize();
 
@@ -54,7 +54,7 @@ hi_export [[nodiscard]] hi_inline std::string const& get_application_vendor()
     }
 }
 
-hi_export [[nodiscard]] hi_inline semantic_version const& get_application_version()
+hi_export [[nodiscard]] inline semantic_version const& get_application_version()
 {
     initialize();
 
@@ -65,7 +65,7 @@ hi_export [[nodiscard]] hi_inline semantic_version const& get_application_versio
     }
 }
 
-hi_export hi_inline void set_application_name(std::string_view name, std::string_view slug)
+hi_export inline void set_application_name(std::string_view name, std::string_view slug)
 {
     initialize();
 
@@ -86,14 +86,14 @@ hi_export hi_inline void set_application_name(std::string_view name, std::string
     _application_slug = slug;
 }
 
-hi_export hi_inline void set_application_name(std::string_view name)
+hi_export inline void set_application_name(std::string_view name)
 {
     initialize();
 
     return set_application_name(name, make_slug(name));
 }
 
-hi_export hi_inline void set_application_vendor(std::string_view name)
+hi_export inline void set_application_vendor(std::string_view name)
 {
     initialize();
 
@@ -107,14 +107,14 @@ hi_export hi_inline void set_application_vendor(std::string_view name)
     _application_vendor = name;
 }
 
-hi_export hi_inline void set_application_version(semantic_version version) noexcept
+hi_export inline void set_application_version(semantic_version version) noexcept
 {
     initialize();
 
     _application_version = version;
 }
 
-hi_export hi_inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
+hi_export inline void set_application_version(int major, int minor = 0, int patch = 0) noexcept
 {
     initialize();
 

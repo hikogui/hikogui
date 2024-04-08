@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../macros.hpp"
+#include "macros.hpp"
 
-hi_export_module(hikogui.utility.cpu_id);
+hi_export_module(hikocpu : cpu_id);
 

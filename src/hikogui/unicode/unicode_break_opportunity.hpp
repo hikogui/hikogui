@@ -26,7 +26,7 @@ using unicode_break_vector = std::vector<unicode_break_opportunity>;
 using unicode_break_iterator = unicode_break_vector::iterator;
 using unicode_break_const_iterator = unicode_break_vector::const_iterator;
 
-hi_inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
+inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
     auto const *s = [&] () {
         switch (rhs) {
             using enum unicode_break_opportunity;

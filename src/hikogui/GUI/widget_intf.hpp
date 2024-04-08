@@ -320,7 +320,7 @@ protected:
     widget_layout _layout;
 };
 
-hi_inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
+inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
 {
     hi_assert_not_null(start);
 
@@ -335,7 +335,7 @@ hi_inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_inv
     return nullptr;
 }
 
-hi_inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible)
+inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible)
 {
     if (auto r = get_if(std::addressof(start), id, include_invisible); r != nullptr) {
         return *r;

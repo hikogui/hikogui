@@ -6,17 +6,17 @@
 
 #include "../win32_headers.hpp"
 #include "../macros.hpp"
-#include "base.hpp"
+#include "win32_error_intf.hpp"
 #include <expected>
 #include <string>
 #include <string_view>
 #include <system_error>
 
-hi_export_module(hikogui.win32.winuser);
+hi_export_module(hikogui.win32 : winuser);
 
 namespace hi { inline namespace v1 {
 
-hi_inline std::expected<UINT, win32_error> win32_MessageBox(HWND handle, std::string_view text, std::string_view caption, UINT type) noexcept
+inline std::expected<UINT, win32_error> win32_MessageBox(HWND handle, std::string_view text, std::string_view caption, UINT type) noexcept
 {
     auto const wtext = win32_MultiByteToWideChar(text);
     if (not wtext) {
