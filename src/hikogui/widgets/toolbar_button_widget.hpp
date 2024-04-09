@@ -10,7 +10,6 @@
 
 #include "abstract_button_widget.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <stop_token>
 
 hi_export_module(hikogui.widgets.toolbar_button_widget);

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include <mp-units/math.h>
 #include <algorithm>
 #include <cmath>
 
@@ -93,11 +94,14 @@ hi_export struct font_metrics {
         return r;
     }
 
-    /** Round a scale so that the scaled x-height is an integral.
+    /** Round to font size in pixels so that the scaled x-height is an integral.
      */
-    [[nodiscard]] float round_scale(float size) const noexcept
+    template<mp_units::QuantityOf<font_size> FontSize>
+    [[nodiscard]] auto round_size(FontSize size) const noexcept
     {
-        return std::round(x_height * size) / x_height;
+        auto const x_height_in_pixel = mp_units::round<size.unit>(to_length(x_height * em, size));
+        auto const rounded_size = x_height_in_pixel / x_height;
+        return rounded_size;
     }
 };
 

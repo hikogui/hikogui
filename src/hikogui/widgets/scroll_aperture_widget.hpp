@@ -10,7 +10,6 @@
 
 #include "widget.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <coroutine>
 
 hi_export_module(hikogui.widgets.scroll_aperture_widget);

@@ -11,7 +11,6 @@
 #include "widget.hpp"
 #include "radio_delegate.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 
 hi_export_module(hikogui.widgets.toolbar_tab_button_widget);
 

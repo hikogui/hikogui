@@ -12,7 +12,6 @@
 #include "../layout/layout.hpp"
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <ranges>
 #include <coroutine>

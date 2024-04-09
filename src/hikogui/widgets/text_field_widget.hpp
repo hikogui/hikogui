@@ -14,7 +14,6 @@
 #include "scroll_widget.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>

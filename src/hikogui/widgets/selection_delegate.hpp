@@ -17,7 +17,6 @@
 #include "../macros.hpp"
 #include "radio_delegate.hpp"
 #include "radio_widget.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <functional>
 #include <vector>

@@ -4,7 +4,6 @@
 
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <numbers>
 
 enum class drawing_type {

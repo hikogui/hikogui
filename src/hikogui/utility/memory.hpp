@@ -10,7 +10,6 @@
 #include "exception.hpp"
 #include "terminate.hpp"
 #include "cast.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <concepts>
 #include <memory>
 #include <vector>

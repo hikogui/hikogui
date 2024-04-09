@@ -5,7 +5,6 @@
 #include "triangle.hpp"
 #include "hikogui/hikogui.hpp"
 #include "hikogui/crt.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <ranges>
 #include <cassert>
 

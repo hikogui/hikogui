@@ -11,7 +11,6 @@
 #include "widget.hpp"
 #include "../font/font.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>

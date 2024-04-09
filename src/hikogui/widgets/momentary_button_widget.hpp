@@ -10,7 +10,6 @@
 
 #include "abstract_button_widget.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 
 hi_export_module(hikogui.widgets.momentary_button_widget);
 

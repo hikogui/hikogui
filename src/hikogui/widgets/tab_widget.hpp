@@ -12,7 +12,6 @@
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <coroutine>
 
 hi_export_module(hikogui.widgets.tab_widget);

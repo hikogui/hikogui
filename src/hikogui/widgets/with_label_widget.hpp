@@ -18,7 +18,6 @@
 #include "../l10n/l10n.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>

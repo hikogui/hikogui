@@ -26,7 +26,7 @@ public:
 
     /** The scale to resize the font's size to match the physical display.
      */
-    float dpi_scale = 1.0f;
+    pixel_density_in_ppi ppi;
 
     /** The glyph representing one or more graphemes.
      * The glyph will change during shaping of the text:
@@ -102,9 +102,9 @@ public:
      */
     iso_15924 script;
 
-    /** The scale of the glyph for displaying on the screen.
+    /** The font size in pixels, rounded so that the x-height is rounded to the nearest pixel.
      */
-    float scale = 1.0f;
+    font_size_in_pixels font_size;
 
     /** The width used for this grapheme when folding lines.
      *
@@ -125,10 +125,10 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, float dpi_scale) noexcept :
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, pixel_density_in_ppi ppi) noexcept :
         grapheme(grapheme),
         style(style),
-        dpi_scale(dpi_scale),
+        ppi(ppi),
         line_nr(std::numeric_limits<size_t>::max()),
         column_nr(std::numeric_limits<size_t>::max()),
         general_category(ucd_get_general_category(grapheme.starter()))
@@ -182,7 +182,7 @@ public:
     [[nodiscard]] hi::font_metrics font_metrics() const noexcept
     {
         hi_axiom_not_null(glyphs.font);
-        return scale * glyphs.font->metrics;
+        return font_size.numerical_value_in(pixel) * glyphs.font->metrics;
     }
 
     [[nodiscard]] friend bool operator==(text_shaper_char const& lhs, char32_t const& rhs) noexcept
@@ -202,7 +202,7 @@ private:
     {
         glyphs = std::move(new_glyphs);
         hi_axiom_not_null(glyphs.font);
-        scale = glyphs.get_font_metrics().round_scale(dpi_scale * style->size);
+        font_size = glyphs.get_font_metrics().round_size(to_pixel(style->size, ppi));
         metrics = scale * glyphs.get_starter_metrics();
     }
 };

@@ -17,7 +17,6 @@
 #include "../container/container.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 #include <memory>
 #include <string>
 #include <array>

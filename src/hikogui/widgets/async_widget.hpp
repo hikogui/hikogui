@@ -14,7 +14,6 @@
 #include "async_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
-#include <gsl-lite/gsl-lite.hpp>
 
 hi_export_module(hikogui.widgets.async_widget);
 

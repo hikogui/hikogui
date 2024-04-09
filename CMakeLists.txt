@@ -77,25 +77,12 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(hikotest)
 endif()
 
-if(VCPKG_TOOLCHAIN)
-    find_package(gsl-lite)
-else()
-    FetchContent_Declare(gsl-lite GIT_REPOSITORY https://github.com/gsl-lite/gsl-lite GIT_TAG v0.41.0)
-    FetchContent_MakeAvailable(gsl-lite)
-endif()
-
-#set(MP_UNITS_AS_SYSTEM_HEADERS ON CACHE INTERNAL "mp-units uses system headers")
-set(MP_UNITS_USE_LIBFMT OFF CACHE INTERNAL "mp-units uses fmt library")
-if(VCPKG_TOOLCHAIN)
-    find_package(mp-units)
-else()
-    FetchContent_Declare(mp-units GIT_REPOSITORY https://github.com/mpusz/mp-units GIT_TAG v2.1.0)
-    FetchContent_GetProperties(mp-units)
-    if(NOT mp-units_POPULATED)
-        FetchContent_Populate(mp-units)
-    endif()
-    add_subdirectory(${mp-units_SOURCE_DIR}/src)
-endif()
+#if(VCPKG_TOOLCHAIN)
+#    find_package(gsl-lite)
+#else()
+#    FetchContent_Declare(gsl-lite GIT_REPOSITORY https://github.com/gsl-lite/gsl-lite GIT_TAG v0.41.0)
+#    FetchContent_MakeAvailable(gsl-lite)
+#endif()
 
 #
 # Vulkan SDK Headers
@@ -206,8 +193,7 @@ endif()
 target_link_libraries(hikogui ${HI_SCOPE} ${Vulkan_LIBRARIES})
 target_include_directories(hikogui ${HI_SCOPE} ${Vulkan_INCLUDE_DIRS})
 
-target_link_libraries(hikogui ${HI_SCOPE} mp-units::mp-units)
-target_link_libraries(hikogui ${HI_SCOPE} gsl::gsl-lite-v1)
+#target_link_libraries(hikogui ${HI_SCOPE} gsl::gsl-lite-v1)
 
 # HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
 # This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
