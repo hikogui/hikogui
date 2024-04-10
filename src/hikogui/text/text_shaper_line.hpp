@@ -230,7 +230,7 @@ private:
         }
 
         auto result = font.shape_run(language, script, run);
-        result.scale_and_offset(char_it->scale);
+        result.scale_and_offset(char_it->font_size.in(pixels));
         hi_axiom(result.advances.size() == run.size());
         hi_axiom(result.glyph_count.size() == run.size());
 
@@ -259,7 +259,7 @@ private:
 
             auto const same_font = start_char_it->glyphs.font == char_it->glyphs.font;
             auto const same_style = start_char_it->style == char_it->style;
-            auto const same_size = start_char_it->scale == char_it->scale;
+            auto const same_size = start_char_it->font_size == char_it->font_size;
             auto const same_language = true;
             auto const same_script = start_char_it->script == char_it->script;
 

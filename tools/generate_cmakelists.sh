@@ -1,7 +1,5 @@
 #!/bin/bash
 
-UCDDIR="data/ucd"
-
 if [ ! -e tools/generate_cmakelists.py ]
 then
     echo "This script must be run from the HikoGUI root"
