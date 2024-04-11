@@ -77,6 +77,13 @@ if(BUILD_TESTING)
     FetchContent_MakeAvailable(hikotest)
 endif()
 
+if(VCPKG_TOOLCHAIN)
+    find_package(ms-gsl)
+else()
+    FetchContent_Declare(GSL GIT_REPOSITORY https://github.com/microsoft/GSL GIT_TAG v4.0.0)
+    FetchContent_MakeAvailable(GSL)
+endif()
+
 #
 # Vulkan SDK Headers
 #
@@ -185,6 +192,8 @@ endif()
 # Add the Vulkan libraries.
 target_link_libraries(hikogui ${HI_SCOPE} ${Vulkan_LIBRARIES})
 target_include_directories(hikogui ${HI_SCOPE} ${Vulkan_INCLUDE_DIRS})
+
+target_link_libraries(hikogui ${HI_SCOPE} Microsoft.GSL::GSL)
 
 # HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
 # This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
@@ -492,7 +501,7 @@ set(INSTALL_RESOURCEDIR "${CMAKE_INSTALL_DATADIR}/hikogui/resources")
 set(INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/hikogui/CMake")
 set(INSTALL_MODULEDIR "module")
 
-install(TARGETS hikogui EXPORT hikogui
+install(TARGETS hikogui GSL EXPORT hikogui
     FILE_SET hikogui_include_files
     FILE_SET hikogui_generated_include_files
     FILE_SET CXX_MODULES DESTINATION "${INSTALL_MODULEDIR}"

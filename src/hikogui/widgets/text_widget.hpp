@@ -85,7 +85,7 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(not_null<widget_intf const*> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    text_widget(widget_intf const* parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), delegate(std::move(delegate))
     {
         set_mode(widget_mode::select);
@@ -141,7 +141,7 @@ public:
 
     template<text_widget_attribute... Attributes>
     text_widget(
-        not_null<widget_intf const*> parent,
+        widget_intf const* parent,
         std::shared_ptr<delegate_type> delegate,
         Attributes&&... attributes) noexcept :
         text_widget(parent, std::move(delegate))
@@ -157,7 +157,7 @@ public:
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Text, text_widget_attribute... Attributes>
     text_widget(
-        not_null<widget_intf const*> parent,
+        widget_intf const* parent,
         Text&& text,
         Attributes&&... attributes) noexcept requires requires { make_default_text_delegate(std::forward<Text>(text)); }
         : text_widget(parent, make_default_text_delegate(std::forward<Text>(text)), std::forward<Attributes>(attributes)...)
@@ -181,7 +181,7 @@ public:
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
-        _shaped_text = text_shaper{_text_cache, actual_text_style, theme().scale, alignment_, os_settings::left_to_right()};
+        _shaped_text = text_shaper{_text_cache, actual_text_style, theme().ppi, alignment_, os_settings::left_to_right()};
 
         auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         auto const shaped_text_size = shaped_text_rectangle.size();

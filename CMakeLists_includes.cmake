@@ -480,7 +480,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/utility/math.hpp
     src/hikogui/utility/memory.hpp
     src/hikogui/utility/misc.hpp
-    src/hikogui/utility/not_null.hpp
     src/hikogui/utility/numbers.hpp
     src/hikogui/utility/policy.hpp
     src/hikogui/utility/reflection.hpp

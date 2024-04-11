@@ -49,7 +49,7 @@ public:
     observer<alignment> alignment = hi::alignment::middle_center();
 
     template<icon_widget_attribute... Attributes>
-    icon_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept :
+    icon_widget(widget_intf const* parent, Attributes&&...attributes) noexcept :
         icon_widget(parent)
     {
         set_attributes(std::forward<Attributes>(attributes)...);
@@ -98,19 +98,19 @@ public:
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+                    _glyph.get_metrics().bounding_rectangle.size() * in_pixels(theme().text_style(semantic_text_style::label)->size, theme().ppi);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+                    _glyph.get_metrics().bounding_rectangle.size() * in_pixels(theme().text_style(semantic_text_style::label)->size, theme().ppi);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+                    _glyph.get_metrics().bounding_rectangle.size() * in_pixels(theme().text_style(semantic_text_style::label)->size, theme().ppi);
             }
         }
 
@@ -178,7 +178,7 @@ private:
 
     callback<void(hi::icon)> _icon_cbt;
 
-    icon_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    icon_widget(widget_intf const* parent) noexcept : super(parent)
     {
         _icon_cbt = icon.subscribe([this](auto...) {
             _icon_has_modified = true;

@@ -122,10 +122,10 @@ public:
 
     /** The delegate that controls the button widget.
      */
-    not_null<std::shared_ptr<delegate_type>> delegate;
+    std::shared_ptr<delegate_type> delegate;
 
     hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_radio_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad_not_null<default_radio_delegate>);
+    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad<default_radio_delegate>);
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
     ~toolbar_tab_button_widget()
@@ -143,9 +143,9 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     toolbar_tab_button_widget(
-        not_null<widget_intf const *> parent,
+        widget_intf const* parent,
         attributes_type attributes,
-        not_null<std::shared_ptr<delegate_type>> delegate) noexcept :
+        std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         _on_label_widget = std::make_unique<label_widget>(
@@ -153,6 +153,7 @@ public:
         _off_label_widget = std::make_unique<label_widget>(
             this, this->attributes.off_label, this->attributes.alignment, this->attributes.text_style);
 
+        hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
@@ -167,7 +168,7 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    toolbar_tab_button_widget(not_null<widget_intf const *> parent, Args&&...args)
+    toolbar_tab_button_widget(widget_intf const* parent, Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
         toolbar_tab_button_widget(

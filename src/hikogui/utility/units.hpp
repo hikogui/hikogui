@@ -6,196 +6,127 @@
 
 #include "../macros.hpp"
 #include "cast.hpp"
+#ifdef pascal
+#undef pascal
+#endif
+#include <hikothird/au.hh>
 #include <ratio>
 #include <concepts>
 #include <compare>
 
 hi_export_module(hikogui.utility.units);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
-template<typename Tag, typename T, typename Ratio = std::ratio<1>>
-class unit {
-public:
-    using value_type = T;
-    using ratio = Ratio;
+struct PixelLengthDim : au::base_dim::BaseDimension<1712674722> {};
+struct RelativeFontLengthDim : au::base_dim::BaseDimension<1712674734> {};
+struct DeviceIndependentPixelLengthDim : au::base_dim::BaseDimension<1712760807> {};
 
-    constexpr unit(unit const&) noexcept = default;
-    constexpr unit(unit&&) noexcept = default;
-    constexpr unit& operator=(unit const&) noexcept = default;
-    constexpr unit& operator=(unit&&) noexcept = default;
-
-    constexpr explicit unit(value_type value) noexcept : _value(value) {}
-
-    template<typename OtherT, typename OtherRatio>
-    constexpr explicit unit(unit<Tag, OtherT, OtherRatio> const& other) noexcept
-        requires(not std::is_same_v<unit<Tag, OtherT, OtherRatio>, unit>)
-    {
-        using conversion = std::ratio_divide<Ratio, OtherRatio>;
-
-        auto tmp = wide_cast<std::common_type_t<T, OtherT>>(other.count());
-        tmp *= conversion::den;
-        tmp /= conversion::num;
-        _value = narrow_cast<T>(tmp);
-    }
-
-    template<typename OtherT, typename OtherRatio>
-    constexpr unit& operator=(unit<Tag, OtherT, OtherRatio> const& other) noexcept
-        requires(not std::is_same_v<unit<Tag, OtherT, OtherRatio>, unit>)
-    {
-        using conversion = std::ratio_divide<Ratio, OtherRatio>;
-
-        auto tmp = wide_cast<std::common_type_t<T, OtherT>>(other.count());
-        tmp *= conversion::den;
-        tmp /= conversion::num;
-        _value = narrow_cast<T>(tmp);
-        return *this;
-    }
-
-    [[nodiscard]] constexpr value_type count() const noexcept
-    {
-        return _value;
-    }
-
-    [[nodiscard]] constexpr unit operator*(value_type const& rhs) const noexcept
-    {
-        return unit{count() * rhs};
-    }
-    
-    [[nodiscard]] constexpr unit operator/(value_type const& rhs) const noexcept
-    {
-        return unit{count() / rhs};
-    }
-
-    [[nodiscard]] constexpr unit& operator+=(unit const& rhs) noexcept
-    {
-        _value += rhs.count();
-        return *this;
-    }
-
-    [[nodiscard]] constexpr unit& operator-=(unit const& rhs) noexcept
-    {
-        _value -= rhs.count();
-        return *this;
-    }
-
-    [[nodiscard]] constexpr unit& operator*=(value_type const& rhs) noexcept
-    {
-        _value *= rhs;
-        return *this;
-    }
-
-    [[nodiscard]] constexpr unit& operator/=(value_type const& rhs) noexcept
-    {
-        _value /= rhs;
-        return *this;
-    }
-
-private:
-    value_type _value;
+struct Pixels : au::UnitImpl<au::Dimension<PixelLengthDim>> {
+    static constexpr inline const char label[] = "px";
 };
+constexpr auto pixel = au::SingularNameFor<Pixels>{};
+constexpr auto pixels = au::QuantityMaker<Pixels>{};
+constexpr auto pixels_pt = au::QuantityPointMaker<Pixels>{};
+using pixels_d = au::Quantity<Pixels, double>;
+using pixels_f = au::Quantity<Pixels, float>;
+using pixels_i = au::Quantity<Pixels, int>;
 
-}} // namespace hi::v1
-
-template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
-struct std::common_type<hi::unit<Tag, T1, Ratio1>, hi::unit<Tag, T2, Ratio2>> {
-    // clang-format off
-    using type = hi::unit<
-        Tag,
-        std::common_type_t<T1, T2>,
-        std::conditional_t<std::ratio_less_v<Ratio1, Ratio2>, Ratio1, Ratio2>>;
-    // clang-format on
+struct PixelsPerInch : decltype(Pixels{} / au::Inches{}) {
+    static constexpr const char label[] = "ppi";
 };
+constexpr auto pixel_per_inch = au::SingularNameFor<PixelsPerInch>{};
+constexpr auto pixels_per_inch = au::QuantityMaker<PixelsPerInch>{};
+constexpr auto pixels_per_inch_pt = au::QuantityPointMaker<PixelsPerInch>{};
+using pixels_per_inch_d = au::Quantity<PixelsPerInch, double>;
+using pixels_per_inch_f = au::Quantity<PixelsPerInch, float>;
+using pixels_per_inch_i = au::Quantity<PixelsPerInch, int>;
 
-hi_export namespace hi { inline namespace v1 {
+/** Device Independent Pixel.
+ *
+ * Device Independent Pixels are scaled not only based on the
+ * PPI (pixels per inch) of the display, but also based on the viewing distance.
+ * This will help make text and other graphic elements equally readable on
+ * mobile devices, computers and televisions.
+ *
+ * The scaling factor for Device Independent Pixels is rounded to improve pixel
+ * alignment, example scaling factors are: 0.75, 1.0 (base), 1.5, 2.0, 3.0, 4.0.
+ *
+ * A Device Independent Pixel is about 1/160th of an inch on a mobile phone.
+ */
+struct DeviceIndependentPixel : au::UnitImpl<au::Dimension<DeviceIndependentPixelLengthDim>> {
+    static constexpr inline const char label[] = "dp";
+};
+constexpr auto device_independent_pixel = au::SingularNameFor<DeviceIndependentPixel>{};
+constexpr auto device_independent_pixels = au::QuantityMaker<DeviceIndependentPixel>{};
+constexpr auto device_independent_pixels_pt = au::QuantityPointMaker<DeviceIndependentPixel>{};
+using device_independent_pixel_d = au::Quantity<DeviceIndependentPixel, double>;
+using device_independent_pixel_f = au::Quantity<DeviceIndependentPixel, float>;
+using device_independent_pixel_i = au::Quantity<DeviceIndependentPixel, int>;
 
-template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
-[[nodiscard]] constexpr bool operator==(unit<Tag, T1, Ratio1> const& lhs, unit<Tag, T2, Ratio2> const& rhs) noexcept
+struct EmSquares : au::UnitImpl<au::Dimension<RelativeFontLengthDim>> {
+    static constexpr const char label[] = "em";
+};
+constexpr auto em_square = au::SingularNameFor<EmSquares>{};
+constexpr auto em_squares = au::QuantityMaker<EmSquares>{};
+constexpr auto em_squares_pt = au::QuantityPointMaker<EmSquares>{};
+using em_squares_d = au::Quantity<EmSquares, double>;
+using em_squares_f = au::Quantity<EmSquares, float>;
+using em_squares_i = au::Quantity<EmSquares, int>;
+
+struct Points : decltype(au::Inches{} / au::mag<72>()) {
+    static constexpr const char label[] = "pt";
+};
+constexpr auto point = au::SingularNameFor<Points>{};
+constexpr auto points = au::QuantityMaker<Points>{};
+constexpr auto points_pt = au::QuantityPointMaker<Points>{};
+using points_d = au::Quantity<Points, double>;
+using points_f = au::Quantity<Points, float>;
+using points_i = au::Quantity<Points, int>;
+using points_s = au::Quantity<Points, short>;
+
+namespace symbols {
+constexpr auto px = au::SymbolFor<Pixels>{};
+constexpr auto dp = au::SymbolFor<DeviceIndependentPixel>{};
+constexpr auto ppi = au::SymbolFor<PixelsPerInch>{};
+constexpr auto em = au::SymbolFor<EmSquares>{};
+constexpr auto pt = au::SymbolFor<Points>{};
+} // namespace symbols
+
+/** Convert a length relative to the font size to the au::Length dimension.
+ *
+ * @param length A length, most often denoted in "em".
+ * @param font_size The current font size by which to scale the length.
+ * @return The scaled length in the au::Length dimension.
+ */
+template<typename LengthT, typename FontSizeD, typename FontSizeT>
+[[nodiscard]] constexpr au::Quantity<FontSizeD, std::common_type_t<LengthT, FontSizeT>>
+to_length(au::Quantity<EmSquares, LengthT> length, au::Quantity<FontSizeD, FontSizeT> font_size) noexcept
 {
-    using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
-
-    auto const lhs_ = common_type{lhs};
-    auto const rhs_ = common_type{rhs};
-
-    return lhs_.count() == rhs_.count();
+    return length.in(em_squares)*font_size;
 }
 
-template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
-[[nodiscard]] constexpr auto operator<=>(unit<Tag, T1, Ratio1> const& lhs, unit<Tag, T2, Ratio2> const& rhs) noexcept
+/** Convert a length into pixels on the current display.
+ *
+ * @param length A length to be converted to pixels.
+ * @param pixel_density The pixel density of the current display often denoted
+ *                      in pixels-per-inch (PPI).
+ * @return The length; scaled to pixels.
+ */
+template<typename LengthT, typename LengthD, typename PixelDensityT>
+[[nodiscard]] constexpr au::Quantity<Pixels, std::common_type_t<LengthT, PixelDensityT>>
+as_pixels(au::Quantity<LengthD, LengthT> length, au::Quantity<PixelsPerInch, PixelDensityT> pixel_density) noexcept
 {
-    using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
-
-    auto const lhs_ = common_type{lhs};
-    auto const rhs_ = common_type{rhs};
-
-    return lhs_.count() <=> rhs_.count();
+    return length * pixel_density;
 }
 
-template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
-[[nodiscard]] constexpr auto operator+(unit<Tag, T1, Ratio1> const& lhs, unit<Tag, T2, Ratio2> const& rhs) noexcept
+template<typename LengthT, typename LengthD, typename PixelDensityT>
+[[nodiscard]] constexpr std::common_type_t<LengthT, PixelDensityT>
+in_pixels(au::Quantity<LengthD, LengthT> length, au::Quantity<PixelsPerInch, PixelDensityT> pixel_density) noexcept
 {
-    using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
-
-    auto const lhs_ = common_type{lhs};
-    auto const rhs_ = common_type{rhs};
-
-    return common_type{lhs_.count() + rhs_.count()};
+    return as_pixels(length, pixel_density).in(pixels);
 }
 
-template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
-[[nodiscard]] constexpr auto operator-(unit<Tag, T1, Ratio1> const& lhs, unit<Tag, T2, Ratio2> const& rhs) noexcept
-{
-    using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
-
-    auto const lhs_ = common_type{lhs};
-    auto const rhs_ = common_type{rhs};
-
-    return common_type{lhs_.count() - rhs_.count()};
-}
-
-template<typename Tag, typename T1, typename Ratio1, typename T2, typename Ratio2>
-[[nodiscard]] constexpr auto operator/(unit<Tag, T1, Ratio1> const& lhs, unit<Tag, T2, Ratio2> const& rhs) noexcept
-{
-    using common_type = std::common_type_t<unit<Tag, T1, Ratio1>, unit<Tag, T2, Ratio2>>;
-
-    auto const lhs_ = common_type{lhs};
-    auto const rhs_ = common_type{rhs};
-
-    return lhs_.count() / rhs_.count();
-}
-
-
-struct si_length_tag {};
-struct px_length_tag {};
-struct em_length_tag {};
-
-using kilometers = unit<si_length_tag, double, std::kilo>;
-using meters = unit<si_length_tag, double>;
-using centimeters = unit<si_length_tag, double, std::centi>;
-using decimeters = unit<si_length_tag, double, std::deci>;
-using millimeters = unit<si_length_tag, double, std::milli>;
-
-/** Points: 1/72 inch.
- */
-using points = unit<si_length_tag, double, std::ratio<254, 720'000>::type>;
-
-/** Inch: 254 mm.
- */
-using inches = unit<si_length_tag, double, std::ratio<254, 10'000>::type>;
-using feet = unit<si_length_tag, double, std::ratio<3'048, 10'000>::type>;
-using yards = unit<si_length_tag, double, std::ratio<9'144, 10'000>::type>;
-using miles = unit<si_length_tag, double, std::ratio<16'093'440, 10'000>::type>;
-
-/** Device Independent Pixels: 1/96 inch.
- */
-using dips = unit<si_length_tag, double, std::ratio<254, 960'000>::type>;
-
-/** A physical pixel on a display.
- */
-using pixels = unit<px_length_tag, double>;
-
-/** Em-quad: A font's line-height.
- */
-using em_quads = unit<em_length_tag, double>;
-
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

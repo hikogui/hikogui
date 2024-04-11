@@ -61,7 +61,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    scroll_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    scroll_widget(widget_intf const* parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
 

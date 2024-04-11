@@ -49,7 +49,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    overlay_widget(widget_intf const* parent) noexcept : super(parent)
     {
     }
 

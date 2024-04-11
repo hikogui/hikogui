@@ -55,7 +55,7 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(not_null<widget_intf const *> parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
+    tab_widget(widget_intf const* parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
     {
         hi_axiom(loop::main().on_thread());
 
@@ -75,7 +75,7 @@ public:
      *              to display.
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Value>
-    tab_widget(not_null<widget_intf const *> parent, Value&& value) noexcept
+    tab_widget(widget_intf const* parent, Value&& value) noexcept
         requires requires { make_default_tab_delegate(std::forward<Value>(value)); }
         : tab_widget(parent, make_default_tab_delegate(std::forward<Value>(value)))
     {

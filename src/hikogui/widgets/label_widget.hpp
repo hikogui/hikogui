@@ -82,7 +82,7 @@ public:
      *                   a `label`, `alignment` or `text_style`
      */
     template<label_widget_attribute... Attributes>
-    label_widget(not_null<widget_intf const *> parent, Attributes&&...attributes) noexcept : label_widget(parent)
+    label_widget(widget_intf const* parent, Attributes&&...attributes) noexcept : label_widget(parent)
     {
         set_attributes(std::forward<Attributes>(attributes)...);
     }
@@ -136,7 +136,7 @@ public:
         auto const icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme().large_icon_size() :
-            theme().text_style(*text_style)->size * theme().scale;
+            in_pixels(theme().text_style(*text_style)->size, theme().ppi);
 
         _icon_widget->minimum = extent2{icon_size, icon_size};
         _icon_widget->maximum = extent2{icon_size, icon_size};
@@ -206,7 +206,7 @@ private:
         set_attributes(std::forward<Rest>(rest)...);
     }
 
-    label_widget(not_null<widget_intf const *> parent) noexcept : super(parent)
+    label_widget(widget_intf const* parent) noexcept : super(parent)
     {
         set_mode(widget_mode::select);
 

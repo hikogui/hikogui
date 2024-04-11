@@ -44,9 +44,15 @@ public:
      */
     observer<extent2> maximum = extent2::large();
 
-    /*! Constructor for creating sub views.
+    /** Constructor for creating sub views.
      */
-    explicit widget(widget_intf const * parent) noexcept : widget_intf(parent)
+    explicit widget(widget_intf const* parent) noexcept : widget_intf(parent)
+    {
+    }
+
+    /** Constructor for creating sub views.
+     */
+    explicit widget() noexcept : widget_intf(nullptr)
     {
     }
 

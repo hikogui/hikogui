@@ -93,11 +93,13 @@ hi_export struct font_metrics {
         return r;
     }
 
-    /** Round a scale so that the scaled x-height is an integral.
+    /** Round to font size in pixels so that the scaled x-height is an integral.
      */
-    [[nodiscard]] float round_scale(float size) const noexcept
+    [[nodiscard]] pixels_f round_size(pixels_f font_size) const noexcept
     {
-        return std::round(x_height * size) / x_height;
+        auto const x_height_in_pixel = round_as(pixels, to_length(em_squares(x_height), font_size));
+        auto const rounded_size = x_height_in_pixel / x_height;
+        return rounded_size;
     }
 };
 

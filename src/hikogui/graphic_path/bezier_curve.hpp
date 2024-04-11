@@ -436,8 +436,8 @@ constexpr void fillPartialPixels(std::span<uint8_t> row, ssize_t const i, float 
 {
     auto const pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
 
-    auto& pixel = row[i];
-    pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
+    auto& p = row[i];
+    p = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + p, 255.0f));
 }
 
 constexpr void fillFullPixels(std::span<uint8_t> row, ssize_t const start, ssize_t const size) noexcept

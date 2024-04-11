@@ -50,7 +50,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    grid_widget(not_null<widget_intf const *> parent) noexcept : widget(parent)
+    grid_widget(widget_intf const* parent) noexcept : widget(parent)
     {
     }
 

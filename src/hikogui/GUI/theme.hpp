@@ -11,6 +11,7 @@
 #include "../geometry/geometry.hpp"
 #include "../codec/codec.hpp"
 #include "../macros.hpp"
+#include <gsl/gsl>
 #include <array>
 #include <filesystem>
 #include <string>
@@ -22,13 +23,9 @@ hi_export namespace hi::inline v1 {
 
 class theme {
 public:
-    /** The DPI of the size values.
+    /** The PPI of the size values.
      */
-    float dpi = 72;
-
-    /** The scale factor used to convert pt to physical pixel size.
-     */
-    float scale = 1.0f;
+    pixels_per_inch_f ppi = pixels_per_inch(72.0);
 
     std::string name;
     theme_mode mode = theme_mode::light;
@@ -132,24 +129,19 @@ public:
     /** Create a transformed copy of the theme.
      *
      * This function is used by the window, to make a specific version of
-     * the theme scaled to the dpi of the window.
+     * the theme scaled to the PPI of the window.
      *
      * It can also create a different version when the window becomes active/inactive
      * mostly this will desaturate the colors in the theme.
      *
-     * @param dpi The dpi of the window.
+     * @param new_ppi The PPI of the window.
      */
-    [[nodiscard]] theme transform(float new_dpi) const noexcept
+    [[nodiscard]] theme transform(pixels_per_inch_f new_ppi) const noexcept
     {
         auto r = *this;
 
-        hi_assert(new_dpi != 0.0f);
-        hi_assert(dpi != 0.0f);
-        hi_assert(scale != 0.0f);
-
-        auto delta_scale = new_dpi / dpi;
-        r.dpi = new_dpi;
-        r.scale = delta_scale * scale;
+        auto delta_scale = new_ppi / ppi;
+        r.ppi = new_ppi;
 
         // Scale each size, and round so that everything will stay aligned on pixel boundaries.
         r._margin = std::round(delta_scale * _margin);
@@ -410,12 +402,12 @@ private:
 
     [[nodiscard]] hi::text_style parse_text_style_value(datum const& data)
     {
-        if (!holds_alternative<datum::map_type>(data)) {
+        if (not holds_alternative<datum::map_type>(data)) {
             throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
         }
 
         auto const family_id = find_font_family(parse_string(data, "family"));
-        auto const font_size = parse_float(data, "size");
+        auto const font_size = points(gsl::narrow<short>(parse_float(data, "size")));
 
         auto variant = font_variant{};
         if (data.contains("weight")) {
@@ -530,7 +522,7 @@ private:
         _large_icon_size = narrow_cast<float>(parse_int(data, "large-icon-size"));
         _label_icon_size = narrow_cast<float>(parse_int(data, "label-icon-size"));
 
-        _baseline_adjustment = std::ceil(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height());
+        _baseline_adjustment = ceil_in(points, std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height());
     }
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept
