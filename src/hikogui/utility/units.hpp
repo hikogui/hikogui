@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../macros.hpp"
-#include "cast.hpp"
+#include "device_type.hpp"
 #ifdef pascal
 #undef pascal
 #endif
@@ -43,6 +43,8 @@ using pixels_per_inch_d = au::Quantity<PixelsPerInch, double>;
 using pixels_per_inch_f = au::Quantity<PixelsPerInch, float>;
 using pixels_per_inch_i = au::Quantity<PixelsPerInch, int>;
 
+
+
 /** Device Independent Pixel.
  *
  * Device Independent Pixels are scaled not only based on the
@@ -64,6 +66,80 @@ constexpr auto device_independent_pixels_pt = au::QuantityPointMaker<DeviceIndep
 using device_independent_pixel_d = au::Quantity<DeviceIndependentPixel, double>;
 using device_independent_pixel_f = au::Quantity<DeviceIndependentPixel, float>;
 using device_independent_pixel_i = au::Quantity<DeviceIndependentPixel, int>;
+
+struct pixel_density {
+    device_type type;
+    pixels_per_inch_f ppi;
+
+
+    [[nodiscard]] constexpr pixels_f to_pixels(points_f rhs) const noexcept
+    {
+        return rhs * ppi;
+    }
+
+    [[nodiscard]] constexpr pixels_f to_pixels(device_indepedent_pixles_f rhs) const noexcept
+    {
+        return pixels(density_scale() * rhs.in(device_independent_pixles));
+    }
+
+private:
+    /** Return a density-scale to convert device independet pixels to normal pixels.
+     */
+    [[nodiscard]] constexpr float density_scale() const noexcept
+    {
+        // The base density is based on the device type which determines
+        // the viewing distance.
+        auto const base_density = [type]() {
+            switch (type) {
+            case device_type::watch:
+            case device_type::phone:
+            case device_type::tablet:
+                // A mobile device is a medium-density display.
+                return 160;
+
+            case device_type::desktop:
+                // A normal desktop is a low-density display.
+                return 120;
+
+            case device_type::game_console:
+            case device_type::television:
+                // A normal television is 1.33 * medium-density display.
+                return 213;
+
+            default:
+                hi_no_default();
+            }
+        }();
+
+        auto const index = static_cast<int>(ppi.in(pixels_per_inch)) * 4 / base_density;
+        switch (index) {
+        case 0: return 0.5f;
+        case 1: return 0.5f;
+        case 2: return 0.5f;
+
+        case 3: return 0.75f; // 120 dpi
+
+        case 4: return 1.0f; // 160 dpi
+        case 5: return 1.0f;
+
+        case 6: return 1.5f; // 240 dpi
+        case 7: return 1.5f;
+
+        case 8: return 2.0f; // 320 dpi
+        case 9: return 2.0f;
+        case 10: return 2.0f;
+        case 11: return 2.0f;
+
+        case 12: return 3.0f; // 480 dpi
+        case 13: return 3.0f;
+        case 14: return 3.0f;
+        case 15: return 3.0f;
+        default: return 4.0f; // 640 dpi
+        }
+    }
+};
+
+
 
 struct EmSquares : au::UnitImpl<au::Dimension<RelativeFontLengthDim>> {
     static constexpr const char label[] = "em";
@@ -127,6 +203,14 @@ in_pixels(au::Quantity<LengthD, LengthT> length, au::Quantity<PixelsPerInch, Pix
 {
     return as_pixels(length, pixel_density).in(pixels);
 }
+
+class length_f : public std::variant<points_f, pixels_f, device_independent_pixels_f> {
+public:
+    [[nodiscard]] constexpr pixels_f as_pixels(pixel_density density) const noexcept
+    {
+
+    }
+};
 
 } // namespace v1
 } // namespace hi::v1
