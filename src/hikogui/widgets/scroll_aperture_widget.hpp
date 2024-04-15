@@ -179,8 +179,8 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            auto const new_offset_x = *offset_x + std::round(in_pixels(points(event.mouse().wheel_delta.x()), theme().ppi));
-            auto const new_offset_y = *offset_y + std::round(in_pixels(points(event.mouse().wheel_delta.y()), theme().ppi));
+            auto const new_offset_x = *offset_x + std::round((points(event.mouse().wheel_delta.x()) * theme().ppi).in(pixels));
+            auto const new_offset_y = *offset_y + std::round((points(event.mouse().wheel_delta.y()) * theme().ppi).in(pixels));
             auto const max_offset_x = std::max(0.0f, *content_width - *aperture_width);
             auto const max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 

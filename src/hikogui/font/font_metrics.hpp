@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "../unit/unit.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -97,7 +98,7 @@ hi_export struct font_metrics {
      */
     [[nodiscard]] pixels_f round_size(pixels_f font_size) const noexcept
     {
-        auto const x_height_in_pixel = round_as(pixels, to_length(em_squares(x_height), font_size));
+        auto const x_height_in_pixel = round_as(pixels, em_squares(x_height) * font_size));
         auto const rounded_size = x_height_in_pixel / x_height;
         return rounded_size;
     }

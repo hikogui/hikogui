@@ -69,16 +69,16 @@ struct text_sub_style {
         return r;
     }
 
-    [[nodiscard]] auto cap_height() const noexcept
+    [[nodiscard]] points_f cap_height() const noexcept
     {
         auto const& font = find_font(family_id, variant);
-        return to_length(em_squares(font.metrics.cap_height), size);
+        return em_squares(font.metrics.cap_height) * size;
     }
 
-    [[nodiscard]] auto x_height() const noexcept
+    [[nodiscard]] points_f x_height() const noexcept
     {
         auto const& font = find_font(family_id, variant);
-        return to_length(em_squares(font.metrics.x_height), size);
+        return em_squares(font.metrics.x_height) * size;
     }
 
     [[nodiscard]] bool matches(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept

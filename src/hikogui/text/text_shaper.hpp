@@ -12,6 +12,7 @@
 #include "../font/font.hpp"
 #include "../geometry/geometry.hpp"
 #include "../unicode/unicode.hpp"
+#include "../unit/unit.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <tuple>
@@ -92,7 +93,7 @@ public:
         _script(script)
     {
         auto const& font = find_font(style->family_id, style->variant);
-        _initial_line_metrics = in_pixels(style->size, ppi) * font.metrics;
+        _initial_line_metrics = (style->size * ppi).in(pixels) * font.metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {
@@ -1053,8 +1054,8 @@ private:
 
         auto stack = std::vector<entry_type>{};
 
-        auto const a4_one_column = in_pixels(au::milli(au::meters)(172.0f), ppi);
-        auto const a4_two_column = in_pixels(au::milli(au::meters)(88.0f), ppi);
+        auto const a4_one_column = (au::milli(au::meters)(172.0f) * ppi).in(pixels);
+        auto const a4_two_column = (au::milli(au::meters)(88.0f) * ppi).in(pixels);
 
         // Max-width first.
         auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);

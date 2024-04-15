@@ -16,6 +16,7 @@
 #include "console_win32.hpp" // export
 #include "debugger.hpp" // export
 #include "defer.hpp" // export
+#include "device_type.hpp" // export
 #include "dialog.hpp" // export
 #include "endian.hpp" // export
 #include "enum_metadata.hpp" // export
@@ -35,7 +36,6 @@
 #include "terminate.hpp" // export
 #include "time_zone.hpp" // export
 #include "type_traits.hpp" // export
-#include "units.hpp" // export
 #include "value_traits.hpp" // export
 
 hi_export_module(hikogui.utility);

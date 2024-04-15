@@ -98,19 +98,19 @@ public:
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * in_pixels(theme().text_style(semantic_text_style::label)->size, theme().ppi);
+                    _glyph.get_metrics().bounding_rectangle.size() * (theme().text_style(semantic_text_style::label)->size * theme().ppi).in(pixels);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * in_pixels(theme().text_style(semantic_text_style::label)->size, theme().ppi);
+                    _glyph.get_metrics().bounding_rectangle.size() * (theme().text_style(semantic_text_style::label)->size * theme().ppi).in(pixels);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * in_pixels(theme().text_style(semantic_text_style::label)->size, theme().ppi);
+                    _glyph.get_metrics().bounding_rectangle.size() * (theme().text_style(semantic_text_style::label)->size * theme().ppi).in(pixels);
             }
         }
 
