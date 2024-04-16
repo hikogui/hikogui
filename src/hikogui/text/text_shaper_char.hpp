@@ -8,7 +8,7 @@
 #include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
 #include "../geometry/geometry.hpp"
-#include "../unit/unit.hpp"
+#include "../units/units.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.text.text_shaper_char);
@@ -203,8 +203,8 @@ private:
     {
         glyphs = std::move(new_glyphs);
         hi_axiom_not_null(glyphs.font);
-        font_size = glyphs.get_font_metrics().round_size(style->size * ppi);
-        metrics = font_size.in(pixels) * glyphs.get_starter_metrics();
+        font_size = glyphs.get_font_metrics().round_font_size(style->size * ppi);
+        metrics = font_size.in(pixels_per_em) * glyphs.get_starter_metrics();
     }
 };
 

@@ -132,7 +132,9 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "resumable": "cpp"
+        "resumable": "cpp",
+        "string_span": "cpp",
+        "pointers": "cpp"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"

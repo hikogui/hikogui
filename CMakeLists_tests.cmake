@@ -124,9 +124,9 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_bidi_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_break_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unicode/unicode_normalization_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unit/em_squares_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unit/pixel_density_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/unit/pixels_per_inch_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/units/em_squares_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/units/pixel_density_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/units/pixels_per_inch_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/cast_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/defer_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/enum_metadata_tests.cpp

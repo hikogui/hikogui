@@ -445,14 +445,17 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/unicode/unicode_plural.hpp
     src/hikogui/unicode/unicode_sentence_break.hpp
     src/hikogui/unicode/unicode_word_break.hpp
-    src/hikogui/unit/dips.hpp
-    src/hikogui/unit/em_squares.hpp
-    src/hikogui/unit/font_size.hpp
-    src/hikogui/unit/pixel_density.hpp
-    src/hikogui/unit/pixels.hpp
-    src/hikogui/unit/pixels_per_inch.hpp
-    src/hikogui/unit/points.hpp
-    src/hikogui/unit/unit.hpp
+    src/hikogui/units/dips.hpp
+    src/hikogui/units/dips_per_em.hpp
+    src/hikogui/units/em_squares.hpp
+    src/hikogui/units/font_size.hpp
+    src/hikogui/units/pixel_density.hpp
+    src/hikogui/units/pixels.hpp
+    src/hikogui/units/pixels_per_em.hpp
+    src/hikogui/units/pixels_per_inch.hpp
+    src/hikogui/units/points.hpp
+    src/hikogui/units/points_per_em.hpp
+    src/hikogui/units/units.hpp
     src/hikogui/utility/architecture.hpp
     src/hikogui/utility/assert.hpp
     src/hikogui/utility/bits.hpp
