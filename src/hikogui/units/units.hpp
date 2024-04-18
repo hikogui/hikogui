@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "../macros.hpp"
 #include "dips_per_em.hpp" // export
 #include "dips.hpp" // export
 #include "em_squares.hpp" // export
@@ -15,5 +14,6 @@
 #include "pixels.hpp" // export
 #include "points_per_em.hpp" // export
 #include "points.hpp" // export
+#include "../macros.hpp"
 
 hi_export_module(hikogui.units);

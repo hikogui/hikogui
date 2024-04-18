@@ -5,6 +5,7 @@
 #pragma once
 
 #include "pixels.hpp"
+#include "../macros.hpp"
 #include <hikothird/au.hh>
 
 hi_export_module(hikogui.unit : pixels_per_inch);

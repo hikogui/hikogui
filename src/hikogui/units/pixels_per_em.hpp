@@ -6,6 +6,7 @@
 
 #include "pixels.hpp"
 #include "em_squares.hpp"
+#include "../macros.hpp"
 #include <hikothird/au.hh>
 
 hi_export_module(hikogui.unit : pixels_per_em);

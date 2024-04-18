@@ -8,6 +8,7 @@
 #include "pixels.hpp"
 #include "points.hpp"
 #include "dips.hpp"
+#include "../macros.hpp"
 #include <hikothird/au.hh>
 #include <concepts>
 #include <variant>

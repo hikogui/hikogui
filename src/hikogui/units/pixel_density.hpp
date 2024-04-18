@@ -9,6 +9,7 @@
 #include "pixels.hpp"
 #include "font_size.hpp"
 #include "../utility/utility.hpp"
+#include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
 

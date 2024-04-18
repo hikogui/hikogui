@@ -449,6 +449,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/units/dips_per_em.hpp
     src/hikogui/units/em_squares.hpp
     src/hikogui/units/font_size.hpp
+    src/hikogui/units/length.hpp
     src/hikogui/units/pixel_density.hpp
     src/hikogui/units/pixels.hpp
     src/hikogui/units/pixels_per_em.hpp

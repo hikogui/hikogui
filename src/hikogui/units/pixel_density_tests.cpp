@@ -12,23 +12,23 @@ TEST_SUITE(pixels_per_inch) {
 
 TEST_CASE(inch_to_pixel)
 {
-    auto density = pixel_density{hi::pixels_per_inch(170.0), hi::device_type::phone};
+    auto density = hi::pixel_density{hi::pixels_per_inch(170.0), hi::device_type::phone};
 
     REQUIRE(au::inches(2.0) * density == hi::pixels(340.0));
 }
 
 TEST_CASE(dips_to_pixel_medium)
 {
-    auto density = pixel_density{hi::pixels_per_inch(170.0), hi::device_type::phone};
+    auto density = hi::pixel_density{hi::pixels_per_inch(170.0), hi::device_type::phone};
 
-    REQUIRE(au::dips(2.0) * density == hi::pixels(2.0));
+    REQUIRE(hi::dips(2.0) * density == hi::pixels(2.0));
 }
 
 TEST_CASE(dips_to_pixel_high)
 {
-    auto density = pixel_density{hi::pixels_per_inch(250.0), hi::device_type::phone};
+    auto density = hi::pixel_density{hi::pixels_per_inch(250.0), hi::device_type::phone};
 
-    REQUIRE(au::dips(2.0) * density == hi::pixels(3.0));
+    REQUIRE(hi::dips(2.0) * density == hi::pixels(3.0));
 }
 
 };

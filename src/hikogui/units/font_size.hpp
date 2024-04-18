@@ -12,6 +12,8 @@
 #include "pixels.hpp"
 #include "points_per_em.hpp"
 #include "points.hpp"
+#include "../utility/utility.hpp"
+#include "../macros.hpp"
 #include <hikothird/au.hh>
 #include <concepts>
 #include <variant>

@@ -6,6 +6,7 @@
 
 #include "points.hpp"
 #include "em_squares.hpp"
+#include "../macros.hpp"
 #include <hikothird/au.hh>
 
 hi_export_module(hikogui.unit : points_per_em);
