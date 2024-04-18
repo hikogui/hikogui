@@ -102,7 +102,7 @@ struct std::hash<hi::font_size_quantity<T>> {
         auto h = std::hash<size_t>{}(rhs.index());
         h ^= std::visit(
             [](auto&& rhs_) {
-                return std::hash<T>{}(rhs_);
+                return std::hash<T>{}(rhs_.in(rhs_.unit));
             },
             rhs);
         return h;

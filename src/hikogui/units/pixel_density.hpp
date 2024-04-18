@@ -2,44 +2,125 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 #pragma once
 
 #include "pixels_per_inch.hpp"
 #include "dips.hpp"
 #include "pixels.hpp"
+#include "font_size.hpp"
 #include "../utility/utility.hpp"
 
 namespace hi { inline namespace v1 {
 
 struct pixel_density {
-    device_type type;
     pixels_per_inch_f ppi;
+    device_type type;
 
     template<typename T>
-    [[nodiscard]] constexpr friend au::Quantity<Pixels, T> operator*(pixel_density const &lhs, au::Quantity<au::Inches, T> const &rhs) noexcept
-    {
-        return lhs * rhs;
-    }
-
-    template<typename T>
-    [[nodiscard]] constexpr friend au::Quantity<Pixels, T> operator*(au::Quantity<au::Inches, T> const &lhs, pixel_density const &rhs) noexcept
-    {
-        return rhs * lhs;
-    }
-
-    template<typename T>
-    [[nodiscard]] constexpr friend au::Quantity<Pixels, T> operator*(pixel_density const &lhs, au::Quantity<Dips, T> const &rhs) noexcept
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, au::Quantity<Dips, T> const& rhs) noexcept
     {
         return pixels(lhs.density_scale() * rhs.in(dips));
     }
 
     template<typename T>
-    [[nodiscard]] constexpr friend au::Quantity<Pixels, T> operator*(au::Quantity<Dips, T> const &lhs, pixel_density const &rhs) noexcept
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(au::Quantity<Dips, T> const& lhs, pixel_density const& rhs) noexcept
     {
         return rhs * lhs;
     }
 
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, au::Quantity<au::Inches, T> const& rhs) noexcept
+    {
+        return lhs.ppi * rhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(au::Quantity<au::Inches, T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        return rhs * lhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, au::Quantity<Pixels, T> const& rhs) noexcept
+    {
+        return rhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(au::Quantity<Pixels, T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        return lhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, au::Quantity<DipsPerEm, T> const& rhs) noexcept
+    {
+        return pixels_per_em(lhs.density_scale() * rhs.in(dips_per_em));
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(au::Quantity<DipsPerEm, T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        return rhs * lhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, au::Quantity<PointsPerEm, T> const& rhs) noexcept
+    {
+        return lhs.ppi * rhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(au::Quantity<PointsPerEm, T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        return rhs * lhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, au::Quantity<PixelsPerEm, T> const& rhs) noexcept
+    {
+        return rhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(au::Quantity<PixelsPerEm, T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        return lhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, font_size_quantity<T> const& rhs) noexcept
+    {
+        if (auto const* dips_per_em_ptr = std::get_if<au::Quantity<DipsPerEm, T>>(&rhs)) {
+            return *dips_per_em_ptr * lhs;
+        } else if (auto const* pixels_per_em_ptr = std::get_if<au::Quantity<PixelsPerEm, T>>(&rhs)) {
+            return *pixels_per_em_ptr * lhs;
+        } else if (auto const* points_per_em_ptr = std::get_if<au::Quantity<PointsPerEm, T>>(&rhs)) {
+            return *points_per_em_ptr * lhs;
+        } else {
+            hi_no_default();
+        }
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<PixelsPerEm, std::common_type_t<float, T>>
+    operator*(font_size_quantity<T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        return rhs * lhs;
+    }
 
 private:
     /** Return a density-scale to convert device independet pixels to normal pixels.
@@ -91,4 +172,4 @@ private:
     }
 };
 
-}}
+}} // namespace hi::v1

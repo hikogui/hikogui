@@ -21,7 +21,8 @@
 
 hi_export_module(hikogui.widgets.icon_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
 concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>, observer<hi::color>>;
@@ -49,8 +50,7 @@ public:
     observer<alignment> alignment = hi::alignment::middle_center();
 
     template<icon_widget_attribute... Attributes>
-    icon_widget(widget_intf const* parent, Attributes&&...attributes) noexcept :
-        icon_widget(parent)
+    icon_widget(widget_intf const* parent, Attributes&&... attributes) noexcept : icon_widget(parent)
     {
         set_attributes(std::forward<Attributes>(attributes)...);
     }
@@ -58,7 +58,7 @@ public:
     void set_attributes() noexcept {}
 
     template<icon_widget_attribute First, icon_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
+    void set_attributes(First&& first, Rest&&... rest) noexcept
     {
         if constexpr (forward_of<First, observer<hi::icon>>) {
             icon = std::forward<First>(first);
@@ -97,20 +97,20 @@ public:
             } else if (auto const g1 = std::get_if<font_book::font_glyph_type>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * (theme().text_style(semantic_text_style::label)->size * theme().ppi).in(pixels);
+                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
+                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * (theme().text_style(semantic_text_style::label)->size * theme().ppi).in(pixels);
+                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
+                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size =
-                    _glyph.get_metrics().bounding_rectangle.size() * (theme().text_style(semantic_text_style::label)->size * theme().ppi).in(pixels);
+                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
+                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
             }
         }
 
@@ -132,7 +132,8 @@ public:
                 auto const width = std::clamp(context.shape.width(), minimum->width(), maximum->width());
                 auto const height = std::clamp(context.shape.height(), minimum->height(), maximum->height());
 
-                auto const icon_scale = scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
+                auto const icon_scale =
+                    scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
                 auto const new_icon_size = narrow_cast<extent2>(icon_scale * _icon_size);
                 auto const resolved_alignment = resolve(*alignment, os_settings::left_to_right());
                 _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
@@ -188,4 +189,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

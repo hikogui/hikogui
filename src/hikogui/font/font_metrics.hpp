@@ -93,14 +93,12 @@ hi_export struct font_metrics {
         return r;
     }
 
-    /** Round to font size in pixels so that the scaled x-height is an integral.
+    /** Round to font size in pixels so that the rendered font's x-height is an integral.
      */
-    [[nodiscard]] font_size_f round_font_size(font_size_f font_size) const
+    [[nodiscard]] au::Quantity<PixelsPerEm, float> round_font_size(au::Quantity<PixelsPerEm, float> font_size) const
     {
-        auto const x_height_variant = em_squares(x_height) * font_size;
-        auto const x_height_in_pixels = round_as(pixels, std::get<pixels_f>(x_height_variant));
-
-        return x_height_in_pixels / em_squares(x_height);
+        auto const rounded_x_height = round_as(pixels, em_squares(x_height) * font_size);
+        return rounded_x_height / em_squares(x_height);
     }
 };
 

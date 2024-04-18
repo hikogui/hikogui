@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "enum_metadata.hpp"
+
 namespace hi { inline namespace v1 {
 
 /** The device type this application is running on.
@@ -19,6 +21,26 @@ enum class device_type : unsigned char {
     television = 209,
 };
 
+// clang-format off
+constexpr auto device_type_metadata = enum_metadata{
+    device_type::desktop, "desktop",
+    device_type::server, "server",
+    device_type::watch, "watch",
+    device_type::phone, "phone",
+    device_type::tablet, "tablet",
+    device_type::game_console, "game console",
+    device_type::television, "television"
+};
+// clang-format on
+
 }}
 
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::device_type, char> : std::formatter<std::string_view, char> {
+    auto format(hi::device_type const& t, auto& fc) const
+    {
+        return std::formatter<std::string_view, char>::format(hi::device_type_metadata[t], fc);
+    }
+};
 

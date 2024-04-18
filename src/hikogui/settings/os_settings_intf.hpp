@@ -30,6 +30,24 @@ hi_export namespace hi::inline v1 {
 
 class os_settings {
 public:
+    /** Get the device this application is running on.
+     * 
+     * This is used to detect the viewing distance from the screen and
+     * combined with the screen's DPI to determine how device independent
+     * pixels (dips) are scaled.
+     * 
+     * If you need to know how to layout the application based on the device
+     * type use `device_mode()`; as some operating systems allow emulation or
+     * switching of device-mode during run-time. 
+     */
+    [[nodiscard]] static device_type device_type() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _device_type;
+    }
+
+    // [[nodiscard]] static device_type device_mode() noexcept
+
     /** Get the language tags for the configured languages.
      *
      * @return A list of language tags in order of priority.
@@ -313,6 +331,16 @@ public:
         }
         _gather_last_time = current_time;
 
+        if (auto optional_device_type = gather_device_type()) {
+            if (compare_store(_device_type, *optional_device_type)) {
+                setting_has_changed = true;
+                hi_log_info("OS device type has changed: {}", *optional_device_type);
+            }
+
+        } else {
+            hi_log_error("Failed to get device type: {}", optional_device_type.error().message());
+        }
+
         try {
             auto language_tags = gather_languages();
             if (language_tags.empty()) {
@@ -521,6 +549,7 @@ private:
 
     static inline notifier<void()> _notifier;
 
+    static inline std::atomic<hi::device_type> _device_type = hi::device_type::desktop;
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::locale _locale = std::locale{""};
     static inline std::atomic<bool> _left_to_right = true;
@@ -560,6 +589,7 @@ private:
         }
     }
 
+    [[nodiscard]] static std::expected<hi::device_type, std::error_code> gather_device_type() noexcept;
     [[nodiscard]] static std::vector<language_tag> gather_languages() noexcept;
     [[nodiscard]] static std::expected<std::locale, std::error_code> gather_locale() noexcept;
     [[nodiscard]] static bool gather_left_to_right() noexcept;
