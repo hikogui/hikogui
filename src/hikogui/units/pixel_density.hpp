@@ -128,7 +128,7 @@ private:
      */
     [[nodiscard]] constexpr float density_scale() const noexcept
     {
-        constexpr static auto scale_table = std::array{
+        constexpr auto scale_table = std::array{
             0.5f,
             0.5f,
             0.5f,
