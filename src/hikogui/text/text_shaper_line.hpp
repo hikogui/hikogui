@@ -230,7 +230,7 @@ private:
         }
 
         auto result = font.shape_run(language, script, run);
-        result.scale_and_offset(char_it->font_size.in(pixels));
+        result.scale_and_offset(char_it->font_size.in(pixels_per_em));
         hi_axiom(result.advances.size() == run.size());
         hi_axiom(result.glyph_count.size() == run.size());
 

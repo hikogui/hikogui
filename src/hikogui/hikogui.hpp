@@ -36,6 +36,7 @@
 #include "text/text.hpp" // export
 #include "time/time.hpp" // export
 #include "unicode/unicode.hpp" // export
+#include "units/units.hpp" // export
 #include "utility/utility.hpp" // export
 #include "widgets/widgets.hpp" // export
 #include "win32/win32.hpp" // export

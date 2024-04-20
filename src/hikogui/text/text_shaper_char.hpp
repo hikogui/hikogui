@@ -8,6 +8,7 @@
 #include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
 #include "../geometry/geometry.hpp"
+#include "../units/units.hpp"
 #include "../macros.hpp"
 
 hi_export_module(hikogui.text.text_shaper_char);
@@ -26,7 +27,7 @@ public:
 
     /** The scale to resize the font's size to match the physical display.
      */
-    pixels_per_inch_f ppi;
+    pixel_density pixel_density;
 
     /** The glyph representing one or more graphemes.
      * The glyph will change during shaping of the text:
@@ -104,7 +105,7 @@ public:
 
     /** The font size in pixels, rounded so that the x-height is rounded to the nearest pixel.
      */
-    pixels_f font_size;
+    au::Quantity<PixelsPerEm, float> font_size;
 
     /** The width used for this grapheme when folding lines.
      *
@@ -125,10 +126,10 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, pixels_per_inch_f ppi) noexcept :
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, hi::pixel_density pixel_density) noexcept :
         grapheme(grapheme),
         style(style),
-        ppi(ppi),
+        pixel_density(pixel_density),
         line_nr(std::numeric_limits<size_t>::max()),
         column_nr(std::numeric_limits<size_t>::max()),
         general_category(ucd_get_general_category(grapheme.starter()))
@@ -182,7 +183,7 @@ public:
     [[nodiscard]] hi::font_metrics font_metrics() const noexcept
     {
         hi_axiom_not_null(glyphs.font);
-        return font_size.in(pixels) * glyphs.font->metrics;
+        return font_size.in(pixels_per_em) * glyphs.font->metrics;
     }
 
     [[nodiscard]] friend bool operator==(text_shaper_char const& lhs, char32_t const& rhs) noexcept
@@ -202,8 +203,8 @@ private:
     {
         glyphs = std::move(new_glyphs);
         hi_axiom_not_null(glyphs.font);
-        font_size = glyphs.get_font_metrics().round_size(as_pixels(style->size, ppi));
-        metrics = font_size.in(pixels) * glyphs.get_starter_metrics();
+        font_size = glyphs.get_font_metrics().round_font_size(style->size * pixel_density);
+        metrics = font_size.in(pixels_per_em) * glyphs.get_starter_metrics();
     }
 };
 

@@ -5,13 +5,13 @@
 #pragma once
 
 #include "../macros.hpp"
+#include "../units/units.hpp"
 #include <algorithm>
 #include <cmath>
 
 hi_export_module(hikogui.font.font_metrics);
 
 hi_export namespace hi::inline v1 {
-
 /** The metrics of a font.
  *
  * These are the metrics that are used for the font as a whole.
@@ -93,13 +93,12 @@ hi_export struct font_metrics {
         return r;
     }
 
-    /** Round to font size in pixels so that the scaled x-height is an integral.
+    /** Round to font size in pixels so that the rendered font's x-height is an integral.
      */
-    [[nodiscard]] pixels_f round_size(pixels_f font_size) const noexcept
+    [[nodiscard]] au::Quantity<PixelsPerEm, float> round_font_size(au::Quantity<PixelsPerEm, float> font_size) const
     {
-        auto const x_height_in_pixel = round_as(pixels, to_length(em_squares(x_height), font_size));
-        auto const rounded_size = x_height_in_pixel / x_height;
-        return rounded_size;
+        auto const rounded_x_height = round_as(pixels, em_squares(x_height) * font_size);
+        return rounded_x_height / em_squares(x_height);
     }
 };
 

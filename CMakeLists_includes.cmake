@@ -411,6 +411,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_shaper_char.hpp
     src/hikogui/text/text_shaper_line.hpp
     src/hikogui/text/text_style.hpp
+    src/hikogui/theme/theme_length.hpp
+    src/hikogui/theme/theme_value.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp
     src/hikogui/time/time_stamp_count.hpp
@@ -443,6 +445,18 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/unicode/unicode_plural.hpp
     src/hikogui/unicode/unicode_sentence_break.hpp
     src/hikogui/unicode/unicode_word_break.hpp
+    src/hikogui/units/dips.hpp
+    src/hikogui/units/dips_per_em.hpp
+    src/hikogui/units/em_squares.hpp
+    src/hikogui/units/font_size.hpp
+    src/hikogui/units/length.hpp
+    src/hikogui/units/pixel_density.hpp
+    src/hikogui/units/pixels.hpp
+    src/hikogui/units/pixels_per_em.hpp
+    src/hikogui/units/pixels_per_inch.hpp
+    src/hikogui/units/points.hpp
+    src/hikogui/units/points_per_em.hpp
+    src/hikogui/units/units.hpp
     src/hikogui/utility/architecture.hpp
     src/hikogui/utility/assert.hpp
     src/hikogui/utility/bits.hpp
@@ -460,6 +474,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/debugger_win32_impl.hpp>
     src/hikogui/utility/debugger_win32_impl.hpp
     src/hikogui/utility/defer.hpp
+    src/hikogui/utility/device_type.hpp
     src/hikogui/utility/dialog.hpp
     src/hikogui/utility/dialog_intf.hpp
     $<$<PLATFORM_ID:MacOS>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/dialog_macos_impl.hpp>
@@ -487,7 +502,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/utility/terminate.hpp
     src/hikogui/utility/time_zone.hpp
     src/hikogui/utility/type_traits.hpp
-    src/hikogui/utility/units.hpp
     src/hikogui/utility/utility.hpp
     src/hikogui/utility/value_traits.hpp
     src/hikogui/widgets/abstract_button_widget.hpp

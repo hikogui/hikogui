@@ -20,6 +20,8 @@ enum class win32_error : uint32_t {
     invalid_data = ERROR_INVALID_DATA,
     insufficient_buffer = ERROR_INSUFFICIENT_BUFFER,
     status_pending = STATUS_PENDING,
+    not_supported = ERROR_NOT_SUPPORTED,
+    invalid_parameter = ERROR_INVALID_PARAMETER,
 };
 
 }} // namespace hi::v1
@@ -50,6 +52,10 @@ struct win32_error_category : std::error_category {
             return condition == std::errc::interrupted;
         case hi::win32_error::insufficient_buffer:
             return condition == std::errc::no_buffer_space;
+        case hi::win32_error::not_supported:
+            return condition == std::errc::not_supported;
+        case hi::win32_error::invalid_parameter:
+            return condition == std::errc::invalid_argument;
         default:
             return false;
         };

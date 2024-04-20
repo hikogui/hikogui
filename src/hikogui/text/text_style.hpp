@@ -29,7 +29,7 @@ struct text_sub_style {
 
     font_family_id family_id;
     ::hi::color color;
-    points_s size;
+    font_size_s size;
     font_variant variant;
     text_decoration decoration;
 
@@ -41,7 +41,7 @@ struct text_sub_style {
         iso_15924 script_filter,
         font_family_id family_id,
         font_variant variant,
-        points_s size,
+        font_size_s size,
         ::hi::color color,
         text_decoration decoration) noexcept :
         phrasing_mask(phrasing_mask),
@@ -63,22 +63,22 @@ struct text_sub_style {
         r ^= std::hash<iso_15924>{}(script_filter);
         r ^= std::hash<font_family_id>{}(family_id);
         r ^= std::hash<hi::color>{}(color);
-        r ^= std::hash<short>{}(size.in(points));
+        r ^= std::hash<font_size_s>{}(size);
         r ^= std::hash<font_variant>{}(variant);
         r ^= std::hash<text_decoration>{}(decoration);
         return r;
     }
 
-    [[nodiscard]] auto cap_height() const noexcept
+    [[nodiscard]] length_f cap_height() const noexcept
     {
         auto const& font = find_font(family_id, variant);
-        return to_length(em_squares(font.metrics.cap_height), size);
+        return em_squares(font.metrics.cap_height) * size;
     }
 
-    [[nodiscard]] auto x_height() const noexcept
+    [[nodiscard]] length_f x_height() const noexcept
     {
         auto const& font = find_font(family_id, variant);
-        return to_length(em_squares(font.metrics.x_height), size);
+        return em_squares(font.metrics.x_height) * size;
     }
 
     [[nodiscard]] bool matches(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept

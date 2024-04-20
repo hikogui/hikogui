@@ -17,6 +17,16 @@ hi_export_module(hikogui.settings.os_settings : impl);
 
 hi_export namespace hi { inline namespace v1 {
 
+[[nodiscard]] inline std::expected<device_type, std::error_code> os_settings::gather_device_type() noexcept
+{
+    auto const is_tablet = static_cast<bool>(GetSystemMetrics(SM_TABLETPC));
+    if (is_tablet) {
+        return device_type::tablet;
+    } else {
+        return device_type::desktop;
+    }
+}
+
 [[nodiscard]] inline std::vector<uuid> os_settings::preferred_gpus(hi::policy performance_policy) noexcept
 {
     auto r = std::vector<uuid>{};

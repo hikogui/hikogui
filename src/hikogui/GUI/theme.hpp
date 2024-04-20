@@ -25,7 +25,7 @@ class theme {
 public:
     /** The PPI of the size values.
      */
-    pixels_per_inch_f ppi = pixels_per_inch(72.0);
+    hi::pixel_density pixel_density = hi::pixel_density{pixels_per_inch(72.0f), device_type::desktop};
 
     std::string name;
     theme_mode mode = theme_mode::light;
@@ -136,12 +136,12 @@ public:
      *
      * @param new_ppi The PPI of the window.
      */
-    [[nodiscard]] theme transform(pixels_per_inch_f new_ppi) const noexcept
+    [[nodiscard]] theme transform(hi::pixel_density new_pixel_density) const noexcept
     {
         auto r = *this;
 
-        auto delta_scale = new_ppi / ppi;
-        r.ppi = new_ppi;
+        auto delta_scale = new_pixel_density.ppi / pixel_density.ppi;
+        r.pixel_density = new_pixel_density;
 
         // Scale each size, and round so that everything will stay aligned on pixel boundaries.
         r._margin = std::round(delta_scale * _margin);
@@ -407,7 +407,7 @@ private:
         }
 
         auto const family_id = find_font_family(parse_string(data, "family"));
-        auto const font_size = points(gsl::narrow<short>(parse_float(data, "size")));
+        auto const font_size = points_per_em(gsl::narrow<short>(parse_float(data, "size")));
 
         auto variant = font_variant{};
         if (data.contains("weight")) {
@@ -522,7 +522,7 @@ private:
         _large_icon_size = narrow_cast<float>(parse_int(data, "large-icon-size"));
         _label_icon_size = narrow_cast<float>(parse_int(data, "label-icon-size"));
 
-        _baseline_adjustment = ceil_in(points, std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height());
+        _baseline_adjustment = ceil_in(points, std::get<points_f>(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height()));
     }
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept

@@ -54,11 +54,11 @@ public:
      */
     bool resizing = false;
 
-    /*! Pixels-per-inch of the screen where the window is located.
+    /** Pixel density of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
-     * the source for the PPI value.
+     * the source for the pixel-density.
      */
-    pixels_per_inch_f ppi = pixels_per_inch(72.0);
+    hi::pixel_density pixel_density = {pixels_per_inch(96.0f), device_type::desktop};
 
     /** Theme to use to draw the widgets on this window.
      * The sizes and colors of the theme have already been adjusted to the window's state and ppi.
@@ -106,7 +106,7 @@ public:
         _widget->set_window(this);
 
         // Execute a constraint check to determine initial window size.
-        theme = get_selected_theme().transform(ppi);
+        theme = get_selected_theme().transform(pixel_density);
 
         _widget_constraints = _widget->update_constraints();
         auto const new_size = _widget_constraints.preferred;
@@ -204,7 +204,7 @@ public:
         if (need_reconstrain) {
             auto const t2 = trace<"window::constrain">();
 
-            theme = get_selected_theme().transform(ppi);
+            theme = get_selected_theme().transform(pixel_density);
 
             _widget_constraints = _widget->update_constraints();
         }
@@ -487,7 +487,7 @@ public:
         constexpr auto tan_half_degree = 0.00872686779075879f;
         constexpr auto viewing_distance = 20.0f;
 
-        auto const ppd = 2 * viewing_distance * ppi * tan_half_degree;
+        auto const ppd = 2 * viewing_distance * pixel_density.ppi * tan_half_degree;
 
         if (ppd > pixels_per_inch(55.0f)) {
             // High resolution displays do not require subpixel-aliasing.
@@ -1322,7 +1322,7 @@ private:
         if (ppi_ == 0) {
             throw gui_error("Could not retrieve dpi for window.");
         }
-        ppi = pixels_per_inch(ppi_);
+        pixel_density = {pixels_per_inch(ppi_), os_settings::device_type()};
  
         surface = make_unique_gfx_surface(crt_application_instance, win32Window);
     }
@@ -1679,7 +1679,7 @@ private:
             {
                 hi_axiom(loop::main().on_thread());
                 // x-axis dpi value.
-                ppi = pixels_per_inch(LOWORD(wParam));
+                pixel_density = {pixels_per_inch(LOWORD(wParam)), os_settings::device_type()};
 
                 // Use the recommended rectangle to resize and reposition the window
                 auto const new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
@@ -1695,7 +1695,7 @@ private:
                 this->process_event({gui_event_type::window_reconstrain});
 
                 // XXX #667 use mp-units formatting.
-                hi_log_info("DPI has changed to {} ppi", ppi.in(pixels_per_inch));
+                hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(pixels_per_inch));
             }
             break;
 

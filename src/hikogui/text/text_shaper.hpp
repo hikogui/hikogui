@@ -12,6 +12,7 @@
 #include "../font/font.hpp"
 #include "../geometry/geometry.hpp"
 #include "../unicode/unicode.hpp"
+#include "../units/units.hpp"
 #include "../macros.hpp"
 #include <vector>
 #include <tuple>
@@ -74,7 +75,7 @@ public:
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param style The initial text-style to use to display the text.
-     * @param ppi The pixel density of the current display.
+     * @param pixel_density The pixel density of the current display.
      * @param alignment The alignment how to align the text.
      * @param text_direction The default text direction when it can not be deduced from the text.
      * @param script The script of the text.
@@ -82,23 +83,23 @@ public:
     [[nodiscard]] text_shaper(
         gstring const& text,
         text_style const& style,
-        pixels_per_inch_f ppi,
+        hi::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
         _bidi_context(left_to_right ? unicode_bidi_class::L : unicode_bidi_class::R),
-        _ppi(ppi),
+        _pixel_density(pixel_density),
         _alignment(alignment),
         _script(script)
     {
         auto const& font = find_font(style->family_id, style->variant);
-        _initial_line_metrics = in_pixels(style->size, ppi) * font.metrics;
+        _initial_line_metrics = (style->size * _pixel_density).in(pixels_per_em) * font.metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {
             auto const clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
-            auto& tmp = _text.emplace_back(clean_c, style, ppi);
+            auto& tmp = _text.emplace_back(clean_c, style, _pixel_density);
             tmp.initialize_glyph(font);
         }
 
@@ -133,11 +134,11 @@ public:
     [[nodiscard]] text_shaper(
         std::string_view text,
         text_style const& style,
-        pixels_per_inch_f ppi,
+        hi::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
-        text_shaper(to_gstring(text), style, ppi, alignment, left_to_right, script)
+        text_shaper(to_gstring(text), style, pixel_density, alignment, left_to_right, script)
     {
     }
 
@@ -830,7 +831,7 @@ public:
 private:
     /** The scaling factor to use to scale a font's size to match the physical pixels on the display.
      */
-    pixels_per_inch_f _ppi;
+    hi::pixel_density _pixel_density;
 
     /** A list of character in logical order.
      *
@@ -1042,7 +1043,7 @@ private:
     }
 
     [[nodiscard]] static generator<std::pair<std::vector<size_t>, float>>
-    get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, pixels_per_inch_f ppi) noexcept
+    get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, hi::pixel_density pixel_density) noexcept
     {
         struct entry_type {
             size_t min_height;
@@ -1053,8 +1054,8 @@ private:
 
         auto stack = std::vector<entry_type>{};
 
-        auto const a4_one_column = in_pixels(au::milli(au::meters)(172.0f), ppi);
-        auto const a4_two_column = in_pixels(au::milli(au::meters)(88.0f), ppi);
+        auto const a4_one_column = (au::milli(au::meters)(172.0f) * pixel_density.ppi).in(pixels);
+        auto const a4_two_column = (au::milli(au::meters)(88.0f) * pixel_density.ppi).in(pixels);
 
         // Max-width first.
         auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
