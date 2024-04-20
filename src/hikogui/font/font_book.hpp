@@ -40,7 +40,7 @@ public:
 
         [[nodiscard]] constexpr friend bool operator==(font_glyph_type const&, font_glyph_type const&) noexcept = default;
 
-        [[nodiscard]] font_metrics const& get_font_metrics() const noexcept
+        [[nodiscard]] font_metrics_em const& get_font_metrics() const noexcept
         {
             hi_axiom_not_null(font);
             return font->metrics;
@@ -69,7 +69,7 @@ public:
         }
         font_glyphs_type(hi::font const& font, glyph_id id) noexcept : font(std::addressof(font)), ids{id} {}
 
-        [[nodiscard]] font_metrics const& get_font_metrics() const noexcept
+        [[nodiscard]] font_metrics_em const& get_font_metrics() const noexcept
         {
             hi_axiom_not_null(font);
             return font->metrics;
