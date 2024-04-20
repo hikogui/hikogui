@@ -33,35 +33,36 @@ class font_size_quantity : public font_size_variant<T> {
     using super::super;
 
     template<typename O>
-    constexpr explicit font_size_quantity(au::Quantity<Dips, O> const &other) noexcept : super(dips_per_em(other.in(dips)))
+    constexpr explicit font_size_quantity(au::Quantity<Dips, O> const& other) noexcept : super(dips_per_em(other.in(dips)))
     {
     }
 
     template<typename O>
-    constexpr explicit font_size_quantity(au::Quantity<Pixels, O> const &other) noexcept : super(pixels_per_em(other.in(pixels)))
+    constexpr explicit font_size_quantity(au::Quantity<Pixels, O> const& other) noexcept : super(pixels_per_em(other.in(pixels)))
     {
     }
 
     template<typename O>
-    constexpr explicit font_size_quantity(au::Quantity<Points, O> const &other) noexcept : super(points_per_em(other.in(points)))
+    constexpr explicit font_size_quantity(au::Quantity<Points, O> const& other) noexcept : super(points_per_em(other.in(points)))
     {
     }
 
     template<typename O>
-    constexpr explicit font_size_quantity(length_quantity<O> const &other) : super(font_size_quantity_conversion(other))
+    constexpr explicit font_size_quantity(length_quantity<O> const& other) : super(font_size_quantity_conversion(other))
     {
     }
 
     template<typename O>
-    [[nodiscard]] constexpr friend length_quantity<O> operator*(au::Quantity<EmSquares, O> const& lhs, font_size_quantity const& rhs) noexcept
+    [[nodiscard]] constexpr friend length_quantity<O>
+    operator*(au::Quantity<EmSquares, O> const& lhs, font_size_quantity const& rhs) noexcept
     {
-        if (auto *dips_ptr = std::get_if<au::Quantity<DipsPerEm, T>>(&rhs)) {
+        if (auto* dips_ptr = std::get_if<au::Quantity<DipsPerEm, T>>(&rhs)) {
             return (*dips_ptr * lhs).as(dips);
 
-        } else if (auto *pixel_ptr = std::get_if<au::Quantity<PixelsPerEm, T>>(&rhs)) {
+        } else if (auto* pixel_ptr = std::get_if<au::Quantity<PixelsPerEm, T>>(&rhs)) {
             return (*pixel_ptr * lhs).as(pixels);
 
-        } else if (auto *points_ptr = std::get_if<au::Quantity<PointsPerEm, T>>(&rhs)) {
+        } else if (auto* points_ptr = std::get_if<au::Quantity<PointsPerEm, T>>(&rhs)) {
             return (*points_ptr * lhs).as(points);
 
         } else {
@@ -70,26 +71,41 @@ class font_size_quantity : public font_size_variant<T> {
     }
 
     template<typename O>
-    [[nodiscard]] constexpr friend length_quantity<O> operator*(font_size_quantity const& lhs, au::Quantity<EmSquares, O> const& rhs) noexcept
+    [[nodiscard]] constexpr friend length_quantity<O>
+    operator*(font_size_quantity const& lhs, au::Quantity<EmSquares, O> const& rhs) noexcept
     {
         return rhs * lhs;
     }
 
 private:
     template<typename O>
-    [[nodiscard]] constexpr static font_size_quantity font_size_quantity_conversion(length_quantity<O> const &other)
+    [[nodiscard]] constexpr static font_size_quantity font_size_quantity_conversion(length_quantity<O> const& other)
     {
-        if (auto *dips_ptr = std::get_if<au::Quantity<Dips, O>>(&other)) {
+        if (auto* dips_ptr = std::get_if<au::Quantity<Dips, O>>(&other)) {
             return dips_per_em(other.in(dips));
-        } else if (auto *pixel_ptr = std::get_if<au::Quantity<Pixels, O>>(&other)) {
+        } else if (auto* pixel_ptr = std::get_if<au::Quantity<Pixels, O>>(&other)) {
             return pixels_per_em(other.in(pixels));
-        } else if (auto *points_ptr = std::get_if<au::Quantity<Points, O>>(&other)) {
+        } else if (auto* points_ptr = std::get_if<au::Quantity<Points, O>>(&other)) {
             return points_per_em(other.in(points));
         } else {
             throw std::bad_variant_access();
         }
     }
 };
+
+/** Round to font size in pixels-per-em.
+ * 
+ * This function is used to round the font size @a by the length
+ * in Em. For example to round the font-size so that the x-height will be
+ * aligned to pixel boundaries for sharper display of text.
+ */
+template<typename FontSizeT, typename ByT>
+[[nodiscard]] au::Quantity<PixelsPerEm, std::common_type_t<FontSizeT, ByT>>
+round(au::Quantity<PixelsPerEm, FontSizeT> font_size, au::Quantity<EmSquares, ByT> const& by)
+{
+    auto const rounded_x_height = round_as(pixels, by * font_size);
+    return rounded_x_height / by;
+}
 
 using font_size_f = font_size_quantity<float>;
 using font_size_s = font_size_quantity<short>;

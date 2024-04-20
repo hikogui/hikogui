@@ -72,13 +72,13 @@ struct text_sub_style {
     [[nodiscard]] length_f cap_height() const noexcept
     {
         auto const& font = find_font(family_id, variant);
-        return em_squares(font.metrics.cap_height) * size;
+        return font.metrics.cap_height * size;
     }
 
     [[nodiscard]] length_f x_height() const noexcept
     {
         auto const& font = find_font(family_id, variant);
-        return em_squares(font.metrics.x_height) * size;
+        return font.metrics.x_height * size;
     }
 
     [[nodiscard]] bool matches(phrasing phrasing, iso_639 language, iso_15924 script) const noexcept

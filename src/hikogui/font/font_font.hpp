@@ -61,10 +61,8 @@ public:
     std::string features;
 
     /** The metrics of a font.
-     *
-     * @note: unit is 'em'.
      */
-    hi::font_metrics metrics;
+    font_metrics_em metrics;
 
     /** List of fonts to use as a fallback for this font.
      */

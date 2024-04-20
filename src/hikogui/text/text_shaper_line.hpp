@@ -37,7 +37,7 @@ public:
 
     /** The maximum metrics of the font of each glyph on this line.
      */
-    font_metrics metrics;
+    font_metrics_px metrics;
 
     /** The line number of this line, counted from top to bottom.
      */
@@ -91,7 +91,7 @@ public:
         iterator first,
         iterator last,
         float width,
-        hi::font_metrics const& metrics) noexcept :
+        font_metrics_px const& metrics) noexcept :
         first(first), last(last), columns(), metrics(metrics), line_nr(line_nr), y(0.0f), width(width), last_category()
     {
         auto last_visible_it = first;
@@ -158,11 +158,11 @@ public:
         round_glyph_positions(columns, sub_pixel_width);
 
         // Create the bounding rectangles around each glyph, for use to draw selection boxes/cursors and handle mouse control.
-        create_bounding_rectangles(columns, y, metrics.ascender, metrics.descender);
+        create_bounding_rectangles(columns, y, metrics.ascender.in(pixels), metrics.descender.in(pixels));
 
         // Create a bounding rectangle around the visible part of the line.
         if (columns.empty()) {
-            rectangle = {point2{0.0f, y - metrics.descender}, point2{1.0f, y + metrics.ascender}};
+            rectangle = {point2{0.0f, y - metrics.descender.in(pixels)}, point2{1.0f, y + metrics.ascender.in(pixels)}};
         } else {
             rectangle = columns.front()->rectangle | columns.back()->rectangle;
         }

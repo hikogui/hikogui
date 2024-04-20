@@ -225,9 +225,9 @@ private:
 
         if (auto hhea_bytes = otype_sfnt_search<"hhea">(bytes); not hhea_bytes.empty()) {
             auto hhea = otype_hhea_parse(hhea_bytes, _em_scale);
-            metrics.ascender = hhea.ascender;
-            metrics.descender = -hhea.descender;
-            metrics.line_gap = hhea.line_gap;
+            metrics.ascender = em_squares(hhea.ascender);
+            metrics.descender = em_squares(-hhea.descender);
+            metrics.line_gap = em_squares(hhea.line_gap);
             _num_horizontal_metrics = hhea.number_of_h_metrics;
         }
 
@@ -318,26 +318,26 @@ private:
         }
 
         if (OS2_x_height > 0.0f) {
-            metrics.x_height = OS2_x_height;
+            metrics.x_height = em_squares(OS2_x_height);
         } else {
             auto const glyph_id = find_glyph('x');
             if (glyph_id) {
-                metrics.x_height = get_metrics(glyph_id).bounding_rectangle.height();
+                metrics.x_height = em_squares(get_metrics(glyph_id).bounding_rectangle.height());
             }
         }
 
         if (OS2_cap_height > 0.0f) {
-            metrics.cap_height = OS2_cap_height;
+            metrics.cap_height = em_squares(OS2_cap_height);
         } else {
             auto const glyph_id = find_glyph('H');
             if (glyph_id) {
-                metrics.cap_height = get_metrics(glyph_id).bounding_rectangle.height();
+                metrics.cap_height = em_squares(get_metrics(glyph_id).bounding_rectangle.height());
             }
         }
 
         auto const glyph_id = find_glyph('8');
         if (glyph_id) {
-            metrics.digit_advance = get_metrics(glyph_id).advance;
+            metrics.digit_advance = em_squares(get_metrics(glyph_id).advance);
         }
     }
 
