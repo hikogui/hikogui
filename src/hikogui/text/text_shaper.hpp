@@ -93,7 +93,7 @@ public:
         _script(script)
     {
         auto const& font = find_font(style->family_id, style->variant);
-        _initial_line_metrics = (style->size * _pixel_density).in(pixels_per_em) * font.metrics;
+        _initial_line_metrics = style->size * _pixel_density * font.metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {
@@ -221,8 +221,8 @@ public:
             inplace_max(max_width, line.width);
         }
 
-        auto const max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
-        auto const min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
+        auto const max_y = lines.front().y + std::ceil(lines.front().metrics.ascender.in(pixels));
+        auto const min_y = lines.back().y - std::ceil(lines.back().metrics.descender.in(pixels));
         return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
     }
 
@@ -879,7 +879,7 @@ private:
 
     /** The font metrics of a line without text.
      */
-    font_metrics _initial_line_metrics;
+    font_metrics_px _initial_line_metrics;
 
     /** The rectangle used for laying out.
      */
@@ -897,7 +897,7 @@ private:
                 prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
             auto const spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
             // Lines advance downward on the y-axis.
-            it->y = prev->y - spacing * height;
+            it->y = prev->y - spacing * height.in(pixels);
             prev = it;
         }
     }
@@ -1268,7 +1268,7 @@ private:
         return {get_before_cursor(first_index), get_after_cursor(last_index)};
     }
 
-    [[nodiscard]] std::pair<font_metrics, unicode_general_category>
+    [[nodiscard]] std::pair<font_metrics_px, unicode_general_category>
     get_line_metrics(text_shaper::char_const_iterator first, text_shaper::char_const_iterator last) const noexcept
     {
         auto metrics = _initial_line_metrics;
@@ -1314,13 +1314,13 @@ private:
 
             auto const spacing = previous_category == unicode_general_category::Zp ? previous_metrics.paragraph_spacing :
                                                                                 previous_metrics.line_spacing;
-            total_height += spacing * line_height;
+            total_height = total_height + spacing * line_height;
 
             previous_metrics = std::move(current_metrics);
             previous_category = std::move(current_category);
         }
 
-        return total_height;
+        return total_height.in(pixels);
     }
 };
 

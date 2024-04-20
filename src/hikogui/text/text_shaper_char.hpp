@@ -180,10 +180,10 @@ public:
 
     /** Get the scaled font metrics for this character.
      */
-    [[nodiscard]] hi::font_metrics font_metrics() const noexcept
+    [[nodiscard]] font_metrics_px font_metrics() const noexcept
     {
         hi_axiom_not_null(glyphs.font);
-        return font_size.in(pixels_per_em) * glyphs.font->metrics;
+        return font_size * glyphs.font->metrics;
     }
 
     [[nodiscard]] friend bool operator==(text_shaper_char const& lhs, char32_t const& rhs) noexcept
@@ -203,7 +203,7 @@ private:
     {
         glyphs = std::move(new_glyphs);
         hi_axiom_not_null(glyphs.font);
-        font_size = glyphs.get_font_metrics().round_font_size(style->size * pixel_density);
+        font_size = round(style->size * pixel_density, glyphs.get_font_metrics().x_height);
         metrics = font_size.in(pixels_per_em) * glyphs.get_starter_metrics();
     }
 };

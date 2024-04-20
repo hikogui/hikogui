@@ -18,46 +18,47 @@ hi_export namespace hi::inline v1 {
  * Inside the font these are in 'em' units, outside the font they
  * may have been scaled to 'points' or 'dp'.
  */
+template<typename Unit, typename T>
 hi_export struct font_metrics {
     /** Distance from baseline of highest ascender.
      */
-    float ascender = 0.0f;
+    au::Quantity<Unit, T> ascender;
 
     /** Distance from baseline of lowest descender.
      *
      * @note positive downward.
      */
-    float descender = 0.0f;
+    au::Quantity<Unit, T> descender;
 
     /** Distance between lines.
      *
      * The distance between the descender of a line and the ascender of the next line.
      */
-    float line_gap = 0.0f;
+    au::Quantity<Unit, T> line_gap;
 
     /** Height of capital letter, or height of the letter 'H'.
      */
-    float cap_height = 0.0f;
+    au::Quantity<Unit, T> cap_height;
 
     /** Height of lower case characters without ascenders or descenders, or the small letter 'x'.
      */
-    float x_height = 0.0f;
+    au::Quantity<Unit, T> x_height;
 
     /** The advance for digits, specifically the digit '8'.
      *
      * @note: All digits in a font should have the same advance.
      */
-    float digit_advance = 0.0f;
+    au::Quantity<Unit, T> digit_advance;
 
     /** The multiplier for the space between lines of the same paragraph.
      * @note This is not an actual font property, but comes from the text-style.
      */
-    float line_spacing = 1.0f;
+    float line_spacing = 0.0f;
 
     /** The multiplier for the space between two paragraphs.
      * @note This is not an actual font property, but comes from the text-style.
      */
-    float paragraph_spacing = 1.5f;
+    float paragraph_spacing = 0.0f;
 
     ~font_metrics() = default;
     constexpr font_metrics() noexcept = default;
@@ -69,37 +70,46 @@ hi_export struct font_metrics {
 
     /** Scale the metrics by a scalar value.
      */
-    [[nodiscard]] constexpr friend font_metrics operator*(float const& lhs, font_metrics const& rhs) noexcept
+    template<typename LhsUnit, typename LhsT>
+    [[nodiscard]] constexpr friend auto operator*(au::Quantity<LhsUnit, LhsT> const& lhs, font_metrics const& rhs) noexcept requires std::same_as<Unit, EmSquares>
     {
-        font_metrics r;
+        // clang-format off
+        using result_unit =
+            std::conditional_t<std::is_same_v<LhsUnit, PixelsPerEm>, Pixels,
+            std::conditional_t<std::is_same_v<LhsUnit, PointsPerEm>, Points,
+            std::conditional_t<std::is_same_v<LhsUnit, DipsPerEm>, Dips,
+            void>>>;
+        // clang-format on
+
+        auto r = font_metrics<result_unit, std::common_type_t<LhsT, T>>{};
         r.ascender = lhs * rhs.ascender;
         r.descender = lhs * rhs.descender;
         r.line_gap = lhs * rhs.line_gap;
         r.cap_height = lhs * rhs.cap_height;
         r.x_height = lhs * rhs.x_height;
         r.digit_advance = lhs * rhs.digit_advance;
+        r.line_spacing = rhs.line_spacing;
+        r.paragraph_spacing = rhs.paragraph_spacing;
         return r;
     }
 
     [[nodiscard]] constexpr friend font_metrics max(font_metrics const& a, font_metrics const& b) noexcept
     {
-        font_metrics r;
+        auto r = font_metrics{};
         r.ascender = std::max(a.ascender, b.ascender);
         r.descender = std::max(a.descender, b.descender);
         r.line_gap = std::max(a.line_gap, b.line_gap);
         r.cap_height = std::max(a.cap_height, b.cap_height);
         r.x_height = std::max(a.x_height, b.x_height);
         r.digit_advance = std::max(a.digit_advance, b.digit_advance);
+        r.line_spacing = std::max(a.line_spacing, b.line_spacing);
+        r.paragraph_spacing = std::max(a.paragraph_spacing, b.paragraph_spacing);
         return r;
     }
-
-    /** Round to font size in pixels so that the rendered font's x-height is an integral.
-     */
-    [[nodiscard]] au::Quantity<PixelsPerEm, float> round_font_size(au::Quantity<PixelsPerEm, float> font_size) const
-    {
-        auto const rounded_x_height = round_as(pixels, em_squares(x_height) * font_size);
-        return rounded_x_height / em_squares(x_height);
-    }
 };
+
+using font_metrics_em = font_metrics<EmSquares, float>;
+using font_metrics_pt = font_metrics<Points, float>;
+using font_metrics_px = font_metrics<Pixels, float>;
 
 } // namespace hi::inline v1
