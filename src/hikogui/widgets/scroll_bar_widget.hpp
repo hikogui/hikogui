@@ -173,15 +173,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().color(semantic_color::fill, _layout.layer);
+        return theme().fill_color(_layout.layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (phase() == widget_phase::hover) {
-            return theme().color(semantic_color::fill, _layout.layer + 2);
+            return theme().fill_color(_layout.layer + 2);
         } else {
-            return theme().color(semantic_color::fill, _layout.layer + 1);
+            return theme().fill_color(_layout.layer + 1);
         }
     }
 

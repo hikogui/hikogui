@@ -20,7 +20,6 @@
 hi_export_module(hikogui.GUI : theme);
 
 hi_export namespace hi::inline v1 {
-
 class theme {
 public:
     /** The PPI of the size values.
@@ -158,22 +157,46 @@ public:
         return r;
     }
 
-    [[nodiscard]] hi::color color(hi::semantic_color original_color, ssize_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color accent_color(size_t nesting_level = 0) const noexcept
     {
-        auto const& shades = _colors[std::to_underlying(original_color)];
-        hi_assert(not shades.empty());
-
-        nesting_level = std::max(ssize_t{0}, nesting_level);
-        return shades[nesting_level % ssize(shades)];
+        hi_assert(not _accent_colors.empty());
+        return _accent_colors[nesting_level % _accent_colors.size()];
     }
 
-    [[nodiscard]] hi::color color(hi::color original_color, ssize_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color foreground_color(size_t nesting_level = 0) const noexcept
     {
-        if (original_color.is_semantic()) {
-            return color(static_cast<semantic_color>(original_color), nesting_level);
-        } else {
-            return original_color;
-        }
+        hi_assert(not _foreground_colors.empty());
+        return _foreground_colors[nesting_level % _foreground_colors.size()];
+    }
+
+    [[nodiscard]] hi::color border_color(size_t nesting_level = 0) const noexcept
+    {
+        hi_assert(not _border_colors.empty());
+        return _border_colors[nesting_level % _border_colors.size()];
+    }
+
+    [[nodiscard]] hi::color fill_color(size_t nesting_level = 0) const noexcept
+    {
+        hi_assert(not _fill_colors.empty());
+        return _fill_colors[nesting_level % _fill_colors.size()];
+    }
+
+    [[nodiscard]] hi::color text_select_color(size_t nesting_level = 0) const noexcept
+    {
+        hi_assert(not _text_select_colors.empty());
+        return _text_select_colors[nesting_level % _text_select_colors.size()];
+    }
+
+    [[nodiscard]] hi::color primary_cursor_color(size_t nesting_level = 0) const noexcept
+    {
+        hi_assert(not _primary_cursor_colors.empty());
+        return _primary_cursor_colors[nesting_level % _primary_cursor_colors.size()];
+    }
+
+    [[nodiscard]] hi::color secondary_cursor_color(size_t nesting_level = 0) const noexcept
+    {
+        hi_assert(not _secondary_cursor_colors.empty());
+        return _secondary_cursor_colors[nesting_level % _secondary_cursor_colors.size()];
     }
 
     [[nodiscard]] hi::text_style text_style(semantic_text_style theme_color) const noexcept
@@ -227,10 +250,17 @@ private:
      */
     float _baseline_adjustment = 9.0f;
 
-    std::array<std::vector<hi::color>, semantic_color_metadata.size()> _colors;
+    std::vector<hi::color> _foreground_colors;
+    std::vector<hi::color> _border_colors;
+    std::vector<hi::color> _fill_colors;
+    std::vector<hi::color> _accent_colors;
+    std::vector<hi::color> _text_select_colors;
+    std::vector<hi::color> _primary_cursor_colors;
+    std::vector<hi::color> _secondary_cursor_colors;
+
     std::array<hi::text_style, semantic_text_style_metadata.size()> _text_styles;
 
-    [[nodiscard]] float parse_float(datum const& data, char const *object_name)
+    [[nodiscard]] float parse_float(datum const& data, char const* object_name)
     {
         if (!data.contains(object_name)) {
             throw parse_error(std::format("Missing '{}'", object_name));
@@ -247,7 +277,7 @@ private:
         }
     }
 
-    [[nodiscard]] long long parse_long_long(datum const& data, char const *object_name)
+    [[nodiscard]] long long parse_long_long(datum const& data, char const* object_name)
     {
         if (!data.contains(object_name)) {
             throw parse_error(std::format("Missing '{}'", object_name));
@@ -261,7 +291,7 @@ private:
         }
     }
 
-    [[nodiscard]] int parse_int(datum const& data, char const *object_name)
+    [[nodiscard]] int parse_int(datum const& data, char const* object_name)
     {
         auto const value = parse_long_long(data, object_name);
         if (value > std::numeric_limits<int>::max() or value < std::numeric_limits<int>::min()) {
@@ -270,7 +300,7 @@ private:
         return narrow_cast<int>(value);
     }
 
-    [[nodiscard]] bool parse_bool(datum const& data, char const *object_name)
+    [[nodiscard]] bool parse_bool(datum const& data, char const* object_name)
     {
         if (!data.contains(object_name)) {
             throw parse_error(std::format("Missing '{}'", object_name));
@@ -284,7 +314,7 @@ private:
         return to_bool(object);
     }
 
-    [[nodiscard]] std::string parse_string(datum const& data, char const *object_name)
+    [[nodiscard]] std::string parse_string(datum const& data, char const* object_name)
     {
         // Extract name
         if (!data.contains(object_name)) {
@@ -337,11 +367,12 @@ private:
                 throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
             }
 
-        } else if (auto const *color_name = get_if<std::string>(data)) {
+        } else if (auto const* color_name = get_if<std::string>(data)) {
             auto const color_name_ = to_lower(*color_name);
             if (color_name_.starts_with("#")) {
                 return color_from_sRGB(color_name_);
-
+            } else if (auto color_ptr = color::find(color_name_)) {
+                return *color_ptr;
             } else {
                 throw parse_error(std::format("Unable to parse color, got {}.", data));
             }
@@ -350,7 +381,7 @@ private:
         }
     }
 
-    [[nodiscard]] hi::color parse_color(datum const& data, char const *object_name)
+    [[nodiscard]] hi::color parse_color(datum const& data, char const* object_name)
     {
         if (!data.contains(object_name)) {
             throw parse_error(std::format("Missing color '{}'", object_name));
@@ -358,18 +389,10 @@ private:
 
         auto const color_object = data[object_name];
 
-        try {
-            return parse_color_value(color_object);
-        } catch (parse_error const&) {
-            if (auto s = get_if<std::string>(color_object)) {
-                return hi::color{semantic_color_from_string(*s)};
-            } else {
-                throw;
-            }
-        }
+        return parse_color_value(color_object);
     }
 
-    [[nodiscard]] std::vector<hi::color> parse_color_list(datum const& data, char const *object_name)
+    [[nodiscard]] std::vector<hi::color> parse_color_list(datum const& data, char const* object_name)
     {
         // Extract name
         if (!data.contains(object_name)) {
@@ -422,8 +445,7 @@ private:
             variant.set_style(font_style::normal);
         }
 
-        // resolve semantic color.
-        auto const color = this->color(parse_color(data, "color"), 0);
+        auto const color = parse_color(data, "color");
 
         auto sub_styles = std::vector<text_sub_style>{};
         sub_styles.emplace_back(
@@ -431,7 +453,7 @@ private:
         return hi::text_style(sub_styles);
     }
 
-    [[nodiscard]] font_weight parse_font_weight(datum const& data, char const *object_name)
+    [[nodiscard]] font_weight parse_font_weight(datum const& data, char const* object_name)
     {
         if (!data.contains(object_name)) {
             throw parse_error(std::format("Missing '{}'", object_name));
@@ -447,7 +469,7 @@ private:
         }
     }
 
-    [[nodiscard]] hi::text_style parse_text_style(datum const& data, char const *object_name)
+    [[nodiscard]] hi::text_style parse_text_style(datum const& data, char const* object_name)
     {
         // Extract name
         if (!data.contains(object_name)) {
@@ -477,31 +499,34 @@ private:
             throw parse_error(std::format("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
         }
 
-        std::get<std::to_underlying(semantic_color::blue)>(_colors) = parse_color_list(data, "blue");
-        std::get<std::to_underlying(semantic_color::green)>(_colors) = parse_color_list(data, "green");
-        std::get<std::to_underlying(semantic_color::indigo)>(_colors) = parse_color_list(data, "indigo");
-        std::get<std::to_underlying(semantic_color::orange)>(_colors) = parse_color_list(data, "orange");
-        std::get<std::to_underlying(semantic_color::pink)>(_colors) = parse_color_list(data, "pink");
-        std::get<std::to_underlying(semantic_color::purple)>(_colors) = parse_color_list(data, "purple");
-        std::get<std::to_underlying(semantic_color::red)>(_colors) = parse_color_list(data, "red");
-        std::get<std::to_underlying(semantic_color::teal)>(_colors) = parse_color_list(data, "teal");
-        std::get<std::to_underlying(semantic_color::yellow)>(_colors) = parse_color_list(data, "yellow");
+        named_color<"blue"> = parse_color(data, "blue");
+        named_color<"green"> = parse_color(data, "green");
+        named_color<"indigo"> = parse_color(data, "indigo");
+        named_color<"orange"> = parse_color(data, "orange");
+        named_color<"pink"> = parse_color(data, "pink");
+        named_color<"purple"> = parse_color(data, "purple");
+        named_color<"red"> = parse_color(data, "red");
+        named_color<"teal"> = parse_color(data, "teal");
+        named_color<"yellow"> = parse_color(data, "yellow");
 
-        std::get<std::to_underlying(semantic_color::gray)>(_colors) = parse_color_list(data, "gray");
-        std::get<std::to_underlying(semantic_color::gray2)>(_colors) = parse_color_list(data, "gray2");
-        std::get<std::to_underlying(semantic_color::gray3)>(_colors) = parse_color_list(data, "gray3");
-        std::get<std::to_underlying(semantic_color::gray4)>(_colors) = parse_color_list(data, "gray4");
-        std::get<std::to_underlying(semantic_color::gray5)>(_colors) = parse_color_list(data, "gray5");
-        std::get<std::to_underlying(semantic_color::gray6)>(_colors) = parse_color_list(data, "gray6");
+        named_color<"gray0"> = parse_color(data, "gray0");
+        named_color<"gray1"> = parse_color(data, "gray1");
+        named_color<"gray2"> = parse_color(data, "gray2");
+        named_color<"gray3"> = parse_color(data, "gray3");
+        named_color<"gray4"> = parse_color(data, "gray4");
+        named_color<"gray5"> = parse_color(data, "gray5");
+        named_color<"gray6"> = parse_color(data, "gray6");
+        named_color<"gray7"> = parse_color(data, "gray7");
+        named_color<"gray8"> = parse_color(data, "gray8");
+        named_color<"gray9"> = parse_color(data, "gray9");
+        named_color<"gray10"> = parse_color(data, "gray10");
 
-        std::get<std::to_underlying(semantic_color::foreground)>(_colors) = parse_color_list(data, "foreground-color");
-        std::get<std::to_underlying(semantic_color::border)>(_colors) = parse_color_list(data, "border-color");
-        std::get<std::to_underlying(semantic_color::fill)>(_colors) = parse_color_list(data, "fill-color");
-        std::get<std::to_underlying(semantic_color::accent)>(_colors) = parse_color_list(data, "accent-color");
-        std::get<std::to_underlying(semantic_color::text_select)>(_colors) = parse_color_list(data, "text-select-color");
-        std::get<std::to_underlying(semantic_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
-        std::get<std::to_underlying(semantic_color::secondary_cursor)>(_colors) =
-            parse_color_list(data, "secondary-cursor-color");
+        _accent_colors = parse_color_list(data, "accent-color");
+        _border_colors = parse_color_list(data, "border-color");
+        _fill_colors = parse_color_list(data, "fill-color");
+        _text_select_colors = parse_color_list(data, "text-select-color");
+        _primary_cursor_colors = parse_color_list(data, "primary-cursor-color");
+        _secondary_cursor_colors = parse_color_list(data, "secondary-cursor-color");
 
         std::get<std::to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(data, "label-style");
         std::get<std::to_underlying(semantic_text_style::small_label)>(_text_styles) =
@@ -522,7 +547,8 @@ private:
         _large_icon_size = narrow_cast<float>(parse_int(data, "large-icon-size"));
         _label_icon_size = narrow_cast<float>(parse_int(data, "label-icon-size"));
 
-        _baseline_adjustment = ceil_in(points, std::get<points_f>(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height()));
+        _baseline_adjustment = ceil_in(
+            points, std::get<points_f>(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height()));
     }
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept

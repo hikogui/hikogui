@@ -18,9 +18,7 @@
 
 hi_export_module(hikogui.unicode.phrasing);
 
-
 hi_export namespace hi::inline v1 {
-
 /** Phrasing.
  * @ingroup unicode
  *
@@ -38,7 +36,7 @@ enum class phrasing : uint8_t {
     /** Emphesised text; spoken as if the text is special importance, significant or promonent.
      * Often formatted in italic.
      */
-    emphesis = 1,
+    emphasis = 1,
 
     /** Strong text; spoken louder, as if the text is not to be missed.
      * Often formatted in bold.
@@ -82,36 +80,41 @@ enum class phrasing : uint8_t {
      */
     example = 9, ///< Used for displaying console output.
 
+    /** Placeholder for text which will be replaced by the user.
+     * Often shown in gray-out text.
+     */
+    placeholder = 10,
+
     /** Unarticulated.
      * Often formatted using an underlying line.
      */
-    unarticulated = 10,
+    unarticulated = 11,
 
     /** Format a heading
      * Often in bold, larger font and on a line by itself.
      */
-    title = 11,
+    title = 12,
 
     /** Format a "good" message
      * Often in bright green.
      */
-    success = 12,
+    success = 13,
 
     /** Format a warning message
      * Often in bright yellow.
      */
-    warning = 13,
+    warning = 14,
 
     /** Format a "bad" message
      * Often in bright red.
      */
-    error = 14,
+    error = 15,
 };
 
 // clang-format off
 constexpr auto phrasing_metadata = enum_metadata{
     phrasing::regular, "regular",
-    phrasing::emphesis, "emphesis",
+    phrasing::emphasis, "emphasis",
     phrasing::strong, "strong",
     phrasing::code, "code",
     phrasing::abbreviation, "abbreviation",
@@ -120,6 +123,7 @@ constexpr auto phrasing_metadata = enum_metadata{
     phrasing::highlight, "highlight",
     phrasing::math, "math",
     phrasing::example, "example",
+    phrasing::placeholder, "placeholder",
     phrasing::unarticulated, "unarticulated",
     phrasing::title, "title",
     phrasing::success, "success",
@@ -133,7 +137,7 @@ constexpr auto phrasing_metadata = enum_metadata{
 {
     switch (c) {
     case 'r': return phrasing::regular;
-    case 'e': return phrasing::emphesis;
+    case 'e': return phrasing::emphasis;
     case 's': return phrasing::strong;
     case 'c': return phrasing::code;
     case 'a': return phrasing::abbreviation;
@@ -142,6 +146,7 @@ constexpr auto phrasing_metadata = enum_metadata{
     case 'h': return phrasing::highlight;
     case 'm': return phrasing::math;
     case 'x': return phrasing::example;
+    case 'p': return phrasing::placeholder;
     case 'u': return phrasing::unarticulated;
     case 't': return phrasing::title;
     case 'S': return phrasing::success;
@@ -155,7 +160,7 @@ constexpr auto phrasing_metadata = enum_metadata{
 
 enum class phrasing_mask : uint16_t {
     regular = 1 << std::to_underlying(phrasing::regular),
-    emphesis = 1 << std::to_underlying(phrasing::emphesis),
+    emphasis = 1 << std::to_underlying(phrasing::emphasis),
     strong = 1 << std::to_underlying(phrasing::strong),
     code = 1 << std::to_underlying(phrasing::code),
     abbreviation = 1 << std::to_underlying(phrasing::abbreviation),
@@ -164,14 +169,15 @@ enum class phrasing_mask : uint16_t {
     highlight = 1 << std::to_underlying(phrasing::highlight),
     math = 1 << std::to_underlying(phrasing::math),
     example = 1 << std::to_underlying(phrasing::example),
+    placeholder = 1 << std::to_underlying(phrasing::placeholder),
     unarticulated = 1 << std::to_underlying(phrasing::unarticulated),
     title = 1 << std::to_underlying(phrasing::title),
     success = 1 << std::to_underlying(phrasing::success),
     warning = 1 << std::to_underlying(phrasing::warning),
     error = 1 << std::to_underlying(phrasing::error),
 
-    all = regular | emphesis | strong | code | abbreviation | quote | keyboard | highlight | math | example | unarticulated |
-        title | success | warning | error
+    all = regular | emphasis | strong | code | abbreviation | quote | keyboard | highlight | math | example | placeholder |
+        unarticulated | title | success | warning | error
 };
 
 static_assert(

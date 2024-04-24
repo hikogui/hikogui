@@ -42,12 +42,17 @@
     "teal"       : [ 90, 200, 250],
     "yellow"     : [255, 204,   0],
 
-    "gray"       : [142, 142, 147],
-    "gray2"      : [174, 174, 178],
+    "gray10"     : [28, 28, 30],
+    "gray9"      : [44, 44, 46],
+    "gray8"      : [28, 28, 30],
+    "gray7"      : [58, 58, 60],
+    "gray6"      : [99, 99, 102],
+    "gray5"      : [142, 142, 147],
+    "gray4"      : [174, 174, 178],
     "gray3"      : [199, 199, 204],
-    "gray4"      : [209, 209, 214],
-    "gray5"      : [229, 229, 234],
-    "gray6"      : [242, 242, 247],
+    "gray2"      : [209, 209, 214],
+    "gray1"      : [229, 229, 234],
+    "gray0"      : [242, 242, 247],
 
     // Colors used by widgets, to show nesting inside containers,
     // and for internal elements and disabled icons.
@@ -79,20 +84,20 @@
         "family": "Corbel",
         "weight": "regular",
         "size": 10,
-        "color": "foreground"
+        "color": [62, 2, 20]
     },
 
     "label-style": {
         "family": "Corbel",
         "weight": "regular",
         "size": 12,
-        "color": "foreground"
+        "color": [62, 2, 20]
     },
     "warning-label-style": {
         "family": "Corbel",
         "weight": "regular",
         "size": 12,
-        "color": "foreground"
+        "color": [62, 2, 20]
     },
     "error-label-style": {
         "family": "Corbel",

@@ -14,7 +14,8 @@
 
 hi_export_module(hikogui.widgets.overlay_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  * @ingroup widgets
@@ -49,9 +50,7 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(widget_intf const* parent) noexcept : super(parent)
-    {
-    }
+    overlay_widget(widget_intf const* parent) noexcept : super(parent) {}
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept
     {
@@ -70,7 +69,7 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget& emplace(Args&&...args) noexcept
+    Widget& emplace(Args&&... args) noexcept
     {
         hi_axiom(loop::main().on_thread());
         hi_assert(_content == nullptr);
@@ -82,7 +81,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_yield *_content;
     }
@@ -120,12 +119,12 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().color(semantic_color::fill, _layout.layer + 1);
+        return theme().fill_color(_layout.layer + 1);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme().color(semantic_color::border, _layout.layer + 1);
+        return theme().border_color(_layout.layer + 1);
     }
 
     void scroll_to_show(hi::aarectangle rectangle) noexcept override
@@ -163,4 +162,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

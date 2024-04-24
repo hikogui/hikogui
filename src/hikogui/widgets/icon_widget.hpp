@@ -43,7 +43,7 @@ public:
 
     /** The color a non-color icon will be displayed with.
      */
-    observer<color> color = color::foreground();
+    observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
     /** Alignment of the icon inside the widget.
      */
@@ -64,8 +64,8 @@ public:
             icon = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::color>>) {
-            color = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
+            phrasing = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
@@ -140,6 +140,47 @@ public:
             }
         }
     }
+
+    color icon_color() noexcept
+    {
+        switch (*phrasing) {
+        case phrasing::regular:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::emphasis:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::strong:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::code:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::abbreviation:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::quote:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::keyboard:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::highlight:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::math:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::example:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::placeholder:
+            return theme().text_style(semantic_text_style::placeholder)->color;
+        case phrasing::unarticulated:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::title:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::success:
+            return theme().text_style(semantic_text_style::label)->color;
+        case phrasing::warning:
+            return theme().text_style(semantic_text_style::warning)->color;
+        case phrasing::error:
+            return theme().text_style(semantic_text_style::error)->color;
+        default:
+            hi_no_default();
+        }
+    }
+
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
@@ -156,7 +197,7 @@ public:
 
             case icon_type::glyph:
                 {
-                    context.draw_glyph(layout(), _icon_rectangle, _glyph, theme().color(*color));
+                    context.draw_glyph(layout(), _icon_rectangle, _glyph, icon_color());
                 }
                 break;
 

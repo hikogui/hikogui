@@ -70,9 +70,13 @@ public:
      */
     observer<alignment> alignment = hi::alignment::top_flush();
 
-    /** The text style to display the label's text in and color of the label's (non-color) icon.
+    /** The text style to display the label's text in.
      */
     observer<semantic_text_style> text_style = semantic_text_style::label;
+
+    /** The color of the label's (non-color) icon.
+     */
+    observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
     /** Construct a label widget.
      *
@@ -157,6 +161,7 @@ public:
             cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
+    
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
@@ -165,6 +170,7 @@ public:
             }
         }
     }
+
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
@@ -199,6 +205,8 @@ private:
             alignment = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
             text_style = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
+            phrasing = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
@@ -211,6 +219,7 @@ private:
         set_mode(widget_mode::select);
 
         _icon_widget = std::make_unique<icon_widget>(this, label.sub<"icon">());
+        _icon_widget->phrasing = phrasing;
         _text_widget = std::make_unique<text_widget>(this, label.sub<"text">());
         _text_widget->alignment = alignment;
         _text_widget->text_style = text_style;
@@ -224,34 +233,6 @@ private:
             }
         });
         _alignment_cbt(*alignment);
-
-        _text_style_cbt = text_style.subscribe([this](auto...) {
-            switch (*text_style) {
-            case semantic_text_style::label:
-                _icon_widget->color = color::foreground();
-                break;
-            case semantic_text_style::small_label:
-                _icon_widget->color = color::foreground();
-                break;
-            case semantic_text_style::warning:
-                _icon_widget->color = color::orange();
-                break;
-            case semantic_text_style::error:
-                _icon_widget->color = color::red();
-                break;
-            case semantic_text_style::help:
-                _icon_widget->color = color::indigo();
-                break;
-            case semantic_text_style::placeholder:
-                _icon_widget->color = color::gray();
-                break;
-            case semantic_text_style::link:
-                _icon_widget->color = color::blue();
-                break;
-            default:
-                _icon_widget->color = color::foreground();
-            }
-        });
     }
 };
 
