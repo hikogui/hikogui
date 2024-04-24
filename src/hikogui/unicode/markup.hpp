@@ -25,7 +25,7 @@ hi_export namespace hi { inline namespace v1 {
  *   `[[`        | Escape literal `~`
  *   `[.]`       | Reset phrasing and language to default.
  *   `[r]`       | Set phrasing to regular
- *   `[e]`       | Set phrasing to emphesis
+ *   `[e]`       | Set phrasing to emphasis
  *   `[s]`       | Set phrasing to strong
  *   `[c]`       | Set phrasing to code
  *   `[a]`       | Set phrasing to abbreviation
@@ -34,6 +34,7 @@ hi_export namespace hi { inline namespace v1 {
  *   `[h]`       | Set phrasing to highlight
  *   `[m]`       | Set phrasing to math
  *   `[x]`       | Set phrasing to example
+ *   `[p]`       | Set phrasing to placeholder
  *   `[u]`       | Set phrasing to unarticulated
  *   `[t]`       | Set phrasing to title
  *   `[S]`       | Set phrasing to success

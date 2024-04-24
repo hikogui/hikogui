@@ -116,7 +116,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().color(semantic_color::fill, _layout.layer + 2);
+            return theme().fill_color(_layout.layer + 2);
         } else {
             return super::background_color();
         }

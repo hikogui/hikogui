@@ -278,15 +278,15 @@ public:
             if (not _error_label->empty()) {
                 return theme().text_style(semantic_text_style::error)->color;
             } else if (_text_widget->focus()) {
-                return theme().color(semantic_color::accent);
+                return theme().accent_color();
             } else if (phase() == widget_phase::hover) {
-                return theme().color(semantic_color::border, _layout.layer + 1);
+                return theme().border_color(_layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, _layout.layer);
+                return theme().border_color(_layout.layer);
             }
 
         } else {
-            return theme().color(semantic_color::border, _layout.layer - 1);
+            return theme().border_color(_layout.layer - 1);
         }
     }
     /// @endprivatesection

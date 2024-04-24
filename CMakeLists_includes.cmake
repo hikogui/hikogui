@@ -164,7 +164,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/color/color_space.hpp
     src/hikogui/color/quad_color.hpp
     src/hikogui/color/sRGB.hpp
-    src/hikogui/color/semantic_color.hpp
     src/hikogui/concurrency/atomic.hpp
     src/hikogui/concurrency/callback.hpp
     src/hikogui/concurrency/callback_flags.hpp

@@ -119,7 +119,7 @@ public:
     {
         if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
-                context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), layout().rectangle(), theme().fill_color(_layout.layer));
 
                 if (tab_button_has_focus()) {
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
@@ -156,9 +156,9 @@ public:
     [[nodiscard]] color focus_color() const noexcept override
     {
         if (mode() >= widget_mode::partial) {
-            return theme().color(semantic_color::accent);
+            return theme().accent_color();
         } else {
-            return theme().color(semantic_color::border, _layout.layer - 1);
+            return theme().border_color(_layout.layer - 1);
         }
     }
     /// @endprivatesection

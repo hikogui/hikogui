@@ -84,23 +84,23 @@ public:
             } else if (hoverClose) {
                 context.draw_box(layout(), closeRectangle, color{0.5f, 0.0f, 0.0f});
             } else {
-                context.draw_box(layout(), closeRectangle, theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), closeRectangle, theme().fill_color(_layout.layer));
             }
 
             if (pressedMinimize) {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer + 2));
+                context.draw_box(layout(), minimizeRectangle, theme().fill_color(_layout.layer + 2));
             } else if (hoverMinimize) {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer + 1));
+                context.draw_box(layout(), minimizeRectangle, theme().fill_color(_layout.layer + 1));
             } else {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), minimizeRectangle, theme().fill_color(_layout.layer));
             }
 
             if (pressedMaximize) {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer + 2));
+                context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer + 2));
             } else if (hoverMaximize) {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer + 1));
+                context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer + 1));
             } else {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer));
             }
 
             auto const glyph_color = phase() >= widget_phase::normal ? label_color() : foreground_color();
