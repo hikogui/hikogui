@@ -8,7 +8,7 @@
 TEST_SUITE(markup_suite) {
 
 // case 'r': return phrasing::regular;
-// case 'e': return phrasing::emphesis;
+// case 'e': return phrasing::emphasis;
 // case 's': return phrasing::strong;
 // case 'c': return phrasing::code;
 // case 'a': return phrasing::abbreviation;
@@ -18,6 +18,7 @@ TEST_SUITE(markup_suite) {
 // case 'm': return phrasing::math;
 // case 'x': return phrasing::example;
 // case 'u': return phrasing::unarticulated;
+// case 'p': return phrasing::placeholder;
 // case 't': return phrasing::title;
 // case 'S': return phrasing::success;
 // case 'W': return phrasing::warning;
@@ -37,7 +38,7 @@ TEST_CASE(phrasing_emphesis)
     auto tmp = hi::apply_markup("a[e]b[.]c");
     REQUIRE(tmp == "abc");
     REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
-    REQUIRE(tmp[1].phrasing() == hi::phrasing::emphesis);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::emphasis);
     REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 
@@ -110,6 +111,15 @@ TEST_CASE(phrasing_example)
     REQUIRE(tmp == "abc");
     REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
     REQUIRE(tmp[1].phrasing() == hi::phrasing::example);
+    REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
+}
+
+TEST_CASE(phrasing_placeholder)
+{
+    auto tmp = hi::apply_markup("a[p]b[.]c");
+    REQUIRE(tmp == "abc");
+    REQUIRE(tmp[0].phrasing() == hi::phrasing::regular);
+    REQUIRE(tmp[1].phrasing() == hi::phrasing::placeholder);
     REQUIRE(tmp[2].phrasing() == hi::phrasing::regular);
 }
 

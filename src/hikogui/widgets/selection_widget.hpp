@@ -340,7 +340,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (mode() >= widget_mode::partial and not overlay_closed()) {
-            return theme().color(semantic_color::accent);
+            return theme().accent_color();
         } else {
             return super::focus_color();
         }

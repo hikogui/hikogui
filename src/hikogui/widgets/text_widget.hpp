@@ -247,7 +247,7 @@ public:
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             context.draw_text(layout(), _shaped_text);
 
-            context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
+            context.draw_text_selection(layout(), _shaped_text, _selection, theme().text_select_color());
 
             if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
                 context.draw_text_cursors(
@@ -256,8 +256,8 @@ public:
                     _selection.cursor(),
                     _overwrite_mode,
                     to_bool(_has_dead_character),
-                    theme().color(semantic_color::primary_cursor),
-                    theme().color(semantic_color::secondary_cursor));
+                    theme().primary_cursor_color(),
+                    theme().secondary_cursor_color());
             }
         }
     }

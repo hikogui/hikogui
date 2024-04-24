@@ -43,10 +43,10 @@ public:
     }
 
     // It is common to override the context sensitive colors of the default widget.
-    // In this case the background color is 'teal' when the value of the widget is true.
+    // In this case the background color is 'green' when the value of the widget is true.
     [[nodiscard]] hi::color background_color() const noexcept override
     {
-        return *value ? theme().color(hi::semantic_color::green) : widget::background_color();
+        return *value ? hi::color::green() : theme().fill_color();
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.

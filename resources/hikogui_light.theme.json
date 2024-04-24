@@ -42,12 +42,17 @@
     "teal"       : [ 90, 200, 250],
     "yellow"     : [255, 204,   0],
 
-    "gray"       : [142, 142, 147],
-    "gray2"      : [174, 174, 178],
+    "gray10"     : [28, 28, 30],
+    "gray9"      : [44, 44, 46],
+    "gray8"      : [28, 28, 30],
+    "gray7"      : [58, 58, 60],
+    "gray6"      : [99, 99, 102],
+    "gray5"      : [142, 142, 147],
+    "gray4"      : [174, 174, 178],
     "gray3"      : [199, 199, 204],
-    "gray4"      : [209, 209, 214],
-    "gray5"      : [229, 229, 234],
-    "gray6"      : [242, 242, 247],
+    "gray2"      : [209, 209, 214],
+    "gray1"      : [229, 229, 234],
+    "gray0"      : [242, 242, 247],
 
     // Colors used by widgets, to show nesting inside containers,
     // and for internal elements and disabled icons.
@@ -67,32 +72,32 @@
     ],
 
     // Color for textual or primary elements like icons.
-    "foreground-color":       [0, 0, 1],
+    "foreground-color":       "gray10",
 
     // Accent color used by widgets, to show icons, hover and keyboard focus
-    "accent-color":           [  0, 122, 255],
-    "text-select-color":      [  0, 122, 255],
-    "primary-cursor-color":   [  0,   0,   1],
-    "secondary-cursor-color": [170, 170,   1],
+    "accent-color":           "blue",
+    "text-select-color":      "blue",
+    "primary-cursor-color":   "gray10",
+    "secondary-cursor-color": "yellow",
 
     "small-label-style": {
         "family": "Arial",
         "weight": "regular",
         "size": 10,
-        "color": "foreground"
+        "color": "gray10"
     },
 
     "label-style": {
         "family": "Arial",
         "weight": "regular",
         "size": 12,
-        "color": "foreground"
+        "color": "gray10"
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "regular",
         "size": 12,
-        "color": "foreground"
+        "color": "gray10"
     },
     "error-label-style": {
         "family": "Arial",

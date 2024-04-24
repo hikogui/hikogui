@@ -247,7 +247,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().color(semantic_color::fill, _layout.layer + 2);
+            return theme().fill_color(_layout.layer + 2);
         } else {
             return super::background_color();
         }
@@ -333,8 +333,8 @@ private:
 
         // clang-format off
         auto button_color = (phase() == widget_phase::hover or value() == widget_value::on) ?
-            theme().color(semantic_color::fill, _layout.layer - 1) :
-            theme().color(semantic_color::fill, _layout.layer);
+            theme().fill_color(_layout.layer - 1) :
+            theme().fill_color(_layout.layer);
         // clang-format on
 
         auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
