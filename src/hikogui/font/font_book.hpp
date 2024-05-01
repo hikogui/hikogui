@@ -13,6 +13,7 @@
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../path/path.hpp"
+#include <gsl/gsl>
 #include <limits>
 #include <array>
 #include <new>
@@ -214,13 +215,17 @@ public:
     /** Register font family id.
      * If the family already exists the existing family_id is returned.
      */
-    [[nodiscard]] font_family_id register_family(std::string_view family_name) noexcept
+    [[nodiscard]] font_family_id register_family(std::string_view family_name)
     {
         auto name = to_lower(family_name);
 
         auto it = _family_names.find(name);
         if (it == _family_names.end()) {
-            auto const family_id = font_family_id(_font_variants.size());
+            if (_font_variants.size() >= font_family_id::empty_value) {
+                throw std::overflow_error("Too many font-family-ids registered");
+            }
+
+            auto const family_id = font_family_id{gsl::narrow_cast<font_family_id::value_type>(_font_variants.size())};
             _font_variants.emplace_back();
             _family_names[name] = family_id;
             return family_id;
