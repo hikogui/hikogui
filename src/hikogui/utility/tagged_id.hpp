@@ -119,10 +119,6 @@ hi_export template<typename Derived, std::unsigned_integral T, T Empty>
 struct std::hash<hi::tagged_id<Derived, T, Empty>> {
     [[nodiscard]] constexpr std::size_t operator()(hi::tagged_id<Derived, T, Empty> const& rhs) const noexcept
     {
-<<<<<<< HEAD
         return std::hash<T>{}(rhs.value());
-=======
-        return std::hash<T>{}(*rhs);
->>>>>>> origin/main
     }
 };
