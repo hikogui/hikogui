@@ -30,7 +30,7 @@ TEST_CASE(add_and_search)
     REQUIRE(cm.find(U'4') == 204);
     REQUIRE(cm.find(U'5') == 305);
     REQUIRE(cm.find(U'6') == 306);
-    REQUIRE(cm.find(U'7') == 0xffff);
+    REQUIRE(cm.find(U'7').empty());
     REQUIRE(cm.find(U'8') == 208);
     REQUIRE(cm.find(U'9') == 209);
 }
