@@ -10,6 +10,7 @@
 #include "font_variant.hpp"
 #include "font_metrics.hpp"
 #include "font_char_map.hpp"
+#include "font_id.hpp"
 #include "../unicode/unicode.hpp"
 #include "../i18n/i18n.hpp"
 #include "../graphic_path/graphic_path.hpp"
@@ -20,7 +21,7 @@
 #include <map>
 #include <string>
 
-hi_export_module(hikogui.font.font);
+hi_export_module(hikogui.font : font);
 
 hi_export namespace hi::inline v1 {
 
@@ -66,7 +67,7 @@ public:
 
     /** List of fonts to use as a fallback for this font.
      */
-    std::vector<hi::font *> fallback_chain;
+    std::vector<hi::font_id> fallback_chain;
 
     font() = default;
     virtual ~font() = default;

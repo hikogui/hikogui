@@ -141,7 +141,7 @@ public:
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font const& font) noexcept
+    void initialize_glyph(hi::font_id font) noexcept
     {
         if (not glyph_is_initial) {
             set_glyph(find_glyph(font, grapheme));
@@ -171,9 +171,8 @@ public:
      */
     void replace_glyph(char32_t code_point) noexcept
     {
-        hi_axiom_not_null(glyphs.font);
-        auto const& font = *glyphs.font;
-        set_glyph(font_book::font_glyphs_type{font, font.find_glyph(code_point)});
+        hi_axiom(not glyphs.font.empty());
+        set_glyph(font_book::font_glyphs_type{glyphs.font, glyphs.font->find_glyph(code_point)});
 
         glyph_is_initial = false;
     }
@@ -182,7 +181,7 @@ public:
      */
     [[nodiscard]] font_metrics_px font_metrics() const noexcept
     {
-        hi_axiom_not_null(glyphs.font);
+        hi_axiom(not glyphs.font.empty());
         return font_size * glyphs.font->metrics;
     }
 
@@ -202,7 +201,7 @@ private:
     void set_glyph(hi::font_book::font_glyphs_type&& new_glyphs) noexcept
     {
         glyphs = std::move(new_glyphs);
-        hi_axiom_not_null(glyphs.font);
+        hi_axiom(not glyphs.font.empty());
         font_size = round(style->size * pixel_density, glyphs.get_font_metrics().x_height);
         metrics = font_size.in(pixels_per_em) * glyphs.get_starter_metrics();
     }

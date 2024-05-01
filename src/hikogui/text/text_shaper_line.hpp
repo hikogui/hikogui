@@ -219,7 +219,7 @@ private:
         hi_axiom(first != last);
 
         auto const char_it = *first;
-        auto const& font = *char_it->glyphs.font;
+        auto const font = char_it->glyphs.font;
         auto const script = char_it->script;
         auto const language = iso_639{};
 
@@ -229,7 +229,7 @@ private:
             run += (*it)->grapheme;
         }
 
-        auto result = font.shape_run(language, script, run);
+        auto result = font->shape_run(language, script, run);
         result.scale_and_offset(char_it->font_size.in(pixels_per_em));
         hi_axiom(result.advances.size() == run.size());
         hi_axiom(result.glyph_count.size() == run.size());

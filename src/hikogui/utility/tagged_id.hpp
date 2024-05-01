@@ -88,17 +88,22 @@ public:
         return not empty();
     }
 
-    constexpr explicit operator value_type() const noexcept
-    {
-        return _v;
-    }
-
-    [[nodiscard]] constexpr value_type operator*() const
+    [[nodiscard]] constexpr value_type value() const
     {
         if (_v == empty_value) {
             throw std::overflow_error("Dereferencing an empty identifier");
         }
         return _v;
+    }
+
+    constexpr explicit operator value_type() const
+    {
+        return value();
+    }
+
+    [[nodiscard]] constexpr value_type operator*() const
+    {
+        return value();
     }
 
     [[nodiscard]] constexpr friend auto operator<=>(tagged_id const&, tagged_id const &) noexcept = default;
@@ -114,6 +119,6 @@ hi_export template<typename Derived, std::unsigned_integral T, T Empty>
 struct std::hash<hi::tagged_id<Derived, T, Empty>> {
     [[nodiscard]] constexpr std::size_t operator()(hi::tagged_id<Derived, T, Empty> const& rhs) const noexcept
     {
-        return std::hash<T>{}(*rhs);
+        return std::hash<T>{}(rhs.value());
     }
 };

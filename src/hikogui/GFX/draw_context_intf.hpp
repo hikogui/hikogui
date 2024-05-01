@@ -375,7 +375,7 @@ public:
     void draw_glyph(
         WidgetLayout const& layout,
         quad const& box,
-        hi::font const& font,
+        hi::font_id font,
         glyph_id glyph,
         draw_attributes const& attributes) const noexcept
     {
@@ -394,7 +394,7 @@ public:
     void draw_glyph(
         WidgetLayout const& layout,
         Shape const& box,
-        hi::font const& font,
+        hi::font_id font,
         hi::glyph_id glyph_id,
         Attributes const&...attributes) const noexcept
     {
@@ -730,7 +730,7 @@ private:
     void _draw_glyph(
         aarectangle const& clipping_rectangle,
         quad const& box,
-        hi::font const& font,
+        hi::font_id font,
         glyph_id glyph,
         draw_attributes const& attributes) const noexcept;
 
