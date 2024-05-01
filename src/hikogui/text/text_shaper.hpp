@@ -92,8 +92,8 @@ public:
         _alignment(alignment),
         _script(script)
     {
-        auto const& font = find_font(style->family_id, style->variant);
-        _initial_line_metrics = style->size * _pixel_density * font.metrics;
+        auto const font = find_font(style->family_id, style->variant);
+        _initial_line_metrics = style->size * _pixel_density * font->metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {

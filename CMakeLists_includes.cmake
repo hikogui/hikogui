@@ -237,6 +237,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/font/font_char_map.hpp
     src/hikogui/font/font_family_id.hpp
     src/hikogui/font/font_font.hpp
+    src/hikogui/font/font_id.hpp
     src/hikogui/font/font_metrics.hpp
     src/hikogui/font/font_style.hpp
     src/hikogui/font/font_variant.hpp

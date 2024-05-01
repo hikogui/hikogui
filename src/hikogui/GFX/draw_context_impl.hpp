@@ -99,7 +99,7 @@ draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_at
 inline void draw_context::_draw_glyph(
     aarectangle const& clipping_rectangle,
     quad const& box,
-    font const& font,
+    font_id font,
     glyph_id glyph,
     draw_attributes const& attributes) const noexcept
 {
