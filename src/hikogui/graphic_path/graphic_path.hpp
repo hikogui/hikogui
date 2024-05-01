@@ -16,6 +16,11 @@
 #include <utility>
 #include <cmath>
 
+hi_warning_push();
+// warning C4459: declaration of 'point' hides global declaration
+// The unit library has a 'point' and 'points' global variables.
+hi_warning_ignore_msvc(4459);
+
 hi_export_module(hikogui.graphic_path);
 
 hi_export namespace hi { inline namespace v1 {
@@ -671,3 +676,5 @@ hi_export inline void fill(pixmap_span<sdf_r8> dst, graphic_path const& path) no
 }
 
 }} // namespace hi::v1
+
+hi_warning_pop();
