@@ -8,6 +8,7 @@
 #include "font_font.hpp" // export
 #include "font_book.hpp" // export
 #include "font_family_id.hpp" // export
+#include "font_id.hpp" // export
 #include "font_metrics.hpp" // export
 #include "font_variant.hpp" // export
 #include "font_weight.hpp" // export

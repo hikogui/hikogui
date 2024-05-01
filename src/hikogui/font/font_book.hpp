@@ -5,6 +5,7 @@
 #pragma once
 
 #include "font_font.hpp"
+#include "font_id.hpp"
 #include "font_family_id.hpp"
 #include "true_type_font.hpp"
 #include "elusive_icon.hpp"
@@ -13,13 +14,14 @@
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../path/path.hpp"
+#include <gsl/gsl>
 #include <limits>
 #include <array>
 #include <new>
 #include <atomic>
 #include <filesystem>
 
-hi_export_module(hikogui.font.font_book);
+hi_export_module(hikogui.font : font_book);
 
 hi_export namespace hi::inline v1 {
 
@@ -29,26 +31,27 @@ hi_export namespace hi::inline v1 {
  *
  *
  */
-hi_export class font_book {
+class font_book {
 public:
     struct font_glyph_type {
-        hi::font const *font = nullptr;
+        hi::font_id font = {};
         hi::glyph_id id = {};
 
         constexpr font_glyph_type() noexcept = default;
-        constexpr font_glyph_type(hi::font const& font, glyph_id id) noexcept : font(std::addressof(font)), id(id) {}
+        constexpr font_glyph_type(hi::font_id font, glyph_id id) noexcept : font(font), id(id)
+        {
+            hi_axiom(not font.empty());
+        }
 
         [[nodiscard]] constexpr friend bool operator==(font_glyph_type const&, font_glyph_type const&) noexcept = default;
 
         [[nodiscard]] font_metrics_em const& get_font_metrics() const noexcept
         {
-            hi_axiom_not_null(font);
             return font->metrics;
         }
 
         [[nodiscard]] glyph_metrics get_metrics() const noexcept
         {
-            hi_axiom_not_null(font);
             return font->get_metrics(id);
         }
 
@@ -59,26 +62,28 @@ public:
     };
 
     struct font_glyphs_type {
-        hi::font const *font = nullptr;
+        hi::font_id font = {};
         lean_vector<glyph_id> ids = {};
 
         constexpr font_glyphs_type() noexcept = default;
-        font_glyphs_type(hi::font const& font, lean_vector<glyph_id> ids) noexcept :
-            font(std::addressof(font)), ids(std::move(ids))
+        font_glyphs_type(hi::font_id font, lean_vector<glyph_id> ids) noexcept :
+            font(font), ids(std::move(ids))
         {
+            hi_axiom(not this->font.empty());
+            hi_axiom(not this->ids.empty());
         }
-        font_glyphs_type(hi::font const& font, glyph_id id) noexcept : font(std::addressof(font)), ids{id} {}
+
+        font_glyphs_type(hi::font_id font, glyph_id id) noexcept : font(font), ids{id} {
+            hi_axiom(not this->font.empty());
+        }
 
         [[nodiscard]] font_metrics_em const& get_font_metrics() const noexcept
         {
-            hi_axiom_not_null(font);
             return font->metrics;
         }
 
         [[nodiscard]] glyph_metrics get_starter_metrics() const noexcept
         {
-            hi_axiom(not ids.empty());
-            hi_axiom_not_null(font);
             return font->get_metrics(ids.front());
         }
     };
@@ -103,24 +108,26 @@ public:
      * @param path Location of font.
      * @param post_process Calculate font fallback
      */
-    font& register_font_file(std::filesystem::path const& path, bool post_process = true)
+    font_id register_font_file(std::filesystem::path const& path, bool post_process = true)
     {
-        auto font = std::make_unique<true_type_font>(path);
-        auto font_ptr = font.get();
+        if (_fonts.size() >= font_id::empty_value) {
+            throw std::overflow_error("Too many fonts registered");
+        }
 
-        hi_log_info("Parsed font {}: {}", path.string(), to_string(*font));
+        auto const font_id = hi::font_id{gsl::narrow_cast<font_id::value_type>(_fonts.size())};
+        auto const &font = *_fonts.emplace_back(std::make_unique<true_type_font>(path));
+        _fallback_chain.push_back(font_id);
 
-        auto const font_family_id = register_family(font->family_name);
-        _font_variants[*font_family_id][font->font_variant()] = font_ptr;
+        hi_log_info("Parsed font id={} {}: {}", *font_id, path.string(), to_string(font));
 
-        _fonts.emplace_back(std::move(font));
-        _font_ptrs.push_back(font_ptr);
+        auto const font_family_id = register_family(font.family_name);
+        _font_variants[*font_family_id][font.font_variant()] = font_id;
 
         if (post_process) {
             this->post_process();
         }
 
-        return *font_ptr;
+        return font_id;
     }
 
     /** Register all fonts found in a directory.
@@ -153,7 +160,7 @@ public:
     void post_process() noexcept
     {
         // Sort the list of fonts based on the amount of unicode code points it supports.
-        std::sort(begin(_font_ptrs), end(_font_ptrs), [](auto const& lhs, auto const& rhs) {
+        std::sort(begin(_fallback_chain), end(_fallback_chain), [](auto const& lhs, auto const& rhs) {
             return lhs->char_map.count() > rhs->char_map.count();
         });
 
@@ -169,20 +176,20 @@ public:
             size(italic_fallback_chain));
 
         // For each font, find fallback list.
-        for (auto const& font : _font_ptrs) {
-            auto fallback_chain = std::vector<hi::font *>{};
+        for (auto const& font : _fallback_chain) {
+            auto fallback_chain = std::vector<hi::font_id>{};
 
             // Put the fonts from the same family, italic and weight first.
-            for (auto const& fallback : _font_ptrs) {
+            for (auto const& fallback : _fallback_chain) {
                 // clang-format off
-            if (
-                (fallback != font) and
-                (fallback->family_name == font->family_name) and
-                (fallback->style == font->style) and
-                almost_equal(fallback->weight, font->weight)
-            ) {
-                fallback_chain.push_back(fallback);
-            }
+                if (
+                    (fallback != font) and
+                    (fallback->family_name == font->family_name) and
+                    (fallback->style == font->style) and
+                    almost_equal(fallback->weight, font->weight)
+                ) {
+                    fallback_chain.push_back(fallback);
+                }
                 // clang-format on
             }
 
@@ -214,13 +221,17 @@ public:
     /** Register font family id.
      * If the family already exists the existing family_id is returned.
      */
-    [[nodiscard]] font_family_id register_family(std::string_view family_name) noexcept
+    [[nodiscard]] font_family_id register_family(std::string_view family_name)
     {
         auto name = to_lower(family_name);
 
         auto it = _family_names.find(name);
         if (it == _family_names.end()) {
-            auto const family_id = font_family_id(_font_variants.size());
+            if (_font_variants.size() >= font_family_id::empty_value) {
+                throw std::overflow_error("Too many font-family-ids registered");
+            }
+
+            auto const family_id = font_family_id{gsl::narrow_cast<font_family_id::value_type>(_font_variants.size())};
             _font_variants.emplace_back();
             _family_names[name] = family_id;
             return family_id;
@@ -236,15 +247,15 @@ public:
      * @param variant The variant of the font to select.
      * @return a valid font id.
      */
-    [[nodiscard]] font const& find_font(font_family_id family_id, font_variant variant) const noexcept
+    [[nodiscard]] font_id find_font(font_family_id family_id, font_variant variant) const noexcept
     {
         hi_assert(family_id);
         hi_assert_bounds(*family_id, _font_variants);
 
         auto const& variants = _font_variants[*family_id];
-        for (auto alternative_variant : alternatives(variant)) {
-            if (auto font = variants[alternative_variant]) {
-                return *font;
+        for (auto i : alternatives(variant)) {
+            if (auto id = variants[i]) {
+                return id;
             }
         }
 
@@ -252,21 +263,9 @@ public:
         hi_no_default();
     }
 
-    /** Find a font closest to the variant.
-     * This function will always return a valid font_id.
-     *
-     * @param family_name A name of a font family, which may be invalid.
-     * @param weight The weight of the font to select.
-     * @param style If the font to select should be italic or not.
-     * @return A pointer to a font, or nullptr when the family was not found.
-     */
-    [[nodiscard]] font const *find_font(std::string const& family_name, font_variant variant) const noexcept
+    [[nodiscard]] font &get_font(font_id id) const
     {
-        if (auto const family_id = find_family(family_name)) {
-            return &find_font(family_id, variant);
-        } else {
-            return nullptr;
-        }
+        return *_fonts.at(*id);
     }
 
     /** Find a glyph using the given code-point.
@@ -277,16 +276,16 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] font_glyphs_type find_glyph(font const& font, hi::grapheme grapheme) const noexcept
+    [[nodiscard]] font_glyphs_type find_glyph(font_id font, hi::grapheme grapheme) const noexcept
     {
         // First try the selected font.
-        if (auto const glyph_ids = font.find_glyph(grapheme); not glyph_ids.empty()) {
+        if (auto const glyph_ids = font->find_glyph(grapheme); not glyph_ids.empty()) {
             return {font, std::move(glyph_ids)};
         }
 
         // Scan fonts which are fallback to this.
-        for (auto const fallback : font.fallback_chain) {
-            hi_axiom_not_null(fallback);
+        for (auto const fallback : font->fallback_chain) {
+            hi_axiom(not fallback.empty());
             if (auto const glyph_ids = fallback->find_glyph(grapheme); not glyph_ids.empty()) {
                 return {*fallback, std::move(glyph_ids)};
             }
@@ -304,18 +303,18 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] font_glyph_type find_glyph(font const& font, char32_t code_point) const noexcept
+    [[nodiscard]] font_glyph_type find_glyph(font_id font, char32_t code_point) const noexcept
     {
         // First try the selected font.
-        if (auto const glyph_id = font.find_glyph(code_point)) {
+        if (auto const glyph_id = font->find_glyph(code_point)) {
             return {font, glyph_id};
         }
 
         // Scan fonts which are fallback to this.
-        for (auto const fallback : font.fallback_chain) {
-            hi_axiom_not_null(fallback);
+        for (auto const fallback : font->fallback_chain) {
+            hi_axiom(not fallback.empty());
             if (auto const glyph_id = fallback->find_glyph(code_point)) {
-                return {*fallback, glyph_id};
+                return {fallback, glyph_id};
             }
         }
 
@@ -330,14 +329,14 @@ private:
 
     /** Different fonts; variants of a family.
      */
-    std::vector<std::array<font const *, font_variant::size()>> _font_variants;
+    std::vector<std::array<font_id, font_variant::size()>> _font_variants;
 
     std::vector<std::unique_ptr<font>> _fonts;
-    std::vector<hi::font *> _font_ptrs;
+    std::vector<hi::font_id> _fallback_chain;
 
-    [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, font_style style) noexcept
+    [[nodiscard]] std::vector<hi::font_id> make_fallback_chain(font_weight weight, font_style style) noexcept
     {
-        auto r = _font_ptrs;
+        auto r = _fallback_chain;
 
         std::stable_partition(begin(r), end(r), [weight, style](auto const& item) {
             return (item->style == style) and almost_equal(item->weight, weight);
@@ -347,11 +346,11 @@ private:
         for (auto& font : r) {
             if (font->char_map.update_mask(char_mask) == 0) {
                 // This font did not add any code points.
-                font = nullptr;
+                font = std::nullopt;
             }
         }
 
-        std::erase(r, nullptr);
+        std::erase(r, std::nullopt);
         return r;
     }
 };
@@ -378,17 +377,17 @@ inline font_book& font_book::global() noexcept
  *
  * @param path Location of font.
  */
-hi_export inline font& register_font_file(std::filesystem::path const& path)
+inline font_id register_font_file(std::filesystem::path const& path)
 {
     return font_book::global().register_font_file(path);
 }
 
-hi_export inline void register_font_directory(std::filesystem::path const& path)
+inline void register_font_directory(std::filesystem::path const& path)
 {
     return font_book::global().register_font_directory(path);
 }
 
-hi_export template<typename Range>
+template<typename Range>
 inline void register_font_directories(Range&& range) noexcept
 {
     for (auto const& path : range) {
@@ -400,7 +399,7 @@ inline void register_font_directories(Range&& range) noexcept
 /** Find font family id.
  * This function will always return a valid font_family_id by walking the fallback-chain.
  */
-hi_export [[nodiscard]] inline font_family_id find_font_family(std::string const& family_name) noexcept
+[[nodiscard]] inline font_family_id find_font_family(std::string const& family_name) noexcept
 {
     return font_book::global().find_family(family_name);
 }
@@ -412,7 +411,7 @@ hi_export [[nodiscard]] inline font_family_id find_font_family(std::string const
  * @param variant The variant of the font to select.
  * @return a valid font id.
  */
-hi_export [[nodiscard]] inline font const& find_font(font_family_id family_id, font_variant variant = font_variant{}) noexcept
+[[nodiscard]] inline font_id find_font(font_family_id family_id, font_variant variant = font_variant{}) noexcept
 {
     return font_book::global().find_font(family_id, variant);
 }
@@ -424,9 +423,13 @@ hi_export [[nodiscard]] inline font const& find_font(font_family_id family_id, f
  * @param variant The variant of the font to select.
  * @return A pointer to the loaded font.
  */
-hi_export [[nodiscard]] inline font const *find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
+[[nodiscard]] inline font_id find_font(std::string const& family_name, font_variant variant = font_variant{}) noexcept
 {
-    return font_book::global().find_font(family_name, variant);
+    if (auto family_id = find_font_family(family_name)) {
+        return find_font(family_id, variant);
+    } else {
+        return font_id{};
+    }
 }
 
 /** Find a glyph using the given code-point.
@@ -437,7 +440,7 @@ hi_export [[nodiscard]] inline font const *find_font(std::string const& family_n
  * @param grapheme The Unicode grapheme to find in the font.
  * @return A list of glyphs which matched the grapheme.
  */
-hi_export [[nodiscard]] inline auto find_glyph(font const& font, grapheme grapheme) noexcept
+[[nodiscard]] inline auto find_glyph(font_id font, grapheme grapheme) noexcept
 {
     return font_book::global().find_glyph(font, grapheme);
 }
@@ -450,23 +453,33 @@ hi_export [[nodiscard]] inline auto find_glyph(font const& font, grapheme graphe
  * @param grapheme The Unicode grapheme to find in the font.
  * @return A list of glyphs which matched the grapheme.
  */
-hi_export [[nodiscard]] inline auto find_glyph(font const& font, char32_t code_point) noexcept
+[[nodiscard]] inline font_book::font_glyph_type find_glyph(font_id font, char32_t code_point) noexcept
 {
     return font_book::global().find_glyph(font, code_point);
 }
 
-hi_export [[nodiscard]] inline auto find_glyph(elusive_icon rhs) noexcept
+[[nodiscard]] inline font_book::font_glyph_type find_glyph(elusive_icon rhs) noexcept
 {
-    auto const *font = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
-    hi_assert_not_null(font, "Could not find Elusive icon font");
-    return find_glyph(*font, std::to_underlying(rhs));
+    auto const id = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
+    hi_assert(not id.empty(), "Could not find Elusive icon font");
+    return find_glyph(id, std::to_underlying(rhs));
 }
 
-hi_export [[nodiscard]] inline auto find_glyph(hikogui_icon rhs) noexcept
+[[nodiscard]] inline font_book::font_glyph_type find_glyph(hikogui_icon rhs) noexcept
 {
-    auto const *font = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
-    hi_assert_not_null(font, "Could not find HikoGUI icon font");
-    return find_glyph(*font, std::to_underlying(rhs));
+    auto const id = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
+    hi_assert(not id.empty(), "Could not find HikoGUI icon font");
+    return find_glyph(id, std::to_underlying(rhs));
+}
+
+[[nodiscard]] inline font &get_font(font_id id)
+{
+    return font_book::global().get_font(id);
+}
+
+[[nodiscard]] inline font *font_id::operator->() const
+{
+    return std::addressof(get_font(*this));
 }
 
 } // namespace hi::inline v1

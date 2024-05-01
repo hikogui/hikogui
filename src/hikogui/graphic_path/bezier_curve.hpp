@@ -19,6 +19,11 @@
 #include <cmath>
 #include <span>
 
+hi_warning_push();
+// warning C4459: declaration of 'point' hides global declaration
+// The unit library has a 'point' and 'points' global variables.
+hi_warning_ignore_msvc(4459);
+
 hi_export_module(hikogui.graphic_path.bezier_curve);
 
 hi_export namespace hi { inline namespace v1 {
@@ -714,3 +719,5 @@ constexpr void fill(pixmap_span<sdf_r8> image, std::vector<bezier_curve> const& 
 }
 
 }} // namespace hi::v1
+
+hi_warning_pop();
