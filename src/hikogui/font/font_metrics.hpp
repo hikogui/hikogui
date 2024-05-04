@@ -53,12 +53,12 @@ hi_export struct font_metrics {
     /** The multiplier for the space between lines of the same paragraph.
      * @note This is not an actual font property, but comes from the text-style.
      */
-    float line_spacing = 0.0f;
+    float line_spacing = 1.0f;
 
     /** The multiplier for the space between two paragraphs.
      * @note This is not an actual font property, but comes from the text-style.
      */
-    float paragraph_spacing = 0.0f;
+    float paragraph_spacing = 1.0f;
 
     ~font_metrics() = default;
     constexpr font_metrics() noexcept = default;
