@@ -412,11 +412,13 @@ public:
     void draw_glyph(
         WidgetLayout const& layout,
         quad const& box,
-        font_book::font_glyph_type const& glyph,
+        font_glyph_ids const& glyphs,
         draw_attributes const& attributes) const noexcept
     {
-        return _draw_glyph(
-            layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, *glyph.font, glyph.id, attributes);
+        for (auto glyph_id : glyphs) {
+            _draw_glyph(
+                layout.clipping_rectangle_on_window(attributes.clipping_rectangle), layout.to_window3() * box, glyphs.font, glyph_id, attributes);
+        }
     }
 
     /** Draw a glyph.
@@ -430,10 +432,12 @@ public:
     void draw_glyph(
         WidgetLayout const& layout,
         Shape const& box,
-        font_book::font_glyph_type const& glyph,
+        font_glyph_ids const& glyphs,
         Attributes const&...attributes) const noexcept
     {
-        return draw_glyph(layout, make_quad(box), *glyph.font, glyph.id, draw_attributes{attributes...});
+        for (auto glyph_id : glyphs) {
+            draw_glyph(layout, make_quad(box), glyphs.font, glyph_id, draw_attributes{attributes...});
+        }
     }
 
     /** Draw shaped text.

@@ -39,7 +39,7 @@ public:
      *     for better continuation of cursive text and merging of graphemes into
      *     a ligature.
      */
-    hi::font_book::font_glyphs_type glyphs;
+    hi::font_glyph_ids glyphs;
 
     /** The glyph metrics of the current starter glyph.
      *
@@ -171,9 +171,7 @@ public:
      */
     void replace_glyph(char32_t code_point) noexcept
     {
-        hi_axiom(not glyphs.font.empty());
-        set_glyph(font_book::font_glyphs_type{glyphs.font, glyphs.font->find_glyph(code_point)});
-
+        set_glyph(find_glyph(glyphs.font, code_point));
         glyph_is_initial = false;
     }
 
@@ -198,12 +196,12 @@ public:
 private:
     /** Load metrics based on the loaded glyph.
      */
-    void set_glyph(hi::font_book::font_glyphs_type&& new_glyphs) noexcept
+    void set_glyph(hi::font_glyph_ids&& new_glyphs) noexcept
     {
         glyphs = std::move(new_glyphs);
         hi_axiom(not glyphs.font.empty());
-        font_size = round(style->size * pixel_density, glyphs.get_font_metrics().x_height);
-        metrics = font_size.in(pixels_per_em) * glyphs.get_starter_metrics();
+        font_size = round(style->size * pixel_density, glyphs.font_metrics().x_height);
+        metrics = font_size.in(pixels_per_em) * glyphs.front_glyph_metrics();
     }
 };
 
