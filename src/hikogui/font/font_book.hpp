@@ -6,6 +6,7 @@
 
 #include "font_font.hpp"
 #include "font_id.hpp"
+#include "font_glyph_ids.hpp"
 #include "font_family_id.hpp"
 #include "true_type_font.hpp"
 #include "elusive_icon.hpp"
@@ -33,61 +34,6 @@ hi_export namespace hi::inline v1 {
  */
 class font_book {
 public:
-    struct font_glyph_type {
-        hi::font_id font = {};
-        hi::glyph_id id = {};
-
-        constexpr font_glyph_type() noexcept = default;
-        constexpr font_glyph_type(hi::font_id font, glyph_id id) noexcept : font(font), id(id)
-        {
-            hi_axiom(not font.empty());
-        }
-
-        [[nodiscard]] constexpr friend bool operator==(font_glyph_type const&, font_glyph_type const&) noexcept = default;
-
-        [[nodiscard]] font_metrics_em const& get_font_metrics() const noexcept
-        {
-            return font->metrics;
-        }
-
-        [[nodiscard]] glyph_metrics get_metrics() const noexcept
-        {
-            return font->get_metrics(id);
-        }
-
-        [[nodiscard]] aarectangle get_bounding_rectangle() const noexcept
-        {
-            return get_metrics().bounding_rectangle;
-        }
-    };
-
-    struct font_glyphs_type {
-        hi::font_id font = {};
-        lean_vector<glyph_id> ids = {};
-
-        constexpr font_glyphs_type() noexcept = default;
-        font_glyphs_type(hi::font_id font, lean_vector<glyph_id> ids) noexcept :
-            font(font), ids(std::move(ids))
-        {
-            hi_axiom(not this->font.empty());
-            hi_axiom(not this->ids.empty());
-        }
-
-        font_glyphs_type(hi::font_id font, glyph_id id) noexcept : font(font), ids{id} {
-            hi_axiom(not this->font.empty());
-        }
-
-        [[nodiscard]] font_metrics_em const& get_font_metrics() const noexcept
-        {
-            return font->metrics;
-        }
-
-        [[nodiscard]] glyph_metrics get_starter_metrics() const noexcept
-        {
-            return font->get_metrics(ids.front());
-        }
-    };
-
     static font_book& global() noexcept;
 
     ~font_book() = default;
@@ -268,15 +214,15 @@ public:
         return *_fonts.at(*id);
     }
 
-    /** Find a glyph using the given code-point.
-     * This function will find a glyph matching the grapheme in the selected font, or
-     * find the glyph in the fallback font.
+    /** Find a combination of glyphs matching the given grapheme.
+     * This function will find a combination of glyphs matching the grapheme
+     * in the selected font, or find the glyphs in the fallback font.
      *
      * @param font The font to use to find the grapheme in.
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] font_glyphs_type find_glyph(font_id font, hi::grapheme grapheme) const noexcept
+    [[nodiscard]] font_glyph_ids find_glyph(font_id font, hi::grapheme grapheme) const noexcept
     {
         // First try the selected font.
         if (auto const glyph_ids = font->find_glyph(grapheme); not glyph_ids.empty()) {
@@ -293,33 +239,6 @@ public:
 
         // If all everything has failed, use the tofu block of the original font.
         return {font, {glyph_id{0}}};
-    }
-
-    /** Find a glyph using the given code-point.
-     * This function will find a glyph matching the grapheme in the selected font, or
-     * find the glyph in the fallback font.
-     *
-     * @param font The font to use to find the grapheme in.
-     * @param grapheme The Unicode grapheme to find in the font.
-     * @return A list of glyphs which matched the grapheme.
-     */
-    [[nodiscard]] font_glyph_type find_glyph(font_id font, char32_t code_point) const noexcept
-    {
-        // First try the selected font.
-        if (auto const glyph_id = font->find_glyph(code_point)) {
-            return {font, glyph_id};
-        }
-
-        // Scan fonts which are fallback to this.
-        for (auto const fallback : font->fallback_chain) {
-            hi_axiom(not fallback.empty());
-            if (auto const glyph_id = fallback->find_glyph(code_point)) {
-                return {fallback, glyph_id};
-            }
-        }
-
-        // If all everything has failed, use the tofu block of the original font.
-        return {font, glyph_id{0}};
     }
 
 private:
@@ -440,32 +359,19 @@ inline void register_font_directories(Range&& range) noexcept
  * @param grapheme The Unicode grapheme to find in the font.
  * @return A list of glyphs which matched the grapheme.
  */
-[[nodiscard]] inline auto find_glyph(font_id font, grapheme grapheme) noexcept
+[[nodiscard]] inline font_glyph_ids find_glyph(font_id font, grapheme grapheme) noexcept
 {
     return font_book::global().find_glyph(font, grapheme);
 }
 
-/** Find a glyph using the given code-point.
- * This function will find a glyph matching the grapheme in the selected font, or
- * find the glyph in the fallback font.
- *
- * @param font The font to use to find the grapheme in.
- * @param grapheme The Unicode grapheme to find in the font.
- * @return A list of glyphs which matched the grapheme.
- */
-[[nodiscard]] inline font_book::font_glyph_type find_glyph(font_id font, char32_t code_point) noexcept
-{
-    return font_book::global().find_glyph(font, code_point);
-}
-
-[[nodiscard]] inline font_book::font_glyph_type find_glyph(elusive_icon rhs) noexcept
+[[nodiscard]] inline font_glyph_ids find_glyph(elusive_icon rhs) noexcept
 {
     auto const id = find_font("elusiveicons", font_variant{font_weight::medium, font_style::normal});
     hi_assert(not id.empty(), "Could not find Elusive icon font");
     return find_glyph(id, std::to_underlying(rhs));
 }
 
-[[nodiscard]] inline font_book::font_glyph_type find_glyph(hikogui_icon rhs) noexcept
+[[nodiscard]] inline font_glyph_ids find_glyph(hikogui_icon rhs) noexcept
 {
     auto const id = find_font("Hikogui Icons", font_variant{font_weight::regular, font_style::normal});
     hi_assert(not id.empty(), "Could not find HikoGUI icon font");

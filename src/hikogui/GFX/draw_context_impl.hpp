@@ -146,7 +146,7 @@ inline void draw_context::_draw_text(
         }
 
         atlas_was_updated |= device->SDF_pipeline->place_vertices(
-            *_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
+            *_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.front(), color);
     }
 
     if (atlas_was_updated) {
