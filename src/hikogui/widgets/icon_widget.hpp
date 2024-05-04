@@ -94,22 +94,22 @@ public:
                     process_event({gui_event_type::window_reconstrain});
                 }
 
-            } else if (auto const g1 = std::get_if<font_book::font_glyph_type>(&icon)) {
+            } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
                     (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
                     (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
                     (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
             }
         }
@@ -211,7 +211,7 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     icon_type _icon_type;
-    font_book::font_glyph_type _glyph;
+    font_glyph_ids _glyph;
     gfx_pipeline_image::paged_image _pixmap_backing;
     std::atomic<bool> _icon_has_modified = true;
 

@@ -239,7 +239,7 @@ public:
             }
 
             _chevrons_glyph = find_glyph(elusive_icon::ChevronUp);
-            auto const chevrons_glyph_bbox = _chevrons_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const chevrons_glyph_bbox = _chevrons_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
             _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox, alignment::middle_center());
         }
 
@@ -371,7 +371,7 @@ private:
 
     aarectangle _left_box_rectangle;
 
-    font_book::font_glyph_type _chevrons_glyph;
+    font_glyph_ids _chevrons_glyph;
     aarectangle _chevrons_rectangle;
 
     std::unique_ptr<overlay_widget> _overlay_widget;
