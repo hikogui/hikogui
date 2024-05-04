@@ -27,7 +27,7 @@ struct font_glyph_ids {
     font_glyph_ids& operator=(font_glyph_ids const&) noexcept = default;
     font_glyph_ids& operator=(font_glyph_ids &&) noexcept = default;
     constexpr font_glyph_ids() noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(font_glyph_ids const&, font_glyph_ids const&) noexcept = default;
+    [[nodiscard]] friend bool operator==(font_glyph_ids const&, font_glyph_ids const&) noexcept = default;
 
     font_glyph_ids(hi::font_id font, lean_vector<glyph_id> glyphs) :
         font(font), glyphs(std::move(glyphs))
