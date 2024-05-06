@@ -28,7 +28,7 @@ hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =
-    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+    forward_of<Context, observer<hi::label>, observer<hi::alignment>>;
 
 /** The GUI widget displays and lays out text together with an icon.
  * @ingroup widgets
@@ -69,10 +69,6 @@ public:
      *    used with a `pixmap` icon.
      */
     observer<alignment> alignment = hi::alignment::top_flush();
-
-    /** The text style to display the label's text in.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     /** The color of the label's (non-color) icon.
      */
@@ -137,10 +133,11 @@ public:
             _grid.add_cell(0, 0, _text_widget.get());
         }
 
+        auto const label_style = theme().text_style_set()[{phrasing::regular}];
         auto const icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme().large_icon_size() :
-            (theme().text_style(*text_style)->size * theme().pixel_density).in(pixels_per_em);
+            (label_style.size() * theme().pixel_density).in(pixels_per_em);
 
         _icon_widget->minimum = extent2{icon_size, icon_size};
         _icon_widget->maximum = extent2{icon_size, icon_size};
@@ -191,7 +188,6 @@ private:
     grid_layout<widget *> _grid;
 
     callback<void(hi::label)> _label_cbt;
-    callback<void(semantic_text_style)> _text_style_cbt;
     callback<void(hi::alignment)> _alignment_cbt;
 
     void set_attributes() noexcept {}
@@ -203,8 +199,6 @@ private:
             label = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-            text_style = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
             phrasing = std::forward<First>(first);
         } else {
@@ -222,7 +216,6 @@ private:
         _icon_widget->phrasing = phrasing;
         _text_widget = std::make_unique<text_widget>(this, label.sub<"text">());
         _text_widget->alignment = alignment;
-        _text_widget->text_style = text_style;
         _text_widget->set_mode(mode());
 
         _alignment_cbt = alignment.subscribe([this](auto...) {

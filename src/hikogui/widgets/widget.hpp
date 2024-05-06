@@ -416,15 +416,6 @@ public:
         }
     }
 
-    [[nodiscard]] virtual color label_color() const noexcept
-    {
-        if (mode() >= widget_mode::partial) {
-            return theme().text_style(semantic_text_style::label)->color;
-        } else {
-            return theme().border_color(_layout.layer - 1);
-        }
-    }
-
 protected:
     /** Make an overlay rectangle.
      *

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "grapheme_attributes.hpp" // export
 #include "grapheme.hpp" // export
 #include "gstring.hpp" // export
 #include "markup.hpp" // export

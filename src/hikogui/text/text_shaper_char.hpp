@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "text_style_set.hpp"
 #include "text_style.hpp"
 #include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
@@ -126,9 +127,9 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, hi::pixel_density pixel_density) noexcept :
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style_set const& style, hi::pixel_density pixel_density) noexcept :
         grapheme(grapheme),
-        style(style),
+        style(style[grapheme.attributes()]),
         pixel_density(pixel_density),
         line_nr(std::numeric_limits<size_t>::max()),
         column_nr(std::numeric_limits<size_t>::max()),
@@ -158,7 +159,7 @@ public:
      */
     void initialize_glyph() noexcept
     {
-        return initialize_glyph(find_font(style->family_id, style->variant));
+        return initialize_glyph(style.font_chain()[0]);
     }
 
     /** Called by the bidi-algorithm to mirror glyphs.
@@ -200,7 +201,7 @@ private:
     {
         glyphs = std::move(new_glyphs);
         hi_axiom(not glyphs.font.empty());
-        font_size = round(style->size * pixel_density, glyphs.font_metrics().x_height);
+        font_size = round(style.size() * pixel_density, glyphs.font_metrics().x_height);
         metrics = font_size.in(pixels_per_em) * glyphs.front_glyph_metrics();
     }
 };

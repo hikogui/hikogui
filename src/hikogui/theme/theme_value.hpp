@@ -5,8 +5,6 @@ hi_export_module(hikogui.theme.theme_variable);
 
 hi_export namespace hi { inline namespace v1 {
 
-
-
 template<typename T, fixed_string Tag>
 class theme_variable {
 public:

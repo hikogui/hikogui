@@ -31,7 +31,7 @@ hi_export namespace hi {
 inline namespace v1 {
 
 template<typename Context>
-concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+concept text_widget_attribute = forward_of<Context, observer<hi::alignment>>;
 
 /** A text widget.
  *
@@ -69,10 +69,6 @@ public:
     /** The horizontal alignment of the text inside the space of the widget.
      */
     observer<alignment> alignment = hi::alignment::top_flush();
-
-    /** The style of the text.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     ~text_widget()
     {
@@ -121,12 +117,6 @@ public:
             }
         });
 
-        _text_style_cbt = text_style.subscribe([&](auto...) {
-            ++global_counter<"text_widget:text_style:constrain">;
-            request_scroll();
-            process_event({gui_event_type::window_reconstrain});
-        });
-
         _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
             ++global_counter<"text_widget:cursor_state:redraw">;
             request_redraw();
@@ -153,7 +143,7 @@ public:
      *
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment`.
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Text, text_widget_attribute... Attributes>
     text_widget(
@@ -176,12 +166,10 @@ public:
         // Make sure that the current selection fits the new text.
         _selection.resize(_text_cache.size());
 
-        auto const actual_text_style = theme().text_style(*text_style);
-
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
-        _shaped_text = text_shaper{_text_cache, actual_text_style, theme().pixel_density, alignment_, os_settings::left_to_right()};
+        _shaped_text = text_shaper{_text_cache, theme().text_style_set(), theme().pixel_density, alignment_, os_settings::left_to_right()};
 
         auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         auto const shaped_text_size = shaped_text_rectangle.size();
@@ -821,7 +809,6 @@ private:
     undo_stack<undo_type> _undo_stack = {1000};
 
     callback<void()> _delegate_cbt;
-    callback<void(semantic_text_style)> _text_style_cbt;
     callback<void(cursor_state_type)> _cursor_state_cbt;
 
     void set_attributes() noexcept {}
@@ -831,8 +818,6 @@ private:
     {
         if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-            text_style = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }

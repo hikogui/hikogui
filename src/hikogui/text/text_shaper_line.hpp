@@ -39,6 +39,14 @@ public:
      */
     font_metrics_px metrics;
 
+    /** The maximum line spacing for each grapheme on this line.
+    */
+    float line_spacing = 1.0f;
+
+    /** The maximum paragraph spacing for each grapheme on this line.
+    */
+    float paragraph_spacing = 1.5f;
+
     /** The line number of this line, counted from top to bottom.
      */
     size_t line_nr;
@@ -103,6 +111,8 @@ public:
             // For example a paragraph separator is seldom available in a font.
             if (is_visible(it->general_category)) {
                 this->metrics = max(metrics, it->font_metrics());
+                this->line_spacing = std::max(this->line_spacing, it->style.line_spacing());
+                this->paragraph_spacing = std::max(this->paragraph_spacing, it->style.paragraph_spacing());
                 last_visible_it = it;
             }
         }
