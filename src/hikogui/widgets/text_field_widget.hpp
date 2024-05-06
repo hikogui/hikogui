@@ -75,10 +75,6 @@ public:
      */
     observer<bool> continues = false;
 
-    /** The style of the text.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
-
     /** The alignment of the text.
      */
     observer<alignment> alignment = alignment::middle_flush();
@@ -100,18 +96,14 @@ public:
         this->delegate->init(*this);
 
         _scroll_widget = std::make_unique<scroll_widget<axis::none>>(this);
-        _text_widget = &_scroll_widget->emplace<text_widget>(_text, alignment, text_style);
+        _text_widget = &_scroll_widget->emplace<text_widget>(_text, alignment);
         _text_widget->set_mode(widget_mode::partial);
 
         _error_label_widget =
-            std::make_unique<label_widget>(this, _error_label, alignment::top_left(), semantic_text_style::error);
+            std::make_unique<label_widget>(this, _error_label, alignment::top_left());
 
         _continues_cbt = continues.subscribe([&](auto...) {
             ++global_counter<"text_field_widget:continues:constrain">;
-            process_event({gui_event_type::window_reconstrain});
-        });
-        _text_style_cbt = text_style.subscribe([&](auto...) {
-            ++global_counter<"text_field_widget:text_style:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
         _text_cbt = _text.subscribe([&](auto...) {
@@ -138,7 +130,7 @@ public:
      *
      * @param parent The owner of this widget.
      * @param value The value or `observer` value which represents the state of the text-field.
-     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment`.
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Value, text_field_widget_attribute... Attributes>
     text_field_widget(
@@ -276,7 +268,8 @@ public:
     {
         if (mode() >= widget_mode::partial) {
             if (not _error_label->empty()) {
-                return theme().text_style(semantic_text_style::error)->color;
+                auto const error_style = theme().text_style_set()[{phrasing::error}];
+                return error_style.color();
             } else if (_text_widget->focus()) {
                 return theme().accent_color();
             } else if (phase() == widget_phase::hover) {
@@ -314,7 +307,6 @@ private:
 
     callback<void()> _delegate_cbt;
     callback<void(bool)> _continues_cbt;
-    callback<void(semantic_text_style)> _text_style_cbt;
     callback<void(gstring)> _text_cbt;
     callback<void(label)> _error_label_cbt;
 
@@ -325,8 +317,6 @@ private:
     {
         if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-            text_style = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }

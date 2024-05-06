@@ -7,7 +7,7 @@
 #include "text_shaper_char.hpp"
 #include "text_shaper_line.hpp"
 #include "text_cursor.hpp"
-#include "text_style.hpp"
+#include "text_style_set.hpp"
 #include "../layout/layout.hpp"
 #include "../font/font.hpp"
 #include "../geometry/geometry.hpp"
@@ -82,7 +82,7 @@ public:
      */
     [[nodiscard]] text_shaper(
         gstring const& text,
-        text_style const& style,
+        text_style_set const& style,
         hi::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
@@ -92,8 +92,8 @@ public:
         _alignment(alignment),
         _script(script)
     {
-        auto const font = find_font(style->family_id, style->variant);
-        _initial_line_metrics = style->size * _pixel_density * font->metrics;
+        auto const font = style.front().font_chain()[0];
+        _initial_line_metrics = style.front().size() * _pixel_density * font->metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {
@@ -133,7 +133,7 @@ public:
 
     [[nodiscard]] text_shaper(
         std::string_view text,
-        text_style const& style,
+        text_style_set const& style,
         hi::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
@@ -200,20 +200,18 @@ public:
      *
      * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
      *        the natural text size without folding.
-     * @param line_spacing The scaling of the spacing between lines.
-     * @param paragraph_spacing The scaling of the spacing between paragraphs.
      * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
      *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
      */
     [[nodiscard]] aarectangle
-    bounding_rectangle(float maximum_line_width, float line_spacing = 1.0f, float paragraph_spacing = 1.5f) noexcept
+    bounding_rectangle(float maximum_line_width) noexcept
     {
         auto const rectangle = aarectangle{
             point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
         constexpr auto baseline = 0.0f;
         constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
 
-        auto const lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
+        auto const lines = make_lines(rectangle, baseline, sub_pixel_size);
         hi_assert(not lines.empty());
 
         auto max_width = 0.0f;
@@ -241,12 +239,10 @@ public:
     void layout(
         aarectangle rectangle,
         float baseline,
-        extent2 sub_pixel_size,
-        float line_spacing = 1.0f,
-        float paragraph_spacing = 1.5f) noexcept
+        extent2 sub_pixel_size) noexcept
     {
         _rectangle = rectangle;
-        _lines = make_lines(rectangle, baseline, sub_pixel_size, line_spacing, paragraph_spacing);
+        _lines = make_lines(rectangle, baseline, sub_pixel_size);
         hi_assert(not _lines.empty());
         position_glyphs(rectangle, sub_pixel_size);
     }
@@ -886,7 +882,7 @@ private:
     aarectangle _rectangle;
 
     static void
-    layout_lines_vertical_spacing(text_shaper::line_vector& lines, float line_spacing, float paragraph_spacing) noexcept
+    layout_lines_vertical_spacing(text_shaper::line_vector& lines) noexcept
     {
         hi_assert(not lines.empty());
 
@@ -895,6 +891,9 @@ private:
         for (auto it = prev + 1; it != lines.end(); ++it) {
             auto const height =
                 prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
+
+            auto const line_spacing = std::max(prev->line_spacing, it->line_spacing);
+            auto const paragraph_spacing = std::max(prev->paragraph_spacing, it->paragraph_spacing);
             auto const spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
             // Lines advance downward on the y-axis.
             it->y = prev->y - spacing * height.in(pixels);
@@ -1130,9 +1129,7 @@ private:
     [[nodiscard]] line_vector make_lines(
         aarectangle rectangle,
         float baseline,
-        extent2 sub_pixel_size,
-        float line_spacing,
-        float paragraph_spacing) noexcept
+        extent2 sub_pixel_size) noexcept
     {
         auto const line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
 
@@ -1159,7 +1156,7 @@ private:
             r.back().paragraph_direction = _text_direction;
         }
 
-        layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
+        layout_lines_vertical_spacing(r);
         layout_lines_vertical_alignment(
             r, _alignment.vertical(), baseline, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
 

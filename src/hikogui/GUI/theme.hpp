@@ -199,18 +199,9 @@ public:
         return _secondary_cursor_colors[nesting_level % _secondary_cursor_colors.size()];
     }
 
-    [[nodiscard]] hi::text_style text_style(semantic_text_style theme_color) const noexcept
+    [[nodiscard]] hi::text_style_set const &text_style_set() const noexcept
     {
-        return _text_styles[std::to_underlying(theme_color)];
-    }
-
-    [[nodiscard]] hi::text_style text_style(hi::text_style original_style) const noexcept
-    {
-        if (original_style.is_semantic()) {
-            return text_style(static_cast<semantic_text_style>(original_style));
-        } else {
-            return original_style;
-        }
+        return _text_style_set;
     }
 
 private:
@@ -258,7 +249,7 @@ private:
     std::vector<hi::color> _primary_cursor_colors;
     std::vector<hi::color> _secondary_cursor_colors;
 
-    std::array<hi::text_style, semantic_text_style_metadata.size()> _text_styles;
+    hi::text_style_set _text_style_set;
 
     [[nodiscard]] float parse_float(datum const& data, char const* object_name)
     {
@@ -429,8 +420,9 @@ private:
             throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
         }
 
+        auto r = hi::text_style{};
+
         auto const family_id = find_font_family(parse_string(data, "family"));
-        auto const font_size = points_per_em(gsl::narrow<short>(parse_float(data, "size")));
 
         auto variant = font_variant{};
         if (data.contains("weight")) {
@@ -445,12 +437,14 @@ private:
             variant.set_style(font_style::normal);
         }
 
-        auto const color = parse_color(data, "color");
+        auto font_id = find_font(family_id, variant);
 
-        auto sub_styles = std::vector<text_sub_style>{};
-        sub_styles.emplace_back(
-            phrasing_mask::all, iso_639{}, iso_15924{}, family_id, variant, font_size, color, text_decoration{});
-        return hi::text_style(sub_styles);
+        r.set_font_chain({font_id});
+        r.set_size(points_per_em(gsl::narrow<short>(parse_float(data, "size"))));
+        r.set_color(parse_color(data, "color"));
+        r.set_line_spacing(1.0f);
+        r.set_paragraph_spacing(1.5f);
+        return r;
     }
 
     [[nodiscard]] font_weight parse_font_weight(datum const& data, char const* object_name)
@@ -528,15 +522,12 @@ private:
         _primary_cursor_colors = parse_color_list(data, "primary-cursor-color");
         _secondary_cursor_colors = parse_color_list(data, "secondary-cursor-color");
 
-        std::get<std::to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(data, "label-style");
-        std::get<std::to_underlying(semantic_text_style::small_label)>(_text_styles) =
-            parse_text_style(data, "small-label-style");
-        std::get<std::to_underlying(semantic_text_style::warning)>(_text_styles) = parse_text_style(data, "warning-label-style");
-        std::get<std::to_underlying(semantic_text_style::error)>(_text_styles) = parse_text_style(data, "error-label-style");
-        std::get<std::to_underlying(semantic_text_style::help)>(_text_styles) = parse_text_style(data, "help-label-style");
-        std::get<std::to_underlying(semantic_text_style::placeholder)>(_text_styles) =
-            parse_text_style(data, "placeholder-label-style");
-        std::get<std::to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(data, "link-label-style");
+        _text_style_set.clear();
+        _text_style_set.push_back({}, parse_text_style(data, "label-style"));
+        _text_style_set.push_back({phrasing_mask::warning}, parse_text_style(data, "warning-label-style"));
+        _text_style_set.push_back({phrasing_mask::error}, parse_text_style(data, "error-label-style"));
+        _text_style_set.push_back({phrasing_mask::example}, parse_text_style(data, "help-label-style"));
+        _text_style_set.push_back({phrasing_mask::placeholder}, parse_text_style(data, "placeholder-label-style"));
 
         _margin = narrow_cast<float>(parse_int(data, "margin"));
         _border_width = narrow_cast<float>(parse_int(data, "border-width"));
@@ -547,8 +538,10 @@ private:
         _large_icon_size = narrow_cast<float>(parse_int(data, "large-icon-size"));
         _label_icon_size = narrow_cast<float>(parse_int(data, "label-icon-size"));
 
-        _baseline_adjustment = ceil_in(
-            points, std::get<points_f>(std::get<std::to_underlying(semantic_text_style::label)>(_text_styles)->cap_height()));
+        auto const base_font = _text_style_set.front().font_chain()[0];
+        auto const base_size = _text_style_set.front().size();
+        auto const base_cap_height = std::get<points_per_em_s>(base_size) * base_font->metrics.cap_height;
+        _baseline_adjustment = ceil_in(points, base_cap_height);
     }
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept

@@ -96,21 +96,24 @@ public:
 
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
+                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
+                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
+                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
+                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
+                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
+                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
             }
         }
 
@@ -143,42 +146,7 @@ public:
 
     color icon_color() noexcept
     {
-        switch (*phrasing) {
-        case phrasing::regular:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::emphasis:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::strong:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::code:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::abbreviation:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::quote:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::keyboard:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::highlight:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::math:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::example:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::placeholder:
-            return theme().text_style(semantic_text_style::placeholder)->color;
-        case phrasing::unarticulated:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::title:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::success:
-            return theme().text_style(semantic_text_style::label)->color;
-        case phrasing::warning:
-            return theme().text_style(semantic_text_style::warning)->color;
-        case phrasing::error:
-            return theme().text_style(semantic_text_style::error)->color;
-        default:
-            hi_no_default();
-        }
+        return theme().text_style_set()[{*phrasing}].color();
     }
 
     void draw(draw_context const& context) noexcept override

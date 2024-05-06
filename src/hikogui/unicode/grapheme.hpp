@@ -9,6 +9,7 @@
 #include "../telemetry/telemetry.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../char_maps/char_maps.hpp"
+#include "grapheme_attributes.hpp"
 #include "unicode_normalization.hpp"
 #include "ucd_general_categories.hpp"
 #include "ucd_canonical_combining_classes.hpp"
@@ -30,7 +31,7 @@
 #include <chrono>
 #include <format>
 
-hi_export_module(hikogui.unicode.grapheme);
+hi_export_module(hikogui.unicode : grapheme);
 
 hi_export namespace hi::inline v1 {
 namespace detail {
@@ -411,6 +412,22 @@ struct grapheme {
         constexpr auto mask = ~(value_type{0x3f} << 56);
         _value &= mask;
         _value |= static_cast<value_type>(rhs) << 56;
+    }
+
+    [[nodiscard]] constexpr grapheme_attributes attributes() const noexcept
+    {
+        auto r = grapheme_attributes{};
+
+        auto tmp = _value;
+        tmp >>= 21;
+        r.language = iso_639{std::in_place_t{}, narrow_cast<uint16_t>(tmp & 0x7fff)};
+        tmp >>= 15;
+        r.script = iso_15924{std::in_place_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
+        tmp >>= 10;
+        r.region = iso_3166{std::in_place_t{}, narrow_cast<uint16_t>(tmp & 0x3ff)};
+        tmp >>= 10;
+        r.phrasing = static_cast<hi::phrasing>(tmp & 0x3f);
+        return r;
     }
 
     /** Return the number of code-points encoded in the grapheme.

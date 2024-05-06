@@ -403,7 +403,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/telemetry/telemetry.hpp
     src/hikogui/telemetry/trace.hpp
     src/hikogui/test.hpp
-    src/hikogui/text/semantic_text_style.hpp
     src/hikogui/text/text.hpp
     src/hikogui/text/text_cursor.hpp
     src/hikogui/text/text_decoration.hpp
@@ -412,7 +411,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_shaper_char.hpp
     src/hikogui/text/text_shaper_line.hpp
     src/hikogui/text/text_style.hpp
-    src/hikogui/theme/text_style.hpp
+    src/hikogui/text/text_style_set.hpp
     src/hikogui/theme/theme.hpp
     src/hikogui/theme/theme_length.hpp
     src/hikogui/theme/theme_value.hpp
@@ -421,6 +420,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/time/time_stamp_count.hpp
     src/hikogui/time/time_stamp_utc.hpp
     src/hikogui/unicode/grapheme.hpp
+    src/hikogui/unicode/grapheme_attributes.hpp
     src/hikogui/unicode/gstring.hpp
     src/hikogui/unicode/markup.hpp
     src/hikogui/unicode/phrasing.hpp

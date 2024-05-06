@@ -54,10 +54,6 @@ public:
          */
         observer<alignment> alignment = hi::alignment::middle_left();
 
-        /** The text style to button's label.
-         */
-        observer<semantic_text_style> text_style = semantic_text_style::label;
-
         attributes_type(attributes_type const&) noexcept = default;
         attributes_type(attributes_type&&) noexcept = default;
         attributes_type& operator=(attributes_type const&) noexcept = default;
@@ -89,10 +85,6 @@ public:
 
             } else if constexpr (forward_of<First, observer<hi::alignment>>) {
                 alignment = std::forward<First>(first);
-                set_attributes<I>(std::forward<Rest>(rest)...);
-
-            } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-                text_style = std::forward<First>(first);
                 set_attributes<I>(std::forward<Rest>(rest)...);
 
             } else {
@@ -127,9 +119,9 @@ public:
         _button_widget = std::make_unique<button_widget_type>(
             this, button_attributes_type{this->attributes.alignment, keyboard_focus_group::menu}, std::move(delegate));
         _label_widget =
-            std::make_unique<label_widget>(this, this->attributes.label, this->attributes.alignment, this->attributes.text_style);
+            std::make_unique<label_widget>(this, this->attributes.label, this->attributes.alignment);
         _shortcut_widget = std::make_unique<label_widget>(
-            this, this->attributes.shortcut, this->attributes.alignment, this->attributes.text_style);
+            this, this->attributes.shortcut, this->attributes.alignment);
 
         // Link the state from the button, so that both this widget and the child widget react in the same way.
         _button_widget->state = state;

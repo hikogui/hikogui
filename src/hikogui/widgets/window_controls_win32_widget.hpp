@@ -103,7 +103,7 @@ public:
                 context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer));
             }
 
-            auto const glyph_color = phase() >= widget_phase::normal ? label_color() : foreground_color();
+            auto const glyph_color = foreground_color();
 
             context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, glyph_color);
             context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, minimizeWindowGlyph, glyph_color);
