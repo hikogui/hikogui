@@ -43,7 +43,7 @@ public:
 
     /** The color a non-color icon will be displayed with.
      */
-    observer<color> color = color::foreground();
+    observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
     /** Alignment of the icon inside the widget.
      */
@@ -64,8 +64,8 @@ public:
             icon = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::color>>) {
-            color = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
+            phrasing = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
@@ -94,23 +94,26 @@ public:
                     process_event({gui_event_type::window_reconstrain});
                 }
 
-            } else if (auto const g1 = std::get_if<font_book::font_glyph_type>(&icon)) {
+            } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
+                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
-                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
+                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
+                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
-                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
+                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
+                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.get_metrics().bounding_rectangle.size() *
-                    (theme().text_style(semantic_text_style::label)->size * theme().pixel_density).in(pixels_per_em);
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
+                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
             }
         }
 
@@ -140,6 +143,12 @@ public:
             }
         }
     }
+
+    color icon_color() noexcept
+    {
+        return theme().text_style_set()[{*phrasing}].color();
+    }
+
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
@@ -156,7 +165,7 @@ public:
 
             case icon_type::glyph:
                 {
-                    context.draw_glyph(layout(), _icon_rectangle, _glyph, theme().color(*color));
+                    context.draw_glyph(layout(), _icon_rectangle, _glyph, icon_color());
                 }
                 break;
 
@@ -170,7 +179,7 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     icon_type _icon_type;
-    font_book::font_glyph_type _glyph;
+    font_glyph_ids _glyph;
     gfx_pipeline_image::paged_image _pixmap_backing;
     std::atomic<bool> _icon_has_modified = true;
 

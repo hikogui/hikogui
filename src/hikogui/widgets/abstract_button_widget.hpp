@@ -58,10 +58,6 @@ public:
      */
     observer<alignment> alignment;
 
-    /** The text style to button's label.
-     */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
-
     ~abstract_button_widget()
     {
         hi_assert_not_null(delegate);
@@ -73,9 +69,9 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_style);
-        _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_style);
-        _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
+        _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment);
+        _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment);
+        _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment);
 
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -116,7 +112,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().color(semantic_color::fill, _layout.layer + 2);
+            return theme().fill_color(_layout.layer + 2);
         } else {
             return super::background_color();
         }
@@ -224,10 +220,6 @@ protected:
 
         } else if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-            set_attributes<I>(std::forward<Rest>(rest)...);
-
-        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-            text_style = std::forward<First>(first);
             set_attributes<I>(std::forward<Rest>(rest)...);
 
         } else {

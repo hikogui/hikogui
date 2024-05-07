@@ -28,7 +28,7 @@ hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =
-    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+    forward_of<Context, observer<hi::label>, observer<hi::alignment>>;
 
 /** The GUI widget displays and lays out text together with an icon.
  * @ingroup widgets
@@ -70,9 +70,9 @@ public:
      */
     observer<alignment> alignment = hi::alignment::top_flush();
 
-    /** The text style to display the label's text in and color of the label's (non-color) icon.
+    /** The color of the label's (non-color) icon.
      */
-    observer<semantic_text_style> text_style = semantic_text_style::label;
+    observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
     /** Construct a label widget.
      *
@@ -133,10 +133,11 @@ public:
             _grid.add_cell(0, 0, _text_widget.get());
         }
 
+        auto const label_style = theme().text_style_set()[{phrasing::regular}];
         auto const icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme().large_icon_size() :
-            (theme().text_style(*text_style)->size * theme().pixel_density).in(pixels_per_em);
+            (label_style.size() * theme().pixel_density).in(pixels_per_em);
 
         _icon_widget->minimum = extent2{icon_size, icon_size};
         _icon_widget->maximum = extent2{icon_size, icon_size};
@@ -157,6 +158,7 @@ public:
             cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }
     }
+    
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
@@ -165,6 +167,7 @@ public:
             }
         }
     }
+
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
@@ -185,7 +188,6 @@ private:
     grid_layout<widget *> _grid;
 
     callback<void(hi::label)> _label_cbt;
-    callback<void(semantic_text_style)> _text_style_cbt;
     callback<void(hi::alignment)> _alignment_cbt;
 
     void set_attributes() noexcept {}
@@ -197,8 +199,8 @@ private:
             label = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::alignment>>) {
             alignment = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-            text_style = std::forward<First>(first);
+        } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
+            phrasing = std::forward<First>(first);
         } else {
             hi_static_no_default();
         }
@@ -211,9 +213,9 @@ private:
         set_mode(widget_mode::select);
 
         _icon_widget = std::make_unique<icon_widget>(this, label.sub<"icon">());
+        _icon_widget->phrasing = phrasing;
         _text_widget = std::make_unique<text_widget>(this, label.sub<"text">());
         _text_widget->alignment = alignment;
-        _text_widget->text_style = text_style;
         _text_widget->set_mode(mode());
 
         _alignment_cbt = alignment.subscribe([this](auto...) {
@@ -224,34 +226,6 @@ private:
             }
         });
         _alignment_cbt(*alignment);
-
-        _text_style_cbt = text_style.subscribe([this](auto...) {
-            switch (*text_style) {
-            case semantic_text_style::label:
-                _icon_widget->color = color::foreground();
-                break;
-            case semantic_text_style::small_label:
-                _icon_widget->color = color::foreground();
-                break;
-            case semantic_text_style::warning:
-                _icon_widget->color = color::orange();
-                break;
-            case semantic_text_style::error:
-                _icon_widget->color = color::red();
-                break;
-            case semantic_text_style::help:
-                _icon_widget->color = color::indigo();
-                break;
-            case semantic_text_style::placeholder:
-                _icon_widget->color = color::gray();
-                break;
-            case semantic_text_style::link:
-                _icon_widget->color = color::blue();
-                break;
-            default:
-                _icon_widget->color = color::foreground();
-            }
-        });
     }
 };
 

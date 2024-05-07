@@ -9,7 +9,6 @@
 #include "quad_color.hpp" // export
 #include "Rec2020.hpp" // export
 #include "Rec2100.hpp" // export
-#include "semantic_color.hpp" // export
 #include "sRGB.hpp" // export
 #include "../macros.hpp"
 

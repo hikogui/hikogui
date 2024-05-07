@@ -99,7 +99,7 @@ draw_context::_draw_box(aarectangle const& clipping_rectangle, quad box, draw_at
 inline void draw_context::_draw_glyph(
     aarectangle const& clipping_rectangle,
     quad const& box,
-    font const& font,
+    font_id font,
     glyph_id glyph,
     draw_attributes const& attributes) const noexcept
 {
@@ -132,7 +132,7 @@ inline void draw_context::_draw_text(
     auto atlas_was_updated = false;
     for (auto const& c : text) {
         auto const box = translate2{c.position} * c.metrics.bounding_rectangle;
-        auto const color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style->color};
+        auto const color = attributes.num_colors > 0 ? attributes.fill_color : quad_color{c.style.color()};
 
         if (not is_visible(c.general_category)) {
             continue;
@@ -146,7 +146,7 @@ inline void draw_context::_draw_text(
         }
 
         atlas_was_updated |= device->SDF_pipeline->place_vertices(
-            *_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.ids.front(), color);
+            *_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.front(), color);
     }
 
     if (atlas_was_updated) {

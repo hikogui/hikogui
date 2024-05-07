@@ -311,10 +311,10 @@ inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
  *  |                     |
  *  O---------------------+
  */
-inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font const &font, glyph_id glyph, glyph_atlas_info& info) noexcept
+inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font_id font, glyph_id glyph, glyph_atlas_info& info) noexcept
 {
-    auto const glyph_metrics = font.get_metrics(glyph);
-    auto const glyph_path = font.get_path(glyph);
+    auto const glyph_metrics = font->get_metrics(glyph);
+    auto const glyph_path = font->get_path(glyph);
     auto const glyph_bounding_box = glyph_metrics.bounding_rectangle;
 
     auto const draw_scale = scale2{drawfontSize, drawfontSize};
@@ -346,7 +346,7 @@ inline bool gfx_pipeline_SDF::device_shared::place_vertices(
     vector_span<vertex>& vertices,
     aarectangle const& clipping_rectangle,
     quad const& box,
-    hi::font const &font, glyph_id glyph,
+    hi::font_id font, glyph_id glyph,
     quad_color colors) noexcept
 {
     auto const[atlas_rect, glyph_was_added] = this->get_glyph_from_atlas(font, glyph);

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "text_style_set.hpp"
 #include "text_style.hpp"
 #include "../font/font.hpp"
 #include "../unicode/unicode.hpp"
@@ -39,7 +40,7 @@ public:
      *     for better continuation of cursive text and merging of graphemes into
      *     a ligature.
      */
-    hi::font_book::font_glyphs_type glyphs;
+    hi::font_glyph_ids glyphs;
 
     /** The glyph metrics of the current starter glyph.
      *
@@ -126,9 +127,9 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style const& style, hi::pixel_density pixel_density) noexcept :
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style_set const& style, hi::pixel_density pixel_density) noexcept :
         grapheme(grapheme),
-        style(style),
+        style(style[grapheme.attributes()]),
         pixel_density(pixel_density),
         line_nr(std::numeric_limits<size_t>::max()),
         column_nr(std::numeric_limits<size_t>::max()),
@@ -141,7 +142,7 @@ public:
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(hi::font const& font) noexcept
+    void initialize_glyph(hi::font_id font) noexcept
     {
         if (not glyph_is_initial) {
             set_glyph(find_glyph(font, grapheme));
@@ -158,7 +159,7 @@ public:
      */
     void initialize_glyph() noexcept
     {
-        return initialize_glyph(find_font(style->family_id, style->variant));
+        return initialize_glyph(style.font_chain()[0]);
     }
 
     /** Called by the bidi-algorithm to mirror glyphs.
@@ -171,10 +172,7 @@ public:
      */
     void replace_glyph(char32_t code_point) noexcept
     {
-        hi_axiom_not_null(glyphs.font);
-        auto const& font = *glyphs.font;
-        set_glyph(font_book::font_glyphs_type{font, font.find_glyph(code_point)});
-
+        set_glyph(find_glyph(glyphs.font, code_point));
         glyph_is_initial = false;
     }
 
@@ -182,7 +180,7 @@ public:
      */
     [[nodiscard]] font_metrics_px font_metrics() const noexcept
     {
-        hi_axiom_not_null(glyphs.font);
+        hi_axiom(not glyphs.font.empty());
         return font_size * glyphs.font->metrics;
     }
 
@@ -199,12 +197,12 @@ public:
 private:
     /** Load metrics based on the loaded glyph.
      */
-    void set_glyph(hi::font_book::font_glyphs_type&& new_glyphs) noexcept
+    void set_glyph(hi::font_glyph_ids&& new_glyphs) noexcept
     {
         glyphs = std::move(new_glyphs);
-        hi_axiom_not_null(glyphs.font);
-        font_size = round(style->size * pixel_density, glyphs.get_font_metrics().x_height);
-        metrics = font_size.in(pixels_per_em) * glyphs.get_starter_metrics();
+        hi_axiom(not glyphs.font.empty());
+        font_size = round(style.size() * pixel_density, glyphs.font_metrics().x_height);
+        metrics = font_size.in(pixels_per_em) * glyphs.front_glyph_metrics();
     }
 };
 

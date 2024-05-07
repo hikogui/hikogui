@@ -64,10 +64,10 @@ public:
             restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
             auto const glyph_size = theme().icon_size();
 
-            auto const closeWindowGlyphBB = closeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            auto const minimizeWindowGlyphBB = minimizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            auto const maximizeWindowGlyphBB = maximizeWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
-            auto const restoreWindowGlyphBB = restoreWindowGlyph.get_metrics().bounding_rectangle * glyph_size;
+            auto const closeWindowGlyphBB = closeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+            auto const minimizeWindowGlyphBB = minimizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+            auto const maximizeWindowGlyphBB = maximizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+            auto const restoreWindowGlyphBB = restoreWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
 
             closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
             minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
@@ -84,26 +84,26 @@ public:
             } else if (hoverClose) {
                 context.draw_box(layout(), closeRectangle, color{0.5f, 0.0f, 0.0f});
             } else {
-                context.draw_box(layout(), closeRectangle, theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), closeRectangle, theme().fill_color(_layout.layer));
             }
 
             if (pressedMinimize) {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer + 2));
+                context.draw_box(layout(), minimizeRectangle, theme().fill_color(_layout.layer + 2));
             } else if (hoverMinimize) {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer + 1));
+                context.draw_box(layout(), minimizeRectangle, theme().fill_color(_layout.layer + 1));
             } else {
-                context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), minimizeRectangle, theme().fill_color(_layout.layer));
             }
 
             if (pressedMaximize) {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer + 2));
+                context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer + 2));
             } else if (hoverMaximize) {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer + 1));
+                context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer + 1));
             } else {
-                context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, _layout.layer));
+                context.draw_box(layout(), maximizeRectangle, theme().fill_color(_layout.layer));
             }
 
-            auto const glyph_color = phase() >= widget_phase::normal ? label_color() : foreground_color();
+            auto const glyph_color = foreground_color();
 
             context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, closeWindowGlyph, glyph_color);
             context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, minimizeWindowGlyph, glyph_color);
@@ -206,10 +206,10 @@ private:
     aarectangle minimizeRectangle;
     aarectangle maximizeRectangle;
 
-    font_book::font_glyph_type closeWindowGlyph;
-    font_book::font_glyph_type minimizeWindowGlyph;
-    font_book::font_glyph_type maximizeWindowGlyph;
-    font_book::font_glyph_type restoreWindowGlyph;
+    font_glyph_ids closeWindowGlyph;
+    font_glyph_ids minimizeWindowGlyph;
+    font_glyph_ids maximizeWindowGlyph;
+    font_glyph_ids restoreWindowGlyph;
 
     aarectangle closeWindowGlyphRectangle;
     aarectangle minimizeWindowGlyphRectangle;

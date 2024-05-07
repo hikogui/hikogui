@@ -57,10 +57,6 @@ public:
 
         observer<alignment> alignment = hi::alignment::middle_left();
 
-        /** The text style to display the label's text in and color of the label's (non-color) icon.
-         */
-        observer<semantic_text_style> text_style = semantic_text_style::label;
-
         attributes_type(attributes_type const&) noexcept = default;
         attributes_type(attributes_type&&) noexcept = default;
         attributes_type& operator=(attributes_type const&) noexcept = default;
@@ -81,8 +77,6 @@ public:
                 off_label = std::forward<First>(first);
             } else if constexpr (forward_of<First, observer<hi::alignment>>) {
                 alignment = std::forward<First>(first);
-            } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-                text_style = std::forward<First>(first);
             } else {
                 hi_static_no_default();
             }
@@ -115,9 +109,9 @@ public:
     selection_widget(widget_intf const* parent, attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment, this->attributes.text_style);
+        _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment);
         _current_label_widget->set_mode(widget_mode::invisible);
-        _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment, semantic_text_style::placeholder);
+        _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment);
 
         _overlay_widget = std::make_unique<overlay_widget>(this);
         _overlay_widget->set_mode(widget_mode::invisible);
@@ -152,7 +146,7 @@ public:
      *                    labels. The keys are of the same type as the @a value.
      *                    The labels are of type `label`.
      * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment` or `semantic_text_style`. If an label is passed
+     *                   a `label`, `alignment`. If an label is passed
      *                   it is used as the label to show in the off-state.
      */
     template<
@@ -239,7 +233,7 @@ public:
             }
 
             _chevrons_glyph = find_glyph(elusive_icon::ChevronUp);
-            auto const chevrons_glyph_bbox = _chevrons_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const chevrons_glyph_bbox = _chevrons_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
             _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox, alignment::middle_center());
         }
 
@@ -340,7 +334,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (mode() >= widget_mode::partial and not overlay_closed()) {
-            return theme().color(semantic_color::accent);
+            return theme().accent_color();
         } else {
             return super::focus_color();
         }
@@ -371,7 +365,7 @@ private:
 
     aarectangle _left_box_rectangle;
 
-    font_book::font_glyph_type _chevrons_glyph;
+    font_glyph_ids _chevrons_glyph;
     aarectangle _chevrons_rectangle;
 
     std::unique_ptr<overlay_widget> _overlay_widget;
@@ -491,7 +485,7 @@ private:
 
     void draw_chevrons(draw_context const& context) noexcept
     {
-        context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, _chevrons_glyph, label_color());
+        context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, _chevrons_glyph, background_color());
     }
 };
 

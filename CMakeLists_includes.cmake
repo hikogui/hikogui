@@ -164,7 +164,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/color/color_space.hpp
     src/hikogui/color/quad_color.hpp
     src/hikogui/color/sRGB.hpp
-    src/hikogui/color/semantic_color.hpp
     src/hikogui/concurrency/atomic.hpp
     src/hikogui/concurrency/callback.hpp
     src/hikogui/concurrency/callback_flags.hpp
@@ -238,6 +237,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/font/font_char_map.hpp
     src/hikogui/font/font_family_id.hpp
     src/hikogui/font/font_font.hpp
+    src/hikogui/font/font_glyph_ids.hpp
+    src/hikogui/font/font_id.hpp
     src/hikogui/font/font_metrics.hpp
     src/hikogui/font/font_style.hpp
     src/hikogui/font/font_variant.hpp
@@ -402,7 +403,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/telemetry/telemetry.hpp
     src/hikogui/telemetry/trace.hpp
     src/hikogui/test.hpp
-    src/hikogui/text/semantic_text_style.hpp
     src/hikogui/text/text.hpp
     src/hikogui/text/text_cursor.hpp
     src/hikogui/text/text_decoration.hpp
@@ -411,6 +411,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_shaper_char.hpp
     src/hikogui/text/text_shaper_line.hpp
     src/hikogui/text/text_style.hpp
+    src/hikogui/text/text_style_set.hpp
+    src/hikogui/theme/theme.hpp
     src/hikogui/theme/theme_length.hpp
     src/hikogui/theme/theme_value.hpp
     src/hikogui/time/chrono.hpp
@@ -418,6 +420,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/time/time_stamp_count.hpp
     src/hikogui/time/time_stamp_utc.hpp
     src/hikogui/unicode/grapheme.hpp
+    src/hikogui/unicode/grapheme_attributes.hpp
     src/hikogui/unicode/gstring.hpp
     src/hikogui/unicode/markup.hpp
     src/hikogui/unicode/phrasing.hpp

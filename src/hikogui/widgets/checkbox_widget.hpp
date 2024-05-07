@@ -157,11 +157,11 @@ public:
             _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            auto const check_glyph_bb = _check_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            auto const minus_glyph_bb = _minus_glyph.get_metrics().bounding_rectangle * theme().icon_size();
+            auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
         super::set_layout(context);
@@ -189,7 +189,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().color(semantic_color::fill, _layout.layer + 2);
+            return theme().fill_color(_layout.layer + 2);
         } else {
             return super::background_color();
         }
@@ -256,9 +256,9 @@ public:
 private:
     extent2 _button_size;
     aarectangle _button_rectangle;
-    font_book::font_glyph_type _check_glyph;
+    font_glyph_ids _check_glyph;
     aarectangle _check_glyph_rectangle;
-    font_book::font_glyph_type _minus_glyph;
+    font_glyph_ids _minus_glyph;
     aarectangle _minus_glyph_rectangle;
 
     callback<void()> _delegate_cbt;

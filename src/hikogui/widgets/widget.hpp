@@ -370,12 +370,12 @@ public:
     {
         if (mode() >= widget_mode::partial) {
             if (phase() == widget_phase::hover) {
-                return theme().color(semantic_color::fill, _layout.layer + 1);
+                return theme().fill_color(_layout.layer + 1);
             } else {
-                return theme().color(semantic_color::fill, _layout.layer);
+                return theme().fill_color(_layout.layer);
             }
         } else {
-            return theme().color(semantic_color::fill, _layout.layer - 1);
+            return theme().fill_color(_layout.layer - 1);
         }
     }
 
@@ -383,12 +383,12 @@ public:
     {
         if (mode() >= widget_mode::partial) {
             if (phase() == widget_phase::hover) {
-                return theme().color(semantic_color::border, _layout.layer + 1);
+                return theme().border_color(_layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, _layout.layer);
+                return theme().border_color(_layout.layer);
             }
         } else {
-            return theme().color(semantic_color::border, _layout.layer - 1);
+            return theme().border_color(_layout.layer - 1);
         }
     }
 
@@ -396,32 +396,23 @@ public:
     {
         if (mode() >= widget_mode::partial) {
             if (focus()) {
-                return theme().color(semantic_color::accent);
+                return theme().accent_color();
             } else if (phase() == widget_phase::hover) {
-                return theme().color(semantic_color::border, _layout.layer + 1);
+                return theme().border_color(_layout.layer + 1);
             } else {
-                return theme().color(semantic_color::border, _layout.layer);
+                return theme().border_color(_layout.layer);
             }
         } else {
-            return theme().color(semantic_color::border, _layout.layer - 1);
+            return theme().border_color(_layout.layer - 1);
         }
     }
 
     [[nodiscard]] virtual color accent_color() const noexcept
     {
         if (mode() >= widget_mode::partial) {
-            return theme().color(semantic_color::accent);
+            return theme().accent_color();
         } else {
-            return theme().color(semantic_color::border, _layout.layer - 1);
-        }
-    }
-
-    [[nodiscard]] virtual color label_color() const noexcept
-    {
-        if (mode() >= widget_mode::partial) {
-            return theme().text_style(semantic_text_style::label)->color;
-        } else {
-            return theme().color(semantic_color::border, _layout.layer - 1);
+            return theme().border_color(_layout.layer - 1);
         }
     }
 

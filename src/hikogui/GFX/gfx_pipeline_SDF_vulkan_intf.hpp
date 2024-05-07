@@ -189,7 +189,7 @@ public:
             vector_span<vertex>& vertices,
             aarectangle const& clipping_rectangle,
             quad const& box,
-            hi::font const& font,
+            hi::font_id font,
             glyph_id glyph,
             quad_color colors) noexcept;
 
@@ -199,15 +199,15 @@ public:
         void addAtlasImage();
         void buildAtlas();
         void teardownAtlas(gfx_device const *vulkanDevice);
-        void add_glyph_to_atlas(hi::font const& font, glyph_id glyph, glyph_atlas_info& info) noexcept;
+        void add_glyph_to_atlas(hi::font_id font, glyph_id glyph, glyph_atlas_info& info) noexcept;
 
         /**
          * @return The Atlas rectangle and true if a new glyph was added to the atlas.
          */
         hi_force_inline std::pair<glyph_atlas_info const *, bool>
-        get_glyph_from_atlas(hi::font const& font, glyph_id glyph) noexcept
+        get_glyph_from_atlas(hi::font_id font, glyph_id glyph) noexcept
         {
-            auto& info = font.atlas_info(glyph);
+            auto& info = font->atlas_info(glyph);
 
             if (info) [[likely]] {
                 return {&info, false};

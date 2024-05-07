@@ -65,10 +65,6 @@ public:
          */
         observer<label> off_label = txt("off");
 
-        /** The text style to button's label.
-         */
-        observer<semantic_text_style> text_style = semantic_text_style::label;
-
         observer<alignment> alignment = alignment::top_center();
 
         attributes_type(attributes_type const&) noexcept = default;
@@ -108,10 +104,6 @@ public:
                 alignment = std::forward<First>(first);
                 return set_attributes<NumLabels>(std::forward<Rest>(rest)...);
 
-            } else if constexpr (forward_of<First, observer<hi::semantic_text_style>>) {
-                text_style = std::forward<First>(first);
-                return set_attributes<NumLabels>(std::forward<Rest>(rest)...);
-
             } else {
                 hi_static_no_default();
             }
@@ -138,7 +130,7 @@ public:
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      * @param attributes Different attributes used to configure the label's on the toolbar tab button:
-     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   a `label`, `alignment`. If one label is
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */
@@ -149,9 +141,9 @@ public:
         super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         _on_label_widget = std::make_unique<label_widget>(
-            this, this->attributes.on_label, this->attributes.alignment, this->attributes.text_style);
+            this, this->attributes.on_label, this->attributes.alignment);
         _off_label_widget = std::make_unique<label_widget>(
-            this, this->attributes.off_label, this->attributes.alignment, this->attributes.text_style);
+            this, this->attributes.off_label, this->attributes.alignment);
 
         hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
@@ -247,7 +239,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().color(semantic_color::fill, _layout.layer + 2);
+            return theme().fill_color(_layout.layer + 2);
         } else {
             return super::background_color();
         }
@@ -333,8 +325,8 @@ private:
 
         // clang-format off
         auto button_color = (phase() == widget_phase::hover or value() == widget_value::on) ?
-            theme().color(semantic_color::fill, _layout.layer - 1) :
-            theme().color(semantic_color::fill, _layout.layer);
+            theme().fill_color(_layout.layer - 1) :
+            theme().fill_color(_layout.layer);
         // clang-format on
 
         auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());

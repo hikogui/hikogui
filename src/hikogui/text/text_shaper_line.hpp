@@ -39,6 +39,14 @@ public:
      */
     font_metrics_px metrics;
 
+    /** The maximum line spacing for each grapheme on this line.
+    */
+    float line_spacing = 1.0f;
+
+    /** The maximum paragraph spacing for each grapheme on this line.
+    */
+    float paragraph_spacing = 1.5f;
+
     /** The line number of this line, counted from top to bottom.
      */
     size_t line_nr;
@@ -103,6 +111,8 @@ public:
             // For example a paragraph separator is seldom available in a font.
             if (is_visible(it->general_category)) {
                 this->metrics = max(metrics, it->font_metrics());
+                this->line_spacing = std::max(this->line_spacing, it->style.line_spacing());
+                this->paragraph_spacing = std::max(this->paragraph_spacing, it->style.paragraph_spacing());
                 last_visible_it = it;
             }
         }
@@ -219,7 +229,7 @@ private:
         hi_axiom(first != last);
 
         auto const char_it = *first;
-        auto const& font = *char_it->glyphs.font;
+        auto const font = char_it->glyphs.font;
         auto const script = char_it->script;
         auto const language = iso_639{};
 
@@ -229,7 +239,7 @@ private:
             run += (*it)->grapheme;
         }
 
-        auto result = font.shape_run(language, script, run);
+        auto result = font->shape_run(language, script, run);
         result.scale_and_offset(char_it->font_size.in(pixels_per_em));
         hi_axiom(result.advances.size() == run.size());
         hi_axiom(result.glyph_count.size() == run.size());
