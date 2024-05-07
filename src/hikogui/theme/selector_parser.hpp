@@ -61,24 +61,26 @@ parse_theme_tag_pseudo_class(It& it, ItEnd last)
     }
 
     ++it;
-    if (it == last or *it != token : id) {
+    if (it == last or *it != token::id) {
         return std::unexpected{std::format("{}: Expected a pseudo-class after ':', got '{}'.", token_location(it, last), *it)};
     }
     auto name = static_cast<std::string>(*it);
 
-    ++it if (it == last or *it != '(')
-    {
-        return std::unexpected{std::format("{}: Expected '(' after pseudo-class name, got '{}'.", token_location(it, last), *it)};
+    ++it;
+    if (it == last or *it != '(') {
+        // This pseudo-class does not have a value.
+        return {name, 0};
     }
 
-    if (it == last or *iut != token::integer) {
+    ++it;
+    if (it == last or *it != token::integer) {
         return std::unexpected{
             std::format("{}: Expected integer value after '(' for pseudo-class, got '{}'.", token_location(it, last), *it)};
     }
     auto value = static_cast<int>(*it);
 
-    ++it if (it == last or *it != ')')
-    {
+    ++it;
+    if (it == last or *it != ')') {
         return std::unexpected{
             std::format("{}: Expected ')' after pseudo-class value, got '{}'.", token_location(it, last), *it)};
     }
@@ -158,15 +160,117 @@ parse_theme_tag_color_attribute(It& it, ItEnd last)
         return std::unexpected{std::format("{}: Missing value after attribute '{}'.", token_location(it + 2, last), name)};
     }
 
-    if (it[2] != token::id) {
-        return std::nullopt;
-    }
+    if (it[2] == token::color) {
+        it += 3;
+        return {name, static_cast<color>(it[2])};
 
-    if (it[2] == "rgb_color" or it[2] == "rgba_color") {
+    } else if (it[2] == token::id and it[2] == "rgb_color") {
+        it += 3;
+        if (it == last or *it != '(') {
+            return std::unexpected{std::format("{}: Missing '(' after rgb_color.", token_location(it, last))};
+        }
 
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as first argument to rgb_color.", token_location(it, last))};
+        }
+        auto const red = static_cast<float>(*it);
 
-    } else {
+        ++it;
+        if (it == last or *it != ',') {
+            return std::unexpected{std::format("{}: Expecting a comma ',' after first argument to rgb_color.", token_location(it, last))};
+        }
+
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as second argument to rgb_color.", token_location(it, last))};
+        }
+        auto const green = static_cast<float>(*it);
+
+        ++it;
+        if (it == last or *it != ',') {
+            return std::unexpected{std::format("{}: Expecting a comma ',' after second argument to rgb_color.", token_location(it, last))};
+        }
+
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as third argument to rgb_color.", token_location(it, last))};
+        }
+        auto const blue = static_cast<float>(*it);
+
+        ++it;
+        if (it == last or *it != ')') {
+            return std::unexpected{std::format("{}: Missing ')' after rgb_color arguments.", token_location(it, last))};
+        }
+
+        ++it;
+        return {name, color{red, green, blue, 1.0f}};
+
+    } else if (it[2] == token::id and it[2] == "rgba_color") {
+        it += 3;
+        if (it == last or *it != '(') {
+            return std::unexpected{std::format("{}: Missing '(' after rgba_color.", token_location(it, last))};
+        }
+
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as first argument to rgba_color.", token_location(it, last))};
+        }
+        auto const red = static_cast<float>(*it);
+
+        ++it;
+        if (it == last or *it != ',') {
+            return std::unexpected{std::format("{}: Expecting a comma ',' after first argument to rgba_color.", token_location(it, last))};
+        }
+
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as second argument to rgba_color.", token_location(it, last))};
+        }
+        auto const green = static_cast<float>(*it);
+
+        ++it;
+        if (it == last or *it != ',') {
+            return std::unexpected{std::format("{}: Expecting a comma ',' after second argument to rgba_color.", token_location(it, last))};
+        }
+
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as third argument to rgba_color.", token_location(it, last))};
+        }
+        auto const blue = static_cast<float>(*it);
+
+        ++it;
+        if (it == last or *it != ',') {
+            return std::unexpected{std::format("{}: Expecting a comma ',' after third argument to rgba_color.", token_location(it, last))};
+        }
+
+        ++it;
+        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+            return std::unexpected{std::format("{}: Expecting a number as forth argument to rgba_color.", token_location(it, last))};
+        }
+        auto const alpha = static_cast<float>(*it);
+
+        ++it;
+        if (it == last or *it != ')') {
+            return std::unexpected{std::format("{}: Missing ')' after rgba_color arguments.", token_location(it, last))};
+        }
+
+        ++it;
+        return {name, color{red, green, blue, alpha}};
+
+    } else if (it[2] == token::id) {
+        auto const color_name = static_cast<std::string>(it[2]);
+        it += 3;
+
+        if (auto const *color_ptr = color::find(color_name)) {
+            return {name, *color_ptr};
+        } else {
+            return std::unexpected{std::format("{}: Unknown color name '{}'.", token_location(it + 2, last), color_name)};
+        }
         
+    } else {
+        return std::unexpected{std::format("{}: Unknown color value type {}.", token_location(it + 2, last), it + 2)};
     }
 }
 

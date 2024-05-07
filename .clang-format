@@ -74,6 +74,10 @@ ReferenceAlignment: Left
 ReflowComments: true
 RequiresClausePosition: WithPreceding
 RequiresExpressionIndentation: OuterScope
+# Not setting QualifierAlignment to leave will cause clang-format to take
+# several minutes to format a small file. Bug is known, someone made a patch,
+# and it was ignored, like most other patches to clang-format.
+QualifierAlignment: Leave
 SortIncludes: false
 SortUsingDeclarations: false
 SpaceAfterCStyleCast: false
