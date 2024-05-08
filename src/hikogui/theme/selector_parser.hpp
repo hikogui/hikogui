@@ -51,150 +51,86 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<std::pair<std::string, size_t>, std::string>
-parse_theme_tag_pseudo_class(It& it, ItEnd last)
+[[nodiscard]] constexpr std::parse_expected<length_f, std::string> parse_theme_tag_length(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
-    if (*it != ':') {
-        return std::nullopt;
-    }
-
-    ++it;
-    if (it == last or *it != token::id) {
-        return std::unexpected{std::format("{}: Expected a pseudo-class after ':', got '{}'.", token_location(it, last), *it)};
-    }
-    auto name = static_cast<std::string>(*it);
-
-    ++it;
-    if (it == last or *it != '(') {
-        // This pseudo-class does not have a value.
-        return {name, 0};
-    }
-
-    ++it;
-    if (it == last or *it != token::integer) {
-        return std::unexpected{
-            std::format("{}: Expected integer value after '(' for pseudo-class, got '{}'.", token_location(it, last), *it)};
-    }
-    auto value = static_cast<int>(*it);
-
-    ++it;
-    if (it == last or *it != ')') {
-        return std::unexpected{
-            std::format("{}: Expected ')' after pseudo-class value, got '{}'.", token_location(it, last), *it)};
-    }
-
-    ++it;
-    return {name, value};
-}
-
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<std::pair<std::string, length_f>, std::string>
-parse_theme_tag_length_attribute(It& it, ItEnd last)
-{
-    hi_assert(it != last);
-
-    if (it[0] != token::id) {
-        return std::nullopt;
-    }
-    auto const name = static_cast<std::string>(it[0]);
-
-    if ((it + 1) == last or it[1] != '=') {
-        return std::nullopt;
-    }
-
-    if (it + 2 == last) {
-        return std::unexpected{std::format("{}: Missing value after attribute '{}'.", token_location(it + 2, last), name)};
-    }
-
-    float value = 0.0f;
-    if (it[2] != token::integer and it[2] != token::floating_point) {
+    if (*it != token::integer and *it != token::floating_point) {
         return std::nullopt
     }
-    auto const value = static_cast<float>(it[2]);
 
-    // If we got here then we are definitely parsing a length value.
-    if (it + 3 == last or it[3] != token::id) {
+    auto const value = static_cast<float>(*it);
+    ++it;
+
+    if (it == last or *it != token::id) {
         // A numeric value without a suffix is in device independet pixels.
-        it += 3;
         return {name, length_f{dips(value)}};
-    } else if (it[3] == "px") {
-        it += 4;
+    } else if (*it == "px") {
+        ++it;
         return {name, length_f{pixels(value)}};
-    } else if (it[3] == "dp" or it[3] == "dip") {
-        it += 4;
+    } else if (*it == "dp" or *it == "dip") {
+        ++it;
         return {name, length_f{dips(value)}};
-    } else if (it[3] == "pt") {
-        it += 4;
+    } else if (*it == "pt") {
+        ++it;
         return {name, length_f{points(value)}};
-    } else if (it[3] == "in") {
-        it += 4;
+    } else if (*it == "in") {
+        ++it;
         return {name, length_f{au::inches(value)}};
-    } else if (it[3] == "cm") {
-        it += 4;
+    } else if (*it == "cm") {
+        ++it;
         return {name, length_f{au::centi<au::meters>(value)}};
     } else {
         // Unknown suffix could be token for another part of the tag.
-        it += 3;
         return {name, length_f{dips(value)}};
     }
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<std::pair<std::string, color>, std::string>
-parse_theme_tag_color_attribute(It& it, ItEnd last)
+[[nodiscard]] constexpr std::parse_expected<color, std::string> parse_theme_tag_color(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
-    if (it[0] != token::id) {
-        return std::nullopt;
-    }
-    auto const name = static_cast<std::string>(it[0]);
+    if (*it == token::color) {
+        ++it;
+        return static_cast<color>(it[2]);
 
-    if ((it + 1) == last or it[1] != '=') {
-        return std::nullopt;
-    }
-
-    if (it + 2 == last) {
-        return std::unexpected{std::format("{}: Missing value after attribute '{}'.", token_location(it + 2, last), name)};
-    }
-
-    if (it[2] == token::color) {
-        it += 3;
-        return {name, static_cast<color>(it[2])};
-
-    } else if (it[2] == token::id and it[2] == "rgb_color") {
-        it += 3;
+    } else if (*it == token::id and *it == "rgb_color") {
+        ++it;
         if (it == last or *it != '(') {
             return std::unexpected{std::format("{}: Missing '(' after rgb_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as first argument to rgb_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as first argument to rgb_color.", token_location(it, last))};
         }
         auto const red = static_cast<float>(*it);
 
         ++it;
         if (it == last or *it != ',') {
-            return std::unexpected{std::format("{}: Expecting a comma ',' after first argument to rgb_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a comma ',' after first argument to rgb_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as second argument to rgb_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as second argument to rgb_color.", token_location(it, last))};
         }
         auto const green = static_cast<float>(*it);
 
         ++it;
         if (it == last or *it != ',') {
-            return std::unexpected{std::format("{}: Expecting a comma ',' after second argument to rgb_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a comma ',' after second argument to rgb_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as third argument to rgb_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as third argument to rgb_color.", token_location(it, last))};
         }
         auto const blue = static_cast<float>(*it);
 
@@ -204,50 +140,57 @@ parse_theme_tag_color_attribute(It& it, ItEnd last)
         }
 
         ++it;
-        return {name, color{red, green, blue, 1.0f}};
+        return color{red, green, blue, 1.0f};
 
-    } else if (it[2] == token::id and it[2] == "rgba_color") {
-        it += 3;
+    } else if (*it == token::id and *it == "rgba_color") {
+        ++it;
         if (it == last or *it != '(') {
             return std::unexpected{std::format("{}: Missing '(' after rgba_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as first argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as first argument to rgba_color.", token_location(it, last))};
         }
         auto const red = static_cast<float>(*it);
 
         ++it;
         if (it == last or *it != ',') {
-            return std::unexpected{std::format("{}: Expecting a comma ',' after first argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a comma ',' after first argument to rgba_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as second argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as second argument to rgba_color.", token_location(it, last))};
         }
         auto const green = static_cast<float>(*it);
 
         ++it;
         if (it == last or *it != ',') {
-            return std::unexpected{std::format("{}: Expecting a comma ',' after second argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a comma ',' after second argument to rgba_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as third argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as third argument to rgba_color.", token_location(it, last))};
         }
         auto const blue = static_cast<float>(*it);
 
         ++it;
         if (it == last or *it != ',') {
-            return std::unexpected{std::format("{}: Expecting a comma ',' after third argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a comma ',' after third argument to rgba_color.", token_location(it, last))};
         }
 
         ++it;
         if (it == last or (*it != token::integer and *it != token::floating_point)) {
-            return std::unexpected{std::format("{}: Expecting a number as forth argument to rgba_color.", token_location(it, last))};
+            return std::unexpected{
+                std::format("{}: Expecting a number as forth argument to rgba_color.", token_location(it, last))};
         }
         auto const alpha = static_cast<float>(*it);
 
@@ -257,21 +200,76 @@ parse_theme_tag_color_attribute(It& it, ItEnd last)
         }
 
         ++it;
-        return {name, color{red, green, blue, alpha}};
+        return color{red, green, blue, alpha};
 
-    } else if (it[2] == token::id) {
-        auto const color_name = static_cast<std::string>(it[2]);
-        it += 3;
+    } else if (*it == token::id) {
+        auto const color_name = static_cast<std::string>(*it);
+        ++it;
 
-        if (auto const *color_ptr = color::find(color_name)) {
-            return {name, *color_ptr};
+        if (auto const* color_ptr = color::find(color_name)) {
+            return *color_ptr;
         } else {
-            return std::unexpected{std::format("{}: Unknown color name '{}'.", token_location(it + 2, last), color_name)};
+            return std::unexpected{std::format("{}: Unknown color name '{}'.", token_location(it, last), color_name)};
         }
-        
+
     } else {
-        return std::unexpected{std::format("{}: Unknown color value type {}.", token_location(it + 2, last), it + 2)};
+        return std::unexpected{std::format("{}: Unknown color value {}.", token_location(it, last), *it)};
     }
+}
+
+template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::parse_expected<theme_attributes, std::string> parse_theme_tag_attribute(It& it, ItEnd last)
+{
+#define HIX_VALUE(VALUE_PARSER, NAME, ATTRIBUTE) \
+    if (name == NAME) { \
+        if (auto const value = VALUE_PARSER(it, last)) { \
+            auto r = theme_attributes{}; \
+            r.set_##ATTRIBUTE(*value); \
+            return r; \
+        } else if (value.has_error()) { \
+            return std::unexpected(value.error()); \
+        } else { \
+            return std::unexpected(std::format("{}: Unknown value {} for attribute '{}'", token_location(it, last), *it, name)); \
+        } \
+    } else
+
+    hi_assert(it != last);
+
+    if (it[0] != token::id or it + 1 == last or it[1] != '=') {
+        return std::nullopt;
+    }
+
+    auto const name = static_cast<std::string>(it[0]);
+    it += 2;
+
+    HIX_VALUE(parse_theme_tag_length, "width", width)
+    HIX_VALUE(parse_theme_tag_length, "height", height)
+    HIX_VALUE(parse_theme_tag_length, "margin-left", margin_left)
+    HIX_VALUE(parse_theme_tag_length, "margin-bottom", margin_bottom)
+    HIX_VALUE(parse_theme_tag_length, "margin-right", margin_right)
+    HIX_VALUE(parse_theme_tag_length, "margin-top", margin_top)
+    HIX_VALUE(parse_theme_tag_length, "margin", margin)
+    HIX_VALUE(parse_theme_tag_length, "padding-left", padding_left)
+    HIX_VALUE(parse_theme_tag_length, "padding-bottom", padding_bottom)
+    HIX_VALUE(parse_theme_tag_length, "padding-right", padding_right)
+    HIX_VALUE(parse_theme_tag_length, "padding-top", padding_top)
+    HIX_VALUE(parse_theme_tag_length, "padding", padding)
+    HIX_VALUE(parse_theme_tag_length, "border-width", border_width)
+    HIX_VALUE(parse_theme_tag_length, "left-bottom-corner-radius", left_bottom_corner_radius)
+    HIX_VALUE(parse_theme_tag_length, "right-bottom-corner-radius", right_bottom_corner_radius)
+    HIX_VALUE(parse_theme_tag_length, "left-top-corner-radius", left_top_corner_radius)
+    HIX_VALUE(parse_theme_tag_length, "right-top-corner-radius", right_top_corner_radius)
+    HIX_VALUE(parse_theme_tag_length, "corner-radius", corner_radius)
+    HIX_VALUE(parse_theme_tag_color, "foreground-color", foreground_color)
+    HIX_VALUE(parse_theme_tag_color, "background-color", background_color)
+    HIX_VALUE(parse_theme_tag_color, "border-color", border_color)
+    HIX_VALUE(parse_theme_tag_horizontal_alignment, "horizontal-alignment", horizontal_alignment)
+    HIX_VALUE(parse_theme_tag_vertical_alignment, "vertical-alignment", vertical_alignment)
+    {
+        return std::unexpected(std::format("{}: Unknown attribute '{}'.", token_location(it, last), name));
+    }
+
+#undef HIX_VALUE
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
@@ -282,78 +280,32 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     if (*it != '/') {
         return std::nullopt;
     }
-
     ++it;
+
     if (it == last or *it != token::id) {
         return std::unexpected{std::format("{}: Expected a widget-name after '/', got '{}'.", token_location(it, last), *it)};
     }
 
-    auto r = theme_theme_tag_segment{static_cast<std::string>(it[1])};
+    auto r = theme_theme_tag_segment{static_cast<std::string>(*it)};
+    ++it;
 
-    it += 2;
     while (it != last and *it != '/') {
-        if (auto id = parse_theme_tag_id(it, last)) {
+        if (auto const id = parse_theme_tag_id(it, last)) {
             r.id = *id;
             continue;
         } else if (id.has_error()) {
             return std::unexpected{id.error()};
         }
 
-        if (auto class_name = parse_theme_tag_class(it, last)) {
+        if (auto const class_name = parse_theme_tag_class(it, last)) {
             r.classes.push_back(*class_name);
             continue;
         } else if (class_name.has_error()) {
             return std::unexpected{class_name.error()};
         }
 
-        if (auto attribute = parse_theme_tag_length_attribute(it, last)) {
-            auto const [name, value] = attribute;
-            // clang-format off
-            if (name == "width") { r.attributes.width = value;
-            } else if (name == "height") { r.attributes.height = value;
-            } else if (name == "margin-left") { r.attributes.margin_left = value;
-            } else if (name == "margin-bottom") { r.attributes.margin_bottom = value;
-            } else if (name == "margin-right") { r.attributes.margin_right = value;
-            } else if (name == "margin-top") { r.attributes.margin_top = value;
-            } else if (name == "margins" or name == "margin") {
-                r.attribute.margin_left = value;
-                r.attribute.margin_bottom = value;
-                r.attribute.margin_right = value;
-                r.attribute.margin_top = value;
-            } else if (name == "padding-left") { r.attributes.padding_left = value;
-            } else if (name == "padding-bottom") { r.attributes.padding_bottom = value;
-            } else if (name == "padding-right") { r.attributes.padding_right = value;
-            } else if (name == "padding-top") { r.attributes.padding_top = value;
-            } else if (name == "padding") {
-                r.attribute.padding_left = value;
-                r.attribute.padding_bottom = value;
-                r.attribute.padding_right = value;
-                r.attribute.padding_top = value;
-            } else if (name == "border-width") { r.attributes.border_width = value;
-            } else if (name == "left-bottom-corner-radius") { r.attributes.left_bottom_corner_radius = value;
-            } else if (name == "right-bottom-corner-radius") { r.attributes.right_bottom_corner_radius = value;
-            } else if (name == "left-top-corner-radius") { r.attributes.left_top_corner_radius = value;
-            } else if (name == "right-top-corner-radius") { r.attributes.right_top_corner_radius = value;
-            } else if (name == "corner-radius" or name == "corner-radii") {
-                r.attribute.left_bottom_corner_radius = value;
-                r.attribute.right_bottom_corner_radius = value;
-                r.attribute.left_top_corner_radius = value;
-                r.attribute.right_top_corner_radius = value;
-            }
-            // clang-format on
-            continue;
-        } else if (attribute.has_error()) {
-            return std::unexpected{attribute.error()};
-        }
-
-        if (auto attribute = parse_theme_tag_color_attribute(it, last)) {
-            auto const [name, value] = attribute;
-            // clang-format off
-            if (name == "foreground-color") { r.attributes.foreground_color = value;
-            } else if (name == "background-color") { r.attributes.background_color = value;
-            } else if (name == "border-color") { r.attributes.border_color = value;
-            }
-            // clang-format on
+        if (auto const attribute = parse_theme_tag_attribute(it, last)) {
+            r.attributes.apply(*attribute);
             continue;
         } else if (attribute.has_error()) {
             return std::unexpected{attribute.error()};
