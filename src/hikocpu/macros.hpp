@@ -44,6 +44,10 @@
 #define HI_HAS_ARM 1
 #endif
 
+#if defined(HI_HAS_X86) or defined(HI_HAS_ARM)
+#define HI_LITTLE_ENDIAN 1
+#endif
+
 #if defined(HI_GENERIC)
 // Don't add any cpu features.
 
