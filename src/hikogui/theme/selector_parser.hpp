@@ -224,7 +224,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     if (name == NAME) { \
         if (auto const value = VALUE_PARSER(it, last)) { \
             auto r = theme_attributes{}; \
-            r.set_##ATTRIBUTE(*value); \
+            r.set_##ATTRIBUTE(*value, true); \
             return r; \
         } else if (value.has_error()) { \
             return std::unexpected(value.error()); \
