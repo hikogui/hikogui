@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "style_path.hpp
+#include "style_attributes.hpp"
 #include "../parser/parser.hpp"
+#include "../container/container.hpp"
 #include "../macros.hpp"
 #include <iterator>
 
@@ -13,7 +16,7 @@ inline namespace v1 {
 namespace detail {
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<std::string, std::string> parse_theme_tag_id(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<std::string, std::string> parse_style_path_id(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
@@ -32,7 +35,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<std::string, std::string> parse_theme_tag_class(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<std::string, std::string> parse_style_path_class(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
@@ -51,7 +54,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<length_f, std::string> parse_theme_tag_length(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<length_f, std::string> parse_style_length(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
@@ -87,7 +90,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<color, std::string> parse_theme_tag_color(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<color, std::string> parse_style_color(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
@@ -218,12 +221,12 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 }
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<theme_attributes, std::string> parse_theme_tag_attribute(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<style_attributes, std::string> parse_style_attribute(It& it, ItEnd last)
 {
 #define HIX_VALUE(VALUE_PARSER, NAME, ATTRIBUTE) \
     if (name == NAME) { \
         if (auto const value = VALUE_PARSER(it, last)) { \
-            auto r = theme_attributes{}; \
+            auto r = style_attributes{}; \
             r.set_##ATTRIBUTE(*value, true); \
             return r; \
         } else if (value.has_error()) { \
@@ -235,36 +238,36 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 
     hi_assert(it != last);
 
-    if (it[0] != token::id or it + 1 == last or it[1] != '=') {
+    if (it[0] != token::id or it + 1 == last or it[1] != '=' or it + 2 == last) {
         return std::nullopt;
     }
 
     auto const name = static_cast<std::string>(it[0]);
     it += 2;
 
-    HIX_VALUE(parse_theme_tag_length, "width", width)
-    HIX_VALUE(parse_theme_tag_length, "height", height)
-    HIX_VALUE(parse_theme_tag_length, "margin-left", margin_left)
-    HIX_VALUE(parse_theme_tag_length, "margin-bottom", margin_bottom)
-    HIX_VALUE(parse_theme_tag_length, "margin-right", margin_right)
-    HIX_VALUE(parse_theme_tag_length, "margin-top", margin_top)
-    HIX_VALUE(parse_theme_tag_length, "margin", margin)
-    HIX_VALUE(parse_theme_tag_length, "padding-left", padding_left)
-    HIX_VALUE(parse_theme_tag_length, "padding-bottom", padding_bottom)
-    HIX_VALUE(parse_theme_tag_length, "padding-right", padding_right)
-    HIX_VALUE(parse_theme_tag_length, "padding-top", padding_top)
-    HIX_VALUE(parse_theme_tag_length, "padding", padding)
-    HIX_VALUE(parse_theme_tag_length, "border-width", border_width)
-    HIX_VALUE(parse_theme_tag_length, "left-bottom-corner-radius", left_bottom_corner_radius)
-    HIX_VALUE(parse_theme_tag_length, "right-bottom-corner-radius", right_bottom_corner_radius)
-    HIX_VALUE(parse_theme_tag_length, "left-top-corner-radius", left_top_corner_radius)
-    HIX_VALUE(parse_theme_tag_length, "right-top-corner-radius", right_top_corner_radius)
-    HIX_VALUE(parse_theme_tag_length, "corner-radius", corner_radius)
-    HIX_VALUE(parse_theme_tag_color, "foreground-color", foreground_color)
-    HIX_VALUE(parse_theme_tag_color, "background-color", background_color)
-    HIX_VALUE(parse_theme_tag_color, "border-color", border_color)
-    HIX_VALUE(parse_theme_tag_horizontal_alignment, "horizontal-alignment", horizontal_alignment)
-    HIX_VALUE(parse_theme_tag_vertical_alignment, "vertical-alignment", vertical_alignment)
+    HIX_VALUE(parse_style_length, "width", width)
+    HIX_VALUE(parse_style_length, "height", height)
+    HIX_VALUE(parse_style_length, "margin-left", margin_left)
+    HIX_VALUE(parse_style_length, "margin-bottom", margin_bottom)
+    HIX_VALUE(parse_style_length, "margin-right", margin_right)
+    HIX_VALUE(parse_style_length, "margin-top", margin_top)
+    HIX_VALUE(parse_style_length, "margin", margin)
+    HIX_VALUE(parse_style_length, "padding-left", padding_left)
+    HIX_VALUE(parse_style_length, "padding-bottom", padding_bottom)
+    HIX_VALUE(parse_style_length, "padding-right", padding_right)
+    HIX_VALUE(parse_style_length, "padding-top", padding_top)
+    HIX_VALUE(parse_style_length, "padding", padding)
+    HIX_VALUE(parse_style_length, "border-width", border_width)
+    HIX_VALUE(parse_style_length, "left-bottom-corner-radius", left_bottom_corner_radius)
+    HIX_VALUE(parse_style_length, "right-bottom-corner-radius", right_bottom_corner_radius)
+    HIX_VALUE(parse_style_length, "left-top-corner-radius", left_top_corner_radius)
+    HIX_VALUE(parse_style_length, "right-top-corner-radius", right_top_corner_radius)
+    HIX_VALUE(parse_style_length, "corner-radius", corner_radius)
+    HIX_VALUE(parse_style_color, "foreground-color", foreground_color)
+    HIX_VALUE(parse_style_color, "background-color", background_color)
+    HIX_VALUE(parse_style_color, "border-color", border_color)
+    HIX_VALUE(parse_style_horizontal_alignment, "horizontal-alignment", horizontal_alignment)
+    HIX_VALUE(parse_style_vertical_alignment, "vertical-alignment", vertical_alignment)
     {
         return std::unexpected(std::format("{}: Unknown attribute '{}'.", token_location(it, last), name));
     }
@@ -272,52 +275,10 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 #undef HIX_VALUE
 }
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::parse_expected<theme_theme_tag_segment, std::string> parse_theme_tag_segment(It& it, ItEnd last)
-{
-    hi_assert(it != last);
-
-    if (*it != '/') {
-        return std::nullopt;
-    }
-    ++it;
-
-    if (it == last or *it != token::id) {
-        return std::unexpected{std::format("{}: Expected a widget-name after '/', got '{}'.", token_location(it, last), *it)};
-    }
-
-    auto r = theme_theme_tag_segment{static_cast<std::string>(*it)};
-    ++it;
-
-    while (it != last and *it != '/') {
-        if (auto const id = parse_theme_tag_id(it, last)) {
-            r.id = *id;
-            continue;
-        } else if (id.has_error()) {
-            return std::unexpected{id.error()};
-        }
-
-        if (auto const class_name = parse_theme_tag_class(it, last)) {
-            r.classes.push_back(*class_name);
-            continue;
-        } else if (class_name.has_error()) {
-            return std::unexpected{class_name.error()};
-        }
-
-        if (auto const attribute = parse_theme_tag_attribute(it, last)) {
-            r.attributes.apply(*attribute);
-            continue;
-        } else if (attribute.has_error()) {
-            return std::unexpected{attribute.error()};
-        }
-    }
-
-    return r;
-}
 } // namespace detail
 
 template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr std::expected<theme_theme_tag, std::string> parse_theme_tag(It first, ItEnd last)
+[[nodiscard]] constexpr expected_optional<std::pair<style_attributes, style_path_segment>, std::string> parse_style(It first, ItEnd last)
 {
     constexpr auto config = [] {
         auto r = lexer_config{};
@@ -331,24 +292,41 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     auto lexer_it = lexer<config>.parse(first, last);
     auto token_it = make_lookahead_iterator<4>(lexer_it);
 
-    auto r = std::vector<theme_theme_tag_segment> {}
+    auto attributes = hi::style_attributes{};
+    auto path_segment = hi::style_path_segment{};
     while (token_it != std::sentinel) {
-        if (auto segment = parse_theme_tag_segment(token_it, std::sentinel)) {
-            if (not r.empty()) {
-                // Only the attributes for the leaf segment are interesting.
-                r.back().attributes.clear();
-            }
-            r.push_back(std::move(*segment));
+        if (auto attribute = detail::parse_style_attribute(token_it, std::sentinel)) {
+            attributes.apply(*attribute);
+            continue;
 
-        } else if (segment.has_error()) {
-            return std::unexpected{segment.error()};
-
-        } else {
-            return std::unexpected{std::format("{}: Unexpected token '{}'.", token_location(token_it, std::sentinel), *token_it)};
+        } else if (attribute.has_error()) {
+            return std::unexpected{attribute.error()};
         }
+
+        if (auto id = detail::parse_style_path_id(token_it, std::sentinel)) {
+            if (path_segment.id.empty()) {
+                path_segment.id = *id;
+                continue;
+            } else {
+                return std::unexpected{std::format("{}: Style already has id #{}.", token_location(token_it, std::sentinel), path_segment.id)};
+            }
+
+        } else if (id.has_error()) {
+            return std::unexpected{id.error()};
+        }
+
+        if (auto class_ = detail::parse_style_path_class(token_it, std::sentinel)) {
+            path_segment.classes.push_back(*class_);
+            continue;
+
+        } else if (class_.has_error()) {
+            return std::unexpected{class_.error()};
+        }
+
+        return std::unexpected{std::format("{}: Unexpected token '{}'.", token_location(token_it, std::sentinel), *token_it)};
     }
 
-    return theme_theme_tag{std::move(r)};
+    return {attributes, path_segment};
 }
 
 } // namespace v1

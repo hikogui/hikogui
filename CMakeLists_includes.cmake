@@ -181,6 +181,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/concurrency/unfair_recursive_mutex.hpp
     src/hikogui/container/byte_string.hpp
     src/hikogui/container/container.hpp
+    src/hikogui/container/expected_optional.hpp
     src/hikogui/container/function_fifo.hpp
     src/hikogui/container/functional.hpp
     src/hikogui/container/lean_vector.hpp
@@ -412,9 +413,11 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_shaper_line.hpp
     src/hikogui/text/text_style.hpp
     src/hikogui/text/text_style_set.hpp
+    src/hikogui/theme/style.hpp
+    src/hikogui/theme/style_attributes.hpp
+    src/hikogui/theme/style_parser.hpp
+    src/hikogui/theme/style_path.hpp
     src/hikogui/theme/theme.hpp
-    src/hikogui/theme/theme_length.hpp
-    src/hikogui/theme/theme_value.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp
     src/hikogui/time/time_stamp_count.hpp

@@ -2,64 +2,65 @@
 
 #pragma once
 
+#include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <expected>
 #include <optional>
 #include <variant>
 
-hi_export_module(hikogui.parser : parse_expected);
+hi_export_module(hikogui.parser : expected_optional);
 
 hi_export namespace hi {
 inline namespace v1 {
 
 template<typename T, typename E>
-class parse_expected {
+class expected_optional {
 public:
     using value_type = T;
     using error_type = E;
 
-    constexpr parse_expected(parse_expected const&) noexcept = default;
-    constexpr parse_expected(parse_expected&&) noexcept = default;
-    constexpr parse_expected& operator=(parse_expected const&) noexcept = default;
-    constexpr parse_expected& operator=(parse_expected&&) noexcept = default;
+    constexpr expected_optional(expected_optional const&) noexcept = default;
+    constexpr expected_optional(expected_optional&&) noexcept = default;
+    constexpr expected_optional& operator=(expected_optional const&) noexcept = default;
+    constexpr expected_optional& operator=(expected_optional&&) noexcept = default;
 
-    constexpr parse_expected() noexcept = default;
+    constexpr expected_optional() noexcept = default;
 
-    constexpr parse_expected(std::nullopt_t) noexcept _v{std::monostate{}} {}
+    constexpr expected_optional(std::nullopt_t) noexcept : _v{std::in_place_index<0>, std::monostate{}} {}
 
     template<typename Arg = T>
-    constexpr explicit(not std::is_convertible_v<Arg, T>) parse_expected(Arg&& arg) noexcept : _v{std::forward<Arg>(arg)}
+    constexpr explicit(not std::is_convertible_v<Arg, T>) expected_optional(Arg&& arg) noexcept : _v{std::in_place_index<1>, std::forward<Arg>(arg)}
     {
     }
 
     template<typename Arg>
-    constexpr explicit(not std::is_convertible_v<const Arg&, E>) parse_expected(std::unexpected<Arg> const& arg) noexcept :
-        _v{arg}
+    constexpr explicit(not std::is_convertible_v<const Arg&, E>) expected_optional(std::unexpected<Arg> const& arg) noexcept :
+        _v{std::in_place_index<2>, arg.error()}
     {
     }
 
-    constexpr parse_expected &operator=(std::nullopt_t) noexcept
+    constexpr expected_optional &operator=(std::nullopt_t) noexcept
     {
         _v.template emplace<0>();
         return *this;
     }
 
     template<typename Arg = T>
-    constexpr parse_expected &operator=(Arg &&arg) noexcept
+    constexpr expected_optional &operator=(Arg &&arg) noexcept
     {
         _v.template emplace<1>(std::forward<Arg>(arg));
         return *this;
     }
 
     template<typename Arg = E>
-    constexpr parse_expected &operator=(std::unexpected<Arg> const &arg) noexcept
+    constexpr expected_optional &operator=(std::unexpected<Arg> const &arg) noexcept
     {
         _v.template emplace<2>(arg);
         return *this;
     }
 
     template<typename Arg = E>
-    constexpr parse_expected &operator=(std::unexpected<Arg> &&arg) noexcept
+    constexpr expected_optional &operator=(std::unexpected<Arg> &&arg) noexcept
     {
         _v.template emplace<2>(std::move(arg));
         return *this;
@@ -101,7 +102,7 @@ public:
     [[nodiscard]] constexpr value_type const* operator->() const noexcept
     {
         hi_axiom(_v.index() == 1);
-        return std::addressof(::get<1>(_v));
+        return std::addressof(std::get<1>(_v));
     }
 
     [[nodiscard]] constexpr value_type* operator->() noexcept
