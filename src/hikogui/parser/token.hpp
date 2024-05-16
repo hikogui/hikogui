@@ -175,6 +175,28 @@ hi_export template<std::input_iterator It>
     return token_location(it, std::default_sentinel, path);
 }
 
+/** Create a location string for error messages.
+ *
+ * @param it An iterator that dereferences to a `hi::token`.
+ * @param last The sentinel for @a it.
+ * @return A string with the location of the token.
+ */
+hi_export template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr std::string token_location(It& it, ItEnd last) noexcept
+{
+    if (it == last) {
+        return std::format("eof");
+    } else {
+        return std::format("{}:{}", it->line_nr + 1, it->column_nr + 1);
+    }
+}
+
+hi_export template<std::input_iterator It>
+[[nodiscard]] constexpr std::string token_location(It& it) noexcept
+{
+    return token_location(it, std::default_sentinel);
+}
+
 }} // namespace hi::v1
 
 // XXX #617 MSVC bug does not handle partial specialization in modules.

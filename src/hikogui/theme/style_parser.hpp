@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "style_path.hpp
+#include "style_path.hpp"
 #include "style_attributes.hpp"
 #include "../parser/parser.hpp"
 #include "../container/container.hpp"
@@ -15,7 +15,7 @@ hi_export namespace hi {
 inline namespace v1 {
 namespace detail {
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<std::string, std::string> parse_style_path_id(It& it, ItEnd last)
 {
     hi_assert(it != last);
@@ -25,7 +25,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     }
 
     ++it;
-    if (it == last or *it != token : id) {
+    if (it == last or *it != token::id) {
         return std::unexpected{std::format("{}: Expected a widget-id after '#', got '{}'.", token_location(it, last), *it)};
     }
 
@@ -34,7 +34,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     return r;
 }
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<std::string, std::string> parse_style_path_class(It& it, ItEnd last)
 {
     hi_assert(it != last);
@@ -44,7 +44,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     }
 
     ++it;
-    if (it == last or *it != token : id) {
+    if (it == last or *it != token::id) {
         return std::unexpected{std::format("{}: Expected a widget-class after '.', got '{}'.", token_location(it, last), *it)};
     }
 
@@ -53,13 +53,70 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
     return r;
 }
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr expected_optional<horizontal_alignment, std::string> parse_style_horizontal_alignment(It& it, ItEnd last)
+{
+    hi_assert(it != last);
+
+    if (*it != token::id) {
+        return std::nullopt;
+    }
+
+    if (*it == "none") {
+        ++it;
+        return horizontal_alignment::none;
+    } else if (*it == "flush") {
+        ++it;
+        return horizontal_alignment::flush;
+    } else if (*it == "left") {
+        ++it;
+        return horizontal_alignment::left;
+    } else if (*it == "center") {
+        ++it;
+        return horizontal_alignment::center;
+    } else if (*it == "justified") {
+        ++it;
+        return horizontal_alignment::justified;
+    } else if (*it == "right") {
+        ++it;
+        return horizontal_alignment::right;
+    } else {
+        return std::unexpected{std::format("{}: Unknown horizontal alignment {}.", token_location(it, last), static_cast<std::string>(*it))};
+    }
+}
+
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr expected_optional<vertical_alignment, std::string> parse_style_vertical_alignment(It& it, ItEnd last)
+{
+    hi_assert(it != last);
+
+    if (*it != token::id) {
+        return std::nullopt;
+    }
+
+    if (*it == "none") {
+        ++it;
+        return vertical_alignment::none;
+    } else if (*it == "top") {
+        ++it;
+        return vertical_alignment::top;
+    } else if (*it == "middle") {
+        ++it;
+        return vertical_alignment::middle;
+    } else if (*it == "bottom") {
+        ++it;
+        return vertical_alignment::bottom;
+    } else {
+        return std::unexpected{std::format("{}: Unknown vertical alignment {}.", token_location(it, last), static_cast<std::string>(*it))};
+    }
+}
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<length_f, std::string> parse_style_length(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
-    if (*it != token::integer and *it != token::floating_point) {
-        return std::nullopt
+    if (*it != token::integer and *it != token::real) {
+        return std::nullopt;
     }
 
     auto const value = static_cast<float>(*it);
@@ -67,45 +124,41 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 
     if (it == last or *it != token::id) {
         // A numeric value without a suffix is in device independet pixels.
-        return {name, length_f{dips(value)}};
+        return dips(value);
     } else if (*it == "px") {
         ++it;
-        return {name, length_f{pixels(value)}};
+        return pixels(value);
     } else if (*it == "dp" or *it == "dip") {
         ++it;
-        return {name, length_f{dips(value)}};
+        return dips(value);
     } else if (*it == "pt") {
         ++it;
-        return {name, length_f{points(value)}};
+        return points(value);
     } else if (*it == "in") {
         ++it;
-        return {name, length_f{au::inches(value)}};
+        return au::inches(value);
     } else if (*it == "cm") {
         ++it;
-        return {name, length_f{au::centi<au::meters>(value)}};
+        return au::centi(au::meters)(value);
     } else {
         // Unknown suffix could be token for another part of the tag.
-        return {name, length_f{dips(value)}};
+        return dips(value);
     }
 }
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<color, std::string> parse_style_color(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
-    if (*it == token::color) {
-        ++it;
-        return static_cast<color>(it[2]);
-
-    } else if (*it == token::id and *it == "rgb_color") {
+    if (*it == token::id and *it == "rgb") {
         ++it;
         if (it == last or *it != '(') {
             return std::unexpected{std::format("{}: Missing '(' after rgb_color.", token_location(it, last))};
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as first argument to rgb_color.", token_location(it, last))};
         }
@@ -118,7 +171,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as second argument to rgb_color.", token_location(it, last))};
         }
@@ -131,7 +184,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as third argument to rgb_color.", token_location(it, last))};
         }
@@ -145,14 +198,14 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
         ++it;
         return color{red, green, blue, 1.0f};
 
-    } else if (*it == token::id and *it == "rgba_color") {
+    } else if (*it == token::id and *it == "rgba") {
         ++it;
         if (it == last or *it != '(') {
             return std::unexpected{std::format("{}: Missing '(' after rgba_color.", token_location(it, last))};
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as first argument to rgba_color.", token_location(it, last))};
         }
@@ -165,7 +218,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as second argument to rgba_color.", token_location(it, last))};
         }
@@ -178,7 +231,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as third argument to rgba_color.", token_location(it, last))};
         }
@@ -191,7 +244,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
         }
 
         ++it;
-        if (it == last or (*it != token::integer and *it != token::floating_point)) {
+        if (it == last or (*it != token::integer and *it != token::real)) {
             return std::unexpected{
                 std::format("{}: Expecting a number as forth argument to rgba_color.", token_location(it, last))};
         }
@@ -215,12 +268,30 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
             return std::unexpected{std::format("{}: Unknown color name '{}'.", token_location(it, last), color_name)};
         }
 
+    } else if (*it == token::sstr or *it == token::dstr) {
+        auto const color_name = static_cast<std::string>(*it);
+        ++it;
+
+        if (color_name.starts_with("#")) {
+            try {
+                return color_from_sRGB(color_name);
+
+            } catch (std::exception const &e) {
+                return std::unexpected{std::format("{}: Could not parse hex color '{}': {}", token_location(it, last), color_name, e.what())};
+            } 
+
+        } else if (auto const* color_ptr = color::find(color_name)) {
+            return *color_ptr;
+        } else {
+            return std::unexpected{std::format("{}: Unknown color name '{}'.", token_location(it, last), color_name)};
+        }    
+
     } else {
         return std::unexpected{std::format("{}: Unknown color value {}.", token_location(it, last), *it)};
     }
 }
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<style_attributes, std::string> parse_style_attribute(It& it, ItEnd last)
 {
 #define HIX_VALUE(VALUE_PARSER, NAME, ATTRIBUTE) \
@@ -238,7 +309,7 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 
     hi_assert(it != last);
 
-    if (it[0] != token::id or it + 1 == last or it[1] != '=' or it + 2 == last) {
+    if (it.size() < 3 or it[0] != token::id or it[1] != '=') {
         return std::nullopt;
     }
 
@@ -277,13 +348,13 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 
 } // namespace detail
 
-template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<std::pair<style_attributes, style_path_segment>, std::string> parse_style(It first, ItEnd last)
 {
     constexpr auto config = [] {
         auto r = lexer_config{};
         r.has_double_quote_string_literal = 1;
-        r.has_color_literal = 1;
+        r.has_single_quote_string_literal = 1;
         r.filter_white_space = 1;
         r.minus_in_identifier = 1;
         return r;
@@ -294,8 +365,8 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
 
     auto attributes = hi::style_attributes{};
     auto path_segment = hi::style_path_segment{};
-    while (token_it != std::sentinel) {
-        if (auto attribute = detail::parse_style_attribute(token_it, std::sentinel)) {
+    while (token_it != std::default_sentinel) {
+        if (auto attribute = detail::parse_style_attribute(token_it, std::default_sentinel)) {
             attributes.apply(*attribute);
             continue;
 
@@ -303,19 +374,19 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
             return std::unexpected{attribute.error()};
         }
 
-        if (auto id = detail::parse_style_path_id(token_it, std::sentinel)) {
+        if (auto id = detail::parse_style_path_id(token_it, std::default_sentinel)) {
             if (path_segment.id.empty()) {
                 path_segment.id = *id;
                 continue;
             } else {
-                return std::unexpected{std::format("{}: Style already has id #{}.", token_location(token_it, std::sentinel), path_segment.id)};
+                return std::unexpected{std::format("{}: Style already has id #{}.", token_location(token_it, std::default_sentinel), path_segment.id)};
             }
 
         } else if (id.has_error()) {
             return std::unexpected{id.error()};
         }
 
-        if (auto class_ = detail::parse_style_path_class(token_it, std::sentinel)) {
+        if (auto class_ = detail::parse_style_path_class(token_it, std::default_sentinel)) {
             path_segment.classes.push_back(*class_);
             continue;
 
@@ -323,10 +394,15 @@ template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
             return std::unexpected{class_.error()};
         }
 
-        return std::unexpected{std::format("{}: Unexpected token '{}'.", token_location(token_it, std::sentinel), *token_it)};
+        return std::unexpected{std::format("{}: Unexpected token '{}'.", token_location(token_it, std::default_sentinel), *token_it)};
     }
 
-    return {attributes, path_segment};
+    return std::pair{attributes, path_segment};
+}
+
+[[nodiscard]] constexpr expected_optional<std::pair<style_attributes, style_path_segment>, std::string> parse_style(std::string_view str)
+{
+    return parse_style(str.begin(), str.end());
 }
 
 } // namespace v1
