@@ -81,6 +81,8 @@ public:
 
     gui_window(std::unique_ptr<widget_intf> widget) noexcept : _widget(std::move(widget)), track_mouse_leave_event_parameters()
     {
+        hi_assert_not_null(_widget);
+
         if (_first_window) {
             if (not os_settings::start_subsystem()) {
                 hi_log_fatal("Could not start the os_settings subsystem.");
@@ -104,6 +106,9 @@ public:
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
         _widget->set_window(this);
+        if (_widget) {
+            apply_pixel_density(*_widget, pixel_density);
+        }
 
         // Execute a constraint check to determine initial window size.
         theme = get_selected_theme().transform(pixel_density);
@@ -138,6 +143,11 @@ public:
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
         create_window(new_size);
+
+        // Create_window will also get the pixel density.
+        if (_widget) {
+            apply_pixel_density(*_widget, pixel_density);
+        }
     }
 
     ~gui_window()
@@ -205,7 +215,6 @@ public:
             auto const t2 = trace<"window::constrain">();
 
             theme = get_selected_theme().transform(pixel_density);
-
             _widget_constraints = _widget->update_constraints();
         }
 
@@ -1323,7 +1332,6 @@ private:
             throw gui_error("Could not retrieve dpi for window.");
         }
         pixel_density = {pixels_per_inch(ppi_), os_settings::device_type()};
- 
         surface = make_unique_gfx_surface(crt_application_instance, win32Window);
     }
 
@@ -1696,6 +1704,10 @@ private:
 
                 // XXX #667 use mp-units formatting.
                 hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(pixels_per_inch));
+
+                if (_widget) {
+                    apply_pixel_density(*_widget, pixel_density);
+                }
             }
             break;
 

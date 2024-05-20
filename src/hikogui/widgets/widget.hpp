@@ -14,6 +14,7 @@
 #include "../time/time.hpp"
 #include "../settings/settings.hpp"
 #include "../numeric/numeric.hpp"
+#include "../theme/theme.hpp"
 #include "../GUI/GUI.hpp"
 #include "../macros.hpp"
 #include <memory>

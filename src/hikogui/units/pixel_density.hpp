@@ -8,6 +8,7 @@
 #include "dips.hpp"
 #include "pixels.hpp"
 #include "font_size.hpp"
+#include "length.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 
@@ -33,14 +34,14 @@ struct pixel_density {
 
     template<typename T>
     [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
-    operator*(pixel_density const& lhs, au::Quantity<au::Inches, T> const& rhs) noexcept
+    operator*(pixel_density const& lhs, au::Quantity<Points, T> const& rhs) noexcept
     {
         return lhs.ppi * rhs;
     }
 
     template<typename T>
     [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
-    operator*(au::Quantity<au::Inches, T> const& lhs, pixel_density const& rhs) noexcept
+    operator*(au::Quantity<Points, T> const& lhs, pixel_density const& rhs) noexcept
     {
         return rhs * lhs;
     }
@@ -57,6 +58,28 @@ struct pixel_density {
     operator*(au::Quantity<Pixels, T> const& lhs, pixel_density const& rhs) noexcept
     {
         return lhs;
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(length_quantity<T> const& lhs, pixel_density const& rhs) noexcept
+    {
+        if (auto const *points = std::get_if<au::Quantity<Points, T>>(&lhs)) {
+            return *points * rhs;
+        } else if (auto const *dips = std::get_if<au::Quantity<Dips, T>>(&lhs)) {
+            return *dips * rhs;
+        } else if (auto const *pixels = std::get_if<au::Quantity<Pixels, T>>(&lhs)) {
+            return *pixels * rhs;
+        } else {
+            hi_no_default();
+        }
+    }
+
+    template<typename T>
+    [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
+    operator*(pixel_density const& lhs, length_quantity<T> const& rhs) noexcept
+    {
+        return rhs * lhs;
     }
 
     template<typename T>

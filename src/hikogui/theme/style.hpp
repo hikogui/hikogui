@@ -6,6 +6,7 @@
 
 #include "style_path.hpp"
 #include "style_attributes.hpp"
+#include "../units/units.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 
@@ -59,11 +60,11 @@ public:
     hi::horizontal_alignment horizontal_alignment;
     hi::vertical_alignment vertical_alignment;
 
-    constexpr style &operator=(style const&) noexcept = default;
-    constexpr style &operator=(style &&) noexcept = default;
-    constexpr style &operator=(style const&) noexcept = default;
-    constexpr style &operator=(style &&) noexcept = default;
-    constexpr explicit style(std::string name) : path({style_path_segment{name}}) {}
+    constexpr style(style const&) noexcept = delete;
+    constexpr style(style &&) noexcept = delete;
+    constexpr style &operator=(style const&) noexcept = delete;
+    constexpr style &operator=(style &&) noexcept = delete;
+    constexpr style() : _path({style_path_segment{}}) {}
 
     /** Parse the given string to configure this style.
      * 
@@ -87,11 +88,11 @@ public:
     style &operator=(std::string style_string)
     {
         if (auto const optional_style = parse_style(style_string)) {
-            auto const &[child_segment, new_attributes] = *optional_style;
+            auto const &[new_attributes, child_segment] = *optional_style;
 
-            hi_axiom(not path.empty());
-            path.back().id = child_segment.id;
-            path.back().classes = child_segment.classes;
+            hi_axiom(not _path.empty());
+            _path.back().id = child_segment.id;
+            _path.back().classes = child_segment.classes;
 
             override_attributes = new_attributes;
         } else if (optional_style.has_error()) {
@@ -104,22 +105,33 @@ public:
         return *this;
     }
 
+    void set_widget_name(std::string name)
+    {
+        hi_axiom(not _path.empty());
+        _path.back().name = std::move(name);
+    }
+
+    style_path const& path() const noexcept
+    {
+        return _path;
+    }
+
     void set_parent_path(style_path const &parent_path)
     {
-        hi_axiom(not path.empty());
-        auto back = std::move(path.back());
-        path = parent_path;
-        path.push_back(std::move(back));
+        hi_axiom(not _path.empty());
+        auto back = std::move(_path.back());
+        _path = parent_path;
+        _path.push_back(std::move(back));
 
         update_from_theme();
     }
 
-    void set_state(style_pseudo_state state)
-    {
-        handle_state_change();
-    }
+    //void set_state(style_pseudo_state state)
+    //{
+    //    handle_state_change();
+    //}
 
-    void set_pixel_density(hi::pixels_density pixel_density)
+    void set_pixel_density(hi::pixel_density pixel_density)
     {
         handle_density_change();
         _notifier();
@@ -129,21 +141,21 @@ private:
     style_path _path;
     size_t _sibling_index;
     hi::pixel_density _density;
-    style_state _state;
+    //style_state _state;
 
     style_attributes override_attributes;
     style_attributes length_attributes;
-    std::array<style_attributes, num_style_pseudo_statuses> color_attributes;
+    //std::array<style_attributes, num_style_pseudo_statuses> color_attributes;
 
     notifier<> _notifier;
 
     void update_from_theme()
     {
-        for (auto i = size_t{0}; i != attributes_array.size(); ++i) {
-            color_attributes[i] = theme_get_color_attributes(path, _sibling_index, style_status{i});
-            color_attributes[i].apply(override_attributes);
-            length_attributes = theme_get_length_attributes(path, _sibling_index);
-        }
+        //for (auto i = size_t{0}; i != attributes_array.size(); ++i) {
+        //    color_attributes[i] = theme_get_color_attributes(path, _sibling_index, style_status{i});
+        //    color_attributes[i].apply(override_attributes);
+        //    length_attributes = theme_get_length_attributes(path, _sibling_index);
+        //}
 
         handle_density_change();
         handle_state_change();
@@ -194,9 +206,9 @@ private:
 
     void handle_state_change()
     {
-        background_color = _color_attributes[std::to_underlying(_state)].background_color;
-        foreground_color = _color_attributes[std::to_underlying(_state)].foreground_color;
-        border_color = _color_attributes[std::to_underlying(_state)].border_color;
+        //background_color = _color_attributes[std::to_underlying(_state)].background_color;
+        //foreground_color = _color_attributes[std::to_underlying(_state)].foreground_color;
+        //border_color = _color_attributes[std::to_underlying(_state)].border_color;
     }
 };
 

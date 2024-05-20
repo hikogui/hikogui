@@ -12,6 +12,7 @@
 #include "../layout/layout.hpp"
 #include "../GFX/GFX.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../theme/theme.hpp"
 #include "../macros.hpp"
 #include <coroutine>
 
@@ -33,6 +34,14 @@ public:
      * May be a nullptr only when this is the top level widget.
      */
     widget_intf *parent = nullptr;
+
+    /** The style of this widget.
+     * 
+     * You can assign a style-string to this style variable to change
+     * the style's id, class and individual style-attributes.
+     * @see hi::parse_style().
+     */
+    hi::style style = {};
 
     /** Notifier which is called after an action is completed by a widget.
      */
@@ -341,6 +350,30 @@ inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible
         return *r;
     }
     throw not_found_error("get widget by id");
+}
+
+template<std::invocable<widget_intf&> Func>
+inline void apply(widget_intf& start, Func &&func, bool include_invisible = true)
+{
+    auto todo = std::vector<widget_intf *>{&start};
+
+    while (not todo.empty()) {
+        auto *tmp = todo.back();
+        todo.pop_back();
+
+        func(*tmp);
+
+        for (auto &child : tmp->children(include_invisible)) {
+            todo.push_back(&child);
+        }
+    }
+}
+
+inline void apply_pixel_density(widget_intf& start, pixel_density const &density)
+{
+    return apply(start, [&](widget_intf& widget) {
+        widget.style.set_pixel_density(density);
+    });
 }
 
 } // namespace v1

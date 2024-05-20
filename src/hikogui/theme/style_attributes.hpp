@@ -26,7 +26,6 @@ public:
 #define HIX_GETSET(TYPE, NAME) \
     [[nodiscard]] TYPE NAME() const noexcept \
     { \
-        hi_axiom(_##NAME##_valid); \
         return _##NAME; \
     } \
     void set_##NAME(TYPE NAME, bool important = false) noexcept \
