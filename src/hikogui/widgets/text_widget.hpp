@@ -81,8 +81,8 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(widget_intf const* parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), delegate(std::move(delegate))
+    text_widget(std::shared_ptr<delegate_type> delegate) noexcept :
+        super(), delegate(std::move(delegate))
     {
         set_mode(widget_mode::select);
 
@@ -131,10 +131,9 @@ public:
 
     template<text_widget_attribute... Attributes>
     text_widget(
-        widget_intf const* parent,
         std::shared_ptr<delegate_type> delegate,
         Attributes&&... attributes) noexcept :
-        text_widget(parent, std::move(delegate))
+        text_widget(std::move(delegate))
     {
         set_attributes(std::forward<Attributes>(attributes)...);
     }
@@ -147,10 +146,9 @@ public:
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Text, text_widget_attribute... Attributes>
     text_widget(
-        widget_intf const* parent,
         Text&& text,
         Attributes&&... attributes) noexcept requires requires { make_default_text_delegate(std::forward<Text>(text)); }
-        : text_widget(parent, make_default_text_delegate(std::forward<Text>(text)), std::forward<Attributes>(attributes)...)
+        : text_widget(make_default_text_delegate(std::forward<Text>(text)), std::forward<Attributes>(attributes)...)
     {
     }
 

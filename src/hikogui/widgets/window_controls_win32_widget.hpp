@@ -30,7 +30,7 @@ class window_controls_win32_widget : public widget {
 public:
     using super = widget;
 
-    window_controls_win32_widget(widget_intf const* parent) noexcept : super(parent) {}
+    window_controls_win32_widget() noexcept : super() {}
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override

@@ -43,10 +43,14 @@ public:
      *
      * @param parent The parent widget.
      */
-    toolbar_widget(widget_intf const* parent) noexcept : super(parent)
+    toolbar_widget() noexcept : super()
     {
         hi_axiom(loop::main().on_thread());
-        _children.push_back(std::make_unique<spacer_widget>(this));
+
+        auto spacer = std::make_unique<spacer_widget>();
+        spacer->set_parent(this);
+
+        _children.push_back(std::move(spacer));
     }
 
     /** Add a widget directly to this toolbar-widget.
@@ -67,8 +71,10 @@ public:
     template<typename Widget, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     Widget& emplace(Args&&...args)
     {
-        auto widget = std::make_unique<Widget>(this, std::forward<Args>(args)...);
-        return static_cast<Widget&>(insert(Alignment, std::move(widget)));
+        auto widget = std::make_unique<Widget>(std::forward<Args>(args)...);
+        auto &ref = *widget;
+        insert(Alignment, std::move(widget));
+        return ref;
     }
 
     /// @privatesection
@@ -177,10 +183,12 @@ private:
         switch (alignment) {
             using enum horizontal_alignment;
         case left:
+            widget->set_parent(this);
             _children.insert(_children.cbegin() + _spacer_index, std::move(widget));
             ++_spacer_index;
             break;
         case right:
+            widget->set_parent(this);
             _children.insert(_children.cbegin() + _spacer_index + 1, std::move(widget));
             break;
         default:

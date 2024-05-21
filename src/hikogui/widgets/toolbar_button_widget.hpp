@@ -27,18 +27,17 @@ public:
 
     template<button_widget_attribute... Attributes>
     toolbar_button_widget(
-        widget_intf const* parent,
         std::shared_ptr<delegate_type> delegate,
         Attributes&&...attributes) noexcept :
-        super(parent, std::move(delegate))
+        super(std::move(delegate))
     {
         alignment = alignment::middle_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
     }
 
     template<button_widget_attribute... Attributes>
-    toolbar_button_widget(widget_intf const* parent, Attributes&&...attributes) noexcept :
-        toolbar_button_widget(parent, std::make_shared<button_delegate>(), std::forward<Attributes>(attributes)...)
+    toolbar_button_widget(Attributes&&...attributes) noexcept :
+        toolbar_button_widget(std::make_shared<button_delegate>(), std::forward<Attributes>(attributes)...)
     {
     }
 

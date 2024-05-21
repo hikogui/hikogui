@@ -47,11 +47,10 @@ public:
 
     template<forward_of<observer<float>> Content, forward_of<observer<float>> Aperture, forward_of<observer<float>> Offset>
     scroll_bar_widget(
-        widget_intf const* parent,
         Content&& content,
         Aperture&& aperture,
         Offset&& offset) noexcept :
-        widget(parent),
+        widget(),
         content(std::forward<Content>(content)),
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))

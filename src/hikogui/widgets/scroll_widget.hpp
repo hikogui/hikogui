@@ -18,7 +18,8 @@
 
 hi_export_module(hikogui.widgets.scroll_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.
@@ -61,15 +62,20 @@ public:
      *
      * @param parent The parent widget.
      */
-    scroll_widget(widget_intf const* parent) noexcept : super(parent)
+    scroll_widget() noexcept : super()
     {
         hi_axiom(loop::main().on_thread());
 
-        auto aperture = std::make_unique<scroll_aperture_widget>(this);
-        auto horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
-            this, aperture->content_width, aperture->aperture_width, aperture->offset_x);
-        auto vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
-            this, aperture->content_height, aperture->aperture_height, aperture->offset_y);
+        auto aperture = std::make_unique<scroll_aperture_widget>();
+        aperture->set_parent(this);
+
+        auto horizontal_scroll_bar =
+            std::make_unique<horizontal_scroll_bar_type>(aperture->content_width, aperture->aperture_width, aperture->offset_x);
+        horizontal_scroll_bar->set_parent(this);
+
+        auto vertical_scroll_bar =
+            std::make_unique<vertical_scroll_bar_type>(aperture->content_height, aperture->aperture_height, aperture->offset_y);
+        vertical_scroll_bar->set_parent(this);
 
         if (to_bool(axis & axis::horizontal)) {
             minimum->width() = 0;
@@ -102,13 +108,13 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget& emplace(Args&&...args) noexcept
+    Widget& emplace(Args&&... args) noexcept
     {
         return _aperture->emplace<Widget>(std::forward<Args>(args)...);
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_yield *_aperture;
         co_yield *_vertical_scroll_bar;
@@ -182,9 +188,9 @@ public:
 private:
     grid_layout<std::unique_ptr<widget>> _grid;
 
-    scroll_aperture_widget *_aperture;
-    horizontal_scroll_bar_type *_horizontal_scroll_bar;
-    vertical_scroll_bar_type *_vertical_scroll_bar;
+    scroll_aperture_widget* _aperture;
+    horizontal_scroll_bar_type* _horizontal_scroll_bar;
+    vertical_scroll_bar_type* _vertical_scroll_bar;
 };
 
 /** Vertical scroll widget.
@@ -205,4 +211,5 @@ using vertical_scroll_widget = scroll_widget<axis::vertical>;
  */
 using horizontal_scroll_widget = scroll_widget<axis::horizontal>;
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

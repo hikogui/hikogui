@@ -35,14 +35,15 @@ public:
 
     ~system_menu_widget() {}
 
-    system_menu_widget(widget_intf const* parent) noexcept : super(parent)
+    system_menu_widget() noexcept : super()
     {
-        _icon_widget = std::make_unique<icon_widget>(this, icon);
+        _icon_widget = std::make_unique<icon_widget>(icon);
+        _icon_widget->set_parent(this);
     }
 
     template<forward_of<observer<hi::icon>> Icon>
-    system_menu_widget(widget_intf const* parent, Icon&& icon) noexcept :
-        system_menu_widget(parent)
+    system_menu_widget(Icon&& icon) noexcept :
+        system_menu_widget()
     {
         this->icon = std::forward<Icon>(icon);
     }

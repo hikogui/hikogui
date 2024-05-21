@@ -38,7 +38,8 @@ public:
     template<forward_of<observer<label>> Title>
     window_widget(Title&& title) noexcept : super(), title(std::forward<Title>(title))
     {
-        _toolbar = std::make_unique<toolbar_widget>(this);
+        _toolbar = std::make_unique<toolbar_widget>();
+        _toolbar->set_parent(this);
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->emplace<system_menu_widget>();
@@ -52,7 +53,8 @@ public:
 #error "Not implemented"
 #endif
 
-        _content = std::make_unique<grid_widget>(this);
+        _content = std::make_unique<grid_widget>();
+        _content->set_parent(this);
     }
 
     /** The background color of the window.
@@ -91,8 +93,12 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
-        co_yield *_toolbar;
-        co_yield *_content;
+        if (_toolbar) {
+            co_yield *_toolbar;
+        }
+        if (_content) {
+            co_yield *_content;
+        }
     }
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
@@ -262,28 +268,15 @@ public:
     }
     bool process_event(gui_event const& event) const noexcept override
     {
-        if (_window) {
-            return _window->process_event(event);
+        if (auto *w = window()) {
+            return w->process_event(event);
         } else {
             // Since there is no window, pretend that the message was handled.
             return true;
         }
     }
-    void set_window(gui_window* window) noexcept override
-    {
-        _window = window;
-        if (_window) {
-            _window->set_title(*title);
-        }
-    }
-    [[nodiscard]] gui_window* window() const noexcept override
-    {
-        return _window;
-    }
     /// @endprivatesection
 private:
-    gui_window* _window = nullptr;
-
     std::unique_ptr<grid_widget> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;

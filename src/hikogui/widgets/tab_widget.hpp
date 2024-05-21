@@ -55,7 +55,7 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(widget_intf const* parent, std::shared_ptr<delegate_type> delegate) noexcept : super(parent), delegate(std::move(delegate))
+    tab_widget(std::shared_ptr<delegate_type> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_axiom(loop::main().on_thread());
 
@@ -75,10 +75,22 @@ public:
      *              to display.
      */
     template<incompatible_with<std::shared_ptr<delegate_type>> Value>
-    tab_widget(widget_intf const* parent, Value&& value) noexcept
+    tab_widget(Value&& value) noexcept
         requires requires { make_default_tab_delegate(std::forward<Value>(value)); }
-        : tab_widget(parent, make_default_tab_delegate(std::forward<Value>(value)))
+        : tab_widget(make_default_tab_delegate(std::forward<Value>(value)))
     {
+    }
+
+    void add(size_t index, std::unique_ptr<widget> child)
+    {
+        hi_assert_not_null(delegate);
+
+        child->set_parent(this);
+        delegate->add_tab(*this, index, _children.size());
+        _children.push_back(std::move(child));
+
+        ++global_counter<"tab_widget:emplace:constrain">;
+        process_event({gui_event_type::window_reconstrain});
     }
 
     /** Make and add a child widget.
@@ -94,14 +106,9 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto tmp = std::make_unique<WidgetType>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<WidgetType>(std::forward<Args>(args)...);
         auto& ref = *tmp;
-
-        hi_assert_not_null(delegate);
-        delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
-        _children.push_back(std::move(tmp));
-        ++global_counter<"tab_widget:emplace:constrain">;
-        process_event({gui_event_type::window_reconstrain});
+        add(static_cast<size_t>(key), std::move(tmp));
         return ref;
     }
 

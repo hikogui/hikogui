@@ -114,10 +114,9 @@ public:
      * @param delegate The delegate to use to manage the state of the checkbox button.
      */
     checkbox_widget(
-        widget_intf const* parent,
         attributes_type attributes,
         std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
+        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
@@ -134,7 +133,7 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    checkbox_widget(widget_intf const* parent, Args&&...args)
+    checkbox_widget(Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
         checkbox_widget(

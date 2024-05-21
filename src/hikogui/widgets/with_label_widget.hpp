@@ -123,14 +123,21 @@ public:
 
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
-    with_label_widget(widget_intf const* parent, attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes))
+    with_label_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(), attributes(std::move(attributes))
     {
         _button_widget =
-            std::make_unique<button_widget_type>(this, button_attributes_type{this->attributes.alignment}, std::move(delegate));
-        _on_label_widget = std::make_unique<label_widget>(this, this->attributes.on_label, this->attributes.alignment);
-        _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment);
-        _other_label_widget = std::make_unique<label_widget>(this, this->attributes.other_label, this->attributes.alignment);
+            std::make_unique<button_widget_type>(button_attributes_type{this->attributes.alignment}, std::move(delegate));
+        _button_widget->set_parent(this);
+
+        _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label, this->attributes.alignment);
+        _on_label_widget->set_parent(this);
+
+        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label, this->attributes.alignment);
+        _off_label_widget->set_parent(this);
+
+        _other_label_widget = std::make_unique<label_widget>(this->attributes.other_label, this->attributes.alignment);
+        _other_label_widget->set_parent(this);
 
         _button_widget_cbt = _button_widget->subscribe([&] {
             set_value(_button_widget->value());
@@ -153,10 +160,9 @@ public:
      *             widget followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    with_label_widget(widget_intf const* parent, Args&&... args) requires(num_default_delegate_arguments<Args...>() != 0)
+    with_label_widget(Args&&... args) requires(num_default_delegate_arguments<Args...>() != 0)
         :
         with_label_widget(
-            parent,
             make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
             make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
     {
