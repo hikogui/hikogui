@@ -112,10 +112,9 @@ public:
      * @param delegate The delegate to use to manage the state of the async button.
      */
     async_widget(
-        widget_intf const* parent,
         attributes_type attributes,
         std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
+        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -132,14 +131,12 @@ public:
      */
     template<incompatible_with<attributes_type> Value, async_widget_attribute... Attributes>
     async_widget(
-        widget_intf const* parent,
         Value&& value,
         Attributes &&...attributes) requires requires
     {
         make_default_delegate(std::forward<Value>(value));
         attributes_type{std::forward<Attributes>(attributes)...};
     } : async_widget(
-            parent,
             attributes_type{std::forward<Attributes>(attributes)...},
             make_default_delegate(std::forward<Value>(value)))
     {

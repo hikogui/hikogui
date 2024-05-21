@@ -50,7 +50,7 @@ public:
     observer<alignment> alignment = hi::alignment::middle_center();
 
     template<icon_widget_attribute... Attributes>
-    icon_widget(widget_intf const* parent, Attributes&&... attributes) noexcept : icon_widget(parent)
+    icon_widget(Attributes&&... attributes) noexcept : icon_widget()
     {
         set_attributes(std::forward<Attributes>(attributes)...);
     }
@@ -188,7 +188,7 @@ private:
 
     callback<void(hi::icon)> _icon_cbt;
 
-    icon_widget(widget_intf const* parent) noexcept : super(parent)
+    icon_widget() noexcept : super()
     {
         _icon_cbt = icon.subscribe([this](auto...) {
             _icon_has_modified = true;

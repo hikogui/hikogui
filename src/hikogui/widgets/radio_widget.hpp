@@ -102,10 +102,9 @@ public:
      * @param delegate The delegate to use to manage the state of the radio button.
      */
     radio_widget(
-        widget_intf const* parent,
         attributes_type attributes,
         std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
+        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
@@ -122,11 +121,10 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    radio_widget(widget_intf const* parent, Args&&...args)
+    radio_widget(Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
         radio_widget(
-            parent,
             make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
             make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
     {

@@ -29,11 +29,6 @@ public:
      */
     widget_id id = {};
 
-    /** Pointer to the parent widget.
-     * May be a nullptr only when this is the top level widget.
-     */
-    widget_intf *parent = nullptr;
-
     /** Notifier which is called after an action is completed by a widget.
      */
     notifier<void()> notifier;
@@ -47,8 +42,7 @@ public:
         release_widget_id(id);
     }
 
-    widget_intf(widget_intf const *parent) noexcept :
-        id(make_widget_id()), parent(const_cast<widget_intf *>(parent))
+    widget_intf() noexcept : id(make_widget_id())
     {
         // This lambda allows the state to be set once before it will trigger
         // notifications.
@@ -71,6 +65,55 @@ public:
             }
             old_state = *state;
         });
+    }
+
+    /** Pointer to the parent widget.
+     * 
+     * May be a nullptr only when this is the top level widget, or when
+     * the widget is removed from its parent.
+     */
+    [[nodiscard]] widget_intf *parent() const noexcept
+    {
+        return _parent;
+    }
+
+    /** Set the parent widget.
+     * 
+     * @param new_parent A pointer to an existing parent, or nullptr if the
+     *                   widget is removed from the parent.
+     */
+    virtual void set_parent(widget_intf *new_parent) noexcept
+    {
+        _parent = new_parent;
+
+        if (_parent) {
+            set_window(_parent->window());
+        } else {
+            set_window(nullptr);
+        }
+    }
+
+    /** Get the window that the widget is owned by.
+     *
+     * @return window The window that owns this tree of widgets. Or nullptr
+     *                if this tree of widgets is not owned by a window.
+     */
+    [[nodiscard]] gui_window *window() const noexcept
+    {
+        return _window;
+    }
+
+    /** Set the window for this tree of widgets.
+     *
+     * @param new_window A pointer to the window that will own this tree of widgets.
+     *               or nullptr if the window must be removed.
+     */
+    virtual void set_window(gui_window *new_window) noexcept
+    {
+        _window = new_window;
+        for (auto &child : children()) {
+            child.set_window(new_window);
+        }
     }
 
     /** Subscribe a callback to be called when an action is completed by the widget.
@@ -148,27 +191,13 @@ public:
         state->set_focus(new_focus);
     }
 
-    /** Set the window for this tree of widgets.
-     *
-     * @param window A pointer to the window that will own this tree of widgets.
-     *               or nullptr if the window must be removed.
+    /** Get a list of child widgets.
      */
-    virtual void set_window(gui_window *window) noexcept = 0;
-
-    /** Get the window that the widget is owned by.
-     *
-     * @return window The window that owns this tree of widgets. Or nullptr
-     *                if this tree of widgets is not owned by a window.
-     */
-    [[nodiscard]] virtual gui_window *window() const noexcept = 0;
+    [[nodiscard]] virtual generator<widget_intf&> children(bool include_invisible = true) noexcept = 0;
 
     /** Get a list of child widgets.
      */
-    [[nodiscard]] virtual generator<widget_intf&> children(bool include_invisible) noexcept = 0;
-
-    /** Get a list of child widgets.
-     */
-    [[nodiscard]] virtual generator<widget_intf const&> children(bool include_invisible) const noexcept final
+    [[nodiscard]] virtual generator<widget_intf const&> children(bool include_invisible = true) const noexcept final
     {
         for (auto& child : const_cast<widget_intf *>(this)->children(include_invisible)) {
             co_yield child;
@@ -291,7 +320,7 @@ public:
 
         if (auto w = this) {
             chain.push_back(w->id);
-            while (to_bool(w = w->parent)) {
+            while ((w = w->parent())) {
                 chain.push_back(w->id);
             }
         }
@@ -318,6 +347,10 @@ protected:
     callback<void(widget_state)> _state_cbt;
 
     widget_layout _layout;
+
+private:
+    widget_intf *_parent = nullptr;
+    gui_window *_window = nullptr;
 };
 
 inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept

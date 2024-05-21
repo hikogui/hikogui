@@ -106,15 +106,20 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(widget_intf const* parent, attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
+    selection_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _current_label_widget = std::make_unique<label_widget>(this, this->attributes.alignment);
+        _current_label_widget = std::make_unique<label_widget>(this->attributes.alignment);
+        _current_label_widget->set_parent(this);
         _current_label_widget->set_mode(widget_mode::invisible);
-        _off_label_widget = std::make_unique<label_widget>(this, this->attributes.off_label, this->attributes.alignment);
 
-        _overlay_widget = std::make_unique<overlay_widget>(this);
+        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label, this->attributes.alignment);
+        _off_label_widget->set_parent(this);
+
+        _overlay_widget = std::make_unique<overlay_widget>();
+        _overlay_widget->set_parent(this);
         _overlay_widget->set_mode(widget_mode::invisible);
+
         _scroll_widget = &_overlay_widget->emplace<vertical_scroll_widget>();
         _grid_widget = &_scroll_widget->emplace<grid_widget>();
 
@@ -154,7 +159,6 @@ public:
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
     selection_widget(
-        widget_intf const* parent,
         Value&& value,
         OptionList&& option_list,
         Attributes&&...attributes) noexcept requires requires
@@ -163,7 +167,6 @@ public:
         attributes_type{std::forward<Attributes>(attributes)...};
     } :
         selection_widget(
-            parent,
             attributes_type{std::forward<Attributes>(attributes)...},
             make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
     {
@@ -441,7 +444,7 @@ private:
     {
         _grid_widget->clear();
         for (auto i = 0_uz; i != delegate->size(*this); ++i) {
-            _grid_widget->push_bottom(delegate->make_option_widget(*this, *_grid_widget, i));
+            _grid_widget->push_bottom(delegate->make_option_widget(*_grid_widget, i));
         }
 
         ++global_counter<"selection_widget:update_options:constrain">;

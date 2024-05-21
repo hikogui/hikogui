@@ -34,7 +34,7 @@ public:
     observer<float> offset_x;
     observer<float> offset_y;
 
-    scroll_aperture_widget(widget_intf const* parent) noexcept : super(parent)
+    scroll_aperture_widget() noexcept : super()
     {
         hi_axiom(loop::main().on_thread());
 
@@ -68,15 +68,26 @@ public:
         });
     }
 
+    void set_widget(std::unique_ptr<widget> new_child) noexcept
+    {
+        if (new_child) {
+            new_child->set_parent(this);
+        }
+        auto old_child = std::exchange(_content, std::move(new_child));
+        if (old_child) {
+            old_child->set_parent(nullptr);
+        }
+    }
+
     template<typename Widget, typename... Args>
-    Widget& emplace(Args&&...args) noexcept
+    Widget& emplace(Args&&...args)
     {
         hi_axiom(loop::main().on_thread());
         hi_axiom(_content == nullptr);
 
-        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(std::forward<Args>(args)...);
         auto& ref = *tmp;
-        _content = std::move(tmp);
+        set_widget(std::move(tmp));
         return ref;
     }
 
@@ -93,7 +104,9 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
-        co_yield *_content;
+        if (_content) {
+            co_yield *_content;
+        }
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
@@ -225,8 +238,8 @@ public:
             }
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
-            if (parent) {
-                parent->scroll_to_show(_layout.to_parent * translate2(delta_x, delta_y) * to_show);
+            if (auto *p = parent()) {
+                p->scroll_to_show(_layout.to_parent * translate2(delta_x, delta_y) * to_show);
             }
 
         } else {

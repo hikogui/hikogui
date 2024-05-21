@@ -11,11 +11,12 @@ public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
     template<typename Label>
-    widget_with_child(widget_intf const* parent, Label&& label) noexcept : widget(parent)
+    widget_with_child(Label&& label) noexcept : widget()
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
-        _label_widget = std::make_unique<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
+        _label_widget = std::make_unique<hi::label_widget>(std::forward<Label>(label), hi::alignment::middle_center());
+        _label_widget->set_parent(this);
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -103,7 +104,7 @@ protected:
     // to allocate the co-routine's frame on the stack.
     [[nodiscard]] hi::generator<widget_intf &> children(bool include_invisible) noexcept override
     {
-        // This function is often written as a co-routine that yields a pointer to each of its children.
+        // This function, written as a co-routine, yields a references to each of its children.
         co_yield *_label_widget;
     }
 

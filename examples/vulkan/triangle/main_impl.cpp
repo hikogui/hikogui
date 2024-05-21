@@ -13,7 +13,7 @@ class triangle_widget : public hi::widget, public hi::gfx_surface_delegate {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    triangle_widget(widget_intf const* parent, hi::gfx_surface& surface) noexcept : widget(parent), _surface(surface)
+    triangle_widget(hi::gfx_surface& surface) noexcept : widget(), _surface(surface)
     {
         _surface.add_delegate(this);
     }

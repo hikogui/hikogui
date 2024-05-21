@@ -46,13 +46,7 @@ public:
 
     /** Constructor for creating sub views.
      */
-    explicit widget(widget_intf const* parent) noexcept : widget_intf(parent)
-    {
-    }
-
-    /** Constructor for creating sub views.
-     */
-    explicit widget() noexcept : widget_intf(nullptr)
+    explicit widget() noexcept : widget_intf()
     {
     }
 
@@ -129,8 +123,8 @@ public:
      */
     bool process_event(gui_event const& event) const noexcept override
     {
-        if (parent != nullptr) {
-            return parent->process_event(event);
+        if (auto *p = parent()) {
+            return p->process_event(event);
         } else {
             return true;
         }
@@ -327,26 +321,8 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (parent) {
-            parent->scroll_to_show(_layout.to_parent * rectangle);
-        }
-    }
-
-    void set_window(gui_window *window) noexcept override
-    {
-        if (parent) {
-            return parent->set_window(window);
-        } else {
-            return;
-        }
-    }
-
-    [[nodiscard]] gui_window *window() const noexcept override
-    {
-        if (parent) {
-            return parent->window();
-        } else {
-            return nullptr;
+        if (auto p = parent()) {
+            p->scroll_to_show(_layout.to_parent * rectangle);
         }
     }
 

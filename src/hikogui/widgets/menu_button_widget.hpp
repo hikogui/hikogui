@@ -24,7 +24,8 @@
 
 hi_export_module(hikogui.widgets.menu_button_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
 concept menu_button_widget_attribute = label_widget_attribute<Context>;
@@ -60,7 +61,7 @@ public:
         attributes_type& operator=(attributes_type&&) noexcept = default;
 
         template<menu_button_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&...attributes) noexcept
+        explicit attributes_type(Attributes&&... attributes) noexcept
         {
             set_attributes<0>(std::forward<Attributes>(attributes)...);
         }
@@ -71,7 +72,7 @@ public:
         }
 
         template<size_t I, menu_button_widget_attribute First, menu_button_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
+        void set_attributes(First&& first, Rest&&... rest) noexcept
         {
             if constexpr (forward_of<First, observer<hi::label>>) {
                 if constexpr (I == 0) {
@@ -102,26 +103,25 @@ public:
     }
 
     template<size_t N, typename... Args>
-    [[nodiscard]] static auto make_default_delegate(Args&&...args)
+    [[nodiscard]] static auto make_default_delegate(Args&&... args)
     {
         return button_widget_type::template make_default_delegate<N, Args...>(std::forward<Args>(args)...);
     }
 
     hi_call_right_arguments(static, make_attributes, attributes_type);
 
-
-    menu_button_widget(
-        widget_intf const* parent,
-        attributes_type attributes,
-        std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes))
+    menu_button_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(), attributes(std::move(attributes))
     {
         _button_widget = std::make_unique<button_widget_type>(
-            this, button_attributes_type{this->attributes.alignment, keyboard_focus_group::menu}, std::move(delegate));
-        _label_widget =
-            std::make_unique<label_widget>(this, this->attributes.label, this->attributes.alignment);
-        _shortcut_widget = std::make_unique<label_widget>(
-            this, this->attributes.shortcut, this->attributes.alignment);
+            button_attributes_type{this->attributes.alignment, keyboard_focus_group::menu}, std::move(delegate));
+        _button_widget->set_parent(this);
+
+        _label_widget = std::make_unique<label_widget>(this->attributes.label, this->attributes.alignment);
+        _label_widget->set_parent(this);
+
+        _shortcut_widget = std::make_unique<label_widget>(this->attributes.shortcut, this->attributes.alignment);
+        _shortcut_widget->set_parent(this);
 
         // Link the state from the button, so that both this widget and the child widget react in the same way.
         _button_widget->state = state;
@@ -141,8 +141,7 @@ public:
      *             widget followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    menu_button_widget(widget_intf const* parent, Args&&...args)
-        requires(num_default_delegate_arguments<Args...>() != 0)
+    menu_button_widget(Args&&... args) requires(num_default_delegate_arguments<Args...>() != 0)
         :
         menu_button_widget(
             parent,
@@ -272,4 +271,5 @@ protected:
     callback<void()> _button_widget_cbt;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

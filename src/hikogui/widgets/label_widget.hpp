@@ -82,7 +82,7 @@ public:
      *                   a `label`, `alignment` or `text_style`
      */
     template<label_widget_attribute... Attributes>
-    label_widget(widget_intf const* parent, Attributes&&...attributes) noexcept : label_widget(parent)
+    label_widget(Attributes&&...attributes) noexcept : label_widget()
     {
         set_attributes(std::forward<Attributes>(attributes)...);
     }
@@ -208,13 +208,16 @@ private:
         set_attributes(std::forward<Rest>(rest)...);
     }
 
-    label_widget(widget_intf const* parent) noexcept : super(parent)
+    label_widget() noexcept : super()
     {
         set_mode(widget_mode::select);
 
-        _icon_widget = std::make_unique<icon_widget>(this, label.sub<"icon">());
+        _icon_widget = std::make_unique<icon_widget>(label.sub<"icon">());
+        _icon_widget->set_parent(this);
         _icon_widget->phrasing = phrasing;
-        _text_widget = std::make_unique<text_widget>(this, label.sub<"text">());
+
+        _text_widget = std::make_unique<text_widget>(label.sub<"text">());
+        _text_widget->set_parent(this);
         _text_widget->alignment = alignment;
         _text_widget->set_mode(mode());
 
