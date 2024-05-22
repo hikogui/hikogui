@@ -174,6 +174,11 @@ public:
         _notifier(style_modify_mask::layout | style_modify_mask::color);
     }
 
+    [[deprecated("Directly use the style attributes")]] [[nodiscard]] hi::pixel_density pixel_density() const noexcept
+    {
+        return _pixel_density;
+    }
+
     void set_pixel_density(hi::pixel_density new_pixel_density)
     {
         _pixel_density = new_pixel_density;

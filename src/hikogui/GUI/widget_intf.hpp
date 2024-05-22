@@ -127,6 +127,35 @@ public:
         }
     }
 
+    [[deprecated("Directly use the style attributes")]] [[nodiscard]] hi::pixel_density pixel_density() const noexcept
+    {
+        return style.pixel_density();
+    }
+
+    /** Set the pixel density for this widget and its children.
+     * 
+     * @param new_pixel_density The new pixel density.
+    */
+    virtual void set_pixel_density(hi::pixel_density const &new_pixel_density) noexcept
+    {
+        style.set_pixel_density(new_pixel_density);
+        for (auto &child : children()) {
+            child.set_pixel_density(new_pixel_density);
+        }
+    }
+
+    /** Set the theme for this widget and its children.
+     * 
+     * @param new_theme The new theme.
+    */
+    virtual void set_theme(hi::style::theme_type new_theme) noexcept
+    {
+        style.set_theme(new_theme);
+        for (auto &child : children()) {
+            child.set_theme(new_theme);
+        }
+    }
+
     /** Subscribe a callback to be called when an action is completed by the widget.
      */
     template<forward_of<void()> Func>
@@ -404,12 +433,6 @@ inline void apply(widget_intf& start, Func &&func, bool include_invisible = true
     }
 }
 
-inline void apply_pixel_density(widget_intf& start, pixel_density const &density)
-{
-    return apply(start, [&](widget_intf& widget) {
-        widget.style.set_pixel_density(density);
-    });
-}
 
 } // namespace v1
 } // namespace hi::v1

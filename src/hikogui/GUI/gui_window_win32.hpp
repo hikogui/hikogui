@@ -107,7 +107,7 @@ public:
 
         _widget->set_window(this);
         if (_widget) {
-            apply_pixel_density(*_widget, pixel_density);
+            _widget->set_pixel_density(pixel_density);
         }
 
         // Execute a constraint check to determine initial window size.
@@ -146,7 +146,7 @@ public:
 
         // Create_window will also get the pixel density.
         if (_widget) {
-            apply_pixel_density(*_widget, pixel_density);
+            _widget->set_pixel_density(pixel_density);
         }
     }
 
@@ -1706,7 +1706,7 @@ private:
                 hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(pixels_per_inch));
 
                 if (_widget) {
-                    apply_pixel_density(*_widget, pixel_density);
+                    _widget->set_pixel_density(pixel_density);
                 }
             }
             break;
