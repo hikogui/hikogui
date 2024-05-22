@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "style_path.hpp"
 #include "style_attributes.hpp"
 #include "../parser/parser.hpp"
 #include "../container/container.hpp"
 #include "../macros.hpp"
 #include <iterator>
+#include <tuple>
 
 hi_export_module(hikogui.theme : theme_tag);
 
@@ -329,11 +329,11 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     HIX_VALUE(parse_style_length, "padding-top", padding_top)
     HIX_VALUE(parse_style_length, "padding", padding)
     HIX_VALUE(parse_style_length, "border-width", border_width)
-    HIX_VALUE(parse_style_length, "left-bottom-corner-radius", left_bottom_corner_radius)
-    HIX_VALUE(parse_style_length, "right-bottom-corner-radius", right_bottom_corner_radius)
-    HIX_VALUE(parse_style_length, "left-top-corner-radius", left_top_corner_radius)
-    HIX_VALUE(parse_style_length, "right-top-corner-radius", right_top_corner_radius)
-    HIX_VALUE(parse_style_length, "corner-radius", corner_radius)
+    HIX_VALUE(parse_style_length, "border-bottom-left-radius", border_bottom_left_radius)
+    HIX_VALUE(parse_style_length, "border-bottom-right-radius", border_bottom_right_radius)
+    HIX_VALUE(parse_style_length, "border-top-left-radius", border_top_left_radius)
+    HIX_VALUE(parse_style_length, "border-top-right-radius", border_top_right_radius)
+    HIX_VALUE(parse_style_length, "border-radius", border_radius)
     HIX_VALUE(parse_style_color, "foreground-color", foreground_color)
     HIX_VALUE(parse_style_color, "background-color", background_color)
     HIX_VALUE(parse_style_color, "border-color", border_color)
@@ -349,7 +349,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 } // namespace detail
 
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr expected_optional<std::pair<style_attributes, style_path_segment>, std::string> parse_style(It first, ItEnd last)
+[[nodiscard]] constexpr expected_optional<std::tuple<style_attributes, std::string, std::vector<std::string>>, std::string> parse_style(It first, ItEnd last)
 {
     constexpr auto config = [] {
         auto r = lexer_config{};
@@ -364,7 +364,8 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     auto token_it = make_lookahead_iterator<4>(lexer_it);
 
     auto attributes = hi::style_attributes{};
-    auto path_segment = hi::style_path_segment{};
+    auto id = std::string{};
+    auto classes = std::vector<std::string>{};
     while (token_it != std::default_sentinel) {
         if (auto attribute = detail::parse_style_attribute(token_it, std::default_sentinel)) {
             attributes.apply(*attribute);
@@ -374,33 +375,33 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
             return std::unexpected{attribute.error()};
         }
 
-        if (auto id = detail::parse_style_path_id(token_it, std::default_sentinel)) {
-            if (path_segment.id.empty()) {
-                path_segment.id = *id;
+        if (auto new_id = detail::parse_style_path_id(token_it, std::default_sentinel)) {
+            if (id.empty()) {
+                id = *new_id;
                 continue;
             } else {
-                return std::unexpected{std::format("{}: Style already has id #{}.", token_location(token_it, std::default_sentinel), path_segment.id)};
+                return std::unexpected{std::format("{}: Style already has id #{}.", token_location(token_it, std::default_sentinel), id)};
             }
 
-        } else if (id.has_error()) {
-            return std::unexpected{id.error()};
+        } else if (new_id.has_error()) {
+            return std::unexpected{new_id.error()};
         }
 
-        if (auto class_ = detail::parse_style_path_class(token_it, std::default_sentinel)) {
-            path_segment.classes.push_back(*class_);
+        if (auto new_class = detail::parse_style_path_class(token_it, std::default_sentinel)) {
+            classes.push_back(*new_class);
             continue;
 
-        } else if (class_.has_error()) {
-            return std::unexpected{class_.error()};
+        } else if (new_class.has_error()) {
+            return std::unexpected{new_class.error()};
         }
 
         return std::unexpected{std::format("{}: Unexpected token '{}'.", token_location(token_it, std::default_sentinel), *token_it)};
     }
 
-    return std::pair{attributes, path_segment};
+    return std::tuple{attributes, id, classes};
 }
 
-[[nodiscard]] constexpr expected_optional<std::pair<style_attributes, style_path_segment>, std::string> parse_style(std::string_view str)
+[[nodiscard]] constexpr expected_optional<std::tuple<style_attributes, std::string, std::vector<std::string>>, std::string> parse_style(std::string_view str)
 {
     return parse_style(str.begin(), str.end());
 }

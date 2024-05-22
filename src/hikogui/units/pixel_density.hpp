@@ -32,16 +32,16 @@ struct pixel_density {
         return rhs * lhs;
     }
 
-    template<typename T>
+    template<typename Unit, typename T>
     [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
-    operator*(pixel_density const& lhs, au::Quantity<Points, T> const& rhs) noexcept
+    operator*(pixel_density const& lhs, au::Quantity<Unit, T> const& rhs) noexcept requires (au::HasSameDimension<Unit, au::Inches>::value)
     {
         return lhs.ppi * rhs;
     }
 
-    template<typename T>
+    template<typename Unit, typename T>
     [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
-    operator*(au::Quantity<Points, T> const& lhs, pixel_density const& rhs) noexcept
+    operator*(au::Quantity<Unit, T> const& lhs, pixel_density const& rhs) noexcept requires (au::HasSameDimension<Unit, au::Inches>::value)
     {
         return rhs * lhs;
     }

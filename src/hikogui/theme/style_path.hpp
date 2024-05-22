@@ -26,7 +26,8 @@ struct style_path_segment {
     constexpr style_path_segment& operator=(style_path_segment&&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(style_path_segment const&, style_path_segment const&) noexcept = default;
 
-    constexpr explicit style_path_segment(std::string name) noexcept : name(name) {}
+    constexpr explicit style_path_segment(std::string name, std::string id, std::vector<std::string> classes) noexcept :
+        name(std::move(name)), id(std::move(id)), classes(std::move(classes)) {}
 };
 
 class style_path : public std::vector<style_path_segment> {

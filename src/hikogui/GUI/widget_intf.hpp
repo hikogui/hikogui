@@ -96,8 +96,10 @@ public:
         _parent = new_parent;
 
         if (_parent) {
+            style.set_parent(&_parent->style);
             set_window(_parent->window());
         } else {
+            style.set_parent(nullptr);
             set_window(nullptr);
         }
     }

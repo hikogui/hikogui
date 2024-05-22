@@ -9,8 +9,8 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(id_test) {
         auto result = hi::parse_style("#foo width=5");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
-        REQUIRE(path_segment.id == "foo");
+        auto [attributes, id, classes] = *result;
+        REQUIRE(id == "foo");
         REQUIRE(std::holds_alternative<hi::dips_f>(attributes.width()));
         REQUIRE(std::get<hi::dips_f>(attributes.width()) == hi::dips(5));
     }
@@ -23,10 +23,10 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(class_test) {
         auto result = hi::parse_style(".foo width=5 .bar");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
-        REQUIRE(path_segment.classes.size() == 2);
-        REQUIRE(path_segment.classes[0] == "foo");
-        REQUIRE(path_segment.classes[1] == "bar");
+        auto [attributes, id, classes] = *result;
+        REQUIRE(classes.size() == 2);
+        REQUIRE(classes[0] == "foo");
+        REQUIRE(classes[1] == "bar");
         REQUIRE(std::holds_alternative<hi::dips_f>(attributes.width()));
         REQUIRE(std::get<hi::dips_f>(attributes.width()) == hi::dips(5));
     }
@@ -34,7 +34,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(length_dips_test) {
         auto result = hi::parse_style("width=5 height = 42");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(std::holds_alternative<hi::dips_f>(attributes.width()));
         REQUIRE(std::holds_alternative<hi::dips_f>(attributes.height()));
         REQUIRE(std::get<hi::dips_f>(attributes.width()) == hi::dips(5));
@@ -44,7 +44,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(length_pixel_test) {
         auto result = hi::parse_style("width=5 px height = 42px");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(std::holds_alternative<hi::pixels_f>(attributes.width()));
         REQUIRE(std::holds_alternative<hi::pixels_f>(attributes.height()));
         REQUIRE(std::get<hi::pixels_f>(attributes.width()) == hi::pixels(5));
@@ -54,7 +54,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(length_points_test) {
         auto result = hi::parse_style("width=5 pt height = 42pt");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(std::holds_alternative<hi::points_f>(attributes.width()));
         REQUIRE(std::holds_alternative<hi::points_f>(attributes.height()));
         REQUIRE(std::get<hi::points_f>(attributes.width()) == hi::points(5));
@@ -64,7 +64,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(length_cm_in_test) {
         auto result = hi::parse_style("width=2.54 cm height = 2.0in");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(std::holds_alternative<hi::points_f>(attributes.width()));
         REQUIRE(std::holds_alternative<hi::points_f>(attributes.height()));
         REQUIRE(std::get<hi::points_f>(attributes.width()) == hi::points(72));
@@ -82,7 +82,7 @@ TEST_SUITE(style_parser_suite) {
 
         auto result = hi::parse_style("foreground-color=test1 background-color = 'test2'");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(attributes.foreground_color() == hi::color(1.0, 2.0, 3.0, 0.5));
         REQUIRE(attributes.background_color() == hi::color(2.0, 3.0, 4.0, 0.5));
     }
@@ -90,7 +90,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(color_rgb_test) {
         auto result = hi::parse_style("foreground-color=rgb(1.0, 2.0, 3.0) background-color = rgba(2.0,3, 4.0, 0.5)");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(attributes.foreground_color() == hi::color(1.0, 2.0, 3.0, 1.0));
         REQUIRE(attributes.background_color() == hi::color(2.0, 3.0, 4.0, 0.5));
     }
@@ -98,7 +98,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(color_hex_test) {
         auto result = hi::parse_style("foreground-color='#112233' background-color = '#22334455'");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(attributes.foreground_color() == hi::color_from_sRGB("#112233"));
         REQUIRE(attributes.background_color() == hi::color_from_sRGB("#22334455"));
     }
@@ -114,7 +114,7 @@ TEST_SUITE(style_parser_suite) {
     TEST_CASE(alignment_test) {
         auto result = hi::parse_style("horizontal-alignment=right vertical-alignment = middle");
         REQUIRE(result.has_value());
-        auto [attributes, path_segment] = *result;
+        auto [attributes, id, classes] = *result;
         REQUIRE(attributes.horizontal_alignment() == hi::horizontal_alignment::right);
         REQUIRE(attributes.vertical_alignment() == hi::vertical_alignment::middle);
     }
