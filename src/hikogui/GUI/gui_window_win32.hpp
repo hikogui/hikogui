@@ -1007,7 +1007,7 @@ private:
             }
 
             // Forward the events to the parent of the target.
-            target_widget = target_widget->parent;
+            target_widget = target_widget->parent();
         }
 
         return false;

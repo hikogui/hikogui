@@ -50,13 +50,13 @@ public:
      *
      * @param parent The parent widget.
      */
-    grid_widget(widget_intf const* parent) noexcept : widget(parent)
+    grid_widget() noexcept : widget()
     {
     }
 
     /* Add a widget to the grid.
      */
-    widget& insert(
+    void insert(
         std::size_t first_column,
         std::size_t first_row,
         std::size_t last_column,
@@ -71,13 +71,12 @@ public:
             hi_log_fatal("cell ({},{}) of grid_widget is already in use", first_column, first_row);
         }
 
-        auto& ref = *widget;
+        widget->set_parent(this);
         _grid.add_cell(first_column, first_row, last_column, last_row, std::move(widget));
         hi_log_info("grid_widget::insert({}, {}, {}, {})", first_column, first_row, last_column, last_row);
 
         ++global_counter<"grid_widget:insert:constrain">;
         process_event({gui_event_type::window_reconstrain});
-        return ref;
     }
 
     /** Insert a widget to the front of the grid.
@@ -90,13 +89,13 @@ public:
      * @param widget The widget to take ownership of
      * @return A reference to the widget being added.
      */
-    widget &push_front(std::unique_ptr<widget> widget) noexcept
+    void push_front(std::unique_ptr<widget> widget) noexcept
     {
         for (auto &cell: _grid) {
             ++cell.first_column;
             ++cell.last_column;
         }
-        return insert(0, 0, 1, 1, std::move(widget));
+        insert(0, 0, 1, 1, std::move(widget));
     }
 
     /** Insert a widget to the back of the grid.
@@ -108,16 +107,16 @@ public:
      * @param widget The widget to take ownership of
      * @return A reference to the widget being added.
      */
-    widget &push_back(std::unique_ptr<widget> widget) noexcept
+    void push_back(std::unique_ptr<widget> widget) noexcept
     {
         auto it = std::max_element(_grid.begin(), _grid.end(), [](auto const &a, auto const &b) {
             return a.last_column < b.last_column;
         });
 
         if (it == _grid.end()) {
-            return insert(0, 0, 1, 1, std::move(widget));
+            insert(0, 0, 1, 1, std::move(widget));
         } else {
-            return insert(it->last_column, 0, it->last_column + 1, 1, std::move(widget));
+            insert(it->last_column, 0, it->last_column + 1, 1, std::move(widget));
         }
     }
 
@@ -129,13 +128,13 @@ public:
      * @param widget The widget to take ownership of
      * @return A reference to the widget being added.
      */
-    widget &push_top(std::unique_ptr<widget> widget) noexcept
+    void push_top(std::unique_ptr<widget> widget) noexcept
     {
         for (auto &cell: _grid) {
             ++cell.first_row;
             ++cell.last_row;
         }
-        return insert(0, 0, 1, 1, std::move(widget));
+        insert(0, 0, 1, 1, std::move(widget));
     }
 
     /** Insert a widget to the bottom of the grid.
@@ -145,16 +144,16 @@ public:
      * @param widget The widget to take ownership of
      * @return A reference to the widget being added.
      */
-    widget &push_bottom(std::unique_ptr<widget> widget) noexcept
+    void push_bottom(std::unique_ptr<widget> widget) noexcept
     {
         auto it = std::max_element(_grid.begin(), _grid.end(), [](auto const &a, auto const &b) {
             return a.last_row < b.last_row;
         });
 
         if (it == _grid.end()) {
-            return insert(0, 0, 1, 1, std::move(widget));
+            insert(0, 0, 1, 1, std::move(widget));
         } else {
-            return insert(0, it->last_row, 1, it->last_row + 1, std::move(widget));
+            insert(0, it->last_row, 1, it->last_row + 1, std::move(widget));
         }
     }
 
@@ -174,8 +173,10 @@ public:
     {
         hi_axiom(first_column < last_column);
         hi_axiom(first_row < last_row);
-        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
-        return static_cast<Widget&>(insert(first_column, first_row, last_column, last_row, std::move(tmp)));
+        auto tmp = std::make_unique<Widget>(std::forward<Args>(args)...);
+        auto &ref = *tmp;
+        insert(first_column, first_row, last_column, last_row, std::move(tmp));
+        return ref;
     }
 
     /** Add a widget directly to this grid-widget.
@@ -266,7 +267,10 @@ public:
     template<typename Widget, typename... Args>
     Widget& emplace_bottom(Args&&...args)
     {
-        return static_cast<Widget&>(push_bottom(std::make_unique<Widget>(this, std::forward<Args>(args)...)));
+        auto tmp = std::make_unique<Widget>(std::forward<Args>(args)...);
+        auto &ref = *tmp;
+        push_bottom(std::move(tmp));
+        return ref;
     }
 
     /** Remove all child widgets.

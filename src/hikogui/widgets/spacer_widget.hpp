@@ -23,7 +23,7 @@ class spacer_widget : public widget {
 public:
     using super = widget;
 
-    spacer_widget(widget_intf const* parent) noexcept : super(parent) {}
+    spacer_widget() noexcept : super() {}
 
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {

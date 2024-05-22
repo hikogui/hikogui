@@ -50,11 +50,18 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget(widget_intf const* parent) noexcept : super(parent) {}
+    overlay_widget() noexcept : super() {}
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept
     {
-        _content = std::move(new_widget);
+        if (new_widget) {
+            new_widget->set_parent(this);
+        }
+        auto old_widget = std::exchange(_content, std::move(new_widget));
+        if (old_widget) {
+            old_widget->set_parent(nullptr);
+        }
+
         ++global_counter<"overlay_widget:set_widget:constrain">;
         process_event({gui_event_type::window_reconstrain});
     }
@@ -74,7 +81,7 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_assert(_content == nullptr);
 
-        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(std::forward<Args>(args)...);
         auto& ref = *tmp;
         set_widget(std::move(tmp));
         return ref;
@@ -83,7 +90,9 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
-        co_yield *_content;
+        if (_content) {
+            co_yield *_content;
+        }
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override

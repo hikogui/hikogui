@@ -73,8 +73,8 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    drawing_widget(widget_intf const* parent) noexcept :
-        widget(parent), _image(hi::URL("resource:mars3.png"))
+    drawing_widget() noexcept :
+        widget(), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
         _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });

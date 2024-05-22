@@ -135,15 +135,15 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     toolbar_tab_button_widget(
-        widget_intf const* parent,
         attributes_type attributes,
         std::shared_ptr<delegate_type> delegate) noexcept :
-        super(parent), attributes(std::move(attributes)), delegate(std::move(delegate))
+        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _on_label_widget = std::make_unique<label_widget>(
-            this, this->attributes.on_label, this->attributes.alignment);
-        _off_label_widget = std::make_unique<label_widget>(
-            this, this->attributes.off_label, this->attributes.alignment);
+        _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label, this->attributes.alignment);
+        _on_label_widget->set_parent(this);
+
+        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label, this->attributes.alignment);
+        _off_label_widget->set_parent(this);
 
         hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
@@ -160,11 +160,10 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    toolbar_tab_button_widget(widget_intf const* parent, Args&&...args)
+    toolbar_tab_button_widget(Args&&...args)
         requires(num_default_delegate_arguments<Args...>() != 0)
         :
         toolbar_tab_button_widget(
-            parent,
             make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
             make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
     {
@@ -175,8 +174,8 @@ public:
         // A toolbar tab button draws a focus line across the whole toolbar
         // which is beyond it's own clipping rectangle. The parent is the toolbar
         // so it will include everything that needs to be redrawn.
-        if (parent != nullptr) {
-            parent->request_redraw();
+        if (auto *p = parent()) {
+            p->request_redraw();
         } else {
             super::request_redraw();
         }
