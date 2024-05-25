@@ -167,7 +167,7 @@ public:
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
-        _shaped_text = text_shaper{_text_cache, theme().text_style_set(), pixel_density(), alignment_, os_settings::left_to_right()};
+        _shaped_text = text_shaper{_text_cache, theme().text_style_set(), style.pixel_density(), alignment_, os_settings::left_to_right()};
 
         auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         auto const shaped_text_size = shaped_text_rectangle.size();

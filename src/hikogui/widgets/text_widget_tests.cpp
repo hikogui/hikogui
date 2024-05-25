@@ -43,13 +43,6 @@ protected:
     class window_widget_moc : public hi::widget {
     public:
         window_widget_moc(hi::gui_window *window) noexcept : hi::widget(nullptr), _window(window) {}
-
-        [[nodiscard]] hi::gui_window *window() const noexcept override
-        {
-            return _window;
-        }
-
-        gui_window *_window;
     };
 
     std::unique_ptr<hi::theme_book> theme_book;

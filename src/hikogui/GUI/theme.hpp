@@ -10,6 +10,7 @@
 #include "../color/color.hpp"
 #include "../geometry/geometry.hpp"
 #include "../codec/codec.hpp"
+#include "../theme/theme.hpp"
 #include "../macros.hpp"
 #include <gsl/gsl>
 #include <array>
@@ -202,6 +203,13 @@ public:
     [[nodiscard]] hi::text_style_set const &text_style_set() const noexcept
     {
         return _text_style_set;
+    }
+
+    [[nodiscard]] style::attributes_from_theme_type attributes_from_theme_function() const noexcept
+    {
+        return [](style_path const &path, style_pseudo_class const &pseudo_class) -> style_attributes {
+            return style_attributes{};
+        };
     }
 
 private:

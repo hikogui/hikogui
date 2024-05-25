@@ -329,15 +329,14 @@ public:
 
     [[nodiscard]] hi::theme const& theme() const noexcept
     {
-        auto const w = window();
-        hi_assert_not_null(w);
-        return w->theme;
+        hi_assert_not_null(window);
+        return window->theme;
     }
 
     [[nodiscard]] gfx_surface const *surface() const noexcept
     {
-        if (auto w = window()) {
-            return w->surface.get();
+        if (window) {
+            return window->surface.get();
         } else {
             return nullptr;
         }

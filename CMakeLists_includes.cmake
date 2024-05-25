@@ -415,8 +415,10 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_style_set.hpp
     src/hikogui/theme/style.hpp
     src/hikogui/theme/style_attributes.hpp
+    src/hikogui/theme/style_modify_mask.hpp
     src/hikogui/theme/style_parser.hpp
     src/hikogui/theme/style_path.hpp
+    src/hikogui/theme/style_pseudo_class.hpp
     src/hikogui/theme/theme.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp

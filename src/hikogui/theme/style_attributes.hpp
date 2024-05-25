@@ -103,35 +103,33 @@ public:
      * @param other The attributes used to overwrite the current attributes.
      * @return A mask for what kind of values where changed.
      */
-    style_modify_mask set(style_attributes const& other) noexcept
+    [[nodiscard]] friend style_modify_mask compare(style_attributes const& lhs, style_attributes const& rhs) noexcept
     {
-#define HIX_SET(NAME) \
-    if (other._##NAME##_valid) { \
-        r |= set_##NAME(other._##NAME, true); \
-    }
+#define HIX_COMPARE(NAME, MODIFY_MASK) \
+        r |= lhs._##NAME != rhs._##NAME ? MODIFY_MASK : style_modify_mask{};
 
         auto r = style_modify_mask{};
-        HIX_SET(width)
-        HIX_SET(height)
-        HIX_SET(margin_left)
-        HIX_SET(margin_bottom)
-        HIX_SET(margin_right)
-        HIX_SET(margin_top)
-        HIX_SET(padding_left)
-        HIX_SET(padding_bottom)
-        HIX_SET(padding_right)
-        HIX_SET(padding_top)
-        HIX_SET(border_width)
-        HIX_SET(border_bottom_left_radius)
-        HIX_SET(border_bottom_right_radius)
-        HIX_SET(border_top_left_radius)
-        HIX_SET(border_top_right_radius)
-        HIX_SET(foreground_color)
-        HIX_SET(background_color)
-        HIX_SET(border_color)
-        HIX_SET(horizontal_alignment)
-        HIX_SET(vertical_alignment)
-#undef HIX_SET
+        HIX_COMPARE(width, style_modify_mask::size)
+        HIX_COMPARE(height, style_modify_mask::size)
+        HIX_COMPARE(margin_left, style_modify_mask::margin)
+        HIX_COMPARE(margin_bottom, style_modify_mask::margin)
+        HIX_COMPARE(margin_right, style_modify_mask::margin)
+        HIX_COMPARE(margin_top, style_modify_mask::margin)
+        HIX_COMPARE(padding_left, style_modify_mask::margin)
+        HIX_COMPARE(padding_bottom, style_modify_mask::margin)
+        HIX_COMPARE(padding_right, style_modify_mask::margin)
+        HIX_COMPARE(padding_top, style_modify_mask::margin)
+        HIX_COMPARE(border_width, style_modify_mask::weight)
+        HIX_COMPARE(border_bottom_left_radius, style_modify_mask::weight)
+        HIX_COMPARE(border_bottom_right_radius, style_modify_mask::weight)
+        HIX_COMPARE(border_top_left_radius, style_modify_mask::weight)
+        HIX_COMPARE(border_top_right_radius, style_modify_mask::weight)
+        HIX_COMPARE(foreground_color, style_modify_mask::color)
+        HIX_COMPARE(background_color, style_modify_mask::color)
+        HIX_COMPARE(border_color, style_modify_mask::color)
+        HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
+        HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
+#undef HIX_COMPARE
         return r;
     }
 

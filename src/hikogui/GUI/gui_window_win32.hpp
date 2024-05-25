@@ -100,21 +100,10 @@ public:
                 hi_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
             }
 
+            SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
             _first_window = true;
         }
-
-        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-        _widget->set_window(this);
-        if (_widget) {
-            _widget->set_pixel_density(pixel_density);
-        }
-
-        // Execute a constraint check to determine initial window size.
-        theme = get_selected_theme().transform(pixel_density);
-
-        _widget_constraints = _widget->update_constraints();
-        auto const new_size = _widget_constraints.preferred;
 
         // Reset the keyboard target to not focus anything.
         update_keyboard_target({});
@@ -142,12 +131,18 @@ public:
 
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
-        create_window(new_size);
+        auto const new_position = point2{500.0f, 500.0f}; 
+        create_window(new_position);
 
-        // Create_window will also get the pixel density.
-        if (_widget) {
-            _widget->set_pixel_density(pixel_density);
-        }
+        apply_window_data(*_widget, this, pixel_density, get_selected_theme().attributes_from_theme_function());
+
+        // Execute a constraint check to determine initial window size.
+        theme = get_selected_theme().transform(pixel_density);
+
+        _widget_constraints = _widget->update_constraints();
+        auto const new_size = _widget_constraints.preferred;
+
+        show_window(new_size);
     }
 
     ~gui_window()
@@ -1258,7 +1253,14 @@ private:
         return r;
     }
 
-    void create_window(extent2 new_size)
+    /** Create a window at a position on the virtual-screen.
+     * 
+     * We can not know the DPI of the window before creating it at a position
+     * in the virtual screen. Use show_window() to complete the creation of the window.
+     * 
+     * @param position The position of the window on the virtual screen.
+    */
+    void create_window(point2 position)
     {
         // This function should be called during init(), and therefor should not have a lock on the window.
         hi_assert(loop::main().on_thread());
@@ -1267,7 +1269,7 @@ private:
 
         auto u16title = to_wstring(std::format("{}", _title));
 
-        hi_log_info("Create window of size {} with title '{}'", new_size, _title);
+        hi_log_info("Create window with title '{}'", _title);
 
         // Recommended to set the dpi-awareness before opening any window.
         SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -1280,11 +1282,10 @@ private:
             u16title.data(), // Window text
             WS_OVERLAPPEDWINDOW, // Window style
             // Size and position
-            500,
-            500,
-            round_cast<int>(new_size.width()),
-            round_cast<int>(new_size.height()),
-
+            round_cast<int>(position.x()),
+            round_cast<int>(position.y()),
+            0, // Width: we don't know the DPI so we can't calculate the width.
+            0, // height: we don't know the DPI so we can't calculate the width.
             NULL, // Parent window
             NULL, // Menu
             reinterpret_cast<HINSTANCE>(crt_application_instance), // Instance handle
@@ -1302,7 +1303,7 @@ private:
         SetWindowPos(
             win32Window, nullptr, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
-        if (!firstWindowHasBeenOpened) {
+        if (not firstWindowHasBeenOpened) {
             auto const win32_window_ = win32Window;
             switch (gui_window_size::normal) {
             case gui_window_size::normal:
@@ -1325,14 +1326,25 @@ private:
         track_mouse_leave_event_parameters.hwndTrack = win32Window;
         track_mouse_leave_event_parameters.dwHoverTime = HOVER_DEFAULT;
 
-        ShowWindow(win32Window, SW_SHOW);
-
         auto ppi_ = GetDpiForWindow(win32Window);
         if (ppi_ == 0) {
             throw gui_error("Could not retrieve dpi for window.");
         }
         pixel_density = {pixels_per_inch(ppi_), os_settings::device_type()};
         surface = make_unique_gfx_surface(crt_application_instance, win32Window);
+    }
+
+    /** Complete the creation of the window by showing it.
+     * 
+     * @param size The size of the window.
+     */
+    void show_window(extent2 size) noexcept
+    {
+        hi_log_info("Show window with title '{}' with size {}", _title, size);
+        SetWindowPos(
+            win32Window, nullptr, 0, 0, round_cast<int>(size.width()), round_cast<int>(size.width()), SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+        //ShowWindow(win32Window, SW_SHOW);
     }
 
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
@@ -1705,9 +1717,8 @@ private:
                 // XXX #667 use mp-units formatting.
                 hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(pixels_per_inch));
 
-                if (_widget) {
-                    _widget->set_pixel_density(pixel_density);
-                }
+                hi_assert_not_null(_widget);
+                apply_window_data(*_widget, this, pixel_density, get_selected_theme().attributes_from_theme_function());
             }
             break;
 
