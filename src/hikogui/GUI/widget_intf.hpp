@@ -83,6 +83,8 @@ public:
         // This lambda allows the state to be set once before it will trigger
         // notifications.
         _state_cbt = state.subscribe([&](widget_state new_state) {
+            style.set_pseudo_class(new_state.pseudo_class());
+
             static std::optional<widget_state> old_state = std::nullopt;
 
             if (old_state) {

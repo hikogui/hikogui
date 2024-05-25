@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../concurrency/concurrency.hpp"
+#include "../theme/theme.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <utility>
@@ -216,6 +217,11 @@ public:
         }
     }
 
+    [[nodiscard]] constexpr bool pressed() const noexcept
+    {
+        return _pressed;
+    }
+
     /** Set if the mouse/finger presses the widget.
      * 
      * @see widget_phase
@@ -226,6 +232,11 @@ public:
         return *this;
     }
 
+    [[nodiscard]] constexpr bool hover() const noexcept
+    {
+        return _hover;
+    }
+
     /** Set if the mouse hovers over the widget.
      * 
      * @see widget_phase
@@ -234,6 +245,11 @@ public:
     {
         _hover = static_cast<bool>(hover);
         return *this;
+    }
+
+    [[nodiscard]] constexpr bool active() const noexcept
+    {
+        return _active;
     }
 
     /** Set if the window is active widget.
@@ -259,6 +275,33 @@ public:
     {
         _focus = static_cast<uint16_t>(focus);
         return *this;
+    }
+
+    constexpr style_pseudo_class pseudo_class() const noexcept
+    {
+        auto r = style_pseudo_class{};
+
+        if (pressed()) {
+            r |= style_pseudo_class::active;
+        } else if (hover()) {
+            r |= style_pseudo_class::hover;
+        } else if (active()) {
+            r |= style_pseudo_class::enabled;
+        } else {
+            r |= style_pseudo_class::disabled;
+        }
+
+        if (focus()) {
+            r |= style_pseudo_class::focus;
+        }
+
+        if (value() != widget_value::off) {
+            r |= style_pseudo_class::_true;
+        } else {
+            r |= style_pseudo_class::_false;
+        }
+        
+        return r;
     }
 
     /** Get the numeric value of the window state.
