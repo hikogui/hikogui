@@ -58,7 +58,7 @@ public:
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the pixel-density.
      */
-    hi::pixel_density pixel_density = {pixels_per_inch(96.0f), device_type::desktop};
+    unit::pixel_density pixel_density = {unit::pixels_per_inch(96.0f), device_type::desktop};
 
     /** Theme to use to draw the widgets on this window.
      * The sizes and colors of the theme have already been adjusted to the window's state and ppi.
@@ -493,7 +493,7 @@ public:
 
         auto const ppd = 2 * viewing_distance * pixel_density.ppi * tan_half_degree;
 
-        if (ppd > pixels_per_inch(55.0f)) {
+        if (ppd > unit::pixels_per_inch(55.0f)) {
             // High resolution displays do not require subpixel-aliasing.
             return hi::subpixel_orientation::unknown;
         } else {
@@ -1330,7 +1330,7 @@ private:
         if (ppi_ == 0) {
             throw gui_error("Could not retrieve dpi for window.");
         }
-        pixel_density = {pixels_per_inch(ppi_), os_settings::device_type()};
+        pixel_density = {unit::pixels_per_inch(ppi_), os_settings::device_type()};
         surface = make_unique_gfx_surface(crt_application_instance, win32Window);
     }
 
@@ -1699,7 +1699,7 @@ private:
             {
                 hi_axiom(loop::main().on_thread());
                 // x-axis dpi value.
-                pixel_density = {pixels_per_inch(LOWORD(wParam)), os_settings::device_type()};
+                pixel_density = {unit::pixels_per_inch(LOWORD(wParam)), os_settings::device_type()};
 
                 // Use the recommended rectangle to resize and reposition the window
                 auto const new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
@@ -1715,7 +1715,7 @@ private:
                 this->process_event({gui_event_type::window_reconstrain});
 
                 // XXX #667 use mp-units formatting.
-                hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(pixels_per_inch));
+                hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(unit::pixels_per_inch));
 
                 hi_assert_not_null(_widget);
                 apply_window_data(*_widget, this, pixel_density, get_selected_theme().attributes_from_theme_function());

@@ -399,7 +399,7 @@ inline void apply(widget_intf& start, Func &&func, bool include_invisible = true
     }
 }
 
-inline void apply_window_data(widget_intf& start, gui_window *new_window, pixel_density const& new_density, style::attributes_from_theme_type const& new_attributes_from_theme)
+inline void apply_window_data(widget_intf& start, gui_window *new_window, unit::pixel_density const& new_density, style::attributes_from_theme_type const& new_attributes_from_theme)
 {
     apply(start, [&](widget_intf& w) {
         w.window = new_window;
@@ -408,13 +408,13 @@ inline void apply_window_data(widget_intf& start, gui_window *new_window, pixel_
     });
 }
 
-void widget_intf::set_parent(widget_intf *new_parent) noexcept
+inline void widget_intf::set_parent(widget_intf *new_parent) noexcept
 {
     _parent = new_parent;
     apply_window_data(
         *this,
         new_parent ? new_parent->window : nullptr,
-        new_parent ? new_parent->style.pixel_density() : pixel_density{},
+        new_parent ? new_parent->style.pixel_density() : unit::pixel_density{},
         new_parent ? new_parent->style.attributes_from_theme() : style::attributes_from_theme_type{});
 
     // The path will automatically propagate to the child widgets.

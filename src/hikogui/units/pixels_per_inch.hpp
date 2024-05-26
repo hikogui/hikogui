@@ -11,6 +11,7 @@
 hi_export_module(hikogui.unit : pixels_per_inch);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct PixelsPerInch : decltype(Pixels{} / au::Inches{}) {
     static constexpr const char label[] = "ppi";
@@ -22,4 +23,4 @@ using pixels_per_inch_d = au::Quantity<PixelsPerInch, double>;
 using pixels_per_inch_f = au::Quantity<PixelsPerInch, float>;
 using pixels_per_inch_i = au::Quantity<PixelsPerInch, int>;
 
-}}
+}}}

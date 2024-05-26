@@ -16,7 +16,7 @@
 hi_export_module(hikogui.unit : length);
 
 hi_export namespace hi {
-inline namespace v1 {
+inline namespace v1 { namespace unit {
 
 template<typename T>
 using length_variant =
@@ -32,12 +32,12 @@ class length_quantity : public length_variant<T> {
 using length_f = length_quantity<float>;
 using length_s = length_quantity<short>;
 
-} // namespace v1
+}} // namespace v1::unit
 }
 
 template<std::integral T>
-struct std::hash<hi::length_quantity<T>> {
-    [[nodiscard]] size_t operator()(hi::length_quantity<T> const& rhs) const noexcept
+struct std::hash<hi::unit::length_quantity<T>> {
+    [[nodiscard]] size_t operator()(hi::unit::length_quantity<T> const& rhs) const noexcept
     {
         auto h = std::hash<size_t>{}(rhs.index());
         h ^= std::visit(

@@ -11,9 +11,9 @@ TEST_SUITE(pixels_per_inch) {
 
 TEST_CASE(inch_to_pixel)
 {
-    auto my_ppi = hi::pixels_per_inch(72.0);
+    auto my_ppi = hi::unit::pixels_per_inch(72.0);
 
-    REQUIRE(au::inches(2.0) * my_ppi == hi::pixels(144.0));
+    REQUIRE(au::inches(2.0) * my_ppi == hi::unit::pixels(144.0));
 }
 
 };

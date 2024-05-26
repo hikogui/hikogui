@@ -12,6 +12,7 @@
 hi_export_module(hikogui.unit : points_per_em);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct PointsPerEm : decltype(Points{} / EmSquares{}) {
     static constexpr const char label[] = "px/Em";
@@ -24,4 +25,4 @@ using points_per_em_f = au::Quantity<PointsPerEm, float>;
 using points_per_em_i = au::Quantity<PointsPerEm, int>;
 using points_per_em_s = au::Quantity<PointsPerEm, short>;
 
-}}
+}}}

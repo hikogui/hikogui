@@ -22,6 +22,7 @@ hi_export_module(hikogui.unit : pixels_per_inch);
 
 hi_export namespace hi {
 inline namespace v1 {
+namespace unit {
 
 template<typename T>
 using font_size_variant = std::variant<au::Quantity<PointsPerEm, T>, au::Quantity<PixelsPerEm, T>, au::Quantity<DipsPerEm, T>>;
@@ -110,12 +111,12 @@ round(au::Quantity<PixelsPerEm, FontSizeT> font_size, au::Quantity<EmSquares, By
 using font_size_f = font_size_quantity<float>;
 using font_size_s = font_size_quantity<short>;
 
-} // namespace v1
+}} // namespace v1
 }
 
 template<std::integral T>
-struct std::hash<hi::font_size_quantity<T>> {
-    [[nodiscard]] size_t operator()(hi::font_size_quantity<T> const& rhs) const noexcept
+struct std::hash<hi::unit::font_size_quantity<T>> {
+    [[nodiscard]] size_t operator()(hi::unit::font_size_quantity<T> const& rhs) const noexcept
     {
         auto h = std::hash<size_t>{}(rhs.index());
         h ^= std::visit(

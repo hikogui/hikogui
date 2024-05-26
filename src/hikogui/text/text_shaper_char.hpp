@@ -28,7 +28,7 @@ public:
 
     /** The scale to resize the font's size to match the physical display.
      */
-    pixel_density pixel_density;
+    unit::pixel_density pixel_density;
 
     /** The glyph representing one or more graphemes.
      * The glyph will change during shaping of the text:
@@ -106,7 +106,7 @@ public:
 
     /** The font size in pixels, rounded so that the x-height is rounded to the nearest pixel.
      */
-    au::Quantity<PixelsPerEm, float> font_size;
+    au::Quantity<unit::PixelsPerEm, float> font_size;
 
     /** The width used for this grapheme when folding lines.
      *
@@ -127,7 +127,7 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style_set const& style, hi::pixel_density pixel_density) noexcept :
+    [[nodiscard]] text_shaper_char(hi::grapheme const& grapheme, text_style_set const& style, unit::pixel_density pixel_density) noexcept :
         grapheme(grapheme),
         style(style[grapheme.attributes()]),
         pixel_density(pixel_density),
@@ -202,7 +202,7 @@ private:
         glyphs = std::move(new_glyphs);
         hi_axiom(not glyphs.font.empty());
         font_size = round(style.size() * pixel_density, glyphs.font_metrics().x_height);
-        metrics = font_size.in(pixels_per_em) * glyphs.front_glyph_metrics();
+        metrics = font_size.in(unit::pixels_per_em) * glyphs.front_glyph_metrics();
     }
 };
 

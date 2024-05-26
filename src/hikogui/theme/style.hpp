@@ -8,6 +8,7 @@
 #include "style_attributes.hpp"
 #include "style_pseudo_class.hpp"
 #include "../units/units.hpp"
+#include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <functional>
@@ -25,21 +26,21 @@ public:
     using callback_type = notifier_type::callback_type;
     using callback_proto = notifier_type::callback_proto;
 
-    pixels_f width;
-    pixels_f height;
-    pixels_f margin_left;
-    pixels_f margin_bottom;
-    pixels_f margin_right;
-    pixels_f margin_top;
-    pixels_f padding_left;
-    pixels_f padding_bottom;
-    pixels_f padding_right;
-    pixels_f padding_top;
-    pixels_f border_width;
-    pixels_f border_bottom_left_radius;
-    pixels_f border_bottom_right_radius;
-    pixels_f border_top_left_radius;
-    pixels_f border_top_right_radius;
+    unit::pixels_f width;
+    unit::pixels_f height;
+    unit::pixels_f margin_left;
+    unit::pixels_f margin_bottom;
+    unit::pixels_f margin_right;
+    unit::pixels_f margin_top;
+    unit::pixels_f padding_left;
+    unit::pixels_f padding_bottom;
+    unit::pixels_f padding_right;
+    unit::pixels_f padding_top;
+    unit::pixels_f border_width;
+    unit::pixels_f border_bottom_left_radius;
+    unit::pixels_f border_bottom_right_radius;
+    unit::pixels_f border_top_left_radius;
+    unit::pixels_f border_top_right_radius;
 
     float width_px;
     float height_px;
@@ -74,7 +75,7 @@ public:
     style& operator=(style&&) noexcept = delete;
     style() noexcept = default;
 
-    constexpr void set_name(std::string name)
+    void set_name(std::string name)
     {
         _name = name;
         reload(true);
@@ -85,7 +86,7 @@ public:
         return _name;
     }
 
-    constexpr void set_id(std::string id)
+    void set_id(std::string id)
     {
         _id = std::move(id);
         reload(true);
@@ -96,7 +97,7 @@ public:
         return _id;
     }
 
-    constexpr void set_classes(std::vector<std::string> classes)
+    void set_classes(std::vector<std::string> classes)
     {
         _classes = std::move(classes);
         reload(true);
@@ -107,18 +108,18 @@ public:
         return _classes;
     }
 
-    constexpr void set_parent_path(style_path new_parent_path) noexcept
+    void set_parent_path(style_path new_parent_path) noexcept
     {
         _parent_path = new_parent_path;
         reload(true);
     }
 
-    [[nodiscard]] constexpr style_path const &parent_path() const noexcept
+    [[nodiscard]] style_path const &parent_path() const noexcept
     {
         return _parent_path;
     }
 
-    [[nodiscard]] constexpr style_path path() const noexcept
+    [[nodiscard]] style_path path() const noexcept
     {
         auto r = parent_path();
         r.emplace_back(_name, _id, _classes);
@@ -168,12 +169,12 @@ public:
         reload(false);
     }
 
-    [[nodiscard]] hi::pixel_density pixel_density() const noexcept
+    [[nodiscard]] unit::pixel_density pixel_density() const noexcept
     {
         return _pixel_density;
     }
 
-    void set_pixel_density(hi::pixel_density new_pixel_density)
+    void set_pixel_density(unit::pixel_density new_pixel_density)
     {
         _pixel_density = new_pixel_density;
         update_attributes(style_modify_mask::pixel_density);
@@ -253,7 +254,7 @@ private:
     std::vector<std::string> _classes;
 
     style_path _parent_path;
-    hi::pixel_density _pixel_density;
+    unit::pixel_density _pixel_density;
     style_pseudo_class _pseudo_class;
 
     /** A function to retrieve style attributes from the current selected attributes_from_theme.
@@ -289,8 +290,8 @@ private:
         if (to_bool(mask & style_modify_mask::size)) {
             width = _attributes.width() * _pixel_density;
             height = _attributes.height() * _pixel_density;
-            width_px = width.in(pixels);
-            height_px = height.in(pixels);
+            width_px = width.in(unit::pixels);
+            height_px = height.in(unit::pixels);
         }
 
         if (to_bool(mask & style_modify_mask::margin)) {
@@ -302,14 +303,14 @@ private:
             padding_bottom = _attributes.padding_bottom() * _pixel_density;
             padding_right = _attributes.padding_right() * _pixel_density;
             padding_top = _attributes.padding_top() * _pixel_density;
-            margin_left_px = margin_left.in(pixels);
-            margin_bottom_px = margin_bottom.in(pixels);
-            margin_right_px = margin_right.in(pixels);
-            margin_top_px = margin_top.in(pixels);
-            padding_left_px = padding_left.in(pixels);
-            padding_bottom_px = padding_bottom.in(pixels);
-            padding_right_px = padding_right.in(pixels);
-            padding_top_px = padding_top.in(pixels);
+            margin_left_px = margin_left.in(unit::pixels);
+            margin_bottom_px = margin_bottom.in(unit::pixels);
+            margin_right_px = margin_right.in(unit::pixels);
+            margin_top_px = margin_top.in(unit::pixels);
+            padding_left_px = padding_left.in(unit::pixels);
+            padding_bottom_px = padding_bottom.in(unit::pixels);
+            padding_right_px = padding_right.in(unit::pixels);
+            padding_top_px = padding_top.in(unit::pixels);
             margins_px = hi::margins{margin_left_px, margin_bottom_px, margin_right_px, margin_top_px};
             padding_px = hi::margins{padding_left_px, padding_bottom_px, padding_right_px, padding_top_px};
         }
@@ -320,11 +321,11 @@ private:
             border_bottom_right_radius = _attributes.border_bottom_right_radius() * _pixel_density;
             border_top_left_radius = _attributes.border_top_left_radius() * _pixel_density;
             border_top_right_radius = _attributes.border_top_right_radius() * _pixel_density;
-            border_width_px = border_width.in(pixels);
-            border_bottom_left_radius_px = border_bottom_left_radius.in(pixels);
-            border_bottom_right_radius_px = border_bottom_right_radius.in(pixels);
-            border_top_left_radius_px = border_top_left_radius.in(pixels);
-            border_top_right_radius_px = border_top_right_radius.in(pixels);
+            border_width_px = border_width.in(unit::pixels);
+            border_bottom_left_radius_px = border_bottom_left_radius.in(unit::pixels);
+            border_bottom_right_radius_px = border_bottom_right_radius.in(unit::pixels);
+            border_top_left_radius_px = border_top_left_radius.in(unit::pixels);
+            border_top_right_radius_px = border_top_right_radius.in(unit::pixels);
             border_radius_px = hi::corner_radii{
                 border_bottom_left_radius_px,
                 border_bottom_right_radius_px,

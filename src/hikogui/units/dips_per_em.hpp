@@ -12,6 +12,7 @@
 hi_export_module(hikogui.unit : dips_per_em);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct DipsPerEm : decltype(Dips{} / EmSquares{}) {
     static constexpr const char label[] = "px/Em";
@@ -24,4 +25,4 @@ using dips_per_em_f = au::Quantity<DipsPerEm, float>;
 using dips_per_em_i = au::Quantity<DipsPerEm, int>;
 using dips_per_em_s = au::Quantity<DipsPerEm, short>;
 
-}}
+}}}

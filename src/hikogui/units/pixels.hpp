@@ -10,6 +10,7 @@
 hi_export_module(hikogui.unit : pixels);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct PixelLengthDim : au::base_dim::BaseDimension<1712674722> {};
 
@@ -23,4 +24,4 @@ using pixels_d = au::Quantity<Pixels, double>;
 using pixels_f = au::Quantity<Pixels, float>;
 using pixels_i = au::Quantity<Pixels, int>;
 
-}}
+}}}

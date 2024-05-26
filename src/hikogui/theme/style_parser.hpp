@@ -111,7 +111,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     }
 }
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr expected_optional<length_f, std::string> parse_style_length(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<unit::length_f, std::string> parse_style_length(It& it, ItEnd last)
 {
     hi_assert(it != last);
 
@@ -124,16 +124,16 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 
     if (it == last or *it != token::id) {
         // A numeric value without a suffix is in device independet pixels.
-        return dips(value);
+        return unit::dips(value);
     } else if (*it == "px") {
         ++it;
-        return pixels(value);
+        return unit::pixels(value);
     } else if (*it == "dp" or *it == "dip") {
         ++it;
-        return dips(value);
+        return unit::dips(value);
     } else if (*it == "pt") {
         ++it;
-        return points(value);
+        return unit::points(value);
     } else if (*it == "in") {
         ++it;
         return au::inches(value);
@@ -142,7 +142,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
         return au::centi(au::meters)(value);
     } else {
         // Unknown suffix could be token for another part of the tag.
-        return dips(value);
+        return unit::dips(value);
     }
 }
 

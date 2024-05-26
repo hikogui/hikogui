@@ -13,6 +13,7 @@
 #include "../macros.hpp"
 
 namespace hi { inline namespace v1 {
+namespace unit {
 
 struct pixel_density {
     pixels_per_inch_f ppi;
@@ -64,12 +65,12 @@ struct pixel_density {
     [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
     operator*(length_quantity<T> const& lhs, pixel_density const& rhs) noexcept
     {
-        if (auto const *points = std::get_if<au::Quantity<Points, T>>(&lhs)) {
-            return *points * rhs;
-        } else if (auto const *dips = std::get_if<au::Quantity<Dips, T>>(&lhs)) {
-            return *dips * rhs;
-        } else if (auto const *pixels = std::get_if<au::Quantity<Pixels, T>>(&lhs)) {
-            return *pixels * rhs;
+        if (auto const *pts = std::get_if<au::Quantity<Points, T>>(&lhs)) {
+            return *pts * rhs;
+        } else if (auto const *dps = std::get_if<au::Quantity<Dips, T>>(&lhs)) {
+            return *dps * rhs;
+        } else if (auto const *pxs = std::get_if<au::Quantity<Pixels, T>>(&lhs)) {
+            return *pxs * rhs;
         } else {
             hi_no_default();
         }
@@ -196,4 +197,4 @@ private:
     }
 };
 
-}} // namespace hi::v1
+}}} // namespace hi::v1

@@ -41,21 +41,21 @@ public:
         return r; \
     }
 
-    HIX_GETSET(hi::length_f, width, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, height, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, margin_left, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, margin_bottom, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, margin_right, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, margin_top, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, padding_left, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, padding_bottom, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, padding_right, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, padding_top, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, border_width, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, border_bottom_left_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, border_bottom_right_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, border_top_left_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::length_f, border_top_right_radius, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, width, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, height, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, margin_left, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, margin_bottom, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, margin_right, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, margin_top, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, padding_left, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, padding_bottom, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, padding_right, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, padding_top, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, border_width, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, border_bottom_left_radius, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, border_bottom_right_radius, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, border_top_left_radius, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::length_f, border_top_right_radius, style_modify_mask::layout)
     HIX_GETSET(hi::color, foreground_color, style_modify_mask::color)
     HIX_GETSET(hi::color, background_color, style_modify_mask::color)
     HIX_GETSET(hi::color, border_color, style_modify_mask::color)
@@ -63,7 +63,7 @@ public:
     HIX_GETSET(hi::vertical_alignment, vertical_alignment, style_modify_mask::layout)
 #undef HIX_GETSET
 
-    style_modify_mask set_margin(length_f margin, bool important = false) noexcept
+    style_modify_mask set_margin(unit::length_f margin, bool important = false) noexcept
     {
         auto r = style_modify_mask{};
         r |= set_margin_left(margin, important);
@@ -73,7 +73,7 @@ public:
         return r;
     }
 
-    style_modify_mask set_padding(length_f padding, bool important = false) noexcept
+    style_modify_mask set_padding(unit::length_f padding, bool important = false) noexcept
     {
         auto r = style_modify_mask{};
         r |= set_padding_left(padding, important);
@@ -83,7 +83,7 @@ public:
         return r;
     }
 
-    style_modify_mask set_border_radius(length_f border_radius, bool important = false) noexcept
+    style_modify_mask set_border_radius(unit::length_f border_radius, bool important = false) noexcept
     {
         auto r = style_modify_mask{};
         r |= set_border_bottom_left_radius(border_radius, important);
@@ -171,21 +171,21 @@ public:
     }
 
 private:
-    hi::length_f _width = hi::points(0.0f);
-    hi::length_f _height = hi::points(0.0f);
-    hi::length_f _margin_left = hi::points(0.0f);
-    hi::length_f _margin_bottom = hi::points(0.0f);
-    hi::length_f _margin_right = hi::points(0.0f);
-    hi::length_f _margin_top = hi::points(0.0f);
-    hi::length_f _padding_left = hi::points(0.0f);
-    hi::length_f _padding_bottom = hi::points(0.0f);
-    hi::length_f _padding_right = hi::points(0.0f);
-    hi::length_f _padding_top = hi::points(0.0f);
-    hi::length_f _border_width = hi::points(0.0f);
-    hi::length_f _border_bottom_left_radius = hi::points(0.0f);
-    hi::length_f _border_bottom_right_radius = hi::points(0.0f);
-    hi::length_f _border_top_left_radius = hi::points(0.0f);
-    hi::length_f _border_top_right_radius = hi::points(0.0f);
+    hi::unit::length_f _width = unit::points(0.0f);
+    hi::unit::length_f _height = unit::points(0.0f);
+    hi::unit::length_f _margin_left = unit::points(0.0f);
+    hi::unit::length_f _margin_bottom = unit::points(0.0f);
+    hi::unit::length_f _margin_right = unit::points(0.0f);
+    hi::unit::length_f _margin_top = unit::points(0.0f);
+    hi::unit::length_f _padding_left = unit::points(0.0f);
+    hi::unit::length_f _padding_bottom = unit::points(0.0f);
+    hi::unit::length_f _padding_right = unit::points(0.0f);
+    hi::unit::length_f _padding_top = unit::points(0.0f);
+    hi::unit::length_f _border_width = unit::points(0.0f);
+    hi::unit::length_f _border_bottom_left_radius = unit::points(0.0f);
+    hi::unit::length_f _border_bottom_right_radius = unit::points(0.0f);
+    hi::unit::length_f _border_top_left_radius = unit::points(0.0f);
+    hi::unit::length_f _border_top_right_radius = unit::points(0.0f);
     hi::color _foreground_color = {};
     hi::color _background_color = {};
     hi::color _border_color = {};
