@@ -11,9 +11,9 @@ TEST_SUITE(em_squares) {
 
 TEST_CASE(points_per_em)
 {
-    auto my_font_size = hi::points_per_em(static_cast<short>(12));
+    auto my_font_size = hi::unit::points_per_em(static_cast<short>(12));
 
-    REQUIRE(hi::em_squares(2.0) * my_font_size == hi::points(24.0));
+    REQUIRE(hi::unit::em_squares(2.0) * my_font_size == hi::unit::points(24.0));
 }
 
 };

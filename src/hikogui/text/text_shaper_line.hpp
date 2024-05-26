@@ -168,11 +168,11 @@ public:
         round_glyph_positions(columns, sub_pixel_width);
 
         // Create the bounding rectangles around each glyph, for use to draw selection boxes/cursors and handle mouse control.
-        create_bounding_rectangles(columns, y, metrics.ascender.in(pixels), metrics.descender.in(pixels));
+        create_bounding_rectangles(columns, y, metrics.ascender.in(unit::pixels), metrics.descender.in(unit::pixels));
 
         // Create a bounding rectangle around the visible part of the line.
         if (columns.empty()) {
-            rectangle = {point2{0.0f, y - metrics.descender.in(pixels)}, point2{1.0f, y + metrics.ascender.in(pixels)}};
+            rectangle = {point2{0.0f, y - metrics.descender.in(unit::pixels)}, point2{1.0f, y + metrics.ascender.in(unit::pixels)}};
         } else {
             rectangle = columns.front()->rectangle | columns.back()->rectangle;
         }
@@ -240,7 +240,7 @@ private:
         }
 
         auto result = font->shape_run(language, script, run);
-        result.scale_and_offset(char_it->font_size.in(pixels_per_em));
+        result.scale_and_offset(char_it->font_size.in(unit::pixels_per_em));
         hi_axiom(result.advances.size() == run.size());
         hi_axiom(result.glyph_count.size() == run.size());
 

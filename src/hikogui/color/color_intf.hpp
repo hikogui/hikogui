@@ -15,6 +15,7 @@
 #include <string>
 #include <map>
 #include <mutex>
+#include <format>
 
 hi_export_module(hikogui.color : color_intf);
 
@@ -378,5 +379,14 @@ struct std::hash<hi::color> {
     [[nodiscard]] size_t operator()(hi::color const& rhs) const noexcept
     {
         return rhs.hash();
+    }
+};
+
+// XXX #617 MSVC bug does not handle partial specialization in modules.
+hi_export template<>
+struct std::formatter<hi::color, char> : std::formatter<std::string, char> {
+    auto format(hi::color const& t, auto& fc) const
+    {
+        return std::formatter<std::string, char>::format(std::format("rgba({}, {}, {}, {})", t.r(), t.g(), t.b(), t.a()), fc);
     }
 };

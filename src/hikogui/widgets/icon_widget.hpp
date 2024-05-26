@@ -99,21 +99,21 @@ public:
                 auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
+                    (icon_style.size() * theme().pixel_density).in(unit::pixels_per_em);
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
+                    (icon_style.size() * theme().pixel_density).in(unit::pixels_per_em);
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (icon_style.size() * theme().pixel_density).in(pixels_per_em);
+                    (icon_style.size() * theme().pixel_density).in(unit::pixels_per_em);
             }
         }
 

@@ -12,6 +12,7 @@
 #include "../layout/layout.hpp"
 #include "../GFX/GFX.hpp"
 #include "../telemetry/telemetry.hpp"
+#include "../theme/theme.hpp"
 #include "../macros.hpp"
 #include <coroutine>
 
@@ -29,6 +30,16 @@ public:
      */
     widget_id id = {};
 
+    /** The style of this widget.
+     * 
+     * You can assign a style-string to this style variable to change
+     * the style's id, class and individual style-attributes.
+     * @see hi::parse_style().
+     */
+    hi::style style = {};
+
+    gui_window *window = nullptr;
+
     /** Notifier which is called after an action is completed by a widget.
      */
     notifier<void()> notifier;
@@ -44,9 +55,36 @@ public:
 
     widget_intf() noexcept : id(make_widget_id())
     {
+        _style_cbt = style.subscribe([&](style_modify_mask mask, bool path_has_changed) {
+            if (path_has_changed) {
+                // When the path has changed of a style, the style of the children
+                // may change as well. Therefor we update the parent-path of the
+                // children to trigger a re-evaluation of the style.
+                ++global_counter<"widget:style:path">;
+                for (auto &child : children()) {
+                    child.style.set_parent_path(style.path());
+                }
+            }
+
+            if (to_bool(mask & style_modify_mask::layout)) {
+                // The layout has changed which means its size may have changed
+                // which would require a re-layout and re-constrain of the widget.
+                ++global_counter<"widget:style:reconstrain">;
+                process_event({gui_event_type::window_reconstrain});
+
+            } else if (to_bool(mask & style_modify_mask::redraw)) {
+                // The color attributes, or border magnitude has changed which
+                // should only change the widget visually and not the layout.
+                ++global_counter<"widget:style:redraw">;
+                request_redraw();
+            }
+        });
+
         // This lambda allows the state to be set once before it will trigger
         // notifications.
         _state_cbt = state.subscribe([&](widget_state new_state) {
+            style.set_pseudo_class(new_state.pseudo_class());
+
             static std::optional<widget_state> old_state = std::nullopt;
 
             if (old_state) {
@@ -82,39 +120,7 @@ public:
      * @param new_parent A pointer to an existing parent, or nullptr if the
      *                   widget is removed from the parent.
      */
-    virtual void set_parent(widget_intf *new_parent) noexcept
-    {
-        _parent = new_parent;
-
-        if (_parent) {
-            set_window(_parent->window());
-        } else {
-            set_window(nullptr);
-        }
-    }
-
-    /** Get the window that the widget is owned by.
-     *
-     * @return window The window that owns this tree of widgets. Or nullptr
-     *                if this tree of widgets is not owned by a window.
-     */
-    [[nodiscard]] gui_window *window() const noexcept
-    {
-        return _window;
-    }
-
-    /** Set the window for this tree of widgets.
-     *
-     * @param new_window A pointer to the window that will own this tree of widgets.
-     *               or nullptr if the window must be removed.
-     */
-    virtual void set_window(gui_window *new_window) noexcept
-    {
-        _window = new_window;
-        for (auto &child : children()) {
-            child.set_window(new_window);
-        }
-    }
+    virtual void set_parent(widget_intf *new_parent) noexcept;
 
     /** Subscribe a callback to be called when an action is completed by the widget.
      */
@@ -345,12 +351,12 @@ public:
 
 protected:
     callback<void(widget_state)> _state_cbt;
+    hi::style::callback_type _style_cbt;
 
     widget_layout _layout;
 
 private:
     widget_intf *_parent = nullptr;
-    gui_window *_window = nullptr;
 };
 
 inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
@@ -376,5 +382,45 @@ inline widget_intf& get(widget_intf& start, widget_id id, bool include_invisible
     throw not_found_error("get widget by id");
 }
 
+template<std::invocable<widget_intf&> Func>
+inline void apply(widget_intf& start, Func &&func, bool include_invisible = true)
+{
+    auto todo = std::vector<widget_intf *>{&start};
+
+    while (not todo.empty()) {
+        auto *tmp = todo.back();
+        todo.pop_back();
+
+        func(*tmp);
+
+        for (auto &child : tmp->children(include_invisible)) {
+            todo.push_back(&child);
+        }
+    }
+}
+
+inline void apply_window_data(widget_intf& start, gui_window *new_window, unit::pixel_density const& new_density, style::attributes_from_theme_type const& new_attributes_from_theme)
+{
+    apply(start, [&](widget_intf& w) {
+        w.window = new_window;
+        w.style.set_pixel_density(new_density);
+        w.style.set_attributes_from_theme(new_attributes_from_theme);
+    });
+}
+
+inline void widget_intf::set_parent(widget_intf *new_parent) noexcept
+{
+    _parent = new_parent;
+    apply_window_data(
+        *this,
+        new_parent ? new_parent->window : nullptr,
+        new_parent ? new_parent->style.pixel_density() : unit::pixel_density{},
+        new_parent ? new_parent->style.attributes_from_theme() : style::attributes_from_theme_type{});
+
+    // The path will automatically propagate to the child widgets.
+    style.set_parent_path(new_parent ? new_parent->style.path() : style_path{});
+}
+
+
 } // namespace v1
-} // namespace hi::v1
+} // namespace hi

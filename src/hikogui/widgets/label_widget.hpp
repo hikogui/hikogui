@@ -137,7 +137,7 @@ public:
         auto const icon_size =
             (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
             theme().large_icon_size() :
-            (label_style.size() * theme().pixel_density).in(pixels_per_em);
+            (label_style.size() * theme().pixel_density).in(unit::pixels_per_em);
 
         _icon_widget->minimum = extent2{icon_size, icon_size};
         _icon_widget->maximum = extent2{icon_size, icon_size};

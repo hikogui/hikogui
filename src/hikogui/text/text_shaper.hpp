@@ -83,7 +83,7 @@ public:
     [[nodiscard]] text_shaper(
         gstring const& text,
         text_style_set const& style,
-        hi::pixel_density pixel_density,
+        unit::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
@@ -134,7 +134,7 @@ public:
     [[nodiscard]] text_shaper(
         std::string_view text,
         text_style_set const& style,
-        hi::pixel_density pixel_density,
+        unit::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
@@ -219,8 +219,8 @@ public:
             inplace_max(max_width, line.width);
         }
 
-        auto const max_y = lines.front().y + std::ceil(lines.front().metrics.ascender.in(pixels));
-        auto const min_y = lines.back().y - std::ceil(lines.back().metrics.descender.in(pixels));
+        auto const max_y = lines.front().y + std::ceil(lines.front().metrics.ascender.in(unit::pixels));
+        auto const min_y = lines.back().y - std::ceil(lines.back().metrics.descender.in(unit::pixels));
         return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
     }
 
@@ -827,7 +827,7 @@ public:
 private:
     /** The scaling factor to use to scale a font's size to match the physical pixels on the display.
      */
-    hi::pixel_density _pixel_density;
+    unit::pixel_density _pixel_density;
 
     /** A list of character in logical order.
      *
@@ -896,7 +896,7 @@ private:
             auto const paragraph_spacing = std::max(prev->paragraph_spacing, it->paragraph_spacing);
             auto const spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
             // Lines advance downward on the y-axis.
-            it->y = prev->y - spacing * height.in(pixels);
+            it->y = prev->y - spacing * height.in(unit::pixels);
             prev = it;
         }
     }
@@ -1042,7 +1042,7 @@ private:
     }
 
     [[nodiscard]] static generator<std::pair<std::vector<size_t>, float>>
-    get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, hi::pixel_density pixel_density) noexcept
+    get_widths(unicode_break_vector const& opportunities, std::vector<float> const& widths, unit::pixel_density pixel_density) noexcept
     {
         struct entry_type {
             size_t min_height;
@@ -1053,8 +1053,8 @@ private:
 
         auto stack = std::vector<entry_type>{};
 
-        auto const a4_one_column = (au::milli(au::meters)(172.0f) * pixel_density.ppi).in(pixels);
-        auto const a4_two_column = (au::milli(au::meters)(88.0f) * pixel_density.ppi).in(pixels);
+        auto const a4_one_column = (au::milli(au::meters)(172.0f) * pixel_density.ppi).in(unit::pixels);
+        auto const a4_two_column = (au::milli(au::meters)(88.0f) * pixel_density.ppi).in(unit::pixels);
 
         // Max-width first.
         auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
@@ -1317,7 +1317,7 @@ private:
             previous_category = std::move(current_category);
         }
 
-        return total_height.in(pixels);
+        return total_height.in(unit::pixels);
     }
 };
 

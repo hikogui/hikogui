@@ -10,6 +10,7 @@
 hi_export_module(hikogui.unit : pixels_per_inch);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct DeviceIndependentPixelLengthDim : au::base_dim::BaseDimension<1712760807> {};
 
@@ -35,4 +36,4 @@ using dips_d = au::Quantity<Dips, double>;
 using dips_f = au::Quantity<Dips, float>;
 using dips_i = au::Quantity<Dips, int>;
 
-}}
+}}}

@@ -179,7 +179,7 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
         tmp += "ff";
     }
 
-    auto packed = from_string<uint32_t>(tmp);
+    auto packed = from_string<uint32_t>(tmp, 16);
 
     uint8_t const r = truncate<uint8_t>(packed >> 24);
     uint8_t const g = truncate<uint8_t>(packed >> 16);

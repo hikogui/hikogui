@@ -10,6 +10,7 @@
 #include "../color/color.hpp"
 #include "../geometry/geometry.hpp"
 #include "../codec/codec.hpp"
+#include "../theme/theme.hpp"
 #include "../macros.hpp"
 #include <gsl/gsl>
 #include <array>
@@ -24,7 +25,7 @@ class theme {
 public:
     /** The PPI of the size values.
      */
-    hi::pixel_density pixel_density = hi::pixel_density{pixels_per_inch(72.0f), device_type::desktop};
+    unit::pixel_density pixel_density = unit::pixel_density{unit::pixels_per_inch(72.0f), device_type::desktop};
 
     std::string name;
     theme_mode mode = theme_mode::light;
@@ -135,7 +136,7 @@ public:
      *
      * @param new_ppi The PPI of the window.
      */
-    [[nodiscard]] theme transform(hi::pixel_density new_pixel_density) const noexcept
+    [[nodiscard]] theme transform(unit::pixel_density new_pixel_density) const noexcept
     {
         auto r = *this;
 
@@ -202,6 +203,13 @@ public:
     [[nodiscard]] hi::text_style_set const &text_style_set() const noexcept
     {
         return _text_style_set;
+    }
+
+    [[nodiscard]] style::attributes_from_theme_type attributes_from_theme_function() const noexcept
+    {
+        return [](style_path const &path, style_pseudo_class const &pseudo_class) -> style_attributes {
+            return style_attributes{};
+        };
     }
 
 private:
@@ -440,7 +448,7 @@ private:
         auto font_id = find_font(family_id, variant);
 
         r.set_font_chain({font_id});
-        r.set_size(points_per_em(gsl::narrow<short>(parse_float(data, "size"))));
+        r.set_size(unit::points_per_em(gsl::narrow<short>(parse_float(data, "size"))));
         r.set_color(parse_color(data, "color"));
         r.set_line_spacing(1.0f);
         r.set_paragraph_spacing(1.5f);
@@ -540,8 +548,8 @@ private:
 
         auto const base_font = _text_style_set.front().font_chain()[0];
         auto const base_size = _text_style_set.front().size();
-        auto const base_cap_height = std::get<points_per_em_s>(base_size) * base_font->metrics.cap_height;
-        _baseline_adjustment = ceil_in(points, base_cap_height);
+        auto const base_cap_height = std::get<unit::points_per_em_s>(base_size) * base_font->metrics.cap_height;
+        _baseline_adjustment = ceil_in(unit::points, base_cap_height);
     }
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept

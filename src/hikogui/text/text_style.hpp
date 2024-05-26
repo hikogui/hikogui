@@ -90,13 +90,13 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr font_size_s size() const
+    [[nodiscard]] constexpr unit::font_size_s size() const
     {
         hi_axiom(_size_valid);
         return _size;
     }
 
-    constexpr void set_size(font_size_s size, bool important = false)
+    constexpr void set_size(unit::font_size_s size, bool important = false)
     {
         if (important or not _size_important) {
             _size_important |= static_cast<uint32_t>(important);
@@ -168,7 +168,7 @@ public:
 private:
     lean_vector<font_id> _font_chain = {};
     hi::color _color = {};
-    font_size_s _size = {};
+    unit::font_size_s _size = {};
     float _line_spacing = 1.0f;
     float _paragraph_spacing = 1.5f;
 

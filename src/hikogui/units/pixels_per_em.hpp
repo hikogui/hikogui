@@ -12,6 +12,7 @@
 hi_export_module(hikogui.unit : pixels_per_em);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct PixelsPerEm : decltype(Pixels{} / EmSquares{}) {
     static constexpr const char label[] = "px/Em";
@@ -24,4 +25,4 @@ using pixels_per_em_f = au::Quantity<PixelsPerEm, float>;
 using pixels_per_em_i = au::Quantity<PixelsPerEm, int>;
 using pixels_per_em_s = au::Quantity<PixelsPerEm, short>;
 
-}}
+}}}

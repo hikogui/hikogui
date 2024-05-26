@@ -10,6 +10,7 @@
 hi_export_module(hikogui.unit : points);
 
 hi_export namespace hi { inline namespace v1 {
+namespace unit {
 
 struct Points : decltype(au::Inches{} / au::mag<72>()) {
     static constexpr const char label[] = "pt";
@@ -22,6 +23,4 @@ using points_f = au::Quantity<Points, float>;
 using points_i = au::Quantity<Points, int>;
 using points_s = au::Quantity<Points, short>;
 
-
-
-}}
+}}}

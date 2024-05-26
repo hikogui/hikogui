@@ -71,13 +71,13 @@ hi_export struct font_metrics {
     /** Scale the metrics by a scalar value.
      */
     template<typename LhsUnit, typename LhsT>
-    [[nodiscard]] constexpr friend auto operator*(au::Quantity<LhsUnit, LhsT> const& lhs, font_metrics const& rhs) noexcept requires std::same_as<Unit, EmSquares>
+    [[nodiscard]] constexpr friend auto operator*(au::Quantity<LhsUnit, LhsT> const& lhs, font_metrics const& rhs) noexcept requires std::same_as<Unit, unit::EmSquares>
     {
         // clang-format off
         using result_unit =
-            std::conditional_t<std::is_same_v<LhsUnit, PixelsPerEm>, Pixels,
-            std::conditional_t<std::is_same_v<LhsUnit, PointsPerEm>, Points,
-            std::conditional_t<std::is_same_v<LhsUnit, DipsPerEm>, Dips,
+            std::conditional_t<std::is_same_v<LhsUnit, unit::PixelsPerEm>, unit::Pixels,
+            std::conditional_t<std::is_same_v<LhsUnit, unit::PointsPerEm>, unit::Points,
+            std::conditional_t<std::is_same_v<LhsUnit, unit::DipsPerEm>, unit::Dips,
             void>>>;
         // clang-format on
 
@@ -108,8 +108,8 @@ hi_export struct font_metrics {
     }
 };
 
-using font_metrics_em = font_metrics<EmSquares, float>;
-using font_metrics_pt = font_metrics<Points, float>;
-using font_metrics_px = font_metrics<Pixels, float>;
+using font_metrics_em = font_metrics<unit::EmSquares, float>;
+using font_metrics_pt = font_metrics<unit::Points, float>;
+using font_metrics_px = font_metrics<unit::Pixels, float>;
 
 } // namespace hi::inline v1

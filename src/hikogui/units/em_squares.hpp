@@ -11,6 +11,7 @@ hi_export_module(hikogui.unit : em_squares);
 
 hi_export namespace hi {
 inline namespace v1 {
+namespace unit {
 
 struct RelativeFontLengthDim : au::base_dim::BaseDimension<1712674734> {};
 
@@ -24,5 +25,5 @@ using em_squares_d = au::Quantity<EmSquares, double>;
 using em_squares_f = au::Quantity<EmSquares, float>;
 using em_squares_i = au::Quantity<EmSquares, int>;
 
-} // namespace v1
+}} // namespace v1
 }
