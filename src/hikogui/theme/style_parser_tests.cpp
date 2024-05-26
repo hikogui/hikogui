@@ -11,8 +11,8 @@ TEST_SUITE(style_parser_suite) {
         REQUIRE(result.has_value());
         auto [attributes, id, classes] = *result;
         REQUIRE(id == "foo");
-        REQUIRE(std::holds_alternative<hi::dips_f>(attributes.width()));
-        REQUIRE(std::get<hi::dips_f>(attributes.width()) == hi::dips(5));
+        REQUIRE(std::holds_alternative<hi::unit::dips_f>(attributes.width()));
+        REQUIRE(std::get<hi::unit::dips_f>(attributes.width()) == hi::unit::dips(5));
     }
 
     TEST_CASE(id_error_test) {
@@ -27,48 +27,48 @@ TEST_SUITE(style_parser_suite) {
         REQUIRE(classes.size() == 2);
         REQUIRE(classes[0] == "foo");
         REQUIRE(classes[1] == "bar");
-        REQUIRE(std::holds_alternative<hi::dips_f>(attributes.width()));
-        REQUIRE(std::get<hi::dips_f>(attributes.width()) == hi::dips(5));
+        REQUIRE(std::holds_alternative<hi::unit::dips_f>(attributes.width()));
+        REQUIRE(std::get<hi::unit::dips_f>(attributes.width()) == hi::unit::dips(5));
     }
 
     TEST_CASE(length_dips_test) {
         auto result = hi::parse_style("width=5 height = 42");
         REQUIRE(result.has_value());
         auto [attributes, id, classes] = *result;
-        REQUIRE(std::holds_alternative<hi::dips_f>(attributes.width()));
-        REQUIRE(std::holds_alternative<hi::dips_f>(attributes.height()));
-        REQUIRE(std::get<hi::dips_f>(attributes.width()) == hi::dips(5));
-        REQUIRE(std::get<hi::dips_f>(attributes.height()) == hi::dips(42));
+        REQUIRE(std::holds_alternative<hi::unit::dips_f>(attributes.width()));
+        REQUIRE(std::holds_alternative<hi::unit::dips_f>(attributes.height()));
+        REQUIRE(std::get<hi::unit::dips_f>(attributes.width()) == hi::unit::dips(5));
+        REQUIRE(std::get<hi::unit::dips_f>(attributes.height()) == hi::unit::dips(42));
     }
 
     TEST_CASE(length_pixel_test) {
         auto result = hi::parse_style("width=5 px height = 42px");
         REQUIRE(result.has_value());
         auto [attributes, id, classes] = *result;
-        REQUIRE(std::holds_alternative<hi::pixels_f>(attributes.width()));
-        REQUIRE(std::holds_alternative<hi::pixels_f>(attributes.height()));
-        REQUIRE(std::get<hi::pixels_f>(attributes.width()) == hi::pixels(5));
-        REQUIRE(std::get<hi::pixels_f>(attributes.height()) == hi::pixels(42));
+        REQUIRE(std::holds_alternative<hi::unit::pixels_f>(attributes.width()));
+        REQUIRE(std::holds_alternative<hi::unit::pixels_f>(attributes.height()));
+        REQUIRE(std::get<hi::unit::pixels_f>(attributes.width()) == hi::unit::pixels(5));
+        REQUIRE(std::get<hi::unit::pixels_f>(attributes.height()) == hi::unit::pixels(42));
     }
 
     TEST_CASE(length_points_test) {
         auto result = hi::parse_style("width=5 pt height = 42pt");
         REQUIRE(result.has_value());
         auto [attributes, id, classes] = *result;
-        REQUIRE(std::holds_alternative<hi::points_f>(attributes.width()));
-        REQUIRE(std::holds_alternative<hi::points_f>(attributes.height()));
-        REQUIRE(std::get<hi::points_f>(attributes.width()) == hi::points(5));
-        REQUIRE(std::get<hi::points_f>(attributes.height()) == hi::points(42));
+        REQUIRE(std::holds_alternative<hi::unit::points_f>(attributes.width()));
+        REQUIRE(std::holds_alternative<hi::unit::points_f>(attributes.height()));
+        REQUIRE(std::get<hi::unit::points_f>(attributes.width()) == hi::unit::points(5));
+        REQUIRE(std::get<hi::unit::points_f>(attributes.height()) == hi::unit::points(42));
     }
 
     TEST_CASE(length_cm_in_test) {
         auto result = hi::parse_style("width=2.54 cm height = 2.0in");
         REQUIRE(result.has_value());
         auto [attributes, id, classes] = *result;
-        REQUIRE(std::holds_alternative<hi::points_f>(attributes.width()));
-        REQUIRE(std::holds_alternative<hi::points_f>(attributes.height()));
-        REQUIRE(std::get<hi::points_f>(attributes.width()) == hi::points(72));
-        REQUIRE(std::get<hi::points_f>(attributes.height()) == hi::points(144));
+        REQUIRE(std::holds_alternative<hi::unit::points_f>(attributes.width()));
+        REQUIRE(std::holds_alternative<hi::unit::points_f>(attributes.height()));
+        REQUIRE(std::get<hi::unit::points_f>(attributes.width()) == hi::unit::points(72));
+        REQUIRE(std::get<hi::unit::points_f>(attributes.height()) == hi::unit::points(144));
     }
 
     TEST_CASE(length_error_test) {
