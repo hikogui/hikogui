@@ -30,7 +30,10 @@ class window_controls_macos_widget : public widget {
 public:
     using super = widget;
 
-    window_controls_macos_widget() noexcept : super() {}
+    window_controls_macos_widget() noexcept : super()
+    {
+        style.set_name("window-controls");
+    }
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override

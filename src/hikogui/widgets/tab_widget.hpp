@@ -58,14 +58,16 @@ public:
     tab_widget(std::shared_ptr<delegate_type> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_axiom(loop::main().on_thread());
-
         hi_assert_not_null(this->delegate);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"tab_widget:delegate:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
 
         this->delegate->init(*this);
+
+        style.set_name("tab-view");
     }
 
     /** Construct a tab widget with an observer value.

@@ -89,6 +89,7 @@ public:
         super(), delegate(std::move(delegate)), _text()
     {
         hi_assert_not_null(this->delegate);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"text_field_widget:delegate:layout">;
             process_event({gui_event_type::window_relayout});
@@ -116,6 +117,8 @@ public:
             ++global_counter<"text_field_widget:error_label:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
+
+        style.set_name("text-field");
     }
 
     template<text_field_widget_attribute... Attributes>

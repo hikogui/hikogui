@@ -39,6 +39,8 @@ public:
     {
         _icon_widget = std::make_unique<icon_widget>(icon);
         _icon_widget->set_parent(this);
+
+        style.set_name("system-menu");
     }
 
     template<forward_of<observer<hi::icon>> Icon>

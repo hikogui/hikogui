@@ -151,6 +151,8 @@ public:
             set_value(this->delegate->state(*this));
         });
         _delegate_cbt();
+
+        style.set_name("toolbar-tab-button");
     }
 
     /** Construct a toolbar tab button widget with a default radio delegate.

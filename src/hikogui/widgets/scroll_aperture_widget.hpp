@@ -66,6 +66,8 @@ public:
             ++global_counter<"scroll_aperture_widget:minimum:reconstrain">;
             process_event({gui_event_type::window_reconstrain});
         });
+
+        style.set_name("scroll-aperture");
     }
 
     void set_widget(std::unique_ptr<widget> new_child) noexcept

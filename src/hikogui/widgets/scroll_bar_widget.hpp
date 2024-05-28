@@ -67,6 +67,8 @@ public:
             ++global_counter<"scroll_bar_widget:offset:relayout">;
             process_event({gui_event_type::window_relayout});
         });
+
+        style.set_name("scroll-bar");
     }
 
     ~scroll_bar_widget() {}

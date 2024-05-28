@@ -151,6 +151,8 @@ public:
         });
 
         _button_widget_cbt();
+
+        style.set_name("with-label");
     }
 
     /** Construct a widget with a label.

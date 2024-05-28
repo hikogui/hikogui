@@ -195,6 +195,8 @@ private:
             ++global_counter<"icon_widget:icon:constrain">;
             process_event({gui_event_type::window_reconstrain});
         });
+
+        style.set_name("icon");
     }
 };
 

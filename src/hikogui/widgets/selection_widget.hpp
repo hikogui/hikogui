@@ -140,6 +140,8 @@ public:
 
         hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
+
+        style.set_name("selection");
     }
 
     /** Construct a selection widget which will monitor an option list and a

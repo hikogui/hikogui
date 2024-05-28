@@ -52,6 +52,7 @@ public:
      */
     grid_widget() noexcept : widget()
     {
+        style.set_name("grid-view");
     }
 
     /* Add a widget to the grid.

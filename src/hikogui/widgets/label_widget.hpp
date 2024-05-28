@@ -229,6 +229,8 @@ private:
             }
         });
         _alignment_cbt(*alignment);
+
+        style.set_name("label");
     }
 };
 

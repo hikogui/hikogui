@@ -84,9 +84,10 @@ public:
     text_widget(std::shared_ptr<delegate_type> delegate) noexcept :
         super(), delegate(std::move(delegate))
     {
+        hi_assert_not_null(this->delegate);
+        
         set_mode(widget_mode::select);
 
-        hi_assert_not_null(this->delegate);
         _delegate_cbt = this->delegate->subscribe([&] {
             // On every text edit, immediately/synchronously update the shaped text.
             // This is needed for handling multiple edit commands before the next frame update.
@@ -127,6 +128,8 @@ public:
         _blink_cursor = blink_cursor();
 
         this->delegate->init(*this);
+
+        style.set_name("text");
     }
 
     template<text_widget_attribute... Attributes>

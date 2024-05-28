@@ -21,7 +21,7 @@ inline namespace v1 {
 
 class style {
 public:
-    using attributes_from_theme_type = std::function<style_attributes(style_path, style_pseudo_class)>;
+    using query_attributes_type = std::function<style_attributes(style_path, style_pseudo_class)>;
     using notifier_type = notifier<void(style_modify_mask, bool)>;
     using callback_type = notifier_type::callback_type;
     using callback_proto = notifier_type::callback_proto;
@@ -75,9 +75,17 @@ public:
     style& operator=(style&&) noexcept = delete;
     style() noexcept = default;
 
-    void set_name(std::string name)
+    /** Give the style a name.
+     *
+     * @note The first time this function is called the path of child widgets
+     *       will not be updated. This is done so that the path can be set
+     *       before child widgets are created; before children() must list
+     *       these children.
+     * @param name The name of the style.
+     */
+    void set_name(std::string new_name)
     {
-        _name = name;
+        _name = std::move(new_name);
         reload(true);
     }
 
@@ -119,11 +127,26 @@ public:
         return _parent_path;
     }
 
-    [[nodiscard]] style_path path() const noexcept
+    /** The path without checks for validity.
+     * 
+     * @note This function is used to propagate the path to children.
+     */
+    [[nodiscard]] style_path unsafe_path() const
     {
         auto r = parent_path();
         r.emplace_back(_name, _id, _classes);
         return r;
+    }
+
+    /** The path of the style used to look up attributes from a theme.
+     * 
+     * @note It is undefined behavior to call this function before calling
+     *       style::set_name().
+    */
+    [[nodiscard]] style_path path() const
+    {
+        hi_assert(not _name.empty(), "style::set_name() must be called before calling style::path()");
+        return unsafe_path();
     }
 
     /** Parse the given string to configure this style.
@@ -158,14 +181,14 @@ public:
         return *this;
     }
 
-    [[nodiscard]] attributes_from_theme_type const& attributes_from_theme() const noexcept
+    [[nodiscard]] query_attributes_type const& query_attributes() const noexcept
     {
-        return _attributes_from_theme;
+        return _query_attributes;
     }
 
-    void set_attributes_from_theme(attributes_from_theme_type new_attributes_from_theme)
+    void set_query_attributes(query_attributes_type new_query_attributes)
     {
-        _attributes_from_theme = std::move(new_attributes_from_theme);
+        _query_attributes = std::move(new_query_attributes);
         reload(false);
     }
 
@@ -196,7 +219,7 @@ public:
     /** Reload the style attributes from the current theme.
      *
      * Reload is called automatically after:
-     *  - changing the attributes_from_theme function.
+     *  - changing the query_attributes function.
      *  - changing the parent of the style (or of its ancestors).
      *  - changing the name, id, classes of a style (or of its ancestors).
      *
@@ -205,14 +228,15 @@ public:
      */
     void reload(bool path_has_changed = false) noexcept
     {
-        if (not _attributes_from_theme) {
-            // The attributes_from_theme function may not yet been set when the
+        if (not _query_attributes) {
+            // The query_attributes function may not yet been set when the
             // path is configured or when the widget's tree is being setup.
+            _notifier(style_modify_mask::none, path_has_changed);
             return;
         }
 
         for (auto i = size_t{0}; i != style_pseudo_class_size; ++i) {
-            _loaded_attributes[i] = _attributes_from_theme(path(), static_cast<style_pseudo_class>(i));
+            _loaded_attributes[i] = _query_attributes(path(), static_cast<style_pseudo_class>(i));
             _loaded_attributes[i].apply(_override_attributes);
         }
 
@@ -257,15 +281,15 @@ private:
     unit::pixel_density _pixel_density;
     style_pseudo_class _pseudo_class;
 
-    /** A function to retrieve style attributes from the current selected attributes_from_theme.
+    /** A function to retrieve style attributes from the current selected query_attributes.
      */
-    attributes_from_theme_type _attributes_from_theme;
+    query_attributes_type _query_attributes;
 
     /** The attributes directly overridden by the developer for this widget's instance.
      */
     style_attributes _override_attributes;
 
-    /** The attributes loaded from the attributes_from_theme, with overriden attributes applied.
+    /** The attributes loaded from the query_attributes, with overriden attributes applied.
      */
     std::array<style_attributes, style_pseudo_class_size> _loaded_attributes;
 

@@ -121,6 +121,8 @@ public:
             set_value(this->delegate->state(*this));
         });
         _delegate_cbt();
+
+        style.set_name("async");
     }
 
     /** Construct a async widget with a default button delegate.

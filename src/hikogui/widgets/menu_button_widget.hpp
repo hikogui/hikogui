@@ -132,6 +132,8 @@ public:
         });
 
         _button_widget_cbt();
+
+        style.set_name("menu-button");
     }
 
     /** Construct a widget with a label.

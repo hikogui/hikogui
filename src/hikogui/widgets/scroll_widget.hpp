@@ -96,6 +96,8 @@ public:
         _grid.add_cell(0, 0, std::move(aperture));
         _grid.add_cell(1, 0, std::move(vertical_scroll_bar));
         _grid.add_cell(0, 1, std::move(horizontal_scroll_bar));
+
+        style.set_name("scroll-view");
     }
 
     /** Add a content widget directly to this scroll widget.

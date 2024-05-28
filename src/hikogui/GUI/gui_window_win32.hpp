@@ -134,7 +134,7 @@ public:
         auto const new_position = point2{500.0f, 500.0f}; 
         create_window(new_position);
 
-        apply_window_data(*_widget, this, pixel_density, get_selected_theme().attributes_from_theme_function());
+        apply_window_data(*_widget, this, pixel_density, get_selected_theme().query_attributes_function());
 
         // Execute a constraint check to determine initial window size.
         theme = get_selected_theme().transform(pixel_density);
@@ -1718,7 +1718,7 @@ private:
                 hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(unit::pixels_per_inch));
 
                 hi_assert_not_null(_widget);
-                apply_window_data(*_widget, this, pixel_density, get_selected_theme().attributes_from_theme_function());
+                apply_window_data(*_widget, this, pixel_density, get_selected_theme().query_attributes_function());
             }
             break;
 

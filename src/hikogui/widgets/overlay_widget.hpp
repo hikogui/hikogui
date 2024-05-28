@@ -50,7 +50,10 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget() noexcept : super() {}
+    overlay_widget() noexcept : super()
+    {
+        style.set_name("overlay");
+    }
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept
     {

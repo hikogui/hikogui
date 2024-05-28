@@ -31,6 +31,8 @@ public:
     {
         alignment = alignment::middle_center();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
+
+        style.set_name("momentary-button");
     }
 
     template<button_widget_attribute... Attributes>

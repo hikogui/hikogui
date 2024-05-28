@@ -107,11 +107,14 @@ public:
         super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         hi_axiom_not_null(this->delegate);
+        
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
         });
         _delegate_cbt();
+
+        style.set_name("radio");
     }
 
     /** Construct a radio widget with a default button delegate.

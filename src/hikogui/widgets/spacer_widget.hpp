@@ -23,7 +23,10 @@ class spacer_widget : public widget {
 public:
     using super = widget;
 
-    spacer_widget() noexcept : super() {}
+    spacer_widget() noexcept : super()
+    {
+        style.set_name("spacer");
+    }
 
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {

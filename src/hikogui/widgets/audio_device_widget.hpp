@@ -49,6 +49,8 @@ public:
         _device_selection_widget = &_grid_widget->emplace<selection_widget>("A1", device_id, _device_list);
 
         _sync_device_list_task = sync_device_list();
+
+        style.set_name("audio-device");
     }
 
     /// @privatesection

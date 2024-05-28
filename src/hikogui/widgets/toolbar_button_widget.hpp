@@ -33,6 +33,8 @@ public:
     {
         alignment = alignment::middle_left();
         set_attributes<0>(std::forward<Attributes>(attributes)...);
+
+        style.set_name("toolbar-button");
     }
 
     template<button_widget_attribute... Attributes>

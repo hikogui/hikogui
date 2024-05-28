@@ -46,11 +46,13 @@ public:
     toolbar_widget() noexcept : super()
     {
         hi_axiom(loop::main().on_thread());
-
+        
         auto spacer = std::make_unique<spacer_widget>();
         spacer->set_parent(this);
 
         _children.push_back(std::move(spacer));
+
+        style.set_name("toolbar");
     }
 
     /** Add a widget directly to this toolbar-widget.

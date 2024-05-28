@@ -55,6 +55,8 @@ public:
 
         _content = std::make_unique<grid_widget>();
         _content->set_parent(this);
+
+        style.set_name("window");
     }
 
     /** The background color of the window.
