@@ -121,6 +121,7 @@ public:
         _selected_theme_cbt = theme_book::global().selected_theme.subscribe(
             [this](auto...) {
                 ++global_counter<"gui_window:selected_theme:constrain">;
+                apply_window_data(*this->_widget, this, this->pixel_density, get_selected_theme().query());
                 this->process_event({gui_event_type::window_reconstrain});
             },
             callback_flags::main);
@@ -134,7 +135,7 @@ public:
         auto const new_position = point2{500.0f, 500.0f}; 
         create_window(new_position);
 
-        apply_window_data(*_widget, this, pixel_density, get_selected_theme().query_attributes_function());
+        apply_window_data(*_widget, this, pixel_density, get_selected_theme().query());
 
         // Execute a constraint check to determine initial window size.
         theme = get_selected_theme().transform(pixel_density);
@@ -1718,7 +1719,7 @@ private:
                 hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(unit::pixels_per_inch));
 
                 hi_assert_not_null(_widget);
-                apply_window_data(*_widget, this, pixel_density, get_selected_theme().query_attributes_function());
+                apply_window_data(*_widget, this, pixel_density, get_selected_theme().query());
             }
             break;
 

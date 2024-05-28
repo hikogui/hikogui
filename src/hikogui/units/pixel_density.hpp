@@ -19,6 +19,8 @@ struct pixel_density {
     pixels_per_inch_f ppi;
     device_type type;
 
+    [[nodiscard]] constexpr friend bool operator==(pixel_density const&, pixel_density const&) noexcept = default;
+
     template<typename T>
     [[nodiscard]] constexpr friend au::Quantity<Pixels, std::common_type_t<float, T>>
     operator*(pixel_density const& lhs, au::Quantity<Dips, T> const& rhs) noexcept

@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <cassert>
 
 hi_export_module(hikogui.GUI : theme);
 
@@ -47,6 +48,11 @@ public:
         } catch (std::exception const& e) {
             throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
         }
+    }
+
+    [[nodiscard]] friend bool operator==(theme const& lhs, theme const& rhs) noexcept
+    {
+        return lhs.name == rhs.name and lhs.mode == rhs.mode;
     }
 
     /** Distance between widgets and between widgets and the border of the container.
@@ -200,19 +206,36 @@ public:
         return _secondary_cursor_colors[nesting_level % _secondary_cursor_colors.size()];
     }
 
-    [[nodiscard]] hi::text_style_set const &text_style_set() const noexcept
+    [[nodiscard]] hi::text_style_set const& text_style_set() const noexcept
     {
         return _text_style_set;
     }
 
-    [[nodiscard]] style::query_attributes_type query_attributes_function() const noexcept
-    {
-        return [this](style_path const &path, style_pseudo_class const &pseudo_class) -> style_attributes {
+    struct style_query_type : style_query {
+        hi::theme const* theme;
+
+        style_query_type(hi::theme const& theme) noexcept : theme(&theme), style_query() {}
+
+        [[nodiscard]] bool operator==(style_query const& rhs) const noexcept override
+        {
+            if (auto const rhs_ = dynamic_cast<style_query_type const*>(&rhs)) {
+                assert(this->theme != nullptr);
+                assert(rhs_->theme != nullptr);
+                return *this->theme == *rhs_->theme;
+            } else {
+                return false;
+            }
+        }
+
+        [[nodiscard]] style_attributes get_attributes(style_path const& path, style_pseudo_class pseudo_class) const override
+        {
             auto semantic_level = size_t{};
-            for (auto const &segment : path) {
+            for (auto const& segment : path) {
                 if (segment.name == "overlay" or segment.name == "window") {
                     semantic_level = 0;
-                } else if (segment.name == "grid-view" or segment.name == "scroll-view" or segment.name == "tab-view") {
+                } else if (
+                    segment.name == "grid-view" or segment.name == "scroll-view" or segment.name == "scroll-aperture" or
+                    segment.name == "tab-view" or segment.name == "with-label") {
                     // skip levels on container widgets.
                 } else {
                     ++semantic_level;
@@ -220,34 +243,34 @@ public:
             }
 
             auto r = style_attributes{};
-            r.set_width(unit::dips(this->size()));
-            r.set_height(unit::dips(this->size()));
-            r.set_margin_left(unit::dips(this->margin<float>()));
-            r.set_margin_bottom(unit::dips(this->margin<float>()));
-            r.set_margin_right(unit::dips(this->margin<float>()));
-            r.set_margin_top(unit::dips(this->margin<float>()));
-            r.set_padding_left(unit::dips(this->margin<float>()));
-            r.set_padding_bottom(unit::dips(this->margin<float>()));
-            r.set_padding_right(unit::dips(this->margin<float>()));
-            r.set_padding_top(unit::dips(this->margin<float>()));
-            r.set_border_width(unit::dips(this->border_width()));
-            r.set_border_bottom_left_radius(unit::dips(this->rounding_radius<float>()));
-            r.set_border_bottom_right_radius(unit::dips(this->rounding_radius<float>()));
-            r.set_border_top_left_radius(unit::dips(this->rounding_radius<float>()));
-            r.set_border_top_right_radius(unit::dips(this->rounding_radius<float>()));
+            r.set_width(unit::dips(theme->size() * 2.0f));
+            r.set_height(unit::dips(theme->size() * 2.0f));
+            r.set_margin_left(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_margin_bottom(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_margin_right(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_margin_top(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_padding_left(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_padding_bottom(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_padding_right(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_padding_top(unit::dips(theme->margin<float>() * 2.0f));
+            r.set_border_width(unit::dips(theme->border_width() * 2.0f));
+            r.set_border_bottom_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
+            r.set_border_bottom_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
+            r.set_border_top_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
+            r.set_border_top_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
             r.set_horizontal_alignment(hi::horizontal_alignment::left);
             r.set_vertical_alignment(hi::vertical_alignment::top);
 
             r.set_background_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
                 case style_pseudo_class::disabled:
-                    return this->fill_color(semantic_level - 1);
+                    return theme->fill_color(semantic_level - 1);
                 case style_pseudo_class::enabled:
-                    return this->fill_color(semantic_level);
+                    return theme->fill_color(semantic_level);
                 case style_pseudo_class::hover:
-                    return this->fill_color(semantic_level + 1);
+                    return theme->fill_color(semantic_level + 1);
                 case style_pseudo_class::active:
-                    return this->fill_color(semantic_level + 1);
+                    return theme->fill_color(semantic_level + 2);
                 default:
                     std::unreachable();
                 }
@@ -256,13 +279,13 @@ public:
             r.set_foreground_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
                 case style_pseudo_class::disabled:
-                    return this->foreground_color(semantic_level - 1);
+                    return theme->foreground_color(semantic_level - 1);
                 case style_pseudo_class::enabled:
-                    return this->foreground_color(semantic_level);
+                    return theme->foreground_color(semantic_level);
                 case style_pseudo_class::hover:
-                    return this->foreground_color(semantic_level + 1);
+                    return theme->foreground_color(semantic_level + 1);
                 case style_pseudo_class::active:
-                    return this->foreground_color(semantic_level + 1);
+                    return theme->foreground_color(semantic_level + 1);
                 default:
                     std::unreachable();
                 }
@@ -270,17 +293,17 @@ public:
 
             r.set_border_color([&]() {
                 if (std::to_underlying(pseudo_class & style_pseudo_class::focus)) {
-                    return this->accent_color();
+                    return theme->accent_color();
                 } else {
                     switch (pseudo_class & style_pseudo_class::mode_mask) {
                     case style_pseudo_class::disabled:
-                        return this->border_color(semantic_level - 1);
+                        return theme->border_color(semantic_level - 1);
                     case style_pseudo_class::enabled:
-                        return this->border_color(semantic_level);
+                        return theme->border_color(semantic_level);
                     case style_pseudo_class::hover:
-                        return this->border_color(semantic_level + 1);
+                        return theme->border_color(semantic_level + 1);
                     case style_pseudo_class::active:
-                        return this->border_color(semantic_level + 1);
+                        return theme->border_color(semantic_level + 1);
                     default:
                         std::unreachable();
                     }
@@ -290,20 +313,25 @@ public:
             r.set_accent_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
                 case style_pseudo_class::disabled:
-                    return this->border_color(semantic_level - 1);
+                    return theme->border_color(semantic_level - 1);
                 case style_pseudo_class::enabled:
-                    return this->accent_color();
+                    return theme->accent_color();
                 case style_pseudo_class::hover:
-                    return this->accent_color();
+                    return theme->accent_color();
                 case style_pseudo_class::active:
-                    return this->accent_color();
+                    return theme->accent_color();
                 default:
                     std::unreachable();
                 }
             }());
 
             return r;
-        };
+        }
+    };
+
+    [[nodiscard]] std::shared_ptr<style_query_type> query() const noexcept
+    {
+        return std::make_shared<style_query_type>(*this);
     }
 
 private:

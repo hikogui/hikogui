@@ -399,12 +399,12 @@ inline void apply(widget_intf& start, Func &&func, bool include_invisible = true
     }
 }
 
-inline void apply_window_data(widget_intf& start, gui_window *new_window, unit::pixel_density const& new_density, style::query_attributes_type const& new_query_attributes)
+inline void apply_window_data(widget_intf& start, gui_window *new_window, unit::pixel_density const& new_density, std::shared_ptr<style_query> const& new_query)
 {
     apply(start, [&](widget_intf& w) {
         w.window = new_window;
         w.style.set_pixel_density(new_density);
-        w.style.set_query_attributes(new_query_attributes);
+        w.style.set_query(new_query);
     });
 }
 
@@ -415,7 +415,7 @@ inline void widget_intf::set_parent(widget_intf *new_parent) noexcept
         *this,
         new_parent ? new_parent->window : nullptr,
         new_parent ? new_parent->style.pixel_density() : unit::pixel_density{},
-        new_parent ? new_parent->style.query_attributes() : style::query_attributes_type{});
+        new_parent ? new_parent->style.query() : std::shared_ptr<style_query>{});
 
     // The path will automatically propagate to the child widgets.
     style.set_parent_path(new_parent ? new_parent->style.unsafe_path() : style_path{});

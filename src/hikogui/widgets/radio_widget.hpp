@@ -136,18 +136,17 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _button_size = {theme().size(), theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
+        return box_constraints{style.size_px, style.size_px, style.size_px, *attributes.alignment, theme().margin()};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
+            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment));
 
             _button_circle = circle{_button_rectangle};
 
-            _pip_circle = align(_button_rectangle, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
+            _pip_circle = align(_button_rectangle, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
         }
         super::set_layout(context);
     }
@@ -159,9 +158,9 @@ public:
                 context.draw_circle(
                     layout(),
                     _button_circle * 1.02f,
-                    background_color(),
-                    focus_color(),
-                    theme().border_width(),
+                    style.background_color,
+                    style.border_color,
+                    style.border_width_px,
                     border_side::inside);
             }
 
@@ -181,18 +180,8 @@ public:
             // draw pip
             auto float_value = _animated_value.current_value();
             if (float_value > 0.0) {
-                context.draw_circle(layout(), _pip_circle * 1.02f * float_value, accent_color());
+                context.draw_circle(layout(), _pip_circle * 1.02f * float_value, style.accent_color);
             }
-        }
-    }
-
-    [[nodiscard]] color background_color() const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-        if (phase() == widget_phase::pressed) {
-            return theme().fill_color(_layout.layer + 2);
-        } else {
-            return super::background_color();
         }
     }
 
@@ -259,7 +248,6 @@ public:
 private:
     constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    extent2 _button_size;
     aarectangle _button_rectangle;
 
     circle _button_circle;
