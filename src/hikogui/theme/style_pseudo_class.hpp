@@ -20,41 +20,49 @@ enum class style_pseudo_class {
      * 
      * @note Must be one of: disabled, enabled, hover, active.
      */
-    disabled = 0b0'0'00,
+    disabled  = 0b0'0'0'00,
 
     /** The widget is enabled, the normal idle state.
      * 
      * @note Must be one of: disabled, enabled, hover, active.
      */
-    enabled  = 0b0'0'01,
+    enabled   = 0b0'0'0'01,
 
     /** The mouse hovers over the widget.
      * 
      * @note Must be one of: disabled, enabled, hover, active.
      */
-    hover    = 0b0'0'10,
+    hover     = 0b0'0'0'10,
 
     /** The widget was clicked by the mouse or otherwise activated.
      * 
      * @note Must be one of: disabled, enabled, hover, active.
      */
-    active   = 0b0'0'11,
+    active    = 0b0'0'0'11,
 
     /** The widget has keyboard focus.
      */
-    focus    = 0b0'1'00,
+    focus     = 0b0'0'1'00,
 
     /** The value that the widget represent is 'false'.
      */
-    _false   = 0b0'0'00,
+    _false    = 0b0'0'0'00,
 
     /** The value that the widget represent is 'true'.
      */
-    _true    = 0b1'0'00,
+    _true     = 0b0'1'0'00,
+
+    /** The window is the front (the active) window.
+     */
+    front     = 0b1'0'0'00,
+
+    /** The mask to use extract the values: disabled, enabled, hover and active.
+     */
+    mode_mask = 0b0'0'0'11,
 };
 // clang-format on
 
-constexpr auto style_pseudo_class_size = size_t{16};
+constexpr auto style_pseudo_class_size = size_t{32};
 
 [[nodiscard]] constexpr style_pseudo_class operator|(style_pseudo_class const& lhs, style_pseudo_class const& rhs) noexcept
 {
@@ -76,9 +84,5 @@ constexpr style_pseudo_class& operator&=(style_pseudo_class& lhs, style_pseudo_c
     return lhs = lhs & rhs;
 }
 
-[[nodiscard]] constexpr bool to_bool(style_pseudo_class const& rhs) noexcept
-{
-    return static_cast<bool>(std::to_underlying(rhs));
+} // namespace v1
 }
-
-}}

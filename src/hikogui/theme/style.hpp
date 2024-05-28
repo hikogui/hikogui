@@ -68,6 +68,7 @@ public:
     color foreground_color;
     color background_color;
     color border_color;
+    color accent_color;
 
     style(style const&) noexcept = delete;
     style(style&&) noexcept = delete;
@@ -309,6 +310,7 @@ private:
             foreground_color = _attributes.foreground_color();
             background_color = _attributes.background_color();
             border_color = _attributes.border_color();
+            accent_color = _attributes.accent_color();
         }
 
         if (to_bool(mask & style_modify_mask::size)) {

@@ -207,8 +207,102 @@ public:
 
     [[nodiscard]] style::query_attributes_type query_attributes_function() const noexcept
     {
-        return [](style_path const &path, style_pseudo_class const &pseudo_class) -> style_attributes {
-            return style_attributes{};
+        return [this](style_path const &path, style_pseudo_class const &pseudo_class) -> style_attributes {
+            auto semantic_level = size_t{};
+            for (auto const &segment : path) {
+                if (segment.name == "overlay" or segment.name == "window") {
+                    semantic_level = 0;
+                } else if (segment.name == "grid-view" or segment.name == "scroll-view" or segment.name == "tab-view") {
+                    // skip levels on container widgets.
+                } else {
+                    ++semantic_level;
+                }
+            }
+
+            auto r = style_attributes{};
+            r.set_width(unit::dips(this->size()));
+            r.set_height(unit::dips(this->size()));
+            r.set_margin_left(unit::dips(this->margin<float>()));
+            r.set_margin_bottom(unit::dips(this->margin<float>()));
+            r.set_margin_right(unit::dips(this->margin<float>()));
+            r.set_margin_top(unit::dips(this->margin<float>()));
+            r.set_padding_left(unit::dips(this->margin<float>()));
+            r.set_padding_bottom(unit::dips(this->margin<float>()));
+            r.set_padding_right(unit::dips(this->margin<float>()));
+            r.set_padding_top(unit::dips(this->margin<float>()));
+            r.set_border_width(unit::dips(this->border_width()));
+            r.set_border_bottom_left_radius(unit::dips(this->rounding_radius<float>()));
+            r.set_border_bottom_right_radius(unit::dips(this->rounding_radius<float>()));
+            r.set_border_top_left_radius(unit::dips(this->rounding_radius<float>()));
+            r.set_border_top_right_radius(unit::dips(this->rounding_radius<float>()));
+            r.set_horizontal_alignment(hi::horizontal_alignment::left);
+            r.set_vertical_alignment(hi::vertical_alignment::top);
+
+            r.set_background_color([&]() {
+                switch (pseudo_class & style_pseudo_class::mode_mask) {
+                case style_pseudo_class::disabled:
+                    return this->fill_color(semantic_level - 1);
+                case style_pseudo_class::enabled:
+                    return this->fill_color(semantic_level);
+                case style_pseudo_class::hover:
+                    return this->fill_color(semantic_level + 1);
+                case style_pseudo_class::active:
+                    return this->fill_color(semantic_level + 1);
+                default:
+                    std::unreachable();
+                }
+            }());
+
+            r.set_foreground_color([&]() {
+                switch (pseudo_class & style_pseudo_class::mode_mask) {
+                case style_pseudo_class::disabled:
+                    return this->foreground_color(semantic_level - 1);
+                case style_pseudo_class::enabled:
+                    return this->foreground_color(semantic_level);
+                case style_pseudo_class::hover:
+                    return this->foreground_color(semantic_level + 1);
+                case style_pseudo_class::active:
+                    return this->foreground_color(semantic_level + 1);
+                default:
+                    std::unreachable();
+                }
+            }());
+
+            r.set_border_color([&]() {
+                if (std::to_underlying(pseudo_class & style_pseudo_class::focus)) {
+                    return this->accent_color();
+                } else {
+                    switch (pseudo_class & style_pseudo_class::mode_mask) {
+                    case style_pseudo_class::disabled:
+                        return this->border_color(semantic_level - 1);
+                    case style_pseudo_class::enabled:
+                        return this->border_color(semantic_level);
+                    case style_pseudo_class::hover:
+                        return this->border_color(semantic_level + 1);
+                    case style_pseudo_class::active:
+                        return this->border_color(semantic_level + 1);
+                    default:
+                        std::unreachable();
+                    }
+                }
+            }());
+
+            r.set_accent_color([&]() {
+                switch (pseudo_class & style_pseudo_class::mode_mask) {
+                case style_pseudo_class::disabled:
+                    return this->border_color(semantic_level - 1);
+                case style_pseudo_class::enabled:
+                    return this->accent_color();
+                case style_pseudo_class::hover:
+                    return this->accent_color();
+                case style_pseudo_class::active:
+                    return this->accent_color();
+                default:
+                    std::unreachable();
+                }
+            }());
+
+            return r;
         };
     }
 
@@ -249,13 +343,13 @@ private:
      */
     float _baseline_adjustment = 9.0f;
 
-    std::vector<hi::color> _foreground_colors;
-    std::vector<hi::color> _border_colors;
-    std::vector<hi::color> _fill_colors;
-    std::vector<hi::color> _accent_colors;
-    std::vector<hi::color> _text_select_colors;
-    std::vector<hi::color> _primary_cursor_colors;
-    std::vector<hi::color> _secondary_cursor_colors;
+    std::vector<hi::color> _foreground_colors = {hi::color::black()};
+    std::vector<hi::color> _border_colors = {hi::color::black()};
+    std::vector<hi::color> _fill_colors = {hi::color::white()};
+    std::vector<hi::color> _accent_colors = {hi::color::blue()};
+    std::vector<hi::color> _text_select_colors = {hi::color::blue()};
+    std::vector<hi::color> _primary_cursor_colors = {hi::color::black()};
+    std::vector<hi::color> _secondary_cursor_colors = {hi::color::orange()};
 
     hi::text_style_set _text_style_set;
 

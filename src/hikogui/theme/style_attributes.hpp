@@ -59,6 +59,7 @@ public:
     HIX_GETSET(hi::color, foreground_color, style_modify_mask::color)
     HIX_GETSET(hi::color, background_color, style_modify_mask::color)
     HIX_GETSET(hi::color, border_color, style_modify_mask::color)
+    HIX_GETSET(hi::color, accent_color, style_modify_mask::color)
     HIX_GETSET(hi::horizontal_alignment, horizontal_alignment, style_modify_mask::layout)
     HIX_GETSET(hi::vertical_alignment, vertical_alignment, style_modify_mask::layout)
 #undef HIX_GETSET
@@ -127,6 +128,7 @@ public:
         HIX_COMPARE(foreground_color, style_modify_mask::color)
         HIX_COMPARE(background_color, style_modify_mask::color)
         HIX_COMPARE(border_color, style_modify_mask::color)
+        HIX_COMPARE(accent_color, style_modify_mask::color)
         HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
         HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
 #undef HIX_COMPARE
@@ -164,6 +166,7 @@ public:
         HIX_APPLY(foreground_color)
         HIX_APPLY(background_color)
         HIX_APPLY(border_color)
+        HIX_APPLY(accent_color)
         HIX_APPLY(horizontal_alignment)
         HIX_APPLY(vertical_alignment)
 #undef HIX_APPLY
@@ -189,6 +192,7 @@ private:
     hi::color _foreground_color = {};
     hi::color _background_color = {};
     hi::color _border_color = {};
+    hi::color _accent_color = {};
     hi::horizontal_alignment _horizontal_alignment = hi::horizontal_alignment::left;
     hi::vertical_alignment _vertical_alignment = hi::vertical_alignment::top;
 
@@ -210,6 +214,7 @@ private:
     uint64_t _foreground_color_valid : 1 = 0;
     uint64_t _background_color_valid : 1 = 0;
     uint64_t _border_color_valid : 1 = 0;
+    uint64_t _accent_color_valid : 1 = 0;
     uint64_t _horizontal_alignment_valid : 1 = 0;
     uint64_t _vertical_alignment_valid : 1 = 0;
 
@@ -231,6 +236,7 @@ private:
     uint64_t _foreground_color_important : 1 = 0;
     uint64_t _background_color_important : 1 = 0;
     uint64_t _border_color_important : 1 = 0;
+    uint64_t _accent_color_important : 1 = 0;
     uint64_t _horizontal_alignment_important : 1 = 0;
     uint64_t _vertical_alignment_important : 1 = 0;
 };
