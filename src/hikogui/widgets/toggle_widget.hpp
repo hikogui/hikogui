@@ -153,19 +153,18 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _button_size = {theme().size() * 2.0f, theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
+        return box_constraints{style.size_px, style.size_px, style.size_px, style.alignment, style.margins_px};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
+            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment));
 
             auto const button_square =
                 aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
-            _pip_circle = align(button_square, circle{theme().size() * 0.5f - 3.0f}, alignment::middle_center());
+            _pip_circle = align(button_square, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
 
             auto const pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
             _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
@@ -179,11 +178,11 @@ public:
             context.draw_box(
                 layout(),
                 _button_rectangle,
-                background_color(),
-                focus_color(),
-                theme().border_width(),
+                style.background_color,
+                style.border_color,
+                style.border_width_px,
                 border_side::inside,
-                corner_radii{_button_rectangle.height() * 0.5f});
+                corner_radii{style.height_px * 0.5f});
 
             switch (_animated_value.update(value() == widget_value::on ? 1.0f : 0.0f, context.display_time_point)) {
             case animator_state::idle:
@@ -199,19 +198,7 @@ public:
             }
 
             auto const positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
-
-            auto const foreground_color_ = value() == widget_value::on ? accent_color() : foreground_color();
-            context.draw_circle(layout(), positioned_pip_circle * 1.02f, foreground_color_);
-        }
-    }
-
-    [[nodiscard]] color background_color() const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-        if (phase() == widget_phase::pressed) {
-            return theme().fill_color(_layout.layer + 2);
-        } else {
-            return super::background_color();
+            context.draw_circle(layout(), positioned_pip_circle * 1.02f, style.accent_color);
         }
     }
 
@@ -278,7 +265,6 @@ public:
 private:
     constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    extent2 _button_size;
     aarectangle _button_rectangle;
     animator<float> _animated_value = _animation_duration;
     circle _pip_circle;

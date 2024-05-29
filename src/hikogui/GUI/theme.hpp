@@ -229,6 +229,8 @@ public:
 
         [[nodiscard]] style_attributes get_attributes(style_path const& path, style_pseudo_class pseudo_class) const override
         {
+            assert(not path.empty());
+
             auto semantic_level = size_t{};
             for (auto const& segment : path) {
                 if (segment.name == "overlay" or segment.name == "window") {
@@ -243,8 +245,14 @@ public:
             }
 
             auto r = style_attributes{};
-            r.set_width(unit::dips(theme->size() * 2.0f));
-            r.set_height(unit::dips(theme->size() * 2.0f));
+            if (path.back().name == "toggle") {
+                r.set_width(unit::dips(theme->size() * 4.0f));
+                r.set_height(unit::dips(theme->size() * 2.0f));
+            } else {
+                r.set_width(unit::dips(theme->size() * 2.0f));
+                r.set_height(unit::dips(theme->size() * 2.0f));
+            }
+            r.set_font_size(unit::points_per_em(theme->icon_size()));
             r.set_margin_left(unit::dips(theme->margin<float>() * 2.0f));
             r.set_margin_bottom(unit::dips(theme->margin<float>() * 2.0f));
             r.set_margin_right(unit::dips(theme->margin<float>() * 2.0f));
@@ -315,11 +323,17 @@ public:
                 case style_pseudo_class::disabled:
                     return theme->border_color(semantic_level - 1);
                 case style_pseudo_class::enabled:
-                    return theme->accent_color();
                 case style_pseudo_class::hover:
-                    return theme->accent_color();
                 case style_pseudo_class::active:
-                    return theme->accent_color();
+                    if (path.back().name == "toggle") {
+                        if (std::to_underlying(pseudo_class & style_pseudo_class::_true)) {
+                            return theme->accent_color();
+                        } else {
+                            return theme->border_color(semantic_level);
+                        }
+                    } else {
+                        return theme->accent_color();
+                    }
                 default:
                     std::unreachable();
                 }

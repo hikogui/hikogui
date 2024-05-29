@@ -33,6 +33,7 @@ public:
 
     unit::pixels_f width;
     unit::pixels_f height;
+    unit::pixels_per_em_f font_size;
     unit::pixels_f margin_left;
     unit::pixels_f margin_bottom;
     unit::pixels_f margin_right;
@@ -49,6 +50,7 @@ public:
 
     float width_px;
     float height_px;
+    float font_size_px;
     float margin_left_px;
     float margin_bottom_px;
     float margin_right_px;
@@ -348,9 +350,13 @@ private:
         if (to_bool(mask & style_modify_mask::size)) {
             width = ceil_as(unit::pixels, attributes().width() * _pixel_density);
             height = ceil_as(unit::pixels, attributes().height() * _pixel_density);
+            font_size = round_as(unit::pixels_per_em, attributes().font_size() * _pixel_density);
+
             width_px = width.in(unit::pixels);
             height_px = height.in(unit::pixels);
             size_px = extent2{width_px, height_px};
+
+            font_size_px = font_size.in(unit::pixels_per_em);
         }
 
         if (to_bool(mask & style_modify_mask::margin)) {

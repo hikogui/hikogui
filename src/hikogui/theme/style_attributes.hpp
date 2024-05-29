@@ -43,6 +43,7 @@ public:
 
     HIX_GETSET(hi::unit::length_f, width, style_modify_mask::layout)
     HIX_GETSET(hi::unit::length_f, height, style_modify_mask::layout)
+    HIX_GETSET(hi::unit::font_size_f, font_size, style_modify_mask::layout)
     HIX_GETSET(hi::unit::length_f, margin_left, style_modify_mask::layout)
     HIX_GETSET(hi::unit::length_f, margin_bottom, style_modify_mask::layout)
     HIX_GETSET(hi::unit::length_f, margin_right, style_modify_mask::layout)
@@ -112,6 +113,7 @@ public:
         auto r = style_modify_mask{};
         HIX_COMPARE(width, style_modify_mask::size)
         HIX_COMPARE(height, style_modify_mask::size)
+        HIX_COMPARE(font_size, style_modify_mask::size)
         HIX_COMPARE(margin_left, style_modify_mask::margin)
         HIX_COMPARE(margin_bottom, style_modify_mask::margin)
         HIX_COMPARE(margin_right, style_modify_mask::margin)
@@ -150,6 +152,7 @@ public:
         auto r = style_modify_mask{};
         HIX_APPLY(width)
         HIX_APPLY(height)
+        HIX_APPLY(font_size)
         HIX_APPLY(margin_left)
         HIX_APPLY(margin_bottom)
         HIX_APPLY(margin_right)
@@ -176,6 +179,7 @@ public:
 private:
     hi::unit::length_f _width = unit::points(0.0f);
     hi::unit::length_f _height = unit::points(0.0f);
+    hi::unit::font_size_f _font_size = unit::points_per_em(0.0f);
     hi::unit::length_f _margin_left = unit::points(0.0f);
     hi::unit::length_f _margin_bottom = unit::points(0.0f);
     hi::unit::length_f _margin_right = unit::points(0.0f);
@@ -198,6 +202,7 @@ private:
 
     uint64_t _width_valid : 1 = 0;
     uint64_t _height_valid : 1 = 0;
+    uint64_t _font_size_valid : 1 = 0;
     uint64_t _margin_left_valid : 1 = 0;
     uint64_t _margin_bottom_valid : 1 = 0;
     uint64_t _margin_right_valid : 1 = 0;
@@ -220,6 +225,7 @@ private:
 
     uint64_t _width_important : 1 = 0;
     uint64_t _height_important : 1 = 0;
+    uint64_t _font_size_important : 1 = 0;
     uint64_t _margin_left_important : 1 = 0;
     uint64_t _margin_bottom_important : 1 = 0;
     uint64_t _margin_right_important : 1 = 0;

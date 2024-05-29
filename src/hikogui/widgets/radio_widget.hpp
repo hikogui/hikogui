@@ -136,7 +136,7 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return box_constraints{style.size_px, style.size_px, style.size_px, *attributes.alignment, theme().margin()};
+        return box_constraints{style.size_px, style.size_px, style.size_px, style.alignment, style.margins_px};
     }
 
     void set_layout(widget_layout const& context) noexcept override

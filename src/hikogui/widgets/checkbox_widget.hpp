@@ -149,21 +149,20 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _button_size = {theme().size(), theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
+        return box_constraints{style.size_px, style.size_px, style.size_px, style.alignment, style.margins_px};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
+            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment));
 
             _check_glyph = find_glyph(elusive_icon::Ok);
-            auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
+            auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
             _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
 
             _minus_glyph = find_glyph(elusive_icon::Minus);
-            auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
+            auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
         }
         super::set_layout(context);
@@ -173,27 +172,17 @@ public:
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             context.draw_box(
-                layout(), _button_rectangle, background_color(), focus_color(), theme().border_width(), border_side::inside);
+                layout(), _button_rectangle, style.background_color, style.border_color, style.border_width_px, border_side::inside);
 
             switch (value()) {
             case widget_value::on:
-                context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
+                context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, style.accent_color);
                 break;
             case widget_value::off:
                 break;
             default:
-                context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, _minus_glyph, accent_color());
+                context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, _minus_glyph, style.accent_color);
             }
-        }
-    }
-
-    [[nodiscard]] color background_color() const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-        if (phase() == widget_phase::pressed) {
-            return theme().fill_color(_layout.layer + 2);
-        } else {
-            return super::background_color();
         }
     }
 
@@ -256,7 +245,6 @@ public:
     /// @endprivatesection
 
 private:
-    extent2 _button_size;
     aarectangle _button_rectangle;
     font_glyph_ids _check_glyph;
     aarectangle _check_glyph_rectangle;
