@@ -12,6 +12,7 @@
 #include "extent2.hpp"
 #include "point2.hpp"
 #include "point3.hpp"
+#include "margins.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
 #include "../concurrency/unfair_mutex.hpp" // XXX #616
@@ -401,6 +402,26 @@ public:
         return aarectangle{p0, p3};
     }
 
+    [[nodiscard]] friend constexpr aarectangle operator+(aarectangle const& lhs, margins const& rhs) noexcept
+    {
+        return aarectangle{lhs.v + neg_mask<0b0011>(array_type{rhs})};
+    }
+
+    [[nodiscard]] friend constexpr aarectangle operator-(aarectangle const& lhs, margins const& rhs) noexcept
+    {
+        return aarectangle{lhs.v - neg_mask<0b0011>(array_type{rhs})};
+    }
+
+    friend constexpr aarectangle &operator+=(aarectangle &lhs, margins const& rhs) noexcept
+    {
+        return lhs = lhs + rhs;
+    }
+
+    friend constexpr aarectangle &operator-=(aarectangle &lhs, margins const& rhs) noexcept
+    {
+        return lhs = lhs - rhs;
+    }
+
     /** Expand the rectangle for the same amount in all directions.
      * @param lhs The original rectangle.
      * @param rhs How much should be added on each side of the rectangle,
@@ -409,12 +430,7 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle operator+(aarectangle const& lhs, value_type rhs) noexcept
     {
-        return aarectangle{lhs.v + neg_mask<0b0011>(array_type::broadcast(rhs))};
-    }
-
-    friend constexpr aarectangle &operator+=(aarectangle &lhs, value_type rhs) noexcept
-    {
-        return lhs = lhs + rhs;
+        return lhs + margins{rhs};
     }
 
     /** Shrink the rectangle for the same amount in all directions.
@@ -425,7 +441,12 @@ public:
      */
     [[nodiscard]] friend constexpr aarectangle operator-(aarectangle const& lhs, value_type rhs) noexcept
     {
-        return lhs + -rhs;
+        return lhs - margins{rhs};
+    }
+
+    friend constexpr aarectangle &operator+=(aarectangle &lhs, value_type rhs) noexcept
+    {
+        return lhs = lhs + rhs;
     }
 
     friend constexpr aarectangle &operator-=(aarectangle &lhs, value_type rhs) noexcept

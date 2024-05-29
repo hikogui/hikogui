@@ -20,9 +20,6 @@ hi_export_module(hikogui.widgets.radio_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-concept radio_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
-
 /** A GUI widget that permits the user to make a binary choice.
  *
  * A radio is a button with three different states with different visual
@@ -47,49 +44,17 @@ public:
     using super = widget;
     using delegate_type = radio_delegate;
 
-    struct attributes_type {
-        observer<alignment> alignment = alignment::top_left();
-        keyboard_focus_group focus_group = keyboard_focus_group::normal;
-
-        attributes_type(attributes_type const&) noexcept = default;
-        attributes_type(attributes_type&&) noexcept = default;
-        attributes_type& operator=(attributes_type const&) noexcept = default;
-        attributes_type& operator=(attributes_type&&) noexcept = default;
-
-        template<radio_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&...attributes) noexcept
-        {
-            set_attributes(std::forward<Attributes>(attributes)...);
-        }
-
-        void set_attributes() noexcept {}
-
-        template<radio_widget_attribute First, radio_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
-        {
-            if constexpr (forward_of<First, observer<hi::alignment>>) {
-                alignment = std::forward<First>(first);
-
-            } else if constexpr (forward_of<First, keyboard_focus_group>) {
-                focus_group = std::forward<First>(first);
-
-            } else {
-                hi_static_no_default();
-            }
-
-            set_attributes(std::forward<Rest>(rest)...);
-        }
-    };
-
-    attributes_type attributes;
-
     /** The delegate that controls the button widget.
      */
     std::shared_ptr<delegate_type> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_radio_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad<default_radio_delegate>);
-    hi_call_right_arguments(static, make_attributes, attributes_type);
+    keyboard_focus_group focus_group = keyboard_focus_group::normal;
+
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args) noexcept
+    {
+        return make_shared_ctad<default_radio_delegate>(std::forward<Args>(args)...);
+    }
 
     ~radio_widget()
     {
@@ -101,13 +66,11 @@ public:
      * @param parent The parent widget that owns this radio widget.
      * @param delegate The delegate to use to manage the state of the radio button.
      */
-    radio_widget(
-        attributes_type attributes,
-        std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
+    template<std::derived_from<delegate_type> Delegate>
+    radio_widget(std::shared_ptr<Delegate> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_axiom_not_null(this->delegate);
-        
+
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
@@ -124,12 +87,7 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    radio_widget(Args&&...args)
-        requires(num_default_delegate_arguments<Args...>() != 0)
-        :
-        radio_widget(
-            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
-            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
+    radio_widget(Args&&... args) : radio_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
 
@@ -154,7 +112,7 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            if (attributes.focus_group != keyboard_focus_group::menu) {
+            if (focus_group != keyboard_focus_group::menu) {
                 context.draw_circle(
                     layout(),
                     _button_circle * 1.02f,
@@ -199,7 +157,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & attributes.focus_group);
+        return mode() >= widget_mode::partial and to_bool(group & this->focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override

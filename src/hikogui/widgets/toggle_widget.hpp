@@ -19,9 +19,6 @@ hi_export_module(hikogui.widgets.toggle_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-concept toggle_widget_attribute = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
-
 /** A GUI widget that permits the user to make a binary choice.
  *
  * A toggle is very similar to a `toggle_widget`. The
@@ -64,49 +61,17 @@ public:
     using super = widget;
     using delegate_type = toggle_delegate;
 
-    struct attributes_type {
-        observer<alignment> alignment = alignment::top_left();
-        keyboard_focus_group focus_group = keyboard_focus_group::normal;
-
-        attributes_type(attributes_type const&) noexcept = default;
-        attributes_type(attributes_type&&) noexcept = default;
-        attributes_type& operator=(attributes_type const&) noexcept = default;
-        attributes_type& operator=(attributes_type&&) noexcept = default;
-
-        template<toggle_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&...attributes) noexcept
-        {
-            set_attributes(std::forward<Attributes>(attributes)...);
-        }
-
-        void set_attributes() noexcept {}
-
-        template<toggle_widget_attribute First, toggle_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
-        {
-            if constexpr (forward_of<First, observer<hi::alignment>>) {
-                alignment = std::forward<First>(first);
-
-            } else if constexpr (forward_of<First, keyboard_focus_group>) {
-                focus_group = std::forward<First>(first);
-
-            } else {
-                hi_static_no_default();
-            }
-
-            set_attributes(std::forward<Rest>(rest)...);
-        }
-    };
-
-    attributes_type attributes;
-
     /** The delegate that controls the button widget.
      */
     std::shared_ptr<delegate_type> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad<default_toggle_delegate>);
-    hi_call_right_arguments(static, make_attributes, attributes_type);
+    keyboard_focus_group focus_group = keyboard_focus_group::normal;
+
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
+    {
+        return make_shared_ctad<default_toggle_delegate>(std::forward<Args>(args)...);
+    }
 
     ~toggle_widget()
     {
@@ -118,13 +83,11 @@ public:
      * @param parent The parent widget that owns this toggle widget.
      * @param delegate The delegate to use to manage the state of the toggle button.
      */
-    toggle_widget(
-        attributes_type attributes,
-        std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
+    template<std::derived_from<delegate_type> Delegate>
+    toggle_widget(std::shared_ptr<Delegate> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_axiom_not_null(this->delegate);
-        
+
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
             set_value(this->delegate->state(*this));
@@ -141,12 +104,7 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    toggle_widget(Args&&...args)
-        requires(num_default_delegate_arguments<Args...>() != 0)
-        :
-        toggle_widget(
-            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
-            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
+    toggle_widget(Args&&... args) : toggle_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
 
@@ -197,7 +155,8 @@ public:
                 hi_no_default();
             }
 
-            auto const positioned_pip_circle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
+            auto const positioned_pip_circle =
+                translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
             context.draw_circle(layout(), positioned_pip_circle * 1.02f, style.accent_color);
         }
     }
@@ -216,7 +175,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return mode() >= widget_mode::partial and to_bool(group & this->focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -271,23 +230,6 @@ private:
     float _pip_move_range;
 
     callback<void()> _delegate_cbt;
-
-    template<size_t I>
-    void set_attributes() noexcept
-    {
-    }
-
-    template<size_t I, button_widget_attribute First, button_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
-    {
-        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
-            set_attributes<I>(std::forward<Rest>(rest)...);
-
-        } else {
-            hi_static_no_default();
-        }
-    }
 };
 
 using toggle_with_label_widget = with_label_widget<toggle_widget>;

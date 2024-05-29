@@ -266,8 +266,15 @@ public:
             r.set_border_bottom_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
             r.set_border_top_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
             r.set_border_top_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
-            r.set_horizontal_alignment(hi::horizontal_alignment::left);
-            r.set_vertical_alignment(hi::vertical_alignment::top);
+
+            if (path.size() >= 2 and path[path.size() - 2].name == "menu-button" and path[path.size() - 1].name == "label") {
+                r.set_horizontal_alignment(hi::horizontal_alignment::center);
+                r.set_vertical_alignment(hi::vertical_alignment::middle);
+            } else {
+                r.set_horizontal_alignment(hi::horizontal_alignment::left);
+                r.set_vertical_alignment(hi::vertical_alignment::top);
+            }
+            r.set_x_height(unit::points_per_em(theme->icon_size()) * unit::em_squares(0.45f));
 
             r.set_background_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {

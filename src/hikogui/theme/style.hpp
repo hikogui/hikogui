@@ -47,6 +47,7 @@ public:
     unit::pixels_f border_bottom_right_radius;
     unit::pixels_f border_top_left_radius;
     unit::pixels_f border_top_right_radius;
+    unit::pixels_f x_height;
 
     float width_px;
     float height_px;
@@ -64,6 +65,7 @@ public:
     float border_bottom_right_radius_px;
     float border_top_left_radius_px;
     float border_top_right_radius_px;
+    float x_height_px;
 
     extent2 size_px;
     hi::margins margins_px;
@@ -402,6 +404,9 @@ private:
             horizontal_alignment = attributes().horizontal_alignment();
             vertical_alignment = attributes().vertical_alignment();
             alignment = hi::alignment{horizontal_alignment, vertical_alignment};
+
+            x_height = round_as(unit::pixels, attributes().x_height() * _pixel_density);
+            x_height_px = x_height.in(unit::pixels);
         }
     }
 };

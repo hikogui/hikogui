@@ -30,9 +30,6 @@ hi_export_module(hikogui.widgets.with_label_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-concept with_label_widget_attribute = label_widget_attribute<Context>;
-
 /** Add labels to a button.
  *
  * @ingroup widgets
@@ -42,101 +39,39 @@ class with_label_widget : public widget {
 public:
     using super = widget;
     using button_widget_type = ButtonWidget;
-    using button_attributes_type = button_widget_type::attributes_type;
     using delegate_type = button_widget_type::delegate_type;
 
-    struct attributes_type {
-        /** The label to show when the button is in the 'on' state.
-         */
-        observer<label> on_label = txt("on");
+    /** The label to show when the button is in the 'on' state.
+     */
+    observer<label> on_label = txt("on");
 
-        /** The label to show when the button is in the 'off' state.
-         */
-        observer<label> off_label = txt("off");
+    /** The label to show when the button is in the 'off' state.
+     */
+    observer<label> off_label = txt("off");
 
-        /** The label to show when the button is in the 'other' state.
-         */
-        observer<label> other_label = txt("other");
-
-        /** The alignment of the button and on/off/other label.
-         */
-        observer<alignment> alignment = hi::alignment::top_left();
-
-        attributes_type(attributes_type const&) noexcept = default;
-        attributes_type(attributes_type&&) noexcept = default;
-        attributes_type& operator=(attributes_type const&) noexcept = default;
-        attributes_type& operator=(attributes_type&&) noexcept = default;
-
-        template<with_label_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&... attributes) noexcept
-        {
-            set_attributes<0>(std::forward<Attributes>(attributes)...);
-        }
-
-        template<size_t I>
-        void set_attributes() noexcept
-        {
-        }
-
-        template<size_t I, with_label_widget_attribute First, with_label_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&... rest) noexcept
-        {
-            if constexpr (forward_of<decltype(first), observer<hi::label>>) {
-                if constexpr (I == 0) {
-                    on_label = first;
-                    off_label = first;
-                    other_label = std::forward<First>(first);
-                } else if constexpr (I == 1) {
-                    other_label.reset();
-                    off_label.reset();
-                    off_label = std::forward<First>(first);
-                } else if constexpr (I == 2) {
-                    other_label = std::forward<First>(first);
-                } else {
-                    hi_static_no_default();
-                }
-                set_attributes<I + 1>(std::forward<Rest>(rest)...);
-
-            } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-                alignment = std::forward<First>(first);
-                set_attributes<I>(std::forward<Rest>(rest)...);
-
-            } else {
-                hi_static_no_default();
-            }
-        }
-    };
-
-    attributes_type attributes;
+    /** The label to show when the button is in the 'other' state.
+     */
+    observer<label> other_label = txt("other");
 
     template<typename... Args>
-    [[nodiscard]] consteval static size_t num_default_delegate_arguments() noexcept
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
     {
-        return button_widget_type::template num_default_delegate_arguments<Args...>();
+        return button_widget_type::make_default_delegate(std::forward<Args>(args)...);
     }
 
-    template<size_t N, typename... Args>
-    [[nodiscard]] static auto make_default_delegate(Args&&... args)
+    template<std::derived_from<delegate_type> Delegate>
+    with_label_widget(std::shared_ptr<Delegate> delegate) noexcept : super()
     {
-        return button_widget_type::template make_default_delegate<N, Args...>(std::forward<Args>(args)...);
-    }
-
-    hi_call_right_arguments(static, make_attributes, attributes_type);
-
-    with_label_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), attributes(std::move(attributes))
-    {
-        _button_widget =
-            std::make_unique<button_widget_type>(button_attributes_type{this->attributes.alignment}, std::move(delegate));
+        _button_widget = std::make_unique<button_widget_type>(std::move(delegate));
         _button_widget->set_parent(this);
 
-        _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label, this->attributes.alignment);
+        _on_label_widget = std::make_unique<label_widget>(on_label);
         _on_label_widget->set_parent(this);
 
-        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label, this->attributes.alignment);
+        _off_label_widget = std::make_unique<label_widget>(off_label);
         _off_label_widget->set_parent(this);
 
-        _other_label_widget = std::make_unique<label_widget>(this->attributes.other_label, this->attributes.alignment);
+        _other_label_widget = std::make_unique<label_widget>(other_label);
         _other_label_widget->set_parent(this);
 
         _button_widget_cbt = _button_widget->subscribe([&] {
@@ -157,16 +92,11 @@ public:
 
     /** Construct a widget with a label.
      *
-     * @param parent The parent widget that owns this toggle widget.
      * @param args The arguments to the default button delegate of the embedded
      *             widget followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    with_label_widget(Args&&... args) requires(num_default_delegate_arguments<Args...>() != 0)
-        :
-        with_label_widget(
-            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
-            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
+    with_label_widget(Args&&... args) : with_label_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
 
@@ -176,7 +106,7 @@ public:
         _layout = {};
 
         // Resolve as if in left-to-right mode, the grid will flip itself.
-        auto const resolved_alignment = resolve(*attributes.alignment, true);
+        auto const resolved_alignment = resolve(style.alignment, true);
 
         _grid.clear();
         if (resolved_alignment == horizontal_alignment::left) {
@@ -222,7 +152,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape, theme().baseline_adjustment());
+            _grid.set_layout(context.shape, style.x_height_px);
         }
 
         for (auto const& cell : _grid) {

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "extent2.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <hikocpu/hikocpu.hpp>
@@ -94,6 +95,18 @@ public:
     [[nodiscard]] constexpr float operator[](std::size_t i) const noexcept
     {
         return _v[i];
+    }
+
+    /** The widths and heights added up together.
+     */
+    [[nodiscard]] constexpr extent2 size() const noexcept
+    {
+        return extent2{_v.xy00() + _v.zw00()};
+    }
+
+    [[nodiscard]] constexpr friend margins operator+(margins const& lhs, margins const& rhs) noexcept
+    {
+        return margins{lhs._v + rhs._v};
     }
 
     constexpr margins& operator+=(margins const& rhs) noexcept

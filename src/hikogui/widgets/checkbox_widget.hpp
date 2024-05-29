@@ -20,14 +20,6 @@ hi_export_module(hikogui.widgets.checkbox_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-struct is_checkbox_widget_attribute {
-    constexpr static bool value = forward_of<Context, observer<hi::alignment>> or forward_of<Context, keyboard_focus_group>;
-};
-
-template<typename Context>
-concept checkbox_widget_attribute = is_checkbox_widget_attribute<Context>::value;
-
 /** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets
  *
@@ -59,49 +51,17 @@ public:
     using super = widget;
     using delegate_type = toggle_delegate;
 
-    struct attributes_type {
-        observer<alignment> alignment = alignment::top_left();
-        keyboard_focus_group focus_group = keyboard_focus_group::normal;
-
-        attributes_type(attributes_type const&) noexcept = default;
-        attributes_type(attributes_type&&) noexcept = default;
-        attributes_type& operator=(attributes_type const&) noexcept = default;
-        attributes_type& operator=(attributes_type&&) noexcept = default;
-
-        template<checkbox_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&...attributes) noexcept
-        {
-            set_attributes(std::forward<Attributes>(attributes)...);
-        }
-
-        void set_attributes() noexcept {}
-
-        template<checkbox_widget_attribute First, checkbox_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
-        {
-            if constexpr (forward_of<First, observer<hi::alignment>>) {
-                alignment = std::forward<First>(first);
-
-            } else if constexpr (forward_of<First, keyboard_focus_group>) {
-                focus_group = std::forward<First>(first);
-
-            } else {
-                hi_static_no_default();
-            }
-
-            set_attributes(std::forward<Rest>(rest)...);
-        }
-    };
-
-    attributes_type attributes;
-
     /** The delegate that controls the button widget.
      */
     std::shared_ptr<delegate_type> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_toggle_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad<default_toggle_delegate>);
-    hi_call_right_arguments(static, make_attributes, attributes_type);
+    keyboard_focus_group focus_group = keyboard_focus_group::normal;
+
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&... args)
+    {
+        return make_shared_ctad<default_toggle_delegate>(std::forward<Args>(args)...);
+    }
 
     ~checkbox_widget()
     {
@@ -113,10 +73,8 @@ public:
      * @param parent The parent widget that owns this checkbox widget.
      * @param delegate The delegate to use to manage the state of the checkbox button.
      */
-    checkbox_widget(
-        attributes_type attributes,
-        std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
+    template<std::derived_from<delegate_type> Delegate>
+    checkbox_widget(std::shared_ptr<Delegate> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_axiom_not_null(this->delegate);
 
@@ -125,24 +83,17 @@ public:
             set_value(this->delegate->state(*this));
         });
         _delegate_cbt();
-        
+
         style.set_name("checkbox");
     }
 
     /** Construct a checkbox widget with a default button delegate.
      *
-     * @param parent The parent widget that owns this toggle widget.
      * @param args The arguments to the `default_toggle_delegate`
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    checkbox_widget(Args&&...args)
-        requires(num_default_delegate_arguments<Args...>() != 0)
-        :
-        checkbox_widget(
-            parent,
-            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
-            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
+    checkbox_widget(Args&&... args) : checkbox_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
 
@@ -172,7 +123,12 @@ public:
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             context.draw_box(
-                layout(), _button_rectangle, style.background_color, style.border_color, style.border_width_px, border_side::inside);
+                layout(),
+                _button_rectangle,
+                style.background_color,
+                style.border_color,
+                style.border_width_px,
+                border_side::inside);
 
             switch (value()) {
             case widget_value::on:
@@ -200,7 +156,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return mode() >= widget_mode::partial and to_bool(group & this->focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
