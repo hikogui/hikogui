@@ -41,7 +41,7 @@ hi_export namespace hi {
  * @return The value of the bit, either 0 or 1, with the same type as the integers of the array.
  */
 template<std::unsigned_integral T>
-[[nodiscard]] hi_force_inline constexpr T get_bit(T const *lhs, std::size_t index) noexcept
+[[nodiscard]] constexpr T get_bit(T const *lhs, std::size_t index) noexcept
 {
     constexpr std::size_t bits_per_digit = sizeof(T) * CHAR_BIT;
 
@@ -80,7 +80,7 @@ constexpr void set_bit(T *r, std::size_t index, T value = T{1}) noexcept
  * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
-hi_force_inline constexpr std::pair<T, T> sll_carry(T lhs, std::size_t rhs, T carry = T{0}) noexcept
+[[nodiscard]] constexpr std::pair<T, T> sll_carry(T lhs, std::size_t rhs, T carry = T{0}) noexcept
 {
     constexpr auto num_bits = sizeof(T) * CHAR_BIT;
     auto const reverse_count = num_bits - rhs;
@@ -95,7 +95,7 @@ hi_force_inline constexpr std::pair<T, T> sll_carry(T lhs, std::size_t rhs, T ca
  * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
-hi_force_inline constexpr std::pair<T, T> srl_carry(T lhs, std::size_t rhs, T carry = T{0}) noexcept
+[[nodiscard]] constexpr std::pair<T, T> srl_carry(T lhs, std::size_t rhs, T carry = T{0}) noexcept
 {
     constexpr auto num_bits = sizeof(T) * CHAR_BIT;
     auto const reverse_count = num_bits - rhs;
@@ -109,7 +109,7 @@ hi_force_inline constexpr std::pair<T, T> srl_carry(T lhs, std::size_t rhs, T ca
  * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
-hi_force_inline constexpr std::pair<T, T> sra_carry(T lhs, std::size_t rhs) noexcept
+[[nodiscard]] constexpr std::pair<T, T> sra_carry(T lhs, std::size_t rhs) noexcept
 {
     using S = std::make_signed_t<T>;
 
@@ -119,38 +119,30 @@ hi_force_inline constexpr std::pair<T, T> sra_carry(T lhs, std::size_t rhs) noex
     return {(static_cast<S>(lhs) >> rhs), lhs << reverse_count};
 }
 
-/** Add two numbers with carry chain.
- * @param lhs The left hand side
- * @param rhs The right hand side
- * @param carry From the previous add in the chain
- * @return (result, carry) pair
- */
 template<std::unsigned_integral T>
-hi_force_inline constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = T{0}) noexcept
+[[nodiscard]] constexpr std::pair<T, bool> add_carry(T a, T b, bool c_in)
 {
-    hi_axiom(carry <= 1);
+    // clang recognises ADD,ADC* sequence when:
+    //  1. First operands are added.
+    //  2. Then the carry is added.
+    a += b;
+    auto c_out = a < b;
+    a += c_in;
+    c_out |= a < static_cast<T>(c_in);
+    return {a, c_out};
+}
 
-    constexpr std::size_t num_bits = sizeof(T) * CHAR_BIT;
-
-    if constexpr (has_native_uintxx_v<num_bits * 2>) {
-        // We can use a native type that has double the size.
-        using U = make_uintxx_t<num_bits * 2>;
-
-        auto const r = static_cast<U>(lhs) + static_cast<U>(rhs) + static_cast<U>(carry);
-        return {static_cast<T>(r), static_cast<T>(r >> num_bits)};
-
-    } else if (not std::is_constant_evaluated()) {
-#if HI_COMPILER == HI_CC_MSVC
-        uint64_t r;
-        auto const c = _addcarry_u64(static_cast<unsigned char>(carry), lhs, rhs, &r);
-        return {r, static_cast<T>(c)};
-#endif
-    }
-
-    // Carry can directly be added the sum without a double overflow.
-    auto const r = static_cast<T>(lhs + rhs + carry);
-    auto const c = static_cast<T>(r < lhs or r < rhs);
-    return {r, c};
+template<std::unsigned_integral T>
+[[nodiscard]] constexpr std::pair<T, bool> sub_carry(T a, T b, bool c_in)
+{
+    // clang recognises SUB,SBB* sequence when:
+    //  1. First operands are subtracted.
+    //  2. Then the borrow is subtracted.
+    auto c_out = b > a;
+    a -= b;
+    c_out |= static_cast<T>(c_in) > a;
+    a -= c_in;
+    return {a, c_out};
 }
 
 /** Multiply with carry.
