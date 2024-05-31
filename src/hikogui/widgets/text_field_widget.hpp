@@ -102,7 +102,7 @@ public:
         _text_widget = &_scroll_widget->emplace<text_widget>(_text, alignment);
         _text_widget->set_mode(widget_mode::partial);
 
-        _error_label_widget = std::make_unique<label_widget>(_error_label, alignment::top_left());
+        _error_label_widget = std::make_unique<label_widget>(_error_label);
         _error_label_widget->set_parent(this);
 
         _continues_cbt = continues.subscribe([&](auto...) {

@@ -64,6 +64,7 @@ public:
     HIX_GETSET(hi::horizontal_alignment, horizontal_alignment, style_modify_mask::layout)
     HIX_GETSET(hi::vertical_alignment, vertical_alignment, style_modify_mask::layout)
     HIX_GETSET(hi::unit::length_f, x_height, style_modify_mask::layout)
+    HIX_GETSET(hi::text_style_set, text_style, style_modify_mask::size)
 #undef HIX_GETSET
 
     style_modify_mask set_margin(unit::length_f margin, bool important = false) noexcept
@@ -135,6 +136,7 @@ public:
         HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
         HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
         HIX_COMPARE(x_height, style_modify_mask::alignment)
+        HIX_COMPARE(text_style, style_modify_mask::size)
 #undef HIX_COMPARE
         return r;
     }
@@ -176,6 +178,7 @@ public:
         HIX_APPLY(horizontal_alignment)
         HIX_APPLY(vertical_alignment)
         HIX_APPLY(x_height)
+        HIX_APPLY(text_style)
 #undef HIX_APPLY
         return r;
     }
@@ -204,6 +207,7 @@ private:
     hi::horizontal_alignment _horizontal_alignment = hi::horizontal_alignment::left;
     hi::vertical_alignment _vertical_alignment = hi::vertical_alignment::top;
     hi::unit::length_f _x_height = unit::points(0.0f);
+    hi::text_style_set _text_style = {};
 
     uint64_t _width_valid : 1 = 0;
     uint64_t _height_valid : 1 = 0;
@@ -228,6 +232,7 @@ private:
     uint64_t _horizontal_alignment_valid : 1 = 0;
     uint64_t _vertical_alignment_valid : 1 = 0;
     uint64_t _x_height_valid : 1 = 0;
+    uint64_t _text_style_valid : 1 = 0;
 
     uint64_t _width_important : 1 = 0;
     uint64_t _height_important : 1 = 0;
@@ -252,6 +257,7 @@ private:
     uint64_t _horizontal_alignment_important : 1 = 0;
     uint64_t _vertical_alignment_important : 1 = 0;
     uint64_t _x_height_important : 1 = 0;
+    uint64_t _text_style_important : 1 = 0;
 };
 
 } // namespace v1

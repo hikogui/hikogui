@@ -109,11 +109,11 @@ public:
     selection_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
         super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _current_label_widget = std::make_unique<label_widget>(this->attributes.alignment);
+        _current_label_widget = std::make_unique<label_widget>();
         _current_label_widget->set_parent(this);
         _current_label_widget->set_mode(widget_mode::invisible);
 
-        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label, this->attributes.alignment);
+        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label);
         _off_label_widget->set_parent(this);
 
         _overlay_widget = std::make_unique<overlay_widget>();

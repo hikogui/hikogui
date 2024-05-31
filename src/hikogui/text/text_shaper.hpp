@@ -82,6 +82,7 @@ public:
      */
     [[nodiscard]] text_shaper(
         gstring const& text,
+        unit::font_size_f const& font_size,
         text_style_set const& style,
         unit::pixel_density pixel_density,
         hi::alignment alignment,
@@ -93,13 +94,13 @@ public:
         _script(script)
     {
         auto const font = style.front().font_chain()[0];
-        _initial_line_metrics = style.front().size() * _pixel_density * font->metrics;
+        _initial_line_metrics = font_size * style.front().scale() * _pixel_density * font->metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {
             auto const clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
-            auto& tmp = _text.emplace_back(clean_c, style, _pixel_density);
+            auto& tmp = _text.emplace_back(clean_c, font_size, style, _pixel_density);
             tmp.initialize_glyph(font);
         }
 
@@ -133,12 +134,13 @@ public:
 
     [[nodiscard]] text_shaper(
         std::string_view text,
+        unit::font_size_f const& font_size,
         text_style_set const& style,
         unit::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
-        text_shaper(to_gstring(text), style, pixel_density, alignment, left_to_right, script)
+        text_shaper(to_gstring(text), font_size, style, pixel_density, alignment, left_to_right, script)
     {
     }
 

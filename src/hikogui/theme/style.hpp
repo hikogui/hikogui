@@ -8,6 +8,7 @@
 #include "style_attributes.hpp"
 #include "style_pseudo_class.hpp"
 #include "style_query.hpp"
+#include "../text/text.hpp"
 #include "../units/units.hpp"
 #include "../dispatch/dispatch.hpp"
 #include "../macros.hpp"
@@ -80,6 +81,8 @@ public:
     color background_color;
     color border_color;
     color accent_color;
+
+    text_style_set text_style;
 
     style(style const&) noexcept = delete;
     style(style&&) noexcept = delete;
@@ -353,7 +356,8 @@ private:
             width = ceil_as(unit::pixels, attributes().width() * _pixel_density);
             height = ceil_as(unit::pixels, attributes().height() * _pixel_density);
             font_size = round_as(unit::pixels_per_em, attributes().font_size() * _pixel_density);
-
+            text_style = attributes().text_style();
+            
             width_px = width.in(unit::pixels);
             height_px = height.in(unit::pixels);
             size_px = extent2{width_px, height_px};

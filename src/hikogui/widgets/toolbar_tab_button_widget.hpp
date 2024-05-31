@@ -139,10 +139,10 @@ public:
         std::shared_ptr<delegate_type> delegate) noexcept :
         super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
-        _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label, this->attributes.alignment);
+        _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label);
         _on_label_widget->set_parent(this);
 
-        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label, this->attributes.alignment);
+        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label);
         _off_label_widget->set_parent(this);
 
         hi_axiom_not_null(this->delegate);

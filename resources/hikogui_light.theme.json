@@ -26,6 +26,8 @@
     // Size of icons being inline with a label's text.
     "label-icon-size": 15,
 
+    "font-size": 12,
+
     // The colors values are either:
     // - integers are in sRGB
     // - floats are in linear-extended-sRGB
@@ -83,44 +85,44 @@
     "small-label-style": {
         "family": "Arial",
         "weight": "regular",
-        "size": 10,
+        "scale": 1,
         "color": "gray10"
     },
 
     "label-style": {
         "family": "Arial",
         "weight": "regular",
-        "size": 12,
+        "scale": 1,
         "color": "gray10"
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "regular",
-        "size": 12,
+        "scale": 1,
         "color": "gray10"
     },
     "error-label-style": {
         "family": "Arial",
         "weight": "regular",
-        "size": 12,
+        "scale": 1,
         "color": "red"
     },
     "help-label-style": {
         "family": "Arial",
         "weight": "regular",
-        "size": 12,
+        "scale": 1,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
         "family": "Arial",
         "weight": "regular",
-        "size": 12,
+        "scale": 1,
         "color": [142, 142, 147]
     },
     "link-label-style": {
         "family": "Arial",
         "weight": "regular",
-        "size": 12,
+        "scale": 1,
         "color": [0, 122, 255]
     }
 }

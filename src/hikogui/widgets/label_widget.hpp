@@ -27,8 +27,7 @@ hi_export_module(hikogui.widgets.label_widget);
 hi_export namespace hi { inline namespace v1 {
 
 template<typename Context>
-concept label_widget_attribute =
-    forward_of<Context, observer<hi::label>, observer<hi::alignment>>;
+concept label_widget_attribute = forward_of<Context, observer<hi::label>>;
 
 /** The GUI widget displays and lays out text together with an icon.
  * @ingroup widgets
@@ -51,28 +50,24 @@ public:
      */
     observer<label> label;
 
-    /** How the label and icon are aligned. Different layouts:
-     *  - `alignment::top_left`: icon and text are inline with each other, with
-     *    the icon in the top-left corner.
-     *  - `alignment::top_right`: icon and text are inline with each other, with
-     *    the icon in the top-right corner.
-     *  - `alignment::middle_left`: icon and text are inline with each other, with
-     *    the icon in the middle-left.
-     *  - `alignment::middle_right`: icon and text are inline with each other, with
-     *    the icon in the middle-right.
-     *  - `alignment::bottom_left`: icon and text are inline with each other, with
-     *    the icon in the bottom-left.
-     *  - `alignment::bottom_right`: icon and text are inline with each other, with
-     *    the icon in the bottom-right.
-     *  - `alignment::top_center`: Larger icon above the text, both center aligned.
-     *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.
-     *    used with a `pixmap` icon.
-     */
-    observer<alignment> alignment = hi::alignment::top_flush();
-
     /** The color of the label's (non-color) icon.
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
+
+    label_widget() noexcept : super()
+    {
+        set_mode(widget_mode::select);
+
+        _icon_widget = std::make_unique<icon_widget>(label.sub<"icon">());
+        _icon_widget->set_parent(this);
+        _icon_widget->phrasing = phrasing;
+
+        _text_widget = std::make_unique<text_widget>(label.sub<"text">());
+        _text_widget->set_parent(this);
+        _text_widget->set_mode(mode());
+
+        style.set_name("label");
+    }
 
     /** Construct a label widget.
      *
@@ -99,7 +94,7 @@ public:
         _layout = {};
 
         // Resolve as if in left-to-right mode, the grid will flip itself.
-        auto const resolved_alignment = resolve(*alignment, true);
+        auto const resolved_alignment = resolve(style.alignment, true);
 
         _grid.clear();
         if (to_bool(label->icon) and to_bool(label->text)) {
@@ -133,12 +128,7 @@ public:
             _grid.add_cell(0, 0, _text_widget.get());
         }
 
-        auto const label_style = theme().text_style_set()[{phrasing::regular}];
-        auto const icon_size =
-            (resolved_alignment == horizontal_alignment::center or resolved_alignment == horizontal_alignment::justified) ?
-            theme().large_icon_size() :
-            (label_style.size() * theme().pixel_density).in(unit::pixels_per_em);
-
+        auto const icon_size = style.font_size_px;
         _icon_widget->minimum = extent2{icon_size, icon_size};
         _icon_widget->maximum = extent2{icon_size, icon_size};
 
@@ -151,7 +141,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape, theme().baseline_adjustment());
+            _grid.set_layout(context.shape, style.x_height_px);
         }
 
         for (auto const& cell : _grid) {
@@ -197,8 +187,6 @@ private:
     {
         if constexpr (forward_of<First, observer<hi::label>>) {
             label = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
             phrasing = std::forward<First>(first);
         } else {
@@ -206,31 +194,6 @@ private:
         }
 
         set_attributes(std::forward<Rest>(rest)...);
-    }
-
-    label_widget() noexcept : super()
-    {
-        set_mode(widget_mode::select);
-
-        _icon_widget = std::make_unique<icon_widget>(label.sub<"icon">());
-        _icon_widget->set_parent(this);
-        _icon_widget->phrasing = phrasing;
-
-        _text_widget = std::make_unique<text_widget>(label.sub<"text">());
-        _text_widget->set_parent(this);
-        _text_widget->alignment = alignment;
-        _text_widget->set_mode(mode());
-
-        _alignment_cbt = alignment.subscribe([this](auto...) {
-            if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {
-                _icon_widget->alignment = hi::alignment::middle_center();
-            } else {
-                _icon_widget->alignment = *alignment;
-            }
-        });
-        _alignment_cbt(*alignment);
-
-        style.set_name("label");
     }
 };
 
