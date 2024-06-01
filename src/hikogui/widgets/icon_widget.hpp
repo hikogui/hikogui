@@ -25,7 +25,7 @@ hi_export namespace hi {
 inline namespace v1 {
 
 template<typename Context>
-concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>, observer<hi::color>>;
+concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::color>>;
 
 /** An simple GUI widget that displays an icon.
  * @ingroup widgets
@@ -45,10 +45,6 @@ public:
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
-    /** Alignment of the icon inside the widget.
-     */
-    observer<alignment> alignment = hi::alignment::middle_center();
-
     template<icon_widget_attribute... Attributes>
     icon_widget(Attributes&&... attributes) noexcept : icon_widget()
     {
@@ -62,8 +58,6 @@ public:
     {
         if constexpr (forward_of<First, observer<hi::icon>>) {
             icon = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
         } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
             phrasing = std::forward<First>(first);
         } else {
@@ -96,36 +90,30 @@ public:
 
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
-                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (icon_style.size() * theme().pixel_density).in(unit::pixels_per_em);
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
-                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (icon_style.size() * theme().pixel_density).in(unit::pixels_per_em);
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
-                auto const icon_style = theme().text_style_set()[{phrasing::regular}];
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() *
-                    (icon_style.size() * theme().pixel_density).in(unit::pixels_per_em);
+                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
             }
         }
 
-        auto const resolved_alignment = resolve(*alignment, os_settings::left_to_right());
-        auto const icon_constraints = box_constraints{
+        auto const resolved_alignment = resolve(style.alignment, os_settings::left_to_right());
+        return box_constraints{
             extent2{0, 0},
-            narrow_cast<extent2>(_icon_size),
-            narrow_cast<extent2>(_icon_size),
+            _icon_size,
+            _icon_size,
             resolved_alignment,
-            theme().margin<float>()};
-        return icon_constraints.constrain(*minimum, *maximum);
+            style.margins_px};
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
@@ -138,7 +126,7 @@ public:
                 auto const icon_scale =
                     scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
                 auto const new_icon_size = narrow_cast<extent2>(icon_scale * _icon_size);
-                auto const resolved_alignment = resolve(*alignment, os_settings::left_to_right());
+                auto const resolved_alignment = resolve(style.alignment, os_settings::left_to_right());
                 _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
             }
         }
@@ -146,7 +134,7 @@ public:
 
     color icon_color() noexcept
     {
-        return theme().text_style_set()[{*phrasing}].color();
+        return style.text_style[{*phrasing}].color();
     }
 
     void draw(draw_context const& context) noexcept override

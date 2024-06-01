@@ -61,9 +61,6 @@
       "environment": {
         "CXXFLAGS": "/arch:AVX2"
       },
-      "environment": {
-        "CXXFLAGS": "/arch:AVX2"
-      },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-msvc-x64"

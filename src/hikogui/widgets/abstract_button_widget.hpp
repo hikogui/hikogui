@@ -69,11 +69,11 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _on_label_widget = std::make_unique<label_widget>(on_label, alignment);
+        _on_label_widget = std::make_unique<label_widget>(on_label);
         _on_label_widget->set_parent(this);
-        _off_label_widget = std::make_unique<label_widget>(off_label, alignment);
+        _off_label_widget = std::make_unique<label_widget>(off_label);
         _off_label_widget->set_parent(this);
-        _other_label_widget = std::make_unique<label_widget>(other_label, alignment);
+        _other_label_widget = std::make_unique<label_widget>(other_label);
         _other_label_widget->set_parent(this);
 
         this->delegate->init(*this);

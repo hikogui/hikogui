@@ -125,6 +125,11 @@ public:
         return _label_icon_size;
     }
 
+    [[nodiscard]] constexpr float font_size() const noexcept
+    {
+        return _font_size;
+    }
+
     /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
     [[nodiscard]] constexpr float baseline_adjustment() const noexcept
@@ -158,6 +163,7 @@ public:
         r._icon_size = std::round(delta_scale * _icon_size);
         r._large_icon_size = std::round(delta_scale * _large_icon_size);
         r._label_icon_size = std::round(delta_scale * _label_icon_size);
+        r._font_size = std::round(delta_scale * _font_size);
         // Cap height is not rounded, since the text-shaper will align the text to sub-pixel boundaries.
         r._baseline_adjustment = std::round(delta_scale * _baseline_adjustment);
 
@@ -244,6 +250,15 @@ public:
                 }
             }
 
+            auto const should_center = [&]() {
+                for (auto const& segment : path) {
+                    if (segment.name == "menu-button") {
+                        return true;
+                    }
+                }
+                return false;
+            }();
+
             auto r = style_attributes{};
             if (path.back().name == "toggle") {
                 r.set_width(unit::dips(theme->size() * 4.0f));
@@ -252,7 +267,7 @@ public:
                 r.set_width(unit::dips(theme->size() * 2.0f));
                 r.set_height(unit::dips(theme->size() * 2.0f));
             }
-            r.set_font_size(unit::points_per_em(theme->icon_size()));
+            r.set_font_size(unit::points_per_em(theme->font_size()));
             r.set_margin_left(unit::dips(theme->margin<float>() * 2.0f));
             r.set_margin_bottom(unit::dips(theme->margin<float>() * 2.0f));
             r.set_margin_right(unit::dips(theme->margin<float>() * 2.0f));
@@ -267,14 +282,16 @@ public:
             r.set_border_top_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
             r.set_border_top_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
 
-            if (path.size() >= 2 and path[path.size() - 2].name == "menu-button" and path[path.size() - 1].name == "label") {
+
+            if (should_center) {
                 r.set_horizontal_alignment(hi::horizontal_alignment::center);
                 r.set_vertical_alignment(hi::vertical_alignment::middle);
             } else {
                 r.set_horizontal_alignment(hi::horizontal_alignment::left);
                 r.set_vertical_alignment(hi::vertical_alignment::top);
             }
-            r.set_x_height(unit::points_per_em(theme->icon_size()) * unit::em_squares(0.45f));
+            r.set_x_height(unit::points_per_em(theme->font_size()) * unit::em_squares(0.45f));
+            r.set_text_style(theme->text_style_set());
 
             r.set_background_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
@@ -387,6 +404,10 @@ private:
     /** Size of icons being inline with a label's text.
      */
     float _label_icon_size = 15.0f;
+
+    /** Size of the font.
+    */
+    float _font_size = 12.0f;
 
     /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
@@ -591,7 +612,7 @@ private:
         auto font_id = find_font(family_id, variant);
 
         r.set_font_chain({font_id});
-        r.set_size(unit::points_per_em(gsl::narrow<short>(parse_float(data, "size"))));
+        r.set_scale(parse_float(data, "scale"));
         r.set_color(parse_color(data, "color"));
         r.set_line_spacing(1.0f);
         r.set_paragraph_spacing(1.5f);
@@ -688,11 +709,12 @@ private:
         _icon_size = narrow_cast<float>(parse_int(data, "icon-size"));
         _large_icon_size = narrow_cast<float>(parse_int(data, "large-icon-size"));
         _label_icon_size = narrow_cast<float>(parse_int(data, "label-icon-size"));
+        _font_size = narrow_cast<float>(parse_int(data, "font-size"));
 
         auto const base_font = _text_style_set.front().font_chain()[0];
-        auto const base_size = _text_style_set.front().size();
-        auto const base_cap_height = std::get<unit::points_per_em_s>(base_size) * base_font->metrics.cap_height;
-        _baseline_adjustment = ceil_in(unit::points, base_cap_height);
+        auto const base_scale = _text_style_set.front().scale();
+        auto const base_cap_height = unit::points_per_em(_font_size * base_scale) * base_font->metrics.cap_height;
+        _baseline_adjustment = round_in(unit::points, base_cap_height);
     }
 
     [[nodiscard]] friend std::string to_string(theme const& rhs) noexcept
