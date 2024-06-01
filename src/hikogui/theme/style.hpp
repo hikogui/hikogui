@@ -5,7 +5,7 @@
 #pragma once
 
 #include "style_path.hpp"
-#include "style_attributes.hpp"
+#include "style_properties.hpp"
 #include "style_pseudo_class.hpp"
 #include "style_query.hpp"
 #include "../text/text.hpp"
@@ -255,7 +255,7 @@ public:
         }
     }
 
-    [[nodiscard]] style_attributes const& attributes() const noexcept
+    [[nodiscard]] style_properties const& attributes() const noexcept
     {
         return _loaded_attributes[std::to_underlying(_pseudo_class)];
     }
@@ -331,11 +331,11 @@ private:
 
     /** The attributes directly overridden by the developer for this widget's instance.
      */
-    style_attributes _override_attributes;
+    style_properties _override_attributes;
 
     /** The attributes loaded from the query, with overriden attributes applied.
      */
-    std::array<style_attributes, style_pseudo_class_size> _loaded_attributes;
+    std::array<style_properties, style_pseudo_class_size> _loaded_attributes;
 
     /** A table for which attributes are modified when switching between pseudo-classes.
      */

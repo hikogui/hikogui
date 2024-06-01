@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "style_attributes.hpp"
+#include "style_properties.hpp"
 #include "../parser/parser.hpp"
 #include "../container/container.hpp"
 #include "../macros.hpp"
@@ -292,12 +292,12 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 }
 
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr expected_optional<style_attributes, std::string> parse_style_attribute(It& it, ItEnd last)
+[[nodiscard]] constexpr expected_optional<style_properties, std::string> parse_style_attribute(It& it, ItEnd last)
 {
 #define HIX_VALUE(VALUE_PARSER, NAME, ATTRIBUTE) \
     if (name == NAME) { \
         if (auto const value = VALUE_PARSER(it, last)) { \
-            auto r = style_attributes{}; \
+            auto r = style_properties{}; \
             r.set_##ATTRIBUTE(*value, true); \
             return r; \
         } else if (value.has_error()) { \
@@ -349,7 +349,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 } // namespace detail
 
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
-[[nodiscard]] constexpr expected_optional<std::tuple<style_attributes, std::string, std::vector<std::string>>, std::string> parse_style(It first, ItEnd last)
+[[nodiscard]] constexpr expected_optional<std::tuple<style_properties, std::string, std::vector<std::string>>, std::string> parse_style(It first, ItEnd last)
 {
     constexpr auto config = [] {
         auto r = lexer_config{};
@@ -363,7 +363,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     auto lexer_it = lexer<config>.parse(first, last);
     auto token_it = make_lookahead_iterator<4>(lexer_it);
 
-    auto attributes = hi::style_attributes{};
+    auto attributes = hi::style_properties{};
     auto id = std::string{};
     auto classes = std::vector<std::string>{};
     while (token_it != std::default_sentinel) {
@@ -401,7 +401,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     return std::tuple{attributes, id, classes};
 }
 
-[[nodiscard]] constexpr expected_optional<std::tuple<style_attributes, std::string, std::vector<std::string>>, std::string> parse_style(std::string_view str)
+[[nodiscard]] constexpr expected_optional<std::tuple<style_properties, std::string, std::vector<std::string>>, std::string> parse_style(std::string_view str)
 {
     return parse_style(str.begin(), str.end());
 }

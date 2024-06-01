@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "style_attributes.hpp"
+#include "style_properties.hpp"
 #include "style_pseudo_class.hpp"
 #include "style_path.hpp"
 #include <typeinfo>
 
-hi_export_module(hikogui.theme : query_style_attributes);
+hi_export_module(hikogui.theme : query_style_properties);
 
 hi_export namespace hi {
 inline namespace v1 {
@@ -17,7 +17,7 @@ inline namespace v1 {
 /** Query for style attributes.
  * 
  * The theme system will create a style_query subclass to make a
- * style_attributes object for a specific style_path and pseudo_class.
+ * style_properties object for a specific style_path and pseudo_class.
  */
 struct style_query {
     virtual ~style_query() noexcept = default;
@@ -38,7 +38,7 @@ struct style_query {
      * @param pseudo_class The pseudo-class (state of the widget).
      * @return The style attributes for the path and pseudo-class.
      */
-    [[nodiscard]] virtual style_attributes get_attributes(style_path const&path, style_pseudo_class pseudo_class) const = 0;
+    [[nodiscard]] virtual style_properties get_attributes(style_path const&path, style_pseudo_class pseudo_class) const = 0;
 };
 
 } // namespace v1

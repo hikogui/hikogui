@@ -11,18 +11,18 @@
 #include "../macros.hpp"
 #include <cstdint>
 
-hi_export_module(hikogui.theme : style_attributes);
+hi_export_module(hikogui.theme : style_properties);
 
 hi_export namespace hi {
 inline namespace v1 {
 
-class style_attributes {
+class style_properties {
 public:
-    constexpr style_attributes() noexcept = default;
-    constexpr style_attributes(style_attributes const&) noexcept = default;
-    constexpr style_attributes(style_attributes&&) noexcept = default;
-    constexpr style_attributes& operator=(style_attributes const&) noexcept = default;
-    constexpr style_attributes& operator=(style_attributes&&) noexcept = default;
+    constexpr style_properties() noexcept = default;
+    constexpr style_properties(style_properties const&) noexcept = default;
+    constexpr style_properties(style_properties&&) noexcept = default;
+    constexpr style_properties& operator=(style_properties const&) noexcept = default;
+    constexpr style_properties& operator=(style_properties&&) noexcept = default;
 
 #define HIX_GETSET(TYPE, NAME, MODIFY_MASK) \
     [[nodiscard]] TYPE NAME() const noexcept \
@@ -99,7 +99,7 @@ public:
 
     void clear() noexcept
     {
-        *this = style_attributes{};
+        *this = style_properties{};
     }
 
     /** Set all attributes in other as-if they are important.
@@ -107,7 +107,7 @@ public:
      * @param other The attributes used to overwrite the current attributes.
      * @return A mask for what kind of values where changed.
      */
-    [[nodiscard]] friend style_modify_mask compare(style_attributes const& lhs, style_attributes const& rhs) noexcept
+    [[nodiscard]] friend style_modify_mask compare(style_properties const& lhs, style_properties const& rhs) noexcept
     {
 #define HIX_COMPARE(NAME, MODIFY_MASK) \
         r |= lhs._##NAME != rhs._##NAME ? MODIFY_MASK : style_modify_mask{};
@@ -146,7 +146,7 @@ public:
      * @param other The attributes used to overwrite the current attributes.
      * @return A mask for what kind of values where changed.
      */
-    style_modify_mask apply(style_attributes const& other) noexcept
+    style_modify_mask apply(style_properties const& other) noexcept
     {
 #define HIX_APPLY(NAME) \
     if (other._##NAME##_valid) { \

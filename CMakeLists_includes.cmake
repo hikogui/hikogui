@@ -414,7 +414,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_style.hpp
     src/hikogui/text/text_style_set.hpp
     src/hikogui/theme/style.hpp
-    src/hikogui/theme/style_attributes.hpp
+    src/hikogui/theme/style_properties.hpp
     src/hikogui/theme/style_modify_mask.hpp
     src/hikogui/theme/style_parser.hpp
     src/hikogui/theme/style_path.hpp

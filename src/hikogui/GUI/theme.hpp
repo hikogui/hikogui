@@ -233,7 +233,7 @@ public:
             }
         }
 
-        [[nodiscard]] style_attributes get_attributes(style_path const& path, style_pseudo_class pseudo_class) const override
+        [[nodiscard]] style_properties get_attributes(style_path const& path, style_pseudo_class pseudo_class) const override
         {
             assert(not path.empty());
 
@@ -259,7 +259,7 @@ public:
                 return false;
             }();
 
-            auto r = style_attributes{};
+            auto r = style_properties{};
             if (path.back().name == "toggle") {
                 r.set_width(unit::dips(theme->size() * 4.0f));
                 r.set_height(unit::dips(theme->size() * 2.0f));
