@@ -113,7 +113,7 @@ public:
         _setting_change_cbt = os_settings::subscribe(
             [this] {
                 ++global_counter<"gui_window:os_setting:constrain">;
-                this->process_event({gui_event_type::window_reconstrain});
+                this->_restyle = true;
             },
             callback_flags::main);
 
@@ -121,8 +121,7 @@ public:
         _selected_theme_cbt = theme_book::global().selected_theme.subscribe(
             [this](auto...) {
                 ++global_counter<"gui_window:selected_theme:constrain">;
-                apply_window_data(*this->_widget, this, this->pixel_density, get_selected_theme().query());
-                this->process_event({gui_event_type::window_reconstrain});
+                this->_restyle = true;
             },
             callback_flags::main);
 
@@ -135,7 +134,8 @@ public:
         auto const new_position = point2{500.0f, 500.0f}; 
         create_window(new_position);
 
-        apply_window_data(*_widget, this, pixel_density, get_selected_theme().query());
+        _widget->set_window(this);
+        _widget->restyle(*get_selected_theme().query(), pixel_density);
 
         // Execute a constraint check to determine initial window size.
         theme = get_selected_theme().transform(pixel_density);
@@ -182,6 +182,31 @@ public:
         _title = std::move(title);
     }
 
+    void request_resize() noexcept
+    {
+        _resize = true;
+    }
+
+    void request_restyle() noexcept
+    {
+        _restyle = true;
+    }
+
+    void request_reconstrain() noexcept
+    {
+        _reconstrain = true;
+    }
+
+    void request_relayout() noexcept
+    {
+        _relayout = true;
+    }
+
+    void request_redraw(aarectangle const& rectangle) noexcept
+    {
+        _redraw_rectangle |= rectangle;
+    }
+
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
@@ -198,20 +223,22 @@ public:
         hi_assert_not_null(surface);
         hi_assert_not_null(_widget);
 
-        // When a widget requests it or a window-wide event like language change
-        // has happened all the widgets will be set_constraints().
-        auto need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
-
-#if 0
-        // For performance checks force reconstrain.
-        need_reconstrain = true;
-#endif
-
-        if (need_reconstrain) {
-            auto const t2 = trace<"window::constrain">();
+        if (std::exchange(_restyle, false)) {
+            auto const _ = trace<"window::restyle">();
 
             theme = get_selected_theme().transform(pixel_density);
+            _widget->restyle(*get_selected_theme().query(), pixel_density);
+            request_reconstrain();
+        }
+
+        auto const resize = std::exchange(_resize, false);
+
+        // When a widget requests it or a window-wide event like language change
+        // has happened all the widgets will be set_constraints().
+        if (std::exchange(_reconstrain, false) or resize) {
+            auto const _ = trace<"window::constrain">();
             _widget_constraints = _widget->update_constraints();
+            request_relayout();
         }
 
         // Check if the window size matches the preferred size of the window_widget.
@@ -223,13 +250,13 @@ public:
         //
         // Make sure the widget does have its window rectangle match the constraints, otherwise
         // the logic for layout and drawing becomes complicated.
-        if (_resize.exchange(false, std::memory_order::relaxed)) {
+        if (resize) {
             // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
-            auto const current_size = rectangle.size();
             auto const new_size = _widget_constraints.preferred;
-            if (new_size != current_size) {
+            if (new_size != rectangle.size()) {
                 hi_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
                 set_window_size(new_size);
+                request_redraw(aarectangle{new_size});
             }
 
         } else {
@@ -239,6 +266,7 @@ public:
             if (new_size != current_size and size_state() != gui_window_size::minimized) {
                 hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
                 set_window_size(new_size);
+                request_redraw(aarectangle{new_size});
             }
         }
 
@@ -252,17 +280,14 @@ public:
         // Update the graphics' surface to the current size of the window.
         surface->update(rectangle.size());
 
-        // Make sure the widget's layout is updated before draw, but after window resize.
-        auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
-
-#if 0
-        // For performance checks force relayout.
-        need_relayout = true;
-#endif
-
-        if (need_reconstrain or need_relayout or widget_size != rectangle.size()) {
-            auto const t2 = trace<"window::layout">();
+        if (widget_size != rectangle.size()) {
+            // The window size has changed, we need to re-layout the widgets.
             widget_size = rectangle.size();
+            request_relayout();
+        }
+
+        if (std::exchange(_relayout, false)) {
+            auto const _ = trace<"window::layout">();
 
             // Guarantee that the layout size is always at least the minimum size.
             // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
@@ -270,17 +295,11 @@ public:
             _widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
             // After layout do a complete redraw.
-            _redraw_rectangle = aarectangle{widget_size};
+            request_redraw(aarectangle{widget_size});
         }
 
-#if 0
-        // For performance checks force redraw.
-        _redraw_rectangle = aarectangle{widget_size};
-#endif
-
         // Draw widgets if the _redraw_rectangle was set.
-        if (auto draw_context = surface->render_start(_redraw_rectangle)) {
-            _redraw_rectangle = aarectangle{};
+        if (auto draw_context = surface->render_start(std::exchange(_redraw_rectangle, aarectangle{}))) {
             draw_context.display_time_point = display_time_point;
             draw_context.subpixel_orientation = subpixel_orientation();
             draw_context.saturation = 1.0f;
@@ -803,22 +822,6 @@ public:
         hi_axiom(loop::main().on_thread());
 
         switch (event.type()) {
-        case window_redraw:
-            _redraw_rectangle.fetch_or(event.rectangle());
-            return true;
-
-        case window_relayout:
-            _relayout.store(true, std::memory_order_relaxed);
-            return true;
-
-        case window_reconstrain:
-            _reconstrain.store(true, std::memory_order_relaxed);
-            return true;
-
-        case window_resize:
-            _resize.store(true, std::memory_order_relaxed);
-            return true;
-
         case window_minimize:
             set_size_state(gui_window_size::minimized);
             return true;
@@ -931,10 +934,11 @@ private:
 
     box_constraints _widget_constraints = {};
 
-    std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
-    std::atomic<bool> _relayout = false;
-    std::atomic<bool> _reconstrain = false;
-    std::atomic<bool> _resize = false;
+    aarectangle _redraw_rectangle = aarectangle{};
+    bool _restyle = false;
+    bool _resize = false;
+    bool _reconstrain = false;
+    bool _relayout = false;
 
     /** Current size state of the window.
      */
@@ -1024,7 +1028,7 @@ private:
 
         if (rectangle.size() != new_screen_rectangle.size()) {
             ++global_counter<"gui_window:os-resize:relayout">;
-            this->process_event({gui_event_type::window_relayout});
+            request_relayout();
         }
 
         rectangle = new_screen_rectangle;
@@ -1397,7 +1401,7 @@ private:
 
                 {
                     hi_axiom(loop::main().on_thread());
-                    this->process_event({gui_event_type::window_redraw, update_rectangle});
+                    request_redraw(update_rectangle);
                 }
 
                 EndPaint(win32Window, &ps);
@@ -1406,7 +1410,7 @@ private:
 
         case WM_NCPAINT:
             hi_axiom(loop::main().on_thread());
-            this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
+            request_redraw(aarectangle{rectangle.size()});
             break;
 
         case WM_SIZE:
@@ -1501,7 +1505,7 @@ private:
             // After a manual move of the window, it is clear that the window is in normal mode.
             _restore_rectangle = rectangle;
             _size_state = gui_window_size::normal;
-            this->process_event({gui_event_type::window_redraw, aarectangle{rectangle.size()}});
+            request_redraw(aarectangle{rectangle.size()});
             break;
 
         case WM_ACTIVATE:
@@ -1518,7 +1522,7 @@ private:
                 hi_log_error("Unknown WM_ACTIVE value.");
             }
             ++global_counter<"gui_window:WM_ACTIVATE:constrain">;
-            this->process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
             break;
 
         case WM_GETMINMAXINFO:
@@ -1713,13 +1717,13 @@ private:
                     new_rectangle->bottom - new_rectangle->top,
                     SWP_NOZORDER | SWP_NOACTIVATE);
                 ++global_counter<"gui_window:WM_DPICHANGED:constrain">;
-                this->process_event({gui_event_type::window_reconstrain});
+                request_reconstrain();
 
                 // XXX #667 use mp-units formatting.
                 hi_log_info("DPI has changed to {} ppi", pixel_density.ppi.in(unit::pixels_per_inch));
 
                 hi_assert_not_null(_widget);
-                apply_window_data(*_widget, this, pixel_density, get_selected_theme().query());
+                request_restyle();
             }
             break;
 
@@ -1802,5 +1806,41 @@ private:
         win32WindowClassIsRegistered = true;
     }
 };
+
+void widget_intf::request_restyle() const noexcept
+{
+    if (auto *w = window()) {
+        w->request_restyle();
+    }
+}
+
+void widget_intf::request_resize() const noexcept
+{
+    if (auto *w = window()) {
+        w->request_resize();
+    }
+}
+
+void widget_intf::request_reconstrain() const noexcept
+{
+    if (auto *w = window()) {
+        w->request_reconstrain();
+    }
+}
+
+void widget_intf::request_relayout() const noexcept
+{
+    if (auto *w = window()) {
+        w->request_relayout();
+    }
+}
+
+void widget_intf::request_redraw() const noexcept
+{
+    if (auto *w = window()) {
+        w->request_redraw(layout().clipping_rectangle_on_window());
+    }
+}
+
 
 } // namespace hi::inline v1

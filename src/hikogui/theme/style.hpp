@@ -6,6 +6,7 @@
 
 #include "style_path.hpp"
 #include "style_properties.hpp"
+#include "style_computed_properties.hpp"
 #include "style_pseudo_class.hpp"
 #include "style_query.hpp"
 #include "../text/text.hpp"
@@ -26,29 +27,12 @@ hi_export_module(hikogui.theme : style);
 hi_export namespace hi {
 inline namespace v1 {
 
-class style {
+class style : public style_computed_properties {
 public:
     using notifier_type = notifier<void(style_modify_mask, bool)>;
     using callback_type = notifier_type::callback_type;
     using callback_proto = notifier_type::callback_proto;
-
-    unit::pixels_f width;
-    unit::pixels_f height;
-    unit::pixels_per_em_f font_size;
-    unit::pixels_f margin_left;
-    unit::pixels_f margin_bottom;
-    unit::pixels_f margin_right;
-    unit::pixels_f margin_top;
-    unit::pixels_f padding_left;
-    unit::pixels_f padding_bottom;
-    unit::pixels_f padding_right;
-    unit::pixels_f padding_top;
-    unit::pixels_f border_width;
-    unit::pixels_f border_bottom_left_radius;
-    unit::pixels_f border_bottom_right_radius;
-    unit::pixels_f border_top_left_radius;
-    unit::pixels_f border_top_right_radius;
-    unit::pixels_f x_height;
+    using properties_array_type = std::array<style_computed_properties, style_pseudo_class_size>;
 
     float width_px;
     float height_px;
@@ -73,16 +57,7 @@ public:
     hi::margins padding_px;
     hi::corner_radii border_radius_px;
 
-    hi::horizontal_alignment horizontal_alignment;
-    hi::vertical_alignment vertical_alignment;
     hi::alignment alignment;
-
-    color foreground_color;
-    color background_color;
-    color border_color;
-    color accent_color;
-
-    text_style_set text_style;
 
     style(style const&) noexcept = delete;
     style(style&&) noexcept = delete;
@@ -98,12 +73,10 @@ public:
      *       these children.
      * @param name The name of the style.
      */
-    void set_name(std::string new_name)
+    void set_name(std::string name)
     {
-        auto const old_name = std::exchange(_name, std::move(new_name));
-        if (old_name != _name) {
-            reload(true);
-        }
+        _name = name;
+        _notifier(style_modify_mask::none, true);
     }
 
     [[nodiscard]] std::string const& name() const noexcept
@@ -113,10 +86,8 @@ public:
 
     void set_id(std::string id)
     {
-        auto const old_id = std::exchange(_id, std::move(id));
-        if (old_id != _id) {
-            reload(true);
-        }
+        _id = id;
+        _notifier(style_modify_mask::none, true);
     }
 
     [[nodiscard]] std::string const& id() const noexcept
@@ -126,50 +97,13 @@ public:
 
     void set_classes(std::vector<std::string> classes)
     {
-        auto const old_classes = std::exchange(_classes, std::move(classes));
-        if (old_classes != _classes) {
-            reload(true);
-        }
+        _classes = std::move(classes);
+        _notifier(style_modify_mask::none, true);
     }
 
     [[nodiscard]] std::vector<std::string> const& classes() const noexcept
     {
         return _classes;
-    }
-
-    void set_parent_path(style_path new_parent_path) noexcept
-    {
-        auto const old_parent_path = std::exchange(_parent_path, std::move(new_parent_path));
-        if (old_parent_path != _parent_path) {
-            reload(true);
-        }
-    }
-
-    [[nodiscard]] style_path const &parent_path() const noexcept
-    {
-        return _parent_path;
-    }
-
-    /** The path without checks for validity.
-     * 
-     * @note This function is used to propagate the path to children.
-     */
-    [[nodiscard]] style_path unsafe_path() const
-    {
-        auto r = parent_path();
-        r.emplace_back(_name, _id, _classes);
-        return r;
-    }
-
-    /** The path of the style used to look up attributes from a theme.
-     * 
-     * @note It is undefined behavior to call this function before calling
-     *       style::set_name().
-    */
-    [[nodiscard]] style_path path() const
-    {
-        hi_assert(not _name.empty(), "style::set_name() must be called before calling style::path()");
-        return unsafe_path();
     }
 
     /** Parse the given string to configure this style.
@@ -194,13 +128,8 @@ public:
     style& operator=(std::string style_string)
     {
         if (auto const optional_style = parse_style(style_string)) {
-            auto [new_override_attributes, new_id, new_classes] = *optional_style;
-            auto const old_override_attributes = std::exchange(_override_attributes, std::move(new_override_attributes));
-            auto const old_id = std::exchange(_id, std::move(new_id));
-            auto const old_classes = std::exchange(_classes, std::move(new_classes));
-
-            auto const path_has_changed = (old_id != _id) or (old_classes != _classes);
-            reload(path_has_changed);
+            std::tie(_override_properties, _id, _classes) = *optional_style;
+            _notifier(style_modify_mask::none, true);
 
         } else if (optional_style.has_error()) {
             throw parse_error(optional_style.error());
@@ -211,37 +140,9 @@ public:
         return *this;
     }
 
-    [[nodiscard]] std::shared_ptr<style_query> const &query() const noexcept
-    {
-        return _query;
-    }
-
-    void set_query(std::shared_ptr<style_query> const &new_query)
-    {
-        // If either are a nullptr, reload() will be fast.
-        if (_query == nullptr or new_query == nullptr or *_query != *new_query) {
-            _query = new_query;
-            reload(false);
-        }
-    }
-
-    [[nodiscard]] unit::pixel_density pixel_density() const noexcept
-    {
-        return _pixel_density;
-    }
-
-    void set_pixel_density(unit::pixel_density new_pixel_density)
-    {
-        auto const old_pixel_density = std::exchange(_pixel_density, new_pixel_density);
-        if (old_pixel_density != _pixel_density) {
-            update_attributes(style_modify_mask::pixel_density);
-            _notifier(style_modify_mask::pixel_density, false);
-        }        
-    }
-
     void set_pseudo_class(style_pseudo_class new_pseudo_class)
     {
-        assert(std::to_underlying(new_pseudo_class) < _loaded_attributes.size());
+        assert(std::to_underlying(new_pseudo_class) < _loaded_properties.size());
 
         auto const old_pseudo_class = std::exchange(_pseudo_class, new_pseudo_class);
 
@@ -250,50 +151,39 @@ public:
             auto const j = std::to_underlying(new_pseudo_class);
             auto const mask = _pseudo_class_modifications[i + j * style_pseudo_class_size];
 
-            update_attributes(mask);
+            update_properties(mask);
             _notifier(mask, false);
         }
     }
 
-    [[nodiscard]] style_properties const& attributes() const noexcept
+    [[nodiscard]] std::pair<style_path, properties_array_type const&> restyle(
+        style_query const& query,
+        unit::pixel_density pixel_density,
+        style_path const& parent_path,
+        properties_array_type const& parent_properties) noexcept
     {
-        return _loaded_attributes[std::to_underlying(_pseudo_class)];
-    }
+        auto path = parent_path;
+        path.emplace_back(_name, _id, _classes);
 
-    /** Reload the style attributes from the current theme.
-     *
-     * Reload is called automatically after:
-     *  - changing the query function.
-     *  - changing the parent of the style (or of its ancestors).
-     *  - changing the name, id, classes of a style (or of its ancestors).
-     *
-     * But must by called manually for children when the notifier is called
-     * with `style_modify_mask::path`.
-     */
-    void reload(bool path_has_changed = false) noexcept
-    {
-        if (not _query) {
-            // The query function may not yet been set when the
-            // path is configured or when the widget's tree is being setup.
-            _notifier(style_modify_mask::none, path_has_changed);
-            return;
+        for (auto i = size_t{0}; i != style_pseudo_class_size; ++i) {
+            auto p = query.get_properties(path, static_cast<style_pseudo_class>(i));
+            p.apply(_override_properties);
+
+            _loaded_properties[i] = p * pixel_density;
+            _loaded_properties[i].inherit(parent_properties[i]);
         }
 
         for (auto i = size_t{0}; i != style_pseudo_class_size; ++i) {
-            _loaded_attributes[i] = _query->get_attributes(path(), static_cast<style_pseudo_class>(i));
-            _loaded_attributes[i].apply(_override_attributes);
-        }
-
-        for (auto i = size_t{0}; i != style_pseudo_class_size; ++i) {
-            auto const& src = _loaded_attributes[i];
+            auto const& src = _loaded_properties[i];
             for (auto j = size_t{0}; j != style_pseudo_class_size; ++j) {
-                auto const& dst = _loaded_attributes[j];
+                auto const& dst = _loaded_properties[j];
                 _pseudo_class_modifications[i + j * style_pseudo_class_size] = compare(src, dst);
             }
         }
 
-        update_attributes(style_modify_mask::all);
-        _notifier(style_modify_mask::all, path_has_changed);
+        update_properties(style_modify_mask::all);
+        _notifier(style_modify_mask::all, false);
+        return {path, _loaded_properties};
     }
 
     /** Add a callback to the style.
@@ -306,7 +196,7 @@ public:
      *
      * @param flags The callback-flags used to determine how the @a callback is called.
      * @param callback A callable object with prototype void(style_modify_mask, bool) being called when the style changes.
-     *                 The first argument is the mask of which attributes have changed.
+     *                 The first argument is the mask of which properties have changed.
      *                 The second argument is true when the path of the style has changed.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
@@ -321,59 +211,35 @@ private:
     std::string _id;
     std::vector<std::string> _classes;
 
-    style_path _parent_path;
-    unit::pixel_density _pixel_density;
     style_pseudo_class _pseudo_class;
 
-    /** A function to retrieve style attributes from the current selected query.
+    /** The properties directly overridden by the developer for this widget's instance.
      */
-    std::shared_ptr<style_query> _query;
+    style_properties _override_properties;
 
-    /** The attributes directly overridden by the developer for this widget's instance.
+    /** The properties loaded from the query, with overriden properties applied.
      */
-    style_properties _override_attributes;
+    properties_array_type _loaded_properties;
 
-    /** The attributes loaded from the query, with overriden attributes applied.
-     */
-    std::array<style_properties, style_pseudo_class_size> _loaded_attributes;
-
-    /** A table for which attributes are modified when switching between pseudo-classes.
+    /** A table for which properties are modified when switching between pseudo-classes.
      */
     std::array<style_modify_mask, style_pseudo_class_size * style_pseudo_class_size> _pseudo_class_modifications;
 
     notifier_type _notifier;
 
-    void update_attributes(style_modify_mask mask)
+    void update_properties(style_modify_mask mask)
     {
-        if (to_bool(mask & style_modify_mask::color)) {
-            foreground_color = attributes().foreground_color();
-            background_color = attributes().background_color();
-            border_color = attributes().border_color();
-            accent_color = attributes().accent_color();
-        }
+        this->set_properties(_loaded_properties[std::to_underlying(_pseudo_class)], mask);
 
         if (to_bool(mask & style_modify_mask::size)) {
-            width = ceil_as(unit::pixels, attributes().width() * _pixel_density);
-            height = ceil_as(unit::pixels, attributes().height() * _pixel_density);
-            font_size = round_as(unit::pixels_per_em, attributes().font_size() * _pixel_density);
-            text_style = attributes().text_style();
-            
             width_px = width.in(unit::pixels);
             height_px = height.in(unit::pixels);
             size_px = extent2{width_px, height_px};
-
             font_size_px = font_size.in(unit::pixels_per_em);
+            x_height_px = x_height.in(unit::pixels);
         }
 
         if (to_bool(mask & style_modify_mask::margin)) {
-            margin_left = round_as(unit::pixels, attributes().margin_left() * _pixel_density);
-            margin_bottom = round_as(unit::pixels, attributes().margin_bottom() * _pixel_density);
-            margin_right = round_as(unit::pixels, attributes().margin_right() * _pixel_density);
-            margin_top = round_as(unit::pixels, attributes().margin_top() * _pixel_density);
-            padding_left = round_as(unit::pixels, attributes().padding_left() * _pixel_density);
-            padding_bottom = round_as(unit::pixels, attributes().padding_bottom() * _pixel_density);
-            padding_right = round_as(unit::pixels, attributes().padding_right() * _pixel_density);
-            padding_top = round_as(unit::pixels, attributes().padding_top() * _pixel_density);
             margin_left_px = margin_left.in(unit::pixels);
             margin_bottom_px = margin_bottom.in(unit::pixels);
             margin_right_px = margin_right.in(unit::pixels);
@@ -387,11 +253,6 @@ private:
         }
 
         if (to_bool(mask & style_modify_mask::weight)) {
-            border_width = std::max(floor_as(unit::pixels, attributes().border_width() * _pixel_density), unit::pixels(1.0f));
-            border_bottom_left_radius = round_as(unit::pixels, attributes().border_bottom_left_radius() * _pixel_density);
-            border_bottom_right_radius = round_as(unit::pixels, attributes().border_bottom_right_radius() * _pixel_density);
-            border_top_left_radius = round_as(unit::pixels, attributes().border_top_left_radius() * _pixel_density);
-            border_top_right_radius = round_as(unit::pixels, attributes().border_top_right_radius() * _pixel_density);
             border_width_px = border_width.in(unit::pixels);
             border_bottom_left_radius_px = border_bottom_left_radius.in(unit::pixels);
             border_bottom_right_radius_px = border_bottom_right_radius.in(unit::pixels);
@@ -405,12 +266,7 @@ private:
         }
 
         if (to_bool(mask & style_modify_mask::alignment)) {
-            horizontal_alignment = attributes().horizontal_alignment();
-            vertical_alignment = attributes().vertical_alignment();
             alignment = hi::alignment{horizontal_alignment, vertical_alignment};
-
-            x_height = round_as(unit::pixels, attributes().x_height() * _pixel_density);
-            x_height_px = x_height.in(unit::pixels);
         }
     }
 };

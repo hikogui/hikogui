@@ -125,7 +125,7 @@ public:
 
         _off_label_cbt = this->attributes.off_label.subscribe([&](auto...) {
             ++global_counter<"selection_widget:off_label:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
 
         _delegate_options_cbt = this->delegate->subscribe_on_options([&] {
@@ -298,7 +298,7 @@ public:
                 close_overlay();
             }
             ++global_counter<"selection_widget:gui_activate:relayout">;
-            process_event({gui_event_type::window_relayout});
+            request_relayout();
             return true;
 
         case gui_event_type::gui_cancel:
@@ -450,7 +450,7 @@ private:
         }
 
         ++global_counter<"selection_widget:update_options:constrain">;
-        process_event({gui_event_type::window_reconstrain});
+        request_reconstrain();
     }
 
     void update_value() noexcept

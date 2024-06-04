@@ -187,7 +187,7 @@ public:
             if (mode() >= widget_mode::partial) {
                 delegate->activate(*this);
                 ++global_counter<"toggle_widget:handle_event:relayout">;
-                process_event({gui_event_type::window_relayout});
+                request_relayout();
                 return true;
             }
             break;

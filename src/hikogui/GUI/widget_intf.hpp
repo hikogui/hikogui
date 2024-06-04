@@ -38,8 +38,6 @@ public:
      */
     hi::style style = {};
 
-    gui_window *window = nullptr;
-
     /** Notifier which is called after an action is completed by a widget.
      */
     notifier<void()> notifier;
@@ -55,22 +53,17 @@ public:
 
     widget_intf() noexcept : id(make_widget_id())
     {
-        _style_cbt = style.subscribe([&](style_modify_mask mask, bool path_has_changed) {
-            if (path_has_changed) {
-                // When the path has changed of a style, the style of the children
-                // may change as well. Therefor we update the parent-path of the
-                // children to trigger a re-evaluation of the style.
+        _style_cbt = style.subscribe([&](style_modify_mask mask, bool restyle) {
+            if (restyle) {
                 ++global_counter<"widget:style:path">;
-                for (auto &child : children()) {
-                    child.style.set_parent_path(style.unsafe_path());
-                }
+                request_restyle();
             }
 
             if (to_bool(mask & style_modify_mask::layout)) {
                 // The layout has changed which means its size may have changed
                 // which would require a re-layout and re-constrain of the widget.
                 ++global_counter<"widget:style:reconstrain">;
-                process_event({gui_event_type::window_reconstrain});
+                request_reconstrain();
 
             } else if (to_bool(mask & style_modify_mask::redraw)) {
                 // The color attributes, or border magnitude has changed which
@@ -90,11 +83,11 @@ public:
             if (old_state) {
                 if (need_reconstrain(*old_state, *state)) {
                     ++global_counter<"widget:state:reconstrain">;
-                    process_event({gui_event_type::window_reconstrain});
+                    request_reconstrain();
 
                 } else if (need_relayout(*old_state, *state)) {
                     ++global_counter<"widget:state:relayout">;
-                    process_event({gui_event_type::window_relayout});
+                    request_relayout();
 
                 } else if (need_redraw(*old_state, *state)) {
                     ++global_counter<"widget:state:redraw">;
@@ -120,7 +113,31 @@ public:
      * @param new_parent A pointer to an existing parent, or nullptr if the
      *                   widget is removed from the parent.
      */
-    virtual void set_parent(widget_intf *new_parent) noexcept;
+    virtual void set_parent(widget_intf *new_parent) noexcept
+    {
+        _parent = new_parent;
+
+        if (new_parent) {
+            set_window(new_parent->window());
+        } else {
+            set_window(nullptr);
+        }
+    }
+
+    [[nodiscard]] gui_window *window() const noexcept
+    {
+        return _window;
+    }
+
+    virtual void set_window(gui_window *new_window) noexcept
+    {
+        _window = new_window;
+        request_restyle();
+
+        for (auto& child : children()) {
+            child.set_window(new_window);
+        }
+    }
 
     /** Subscribe a callback to be called when an action is completed by the widget.
      */
@@ -210,6 +227,22 @@ public:
         }
     }
 
+    /** Restyle the widgets and its children.
+     * 
+     * @param query The style query to use for the restyle.
+     * @param pixel_density The pixel density to use for the restyle.
+     * @param path The path of the parent widget.
+     * @param properties The properties used when this widget will inherit style properties.
+     */
+    virtual void restyle(hi::style_query const& query, unit::pixel_density pixel_density, style_path const &path = style_path{}, style::properties_array_type const &properties = style::properties_array_type{}) noexcept
+    {
+        auto const [child_path, child_properties] = style.restyle(query, pixel_density, path, properties);
+
+        for (auto& child : children()) {
+            child.restyle(query, pixel_density, child_path, child_properties);
+        }
+    }
+
     /** Update the constraints of the widget.
      *
      * Typically the implementation of this function starts with recursively calling update_constraints()
@@ -273,9 +306,25 @@ public:
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept = 0;
 
-    /** Request the widget to be redrawn on the next frame.
+    /** Request the window to restyle all the widgets.
      */
-    virtual void request_redraw() const noexcept = 0;
+    virtual void request_restyle() const noexcept;
+
+    /** Request the window to resize based on the preferred size of the widgets.
+    */
+    virtual void request_resize() const noexcept;
+
+    /** Request the window to reconstrain all the widgets.
+    */
+    virtual void request_reconstrain() const noexcept;
+
+    /** Request the window to relayout all the widgets.
+    */
+    virtual void request_relayout() const noexcept;
+
+    /** Request the window to redraw the area used by the widget.
+     */
+    virtual void request_redraw() const noexcept;
 
     /** Send a event to the window.
      */
@@ -357,6 +406,7 @@ protected:
 
 private:
     widget_intf *_parent = nullptr;
+    gui_window *_window = nullptr;
 };
 
 inline widget_intf *get_if(widget_intf *start, widget_id id, bool include_invisible) noexcept
@@ -399,27 +449,6 @@ inline void apply(widget_intf& start, Func &&func, bool include_invisible = true
     }
 }
 
-inline void apply_window_data(widget_intf& start, gui_window *new_window, unit::pixel_density const& new_density, std::shared_ptr<style_query> const& new_query)
-{
-    apply(start, [&](widget_intf& w) {
-        w.window = new_window;
-        w.style.set_pixel_density(new_density);
-        w.style.set_query(new_query);
-    });
-}
-
-inline void widget_intf::set_parent(widget_intf *new_parent) noexcept
-{
-    _parent = new_parent;
-    apply_window_data(
-        *this,
-        new_parent ? new_parent->window : nullptr,
-        new_parent ? new_parent->style.pixel_density() : unit::pixel_density{},
-        new_parent ? new_parent->style.query() : std::shared_ptr<style_query>{});
-
-    // The path will automatically propagate to the child widgets.
-    style.set_parent_path(new_parent ? new_parent->style.unsafe_path() : style_path{});
-}
 
 
 } // namespace v1

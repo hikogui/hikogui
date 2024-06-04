@@ -108,13 +108,13 @@ public:
                     // The constraints have changed, properly constrain and layout on the next frame.
                     ++global_counter<"text_widget:delegate:constrain">;
                     request_scroll();
-                    process_event({gui_event_type::window_reconstrain});
+                    request_reconstrain();
                 }
             } else {
                 // The layout is incomplete, properly constrain and layout on the next frame.
                 ++global_counter<"text_widget:delegate:constrain">;
                 request_scroll();
-                process_event({gui_event_type::window_reconstrain});
+                request_reconstrain();
             }
         });
 
@@ -170,7 +170,8 @@ public:
         // Create a new text_shaper with the new text.
         auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
 
-        _shaped_text = text_shaper{_text_cache, style.font_size, style.text_style, style.pixel_density(), alignment_, os_settings::left_to_right()};
+        assert(window());
+        _shaped_text = text_shaper{_text_cache, style.font_size, style.text_style, window()->pixel_density, alignment_, os_settings::left_to_right()};
 
         auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         auto const shaped_text_size = shaped_text_rectangle.size();
@@ -677,7 +678,7 @@ public:
                 }
 
                 ++global_counter<"text_widget:mouse_down:relayout">;
-                process_event({gui_event_type::window_relayout});
+                request_relayout();
                 request_scroll();
                 return true;
             }

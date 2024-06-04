@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "style_modify_mask.hpp"
+#include "style_computed_properties.hpp"
+#include "style_priority.hpp"
+#include "../text/text.hpp"
 #include "../units/units.hpp"
 #include "../color/color.hpp"
 #include "../geometry/geometry.hpp"
@@ -24,121 +26,147 @@ public:
     constexpr style_properties& operator=(style_properties const&) noexcept = default;
     constexpr style_properties& operator=(style_properties&&) noexcept = default;
 
-#define HIX_GETSET(TYPE, NAME, MODIFY_MASK) \
+    [[nodiscard]] friend style_computed_properties operator*(style_properties const& lhs, unit::pixel_density const& rhs) noexcept
+    {
+        auto r = style_computed_properties{};
+        r.width = ceil_as(unit::pixels, lhs._width * rhs);
+        r.height = ceil_as(unit::pixels, lhs._height * rhs);
+        r.font_size = round_as(unit::pixels_per_em, lhs._font_size * rhs);
+        r.margin_left = round_as(unit::pixels, lhs._margin_left * rhs);
+        r.margin_bottom = round_as(unit::pixels, lhs._margin_bottom * rhs);
+        r.margin_right = round_as(unit::pixels, lhs._margin_right * rhs);
+        r.margin_top = round_as(unit::pixels, lhs._margin_top * rhs);
+        r.padding_left = round_as(unit::pixels, lhs._padding_left * rhs);
+        r.padding_bottom = round_as(unit::pixels, lhs._padding_bottom * rhs);
+        r.padding_right = round_as(unit::pixels, lhs._padding_right * rhs);
+        r.padding_top = round_as(unit::pixels, lhs._padding_top * rhs);
+        r.border_width = std::max(floor_as(unit::pixels, lhs._border_width * rhs), unit::pixels(1.0f));
+        r.border_bottom_left_radius = round_as(unit::pixels, lhs._border_bottom_left_radius * rhs);
+        r.border_bottom_right_radius = round_as(unit::pixels, lhs._border_bottom_right_radius * rhs);
+        r.border_top_left_radius = round_as(unit::pixels, lhs._border_top_left_radius * rhs);
+        r.border_top_right_radius = round_as(unit::pixels, lhs._border_top_right_radius * rhs);
+        r.x_height = round_as(unit::pixels, lhs._x_height * rhs);
+
+        r.horizontal_alignment = lhs._horizontal_alignment;
+        r.vertical_alignment = lhs._vertical_alignment;
+        r.foreground_color = lhs._foreground_color;
+        r.background_color = lhs._background_color;
+        r.border_color = lhs._border_color;
+        r.accent_color = lhs._accent_color;
+        r.text_style = lhs._text_style;
+
+        return r;
+    }
+
+    [[nodiscard]] friend style_computed_properties operator*(unit::pixel_density const& lhs, style_properties const& rhs) noexcept
+    {
+        return rhs * lhs;
+    }
+
+#define HIX_GETSET(TYPE, NAME) \
     [[nodiscard]] TYPE NAME() const noexcept \
     { \
         return _##NAME; \
     } \
-    style_modify_mask set_##NAME(TYPE NAME, bool important = false) noexcept \
+    void set_##NAME(TYPE NAME, style_priority priority) noexcept \
     { \
-        auto r = style_modify_mask{}; \
-        if (important or not _##NAME##_important) { \
-            _##NAME##_important |= static_cast<uint64_t>(important); \
-            _##NAME##_valid = 1; \
-            r |= _##NAME == NAME ? style_modify_mask::none : MODIFY_MASK; \
+        if (priority >= _##NAME##_priority) { \
+            _##NAME##_priority = priority; \
+            _##NAME##_inherit = 0; \
             _##NAME = NAME; \
         } \
-        return r; \
+    } \
+    void inherit_##NAME(style_priority priority) noexcept \
+    { \
+        if (priority >= _##NAME##_priority) { \
+            _##NAME##_priority = priority; \
+            _##NAME##_inherit = 1; \
+            _##NAME = {}; \
+        } \
+    } \
+    void reset_##NAME() noexcept \
+    { \
+        _##NAME##_priority = style_priority{}; \
+        _##NAME##_inherit = 1; \
+        _##NAME = {}; \
     }
 
-    HIX_GETSET(hi::unit::length_f, width, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, height, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::font_size_f, font_size, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, margin_left, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, margin_bottom, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, margin_right, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, margin_top, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, padding_left, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, padding_bottom, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, padding_right, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, padding_top, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, border_width, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, border_bottom_left_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, border_bottom_right_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, border_top_left_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, border_top_right_radius, style_modify_mask::layout)
-    HIX_GETSET(hi::color, foreground_color, style_modify_mask::color)
-    HIX_GETSET(hi::color, background_color, style_modify_mask::color)
-    HIX_GETSET(hi::color, border_color, style_modify_mask::color)
-    HIX_GETSET(hi::color, accent_color, style_modify_mask::color)
-    HIX_GETSET(hi::horizontal_alignment, horizontal_alignment, style_modify_mask::layout)
-    HIX_GETSET(hi::vertical_alignment, vertical_alignment, style_modify_mask::layout)
-    HIX_GETSET(hi::unit::length_f, x_height, style_modify_mask::layout)
-    HIX_GETSET(hi::text_style_set, text_style, style_modify_mask::size)
+    HIX_GETSET(hi::unit::length_f, width)
+    HIX_GETSET(hi::unit::length_f, height)
+    HIX_GETSET(hi::unit::font_size_f, font_size)
+    HIX_GETSET(hi::unit::length_f, margin_left)
+    HIX_GETSET(hi::unit::length_f, margin_bottom)
+    HIX_GETSET(hi::unit::length_f, margin_right)
+    HIX_GETSET(hi::unit::length_f, margin_top)
+    HIX_GETSET(hi::unit::length_f, padding_left)
+    HIX_GETSET(hi::unit::length_f, padding_bottom)
+    HIX_GETSET(hi::unit::length_f, padding_right)
+    HIX_GETSET(hi::unit::length_f, padding_top)
+    HIX_GETSET(hi::unit::length_f, border_width)
+    HIX_GETSET(hi::unit::length_f, border_bottom_left_radius)
+    HIX_GETSET(hi::unit::length_f, border_bottom_right_radius)
+    HIX_GETSET(hi::unit::length_f, border_top_left_radius)
+    HIX_GETSET(hi::unit::length_f, border_top_right_radius)
+    HIX_GETSET(hi::color, foreground_color)
+    HIX_GETSET(hi::color, background_color)
+    HIX_GETSET(hi::color, border_color)
+    HIX_GETSET(hi::color, accent_color)
+    HIX_GETSET(hi::horizontal_alignment, horizontal_alignment)
+    HIX_GETSET(hi::vertical_alignment, vertical_alignment)
+    HIX_GETSET(hi::unit::length_f, x_height)
+    HIX_GETSET(hi::text_style_set, text_style)
 #undef HIX_GETSET
 
-    style_modify_mask set_margin(unit::length_f margin, bool important = false) noexcept
+    void set_margin(unit::length_f margin, style_priority priority) noexcept
     {
-        auto r = style_modify_mask{};
-        r |= set_margin_left(margin, important);
-        r |= set_margin_bottom(margin, important);
-        r |= set_margin_right(margin, important);
-        r |= set_margin_top(margin, important);
-        return r;
+        set_margin_left(margin, priority);
+        set_margin_bottom(margin, priority);
+        set_margin_right(margin, priority);
+        set_margin_top(margin, priority);
     }
 
-    style_modify_mask set_padding(unit::length_f padding, bool important = false) noexcept
+    void set_padding(unit::length_f padding, style_priority priority) noexcept
     {
-        auto r = style_modify_mask{};
-        r |= set_padding_left(padding, important);
-        r |= set_padding_bottom(padding, important);
-        r |= set_padding_right(padding, important);
-        r |= set_padding_top(padding, important);
-        return r;
+        set_padding_left(padding, priority);
+        set_padding_bottom(padding, priority);
+        set_padding_right(padding, priority);
+        set_padding_top(padding, priority);
     }
 
-    style_modify_mask set_border_radius(unit::length_f border_radius, bool important = false) noexcept
+    void set_border_radius(unit::length_f border_radius, style_priority priority) noexcept
     {
-        auto r = style_modify_mask{};
-        r |= set_border_bottom_left_radius(border_radius, important);
-        r |= set_border_bottom_right_radius(border_radius, important);
-        r |= set_border_top_left_radius(border_radius, important);
-        r |= set_border_top_right_radius(border_radius, important);
-        return r;
+        set_border_bottom_left_radius(border_radius, priority);
+        set_border_bottom_right_radius(border_radius, priority);
+        set_border_top_left_radius(border_radius, priority);
+        set_border_top_right_radius(border_radius, priority);
     }
 
-    void clear() noexcept
+    void reset() noexcept
     {
-        *this = style_properties{};
-    }
-
-    /** Set all attributes in other as-if they are important.
-     * 
-     * @param other The attributes used to overwrite the current attributes.
-     * @return A mask for what kind of values where changed.
-     */
-    [[nodiscard]] friend style_modify_mask compare(style_properties const& lhs, style_properties const& rhs) noexcept
-    {
-#define HIX_COMPARE(NAME, MODIFY_MASK) \
-        r |= lhs._##NAME != rhs._##NAME ? MODIFY_MASK : style_modify_mask{};
-
-        auto r = style_modify_mask{};
-        HIX_COMPARE(width, style_modify_mask::size)
-        HIX_COMPARE(height, style_modify_mask::size)
-        HIX_COMPARE(font_size, style_modify_mask::size)
-        HIX_COMPARE(margin_left, style_modify_mask::margin)
-        HIX_COMPARE(margin_bottom, style_modify_mask::margin)
-        HIX_COMPARE(margin_right, style_modify_mask::margin)
-        HIX_COMPARE(margin_top, style_modify_mask::margin)
-        HIX_COMPARE(padding_left, style_modify_mask::margin)
-        HIX_COMPARE(padding_bottom, style_modify_mask::margin)
-        HIX_COMPARE(padding_right, style_modify_mask::margin)
-        HIX_COMPARE(padding_top, style_modify_mask::margin)
-        HIX_COMPARE(border_width, style_modify_mask::weight)
-        HIX_COMPARE(border_bottom_left_radius, style_modify_mask::weight)
-        HIX_COMPARE(border_bottom_right_radius, style_modify_mask::weight)
-        HIX_COMPARE(border_top_left_radius, style_modify_mask::weight)
-        HIX_COMPARE(border_top_right_radius, style_modify_mask::weight)
-        HIX_COMPARE(foreground_color, style_modify_mask::color)
-        HIX_COMPARE(background_color, style_modify_mask::color)
-        HIX_COMPARE(border_color, style_modify_mask::color)
-        HIX_COMPARE(accent_color, style_modify_mask::color)
-        HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
-        HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
-        HIX_COMPARE(x_height, style_modify_mask::alignment)
-        HIX_COMPARE(text_style, style_modify_mask::size)
-#undef HIX_COMPARE
-        return r;
+        reset_width();
+        reset_height();
+        reset_font_size();
+        reset_margin_left();
+        reset_margin_bottom();
+        reset_margin_right();
+        reset_margin_top();
+        reset_padding_left();
+        reset_padding_bottom();
+        reset_padding_right();
+        reset_padding_top();
+        reset_border_width();
+        reset_border_bottom_left_radius();
+        reset_border_bottom_right_radius();
+        reset_border_top_left_radius();
+        reset_border_top_right_radius();
+        reset_foreground_color();
+        reset_background_color();
+        reset_border_color();
+        reset_accent_color();
+        reset_horizontal_alignment();
+        reset_vertical_alignment();
+        reset_x_height();
+        reset_text_style();
     }
 
     /** Apply attributes of other ontop of the current.
@@ -146,14 +174,15 @@ public:
      * @param other The attributes used to overwrite the current attributes.
      * @return A mask for what kind of values where changed.
      */
-    style_modify_mask apply(style_properties const& other) noexcept
+    void apply(style_properties const& other) noexcept
     {
 #define HIX_APPLY(NAME) \
-    if (other._##NAME##_valid) { \
-        r |= set_##NAME(other._##NAME, static_cast<bool>(other._##NAME##_important)); \
+    if (other._##NAME##_priority >= _##NAME##_priority) { \
+        _##NAME = other._##NAME; \
+        _##NAME##_priority = other._##NAME##_priority; \
+        _##NAME##_inherit = other._##NAME##_inherit; \
     }
 
-        auto r = style_modify_mask{};
         HIX_APPLY(width)
         HIX_APPLY(height)
         HIX_APPLY(font_size)
@@ -180,7 +209,6 @@ public:
         HIX_APPLY(x_height)
         HIX_APPLY(text_style)
 #undef HIX_APPLY
-        return r;
     }
 
 private:
@@ -209,55 +237,55 @@ private:
     hi::unit::length_f _x_height = unit::points(0.0f);
     hi::text_style_set _text_style = {};
 
-    uint64_t _width_valid : 1 = 0;
-    uint64_t _height_valid : 1 = 0;
-    uint64_t _font_size_valid : 1 = 0;
-    uint64_t _margin_left_valid : 1 = 0;
-    uint64_t _margin_bottom_valid : 1 = 0;
-    uint64_t _margin_right_valid : 1 = 0;
-    uint64_t _margin_top_valid : 1 = 0;
-    uint64_t _padding_left_valid : 1 = 0;
-    uint64_t _padding_bottom_valid : 1 = 0;
-    uint64_t _padding_right_valid : 1 = 0;
-    uint64_t _padding_top_valid : 1 = 0;
-    uint64_t _border_width_valid : 1 = 0;
-    uint64_t _border_bottom_left_radius_valid : 1 = 0;
-    uint64_t _border_bottom_right_radius_valid : 1 = 0;
-    uint64_t _border_top_left_radius_valid : 1 = 0;
-    uint64_t _border_top_right_radius_valid : 1 = 0;
-    uint64_t _foreground_color_valid : 1 = 0;
-    uint64_t _background_color_valid : 1 = 0;
-    uint64_t _border_color_valid : 1 = 0;
-    uint64_t _accent_color_valid : 1 = 0;
-    uint64_t _horizontal_alignment_valid : 1 = 0;
-    uint64_t _vertical_alignment_valid : 1 = 0;
-    uint64_t _x_height_valid : 1 = 0;
-    uint64_t _text_style_valid : 1 = 0;
+    size_t _width_inherit : 1 = 1;
+    size_t _height_inherit : 1 = 1;
+    size_t _font_size_inherit : 1 = 1;
+    size_t _margin_left_inherit : 1 = 1;
+    size_t _margin_bottom_inherit : 1 = 1;
+    size_t _margin_right_inherit : 1 = 1;
+    size_t _margin_top_inherit : 1 = 1;
+    size_t _padding_left_inherit : 1 = 1;
+    size_t _padding_bottom_inherit : 1 = 1;
+    size_t _padding_right_inherit : 1 = 1;
+    size_t _padding_top_inherit : 1 = 1;
+    size_t _border_width_inherit : 1 = 1;
+    size_t _border_bottom_left_radius_inherit : 1 = 1;
+    size_t _border_bottom_right_radius_inherit : 1 = 1;
+    size_t _border_top_left_radius_inherit : 1 = 1;
+    size_t _border_top_right_radius_inherit : 1 = 1;
+    size_t _foreground_color_inherit : 1 = 1;
+    size_t _background_color_inherit : 1 = 1;
+    size_t _border_color_inherit : 1 = 1;
+    size_t _accent_color_inherit : 1 = 1;
+    size_t _horizontal_alignment_inherit : 1 = 1;
+    size_t _vertical_alignment_inherit : 1 = 1;
+    size_t _x_height_inherit : 1 = 1;
+    size_t _text_style_inherit : 1 = 1;
 
-    uint64_t _width_important : 1 = 0;
-    uint64_t _height_important : 1 = 0;
-    uint64_t _font_size_important : 1 = 0;
-    uint64_t _margin_left_important : 1 = 0;
-    uint64_t _margin_bottom_important : 1 = 0;
-    uint64_t _margin_right_important : 1 = 0;
-    uint64_t _margin_top_important : 1 = 0;
-    uint64_t _padding_left_important : 1 = 0;
-    uint64_t _padding_bottom_important : 1 = 0;
-    uint64_t _padding_right_important : 1 = 0;
-    uint64_t _padding_top_important : 1 = 0;
-    uint64_t _border_width_important : 1 = 0;
-    uint64_t _border_bottom_left_radius_important : 1 = 0;
-    uint64_t _border_bottom_right_radius_important : 1 = 0;
-    uint64_t _border_top_left_radius_important : 1 = 0;
-    uint64_t _border_top_right_radius_important : 1 = 0;
-    uint64_t _foreground_color_important : 1 = 0;
-    uint64_t _background_color_important : 1 = 0;
-    uint64_t _border_color_important : 1 = 0;
-    uint64_t _accent_color_important : 1 = 0;
-    uint64_t _horizontal_alignment_important : 1 = 0;
-    uint64_t _vertical_alignment_important : 1 = 0;
-    uint64_t _x_height_important : 1 = 0;
-    uint64_t _text_style_important : 1 = 0;
+    style_priority _width_priority;
+    style_priority _height_priority;
+    style_priority _font_size_priority;
+    style_priority _margin_left_priority;
+    style_priority _margin_bottom_priority;
+    style_priority _margin_right_priority;
+    style_priority _margin_top_priority;
+    style_priority _padding_left_priority;
+    style_priority _padding_bottom_priority;
+    style_priority _padding_right_priority;
+    style_priority _padding_top_priority;
+    style_priority _border_width_priority;
+    style_priority _border_bottom_left_radius_priority;
+    style_priority _border_bottom_right_radius_priority;
+    style_priority _border_top_left_radius_priority;
+    style_priority _border_top_right_radius_priority;
+    style_priority _foreground_color_priority;
+    style_priority _background_color_priority;
+    style_priority _border_color_priority;
+    style_priority _accent_color_priority;
+    style_priority _horizontal_alignment_priority;
+    style_priority _vertical_alignment_priority;
+    style_priority _x_height_priority;
+    style_priority _text_style_priority;
 };
 
 } // namespace v1

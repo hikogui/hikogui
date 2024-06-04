@@ -270,8 +270,8 @@ public:
     }
     bool process_event(gui_event const& event) const noexcept override
     {
-        if (window) {
-            return window->process_event(event);
+        if (auto w = window()) {
+            return w->process_event(event);
         } else {
             // Since there is no window, pretend that the message was handled.
             return true;

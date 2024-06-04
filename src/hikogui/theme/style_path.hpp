@@ -20,13 +20,13 @@ struct style_path_segment {
     std::vector<std::string> classes;
 
     constexpr style_path_segment() noexcept = default;
-    constexpr style_path_segment(style_path_segment const&) noexcept = default;
-    constexpr style_path_segment(style_path_segment&&) noexcept = default;
-    constexpr style_path_segment& operator=(style_path_segment const&) noexcept = default;
-    constexpr style_path_segment& operator=(style_path_segment&&) noexcept = default;
+    constexpr style_path_segment(style_path_segment const&) = default;
+    constexpr style_path_segment(style_path_segment&&) = default;
+    constexpr style_path_segment& operator=(style_path_segment const&) = default;
+    constexpr style_path_segment& operator=(style_path_segment&&) = default;
     [[nodiscard]] constexpr friend bool operator==(style_path_segment const&, style_path_segment const&) noexcept = default;
 
-    constexpr explicit style_path_segment(std::string name, std::string id, std::vector<std::string> classes) noexcept :
+    constexpr style_path_segment(std::string name, std::string id = {}, std::vector<std::string> classes = {}) :
         name(std::move(name)), id(std::move(id)), classes(std::move(classes)) {}
 };
 

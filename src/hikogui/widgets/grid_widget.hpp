@@ -77,7 +77,7 @@ public:
         hi_log_info("grid_widget::insert({}, {}, {}, {})", first_column, first_row, last_column, last_row);
 
         ++global_counter<"grid_widget:insert:constrain">;
-        process_event({gui_event_type::window_reconstrain});
+        request_reconstrain();
     }
 
     /** Insert a widget to the front of the grid.

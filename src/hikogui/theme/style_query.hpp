@@ -38,7 +38,7 @@ struct style_query {
      * @param pseudo_class The pseudo-class (state of the widget).
      * @return The style attributes for the path and pseudo-class.
      */
-    [[nodiscard]] virtual style_properties get_attributes(style_path const&path, style_pseudo_class pseudo_class) const = 0;
+    [[nodiscard]] virtual style_properties get_properties(style_path const&path, style_pseudo_class pseudo_class) const = 0;
 };
 
 } // namespace v1

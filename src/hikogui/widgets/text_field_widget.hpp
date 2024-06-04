@@ -92,7 +92,7 @@ public:
 
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"text_field_widget:delegate:layout">;
-            process_event({gui_event_type::window_relayout});
+            request_relayout();
         });
         this->delegate->init(*this);
 
@@ -107,15 +107,15 @@ public:
 
         _continues_cbt = continues.subscribe([&](auto...) {
             ++global_counter<"text_field_widget:continues:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
         _text_cbt = _text.subscribe([&](auto...) {
             ++global_counter<"text_field_widget:text:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
         _error_label_cbt = _error_label.subscribe([&](auto const& new_value) {
             ++global_counter<"text_field_widget:error_label:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
 
         style.set_name("text-field");

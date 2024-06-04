@@ -131,13 +131,6 @@ public:
         }
     }
 
-    /** Request the widget to be redrawn on the next frame.
-     */
-    void request_redraw() const noexcept override
-    {
-        process_event({gui_event_type::window_redraw, layout().clipping_rectangle_on_window()});
-    }
-
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
      * command to the super class' `handle_event()`.
@@ -329,14 +322,17 @@ public:
 
     [[nodiscard]] hi::theme const& theme() const noexcept
     {
-        hi_assert_not_null(window);
-        return window->theme;
+        if (auto w = window()) {
+            return w->theme;
+        } else {
+            std::unreachable();
+        }
     }
 
     [[nodiscard]] gfx_surface const *surface() const noexcept
     {
-        if (window) {
-            return window->surface.get();
+        if (auto w = window()) {
+            return w->surface.get();
         } else {
             return nullptr;
         }

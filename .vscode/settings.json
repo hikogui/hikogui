@@ -134,7 +134,8 @@
         "xutility": "cpp",
         "resumable": "cpp",
         "string_span": "cpp",
-        "pointers": "cpp"
+        "pointers": "cpp",
+        "span_ext": "cpp"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"

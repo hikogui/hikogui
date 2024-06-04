@@ -66,7 +66,7 @@ public:
         }
 
         ++global_counter<"overlay_widget:set_widget:constrain">;
-        process_event({gui_event_type::window_reconstrain});
+        request_reconstrain();
     }
 
     /** Add a content widget directly to this overlay widget.

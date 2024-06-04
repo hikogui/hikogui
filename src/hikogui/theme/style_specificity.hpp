@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "../macros.hpp"
 
 hi_export_module(hikogui.theme : style_specificity);
 

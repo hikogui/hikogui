@@ -85,7 +85,7 @@ public:
                     // Could not get an image, retry.
                     _icon_has_modified = true;
                     ++global_counter<"icon_widget:no-backing-image:constrain">;
-                    process_event({gui_event_type::window_reconstrain});
+                    request_reconstrain();
                 }
 
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
@@ -181,7 +181,7 @@ private:
         _icon_cbt = icon.subscribe([this](auto...) {
             _icon_has_modified = true;
             ++global_counter<"icon_widget:icon:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
 
         style.set_name("icon");

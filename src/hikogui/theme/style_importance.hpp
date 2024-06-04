@@ -2,12 +2,16 @@
 
 #pragma once
 
+#include "../macros.hpp"
+#include <cstdint>
+#include <utility>
+
 hi_export_module(hikogui.theme : style_importance);
 
 hi_export namespace hi::inline v1 {
 
 
-struct style_importance : uint8_t {
+enum class style_importance : uint8_t {
     initial = 0,
 
     user = 1,
@@ -28,16 +32,16 @@ struct style_importance : uint8_t {
 [[nodiscard]] constexpr style_importance make_important(style_importance rhs) noexcept
 {
     switch (rhs) {
-    case initial:
-        return important_initial;
-    case user:
-        return important_user;
-    case theme:
-        return important_theme;
-    case author:
-        return important_author;
+    case style_importance::initial:
+        return style_importance::important_initial;
+    case style_importance::user:
+        return style_importance::important_user;
+    case style_importance::theme:
+        return style_importance::important_theme;
+    case style_importance::author:
+        return style_importance::important_author;
     default:
-        std::unreachable();
+        return rhs;
     }
 }
 

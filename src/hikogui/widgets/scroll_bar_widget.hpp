@@ -57,15 +57,15 @@ public:
     {
         _content_cbt = this->content.subscribe([&](auto...) {
             ++global_counter<"scroll_bar_widget:content:relayout">;
-            process_event({gui_event_type::window_relayout});
+            request_relayout();
         });
         _aperture_cbt = this->aperture.subscribe([&](auto...) {
             ++global_counter<"scroll_bar_widget:aperture:relayout">;
-            process_event({gui_event_type::window_relayout});
+            request_relayout();
         });
         _offset_cbt = this->offset.subscribe([&](auto...) {
             ++global_counter<"scroll_bar_widget:offset:relayout">;
-            process_event({gui_event_type::window_relayout});
+            request_relayout();
         });
 
         style.set_name("scroll-bar");

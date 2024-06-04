@@ -233,7 +233,7 @@ public:
             }
         }
 
-        [[nodiscard]] style_properties get_attributes(style_path const& path, style_pseudo_class pseudo_class) const override
+        [[nodiscard]] style_properties get_properties(style_path const& path, style_pseudo_class pseudo_class) const override
         {
             assert(not path.empty());
 
@@ -259,39 +259,40 @@ public:
                 return false;
             }();
 
+            constexpr auto priority = style_priority{style_importance::theme, style_specificity::none};
             auto r = style_properties{};
             if (path.back().name == "toggle") {
-                r.set_width(unit::dips(theme->size() * 4.0f));
-                r.set_height(unit::dips(theme->size() * 2.0f));
+                r.set_width(unit::dips(theme->size() * 4.0f), priority);
+                r.set_height(unit::dips(theme->size() * 2.0f), priority);
             } else {
-                r.set_width(unit::dips(theme->size() * 2.0f));
-                r.set_height(unit::dips(theme->size() * 2.0f));
+                r.set_width(unit::dips(theme->size() * 2.0f), priority);
+                r.set_height(unit::dips(theme->size() * 2.0f), priority);
             }
-            r.set_font_size(unit::points_per_em(theme->font_size()));
-            r.set_margin_left(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_margin_bottom(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_margin_right(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_margin_top(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_padding_left(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_padding_bottom(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_padding_right(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_padding_top(unit::dips(theme->margin<float>() * 2.0f));
-            r.set_border_width(unit::dips(theme->border_width() * 2.0f));
-            r.set_border_bottom_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
-            r.set_border_bottom_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
-            r.set_border_top_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
-            r.set_border_top_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f));
+            r.set_font_size(unit::points_per_em(theme->font_size()), priority);
+            r.set_margin_left(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_margin_bottom(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_margin_right(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_margin_top(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_padding_left(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_padding_bottom(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_padding_right(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_padding_top(unit::dips(theme->margin<float>() * 2.0f), priority);
+            r.set_border_width(unit::dips(theme->border_width() * 2.0f), priority);
+            r.set_border_bottom_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
+            r.set_border_bottom_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
+            r.set_border_top_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
+            r.set_border_top_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
 
 
             if (should_center) {
-                r.set_horizontal_alignment(hi::horizontal_alignment::center);
-                r.set_vertical_alignment(hi::vertical_alignment::middle);
+                r.set_horizontal_alignment(hi::horizontal_alignment::center, priority);
+                r.set_vertical_alignment(hi::vertical_alignment::middle, priority);
             } else {
-                r.set_horizontal_alignment(hi::horizontal_alignment::left);
-                r.set_vertical_alignment(hi::vertical_alignment::top);
+                r.set_horizontal_alignment(hi::horizontal_alignment::left, priority);
+                r.set_vertical_alignment(hi::vertical_alignment::top, priority);
             }
-            r.set_x_height(unit::points_per_em(theme->font_size()) * unit::em_squares(0.45f));
-            r.set_text_style(theme->text_style_set());
+            r.set_x_height(unit::points_per_em(theme->font_size()) * unit::em_squares(0.45f), priority);
+            r.set_text_style(theme->text_style_set(), priority);
 
             r.set_background_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
@@ -306,7 +307,7 @@ public:
                 default:
                     std::unreachable();
                 }
-            }());
+            }(), priority);
 
             r.set_foreground_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
@@ -321,7 +322,7 @@ public:
                 default:
                     std::unreachable();
                 }
-            }());
+            }(), priority);
 
             r.set_border_color([&]() {
                 if (std::to_underlying(pseudo_class & style_pseudo_class::focus)) {
@@ -340,7 +341,7 @@ public:
                         std::unreachable();
                     }
                 }
-            }());
+            }(), priority);
 
             r.set_accent_color([&]() {
                 switch (pseudo_class & style_pseudo_class::mode_mask) {
@@ -361,7 +362,7 @@ public:
                 default:
                     std::unreachable();
                 }
-            }());
+            }(), priority);
 
             return r;
         }
