@@ -351,7 +351,7 @@ public:
                 case style_pseudo_class::hover:
                 case style_pseudo_class::active:
                     if (path.back().name == "toggle") {
-                        if (std::to_underlying(pseudo_class & style_pseudo_class::_true)) {
+                        if (std::to_underlying(pseudo_class & style_pseudo_class::checked)) {
                             return theme->accent_color();
                         } else {
                             return theme->border_color(semantic_level);

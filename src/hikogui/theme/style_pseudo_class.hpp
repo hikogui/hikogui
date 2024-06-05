@@ -44,13 +44,9 @@ enum class style_pseudo_class {
      */
     focus     = 0b0'0'1'00,
 
-    /** The value that the widget represent is 'false'.
+    /** A widget like a radio button or checkbox is checked.
      */
-    _false    = 0b0'0'0'00,
-
-    /** The value that the widget represent is 'true'.
-     */
-    _true     = 0b0'1'0'00,
+    checked   = 0b0'1'0'00,
 
     /** The window is the front (the active) window.
      */

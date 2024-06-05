@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "style_cascade.hpp" // export
 #include "style_properties.hpp" // export
 #include "style_parser.hpp" // export
 #include "style_path.hpp" // export

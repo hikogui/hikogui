@@ -43,6 +43,8 @@ struct style_selector_segment {
         pseudo_classes(pseudo_classes),
         child_combinator(child_combinator)
     {
+        std::sort(this->classes.begin(), this->classes.end());
+        std::sort(this->pseudo_classes.begin(), this->pseudo_classes.end());
     }
 
     /**
@@ -66,10 +68,8 @@ struct style_selector_segment {
             return false;
         }
 
-        for (auto const& x : lhs.classes) {
-            if (std::find(rhs.classes.begin(), rhs.classes.end(), x) == rhs.classes.end()) {
-                return false;
-            }
+        if (not std::includes(rhs.classes.begin(), rhs.classes.end(), lhs.classes.begin(), lhs.classes.end())) {
+            return false;
         }
 
         return true;
@@ -169,8 +169,41 @@ class style_selector : public std::vector<style_selector_segment> {
  * @param rhs The style path to compare.
  * @return `true` if the style selector matches the style path, `false` otherwise.
  */
-[[nodiscard]] constexpr bool matches(style_selector const& lhs, style_path const& rhs) noexcept
+[[nodiscard]] constexpr bool matches(style_selector const& selector, style_path const& path) noexcept
 {
-    return matches(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+    return matches(selector.begin(), selector.end(), path.begin(), path.end());
 }
+
+/**
+ * Determines whether the given style selector matches the provided pseudo classes.
+ *
+ * @note This function only checks the pseudo classes of the last segment in the style selector.
+ * @param selector The style selector to match against.
+ * @param pseudo_classes The list of pseudo classes to match.
+ * @return `true` if the style selector matches the pseudo classes, `false` otherwise.
+ */
+[[nodiscard]] constexpr bool matches(style_selector const& selector, std::vector<std::string> const& pseudo_classes) noexcept
+{
+    if (selector.empty()) {
+        return true;
+    }
+
+    auto const& last = selector.back();
+    return std::includes(pseudo_classes.begin(), pseudo_classes.end(), last.pseudo_classes.begin(), last.pseudo_classes.end());
 }
+
+/**
+ * Determines whether a given style selector matches a style path and a list of pseudo classes.
+ *
+ * @note This function only checks the pseudo classes of the last segment in the style selector.
+ * @param selector The style selector to match.
+ * @param path The style path to match against.
+ * @param pseudo_classes The list of pseudo classes to match against.
+ * @return `true` if the style selector matches the style path and pseudo classes, `false` otherwise.
+ */
+[[nodiscard]] constexpr bool matches(style_selector const& selector, style_path const& path, std::vector<std::string> const& pseudo_classes) noexcept
+{
+    return matches(selector, pseudo_classes) and matches(selector, path);
+}
+
+} // namespace hi::inline v1

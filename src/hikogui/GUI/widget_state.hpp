@@ -296,9 +296,7 @@ public:
         }
 
         if (value() != widget_value::off) {
-            r |= style_pseudo_class::_true;
-        } else {
-            r |= style_pseudo_class::_false;
+            r |= style_pseudo_class::checked;
         }
         
         return r;
