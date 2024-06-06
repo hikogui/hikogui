@@ -7,6 +7,8 @@
 #include "../macros.hpp"
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cstddef>
 
 hi_export_module(hikogui.theme : style_selector);
 

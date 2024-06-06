@@ -7,6 +7,7 @@
 #include "../macros.hpp"
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <cstdint>
 #include <cstddef>
 
