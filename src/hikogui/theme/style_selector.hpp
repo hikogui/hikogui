@@ -43,8 +43,19 @@ struct style_selector_segment {
         pseudo_classes(pseudo_classes),
         child_combinator(child_combinator)
     {
+        if (this->name == "*") {
+            this->name.clear();
+        }
         std::sort(this->classes.begin(), this->classes.end());
         std::sort(this->pseudo_classes.begin(), this->pseudo_classes.end());
+    }
+
+    constexpr style_selector_segment(
+        std::vector<std::string> classes,
+        std::vector<std::string> pseudo_classes = {},
+        bool child_combinator = false) :
+        style_selector_segment({}, {}, std::move(classes), std::move(pseudo_classes), child_combinator)
+    {
     }
 
     /**
@@ -87,6 +98,7 @@ struct style_selector_segment {
  * applying styles to elements.
  */
 class style_selector : public std::vector<style_selector_segment> {
+public:
     using super = std::vector<style_selector_segment>;
     using super::super;
 
@@ -201,7 +213,8 @@ class style_selector : public std::vector<style_selector_segment> {
  * @param pseudo_classes The list of pseudo classes to match against.
  * @return `true` if the style selector matches the style path and pseudo classes, `false` otherwise.
  */
-[[nodiscard]] constexpr bool matches(style_selector const& selector, style_path const& path, std::vector<std::string> const& pseudo_classes) noexcept
+[[nodiscard]] constexpr bool
+matches(style_selector const& selector, style_path const& path, std::vector<std::string> const& pseudo_classes) noexcept
 {
     return matches(selector, pseudo_classes) and matches(selector, path);
 }

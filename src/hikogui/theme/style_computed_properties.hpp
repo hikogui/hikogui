@@ -11,6 +11,7 @@
 #include "../geometry/geometry.hpp"
 #include "../macros.hpp"
 #include <cstdint>
+#include <cassert>
 
 hi_export_module(hikogui.theme : style_computed_properties);
 
@@ -33,22 +34,47 @@ struct style_computed_properties {
     unit::pixels_f border_top_left_radius;
     unit::pixels_f border_top_right_radius;
     unit::pixels_f x_height;
-
     hi::horizontal_alignment horizontal_alignment;
     hi::vertical_alignment vertical_alignment;
-
     color foreground_color;
     color background_color;
     color border_color;
     color accent_color;
-
     text_style_set text_style;
+
+    size_t _width_inherit : 1 = 0;
+    size_t _height_inherit : 1 = 0;
+    size_t _font_size_inherit : 1 = 0;
+    size_t _margin_left_inherit : 1 = 0;
+    size_t _margin_bottom_inherit : 1 = 0;
+    size_t _margin_right_inherit : 1 = 0;
+    size_t _margin_top_inherit : 1 = 0;
+    size_t _padding_left_inherit : 1 = 0;
+    size_t _padding_bottom_inherit : 1 = 0;
+    size_t _padding_right_inherit : 1 = 0;
+    size_t _padding_top_inherit : 1 = 0;
+    size_t _border_width_inherit : 1 = 0;
+    size_t _border_bottom_left_radius_inherit : 1 = 0;
+    size_t _border_bottom_right_radius_inherit : 1 = 0;
+    size_t _border_top_left_radius_inherit : 1 = 0;
+    size_t _border_top_right_radius_inherit : 1 = 0;
+    size_t _x_height_inherit : 1 = 0;
+    size_t _horizontal_alignment_inherit : 1 = 0;
+    size_t _vertical_alignment_inherit : 1 = 0;
+    size_t _foreground_color_inherit : 1 = 0;
+    size_t _background_color_inherit : 1 = 0;
+    size_t _border_color_inherit : 1 = 0;
+    size_t _accent_color_inherit : 1 = 0;
+    size_t _text_style_inherit : 1 = 0;
 
     void inherit(style_computed_properties const& rhs) noexcept
     {
 #define HIX_INHERIT(NAME) \
-    if (rhs._##NAME##_inherit) \
-        NAME = rhs.NAME;
+    if (_##NAME##_inherit) { \
+        NAME = rhs.NAME; \
+        assert(rhs._##NAME##_inherit == 0); \
+        _##NAME##_inherit = 0; \
+    }
 
         HIX_INHERIT(width);
         HIX_INHERIT(height);
@@ -120,7 +146,7 @@ struct style_computed_properties {
         }
     }
 
-/** Set all attributes in other as-if they are important.
+    /** Set all attributes in other as-if they are important.
      * 
      * @param other The attributes used to overwrite the current attributes.
      * @return A mask for what kind of values where changed.
@@ -158,34 +184,6 @@ struct style_computed_properties {
 #undef HIX_COMPARE
         return r;
     }
-
-private:
-    size_t _width_inherit : 1 = 0;
-    size_t _height_inherit : 1 = 0;
-    size_t _font_size_inherit : 1 = 0;
-    size_t _margin_left_inherit : 1 = 0;
-    size_t _margin_bottom_inherit : 1 = 0;
-    size_t _margin_right_inherit : 1 = 0;
-    size_t _margin_top_inherit : 1 = 0;
-    size_t _padding_left_inherit : 1 = 0;
-    size_t _padding_bottom_inherit : 1 = 0;
-    size_t _padding_right_inherit : 1 = 0;
-    size_t _padding_top_inherit : 1 = 0;
-    size_t _border_width_inherit : 1 = 0;
-    size_t _border_bottom_left_radius_inherit : 1 = 0;
-    size_t _border_bottom_right_radius_inherit : 1 = 0;
-    size_t _border_top_left_radius_inherit : 1 = 0;
-    size_t _border_top_right_radius_inherit : 1 = 0;
-    size_t _x_height_inherit : 1 = 0;
-
-    size_t _horizontal_alignment_inherit : 1 = 0;
-    size_t _vertical_alignment_inherit : 1 = 0;
-
-    size_t _foreground_color_inherit : 1 = 0;
-    size_t _background_color_inherit : 1 = 0;
-    size_t _border_color_inherit : 1 = 0;
-    size_t _accent_color_inherit : 1 = 0;
-
-    size_t _text_style_inherit : 1 = 0;
 };
+
 }

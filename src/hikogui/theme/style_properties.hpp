@@ -29,31 +29,44 @@ public:
     [[nodiscard]] friend style_computed_properties operator*(style_properties const& lhs, unit::pixel_density const& rhs) noexcept
     {
         auto r = style_computed_properties{};
-        r.width = ceil_as(unit::pixels, lhs._width * rhs);
-        r.height = ceil_as(unit::pixels, lhs._height * rhs);
-        r.font_size = round_as(unit::pixels_per_em, lhs._font_size * rhs);
-        r.margin_left = round_as(unit::pixels, lhs._margin_left * rhs);
-        r.margin_bottom = round_as(unit::pixels, lhs._margin_bottom * rhs);
-        r.margin_right = round_as(unit::pixels, lhs._margin_right * rhs);
-        r.margin_top = round_as(unit::pixels, lhs._margin_top * rhs);
-        r.padding_left = round_as(unit::pixels, lhs._padding_left * rhs);
-        r.padding_bottom = round_as(unit::pixels, lhs._padding_bottom * rhs);
-        r.padding_right = round_as(unit::pixels, lhs._padding_right * rhs);
-        r.padding_top = round_as(unit::pixels, lhs._padding_top * rhs);
-        r.border_width = std::max(floor_as(unit::pixels, lhs._border_width * rhs), unit::pixels(1.0f));
-        r.border_bottom_left_radius = round_as(unit::pixels, lhs._border_bottom_left_radius * rhs);
-        r.border_bottom_right_radius = round_as(unit::pixels, lhs._border_bottom_right_radius * rhs);
-        r.border_top_left_radius = round_as(unit::pixels, lhs._border_top_left_radius * rhs);
-        r.border_top_right_radius = round_as(unit::pixels, lhs._border_top_right_radius * rhs);
-        r.x_height = round_as(unit::pixels, lhs._x_height * rhs);
 
-        r.horizontal_alignment = lhs._horizontal_alignment;
-        r.vertical_alignment = lhs._vertical_alignment;
-        r.foreground_color = lhs._foreground_color;
-        r.background_color = lhs._background_color;
-        r.border_color = lhs._border_color;
-        r.accent_color = lhs._accent_color;
-        r.text_style = lhs._text_style;
+#define HIX_MUL(NAME, UNIT, ROUND) \
+    r.NAME = ROUND(UNIT, lhs._##NAME * rhs); \
+    r._##NAME##_inherit = lhs._##NAME##_inherit;
+
+        HIX_MUL(width, unit::pixels, ceil_as);
+        HIX_MUL(height, unit::pixels, ceil_as);
+        HIX_MUL(font_size, unit::pixels_per_em, round_as);
+        HIX_MUL(margin_left, unit::pixels, round_as);
+        HIX_MUL(margin_bottom, unit::pixels, round_as);
+        HIX_MUL(margin_right, unit::pixels, round_as);
+        HIX_MUL(margin_top, unit::pixels, round_as);
+        HIX_MUL(padding_left, unit::pixels, round_as);
+        HIX_MUL(padding_bottom, unit::pixels, round_as);
+        HIX_MUL(padding_right, unit::pixels, round_as);
+        HIX_MUL(padding_top, unit::pixels, round_as);
+        HIX_MUL(border_bottom_left_radius, unit::pixels, round_as);
+        HIX_MUL(border_bottom_right_radius, unit::pixels, round_as);
+        HIX_MUL(border_top_left_radius, unit::pixels, round_as);
+        HIX_MUL(border_top_right_radius, unit::pixels, round_as);
+        HIX_MUL(x_height, unit::pixels, round_as);
+#undef HIX_MUL
+
+        r.border_width = std::max(floor_as(unit::pixels, lhs._border_width * rhs), unit::pixels(1.0f));
+        r._border_width_inherit = lhs._border_width_inherit;
+
+#define HIX_COPY(NAME) \
+    r.NAME = lhs._##NAME; \
+    r._##NAME##_inherit = lhs._##NAME##_inherit;
+
+        HIX_COPY(foreground_color);
+        HIX_COPY(background_color);
+        HIX_COPY(border_color);
+        HIX_COPY(accent_color);
+        HIX_COPY(horizontal_alignment);
+        HIX_COPY(vertical_alignment);
+        HIX_COPY(text_style);
+#undef HIX_COPY
 
         return r;
     }

@@ -22,14 +22,69 @@ struct style_property_element {
     style_properties properties;
 };
 
-[[nodiscard]] constexpr auto initial_style_properties_init() noexcept
+[[nodiscard]] inline auto initial_style_properties_init() noexcept
 {
     auto r = std::vector<style_property_element>{};
+
+    {
+        // Match all widgets with the :root pseudo class.
+        // Set actual properties to make the GUI work without a style sheet.
+        auto selector = style_selector{};
+        selector.emplace_back(std::vector<std::string>{}, std::vector<std::string>{"root"});
+
+        auto const priority = style_priority{style_importance::initial, selector.specificity()};
+
+        auto properties = style_properties{};
+        properties.set_width(unit::pixels(20.0f), priority);
+        properties.set_height(unit::pixels(20.0f), priority);
+        properties.set_font_size(unit::pixels_per_em(15.0f), priority);
+        properties.set_margin_left(unit::pixels(5.0f), priority);
+        properties.set_margin_bottom(unit::pixels(5.0f), priority);
+        properties.set_margin_right(unit::pixels(5.0f), priority);
+        properties.set_margin_top(unit::pixels(5.0f), priority);
+        properties.set_padding_left(unit::pixels(5.0f), priority);
+        properties.set_padding_bottom(unit::pixels(5.0f), priority);
+        properties.set_padding_right(unit::pixels(5.0f), priority);
+        properties.set_padding_top(unit::pixels(5.0f), priority);
+        properties.set_border_width(unit::pixels(1.0f), priority);
+        properties.set_border_bottom_left_radius(unit::pixels(0.0f), priority);
+        properties.set_border_bottom_right_radius(unit::pixels(0.0f), priority);
+        properties.set_border_top_left_radius(unit::pixels(0.0f), priority);
+        properties.set_border_top_right_radius(unit::pixels(0.0f), priority);
+        properties.set_x_height(unit::pixels(10.0f), priority);
+        properties.set_horizontal_alignment(horizontal_alignment::left, priority);
+        properties.set_vertical_alignment(vertical_alignment::middle, priority);
+        properties.set_foreground_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
+        properties.set_background_color(color{1.0f, 1.0f, 1.0f, 1.0f}, priority);
+        properties.set_border_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
+        properties.set_accent_color(color{0.0f, 0.0f, 1.0f, 1.0f}, priority);
+
+        auto text_styles = text_style_set{};
+        auto text_style = hi::text_style{};
+
+        auto font_chain = lean_vector<font_id>{};
+        if (auto font = find_font("Arial")) {
+            font_chain.push_back(font);
+        }
+        if (auto font = find_font("Helvetica")) {
+            font_chain.push_back(font);
+        }
+
+        text_style.set_font_chain(std::move(font_chain));
+        text_style.set_scale(1.0f);
+        text_style.set_color(color{0.0f, 0.0f, 0.0f, 1.0f});
+        text_style.set_line_spacing(1.0f);
+        text_style.set_paragraph_spacing(1.5f);
+        text_styles.push_back(grapheme_attribute_mask{}, text_style);
+        properties.set_text_style(text_styles, priority);
+
+        r.emplace_back(std::move(selector), std::move(properties));
+    }
 
     return r;
 }
 
-auto initial_style_properties = initial_style_properties_init();
+auto initial_style_properties = std::vector<style_property_element>{};
 auto user_style_properties = std::vector<style_property_element>{};
 auto theme_style_properties = std::vector<style_property_element>{};
 auto author_style_properties = std::vector<style_property_element>{};
@@ -176,6 +231,13 @@ inline void add_style_properties(style_importance importance, style_selector sel
  */
 inline generator<detail::style_property_element const&> all_style_properties() noexcept
 {
+    // Load in the initial style properties lazily.
+    // This is done to avoid static initialization order fiasco.
+    // Specifically the font-book must be initialized first.
+    if (detail::initial_style_properties.empty()) {
+        detail::initial_style_properties = detail::initial_style_properties_init();
+    }
+
     for (auto const& element : detail::initial_style_properties) {
         co_yield element;
     }

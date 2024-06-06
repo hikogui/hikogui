@@ -229,17 +229,16 @@ public:
 
     /** Restyle the widgets and its children.
      * 
-     * @param query The style query to use for the restyle.
      * @param pixel_density The pixel density to use for the restyle.
      * @param path The path of the parent widget.
      * @param properties The properties used when this widget will inherit style properties.
      */
-    virtual void restyle(hi::style_query const& query, unit::pixel_density pixel_density, style_path const &path = style_path{}, style::properties_array_type const &properties = style::properties_array_type{}) noexcept
+    virtual void restyle(unit::pixel_density pixel_density, style_path const &path = style_path{}, style::properties_array_type const &properties = style::properties_array_type{}) noexcept
     {
-        auto const [child_path, child_properties] = style.restyle(query, pixel_density, path, properties);
+        auto const [child_path, child_properties] = style.restyle(pixel_density, path, properties);
 
         for (auto& child : children()) {
-            child.restyle(query, pixel_density, child_path, child_properties);
+            child.restyle(pixel_density, child_path, child_properties);
         }
     }
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "style_cascade.hpp"
 #include "style_path.hpp"
 #include "style_properties.hpp"
 #include "style_computed_properties.hpp"
@@ -157,7 +158,6 @@ public:
     }
 
     [[nodiscard]] std::pair<style_path, properties_array_type const&> restyle(
-        style_query const& query,
         unit::pixel_density pixel_density,
         style_path const& parent_path,
         properties_array_type const& parent_properties) noexcept
@@ -166,7 +166,7 @@ public:
         path.emplace_back(_name, _id, _classes);
 
         for (auto i = size_t{0}; i != style_pseudo_class_size; ++i) {
-            auto p = query.get_properties(path, static_cast<style_pseudo_class>(i));
+            auto p = get_style_properties(path, static_cast<style_pseudo_class>(i));
             p.apply(_override_properties);
 
             _loaded_properties[i] = p * pixel_density;

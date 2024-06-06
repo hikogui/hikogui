@@ -134,12 +134,11 @@ public:
         auto const new_position = point2{500.0f, 500.0f}; 
         create_window(new_position);
 
+        theme = get_selected_theme().transform(pixel_density);
         _widget->set_window(this);
-        _widget->restyle(*get_selected_theme().query(), pixel_density);
+        _widget->restyle(pixel_density);
 
         // Execute a constraint check to determine initial window size.
-        theme = get_selected_theme().transform(pixel_density);
-
         _widget_constraints = _widget->update_constraints();
         auto const new_size = _widget_constraints.preferred;
 
@@ -227,7 +226,7 @@ public:
             auto const _ = trace<"window::restyle">();
 
             theme = get_selected_theme().transform(pixel_density);
-            _widget->restyle(*get_selected_theme().query(), pixel_density);
+            _widget->restyle(pixel_density);
             request_reconstrain();
         }
 
