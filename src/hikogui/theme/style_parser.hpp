@@ -334,7 +334,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     HIX_VALUE(parse_style_length, "border-top-left-radius", border_top_left_radius)
     HIX_VALUE(parse_style_length, "border-top-right-radius", border_top_right_radius)
     HIX_VALUE(parse_style_length, "border-radius", border_radius)
-    HIX_VALUE(parse_style_color, "foreground-color", foreground_color)
+    HIX_VALUE(parse_style_color, "color", color)
     HIX_VALUE(parse_style_color, "background-color", background_color)
     HIX_VALUE(parse_style_color, "border-color", border_color)
     HIX_VALUE(parse_style_horizontal_alignment, "horizontal-alignment", horizontal_alignment)

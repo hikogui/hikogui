@@ -5,8 +5,12 @@
 #include "style_specificity.hpp"
 #include "style_path.hpp"
 #include "../macros.hpp"
+#include <concepts>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cassert>
+#include <format>
 
 hi_export_module(hikogui.theme : style_selector);
 
@@ -50,12 +54,26 @@ struct style_selector_segment {
         std::sort(this->pseudo_classes.begin(), this->pseudo_classes.end());
     }
 
-    constexpr style_selector_segment(
-        std::vector<std::string> classes,
-        std::vector<std::string> pseudo_classes = {},
-        bool child_combinator = false) :
-        style_selector_segment({}, {}, std::move(classes), std::move(pseudo_classes), child_combinator)
+    [[nodiscard]] constexpr static style_selector_segment from_element(std::string name) noexcept
     {
+        return style_selector_segment(std::move(name));
+    }
+
+    [[nodiscard]] constexpr static style_selector_segment from_id(std::string id) noexcept
+    {
+        return style_selector_segment({}, std::move(id));
+    }
+
+    template<std::convertible_to<std::string>... ClassNames>
+    [[nodiscard]] constexpr static style_selector_segment from_class(ClassNames&&... class_names) noexcept
+    {
+        return style_selector_segment({}, {}, {std::forward<ClassNames>(class_names)...});
+    }
+
+    template<std::convertible_to<std::string>... PseudoClassNames>
+    [[nodiscard]] constexpr static style_selector_segment from_pseudo_class(PseudoClassNames&&... pseudo_class_names) noexcept
+    {
+        return style_selector_segment({}, {}, {}, {std::forward<PseudoClassNames>(pseudo_class_names)...});
     }
 
     /**
@@ -217,6 +235,62 @@ public:
 matches(style_selector const& selector, style_path const& path, std::vector<std::string> const& pseudo_classes) noexcept
 {
     return matches(selector, pseudo_classes) and matches(selector, path);
+}
+
+
+/**
+ * @brief Creates a CSS nth-child pseudo-class selector.
+ * 
+ * This function generates a CSS nth-child pseudo-class selector based on the given parameters.
+ * The nth-child pseudo-class matches elements based on their position among a group of siblings.
+ * 
+ * @param n The modulus value for the nth-child pseudo-class. Must be greater than or equal to 2.
+ * @param i The index of the element among the siblings. 0-indexed.
+ * @return The generated nth-child pseudo-class selector.
+ * 
+ * @note The generated nth-child pseudo-class is 1-indexed. But the parameter @a i is 0-indexed.
+ * @note The generated selector will be in the format "nth-child(an+b)".
+ *       If i is equal to n, the selector will be "nth-child(an)".
+ *       Otherwise, the selector will be "nth-child(an+b)".
+ * 
+ * @assert n must be greater than or equal to 2.
+ */
+[[nodiscard]] constexpr std::string make_nth_child_pseudo_class(size_t n, size_t i) noexcept
+{
+    assert(n >= 2);
+    i %= n;
+
+    // nth-child is 1-indexed.
+    ++i;
+    if (i == n) {
+        return std::format("nth-child({}n)", n);
+    } else {
+        return std::format("nth-child({}n+{})", n, i);
+    }
+}
+
+/**
+ * @brief Creates a pseudo-class selector for the nth depth.
+ * 
+ * This function creates a pseudo-class selector for the nth depth, which is
+ * used in CSS to select elements based on their position within a hierarchy.
+ * 
+ * @param n The modulus value for the nth-depth pseudo-class. Must be greater than or equal to 2.
+ * @param i The current depth. 0-indexed.
+ * @return The pseudo-class selector for the nth depth.
+ */
+[[nodiscard]] constexpr std::string make_nth_depth_pseudo_class(size_t n, size_t i) noexcept
+{
+    assert(n >= 2);
+    i %= n;
+
+    // nth-depth is 1-indexed.
+    ++i;
+    if (i == n) {
+        return std::format("nth-depth({}n)", n);
+    } else {
+        return std::format("nth-depth({}n+{})", n, i);
+    }
 }
 
 } // namespace hi::inline v1

@@ -33,13 +33,12 @@ struct style_computed_properties {
     unit::pixels_f border_bottom_right_radius;
     unit::pixels_f border_top_left_radius;
     unit::pixels_f border_top_right_radius;
-    unit::pixels_f x_height;
     hi::horizontal_alignment horizontal_alignment;
     hi::vertical_alignment vertical_alignment;
-    color foreground_color;
-    color background_color;
-    color border_color;
-    color accent_color;
+    hi::color color;
+    hi::color background_color;
+    hi::color border_color;
+    hi::color accent_color;
     text_style_set text_style;
 
     size_t _width_inherit : 1 = 0;
@@ -58,10 +57,9 @@ struct style_computed_properties {
     size_t _border_bottom_right_radius_inherit : 1 = 0;
     size_t _border_top_left_radius_inherit : 1 = 0;
     size_t _border_top_right_radius_inherit : 1 = 0;
-    size_t _x_height_inherit : 1 = 0;
     size_t _horizontal_alignment_inherit : 1 = 0;
     size_t _vertical_alignment_inherit : 1 = 0;
-    size_t _foreground_color_inherit : 1 = 0;
+    size_t _color_inherit : 1 = 0;
     size_t _background_color_inherit : 1 = 0;
     size_t _border_color_inherit : 1 = 0;
     size_t _accent_color_inherit : 1 = 0;
@@ -92,10 +90,9 @@ struct style_computed_properties {
         HIX_INHERIT(border_bottom_right_radius);
         HIX_INHERIT(border_top_left_radius);
         HIX_INHERIT(border_top_right_radius);
-        HIX_INHERIT(x_height);
         HIX_INHERIT(horizontal_alignment);
         HIX_INHERIT(vertical_alignment);
-        HIX_INHERIT(foreground_color);
+        HIX_INHERIT(color);
         HIX_INHERIT(background_color);
         HIX_INHERIT(border_color);
         HIX_INHERIT(accent_color);
@@ -107,7 +104,7 @@ struct style_computed_properties {
     void set_properties(style_computed_properties const& rhs, style_modify_mask mask = style_modify_mask::all) noexcept
     {
         if (to_bool(mask & style_modify_mask::color)) {
-            foreground_color = rhs.foreground_color;
+            color = rhs.color;
             background_color = rhs.background_color;
             border_color = rhs.border_color;
             accent_color = rhs.accent_color;
@@ -118,7 +115,6 @@ struct style_computed_properties {
             height = rhs.height;
             font_size = rhs.font_size;
             text_style = rhs.text_style;
-            x_height = rhs.x_height;
         }
 
         if (to_bool(mask & style_modify_mask::margin)) {
@@ -173,13 +169,12 @@ struct style_computed_properties {
         HIX_COMPARE(border_bottom_right_radius, style_modify_mask::weight)
         HIX_COMPARE(border_top_left_radius, style_modify_mask::weight)
         HIX_COMPARE(border_top_right_radius, style_modify_mask::weight)
-        HIX_COMPARE(foreground_color, style_modify_mask::color)
+        HIX_COMPARE(color, style_modify_mask::color)
         HIX_COMPARE(background_color, style_modify_mask::color)
         HIX_COMPARE(border_color, style_modify_mask::color)
         HIX_COMPARE(accent_color, style_modify_mask::color)
         HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
         HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
-        HIX_COMPARE(x_height, style_modify_mask::alignment)
         HIX_COMPARE(text_style, style_modify_mask::size)
 #undef HIX_COMPARE
         return r;

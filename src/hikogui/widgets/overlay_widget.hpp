@@ -136,7 +136,7 @@ public:
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme().border_color(_layout.layer + 1);
+        return theme().border_color();
     }
 
     void scroll_to_show(hi::aarectangle rectangle) noexcept override

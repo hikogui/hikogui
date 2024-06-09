@@ -49,7 +49,6 @@ public:
         HIX_MUL(border_bottom_right_radius, unit::pixels, round_as);
         HIX_MUL(border_top_left_radius, unit::pixels, round_as);
         HIX_MUL(border_top_right_radius, unit::pixels, round_as);
-        HIX_MUL(x_height, unit::pixels, round_as);
 #undef HIX_MUL
 
         r.border_width = std::max(floor_as(unit::pixels, lhs._border_width * rhs), unit::pixels(1.0f));
@@ -59,7 +58,7 @@ public:
     r.NAME = lhs._##NAME; \
     r._##NAME##_inherit = lhs._##NAME##_inherit;
 
-        HIX_COPY(foreground_color);
+        HIX_COPY(color);
         HIX_COPY(background_color);
         HIX_COPY(border_color);
         HIX_COPY(accent_color);
@@ -120,13 +119,12 @@ public:
     HIX_GETSET(hi::unit::length_f, border_bottom_right_radius)
     HIX_GETSET(hi::unit::length_f, border_top_left_radius)
     HIX_GETSET(hi::unit::length_f, border_top_right_radius)
-    HIX_GETSET(hi::color, foreground_color)
+    HIX_GETSET(hi::color, color)
     HIX_GETSET(hi::color, background_color)
     HIX_GETSET(hi::color, border_color)
     HIX_GETSET(hi::color, accent_color)
     HIX_GETSET(hi::horizontal_alignment, horizontal_alignment)
     HIX_GETSET(hi::vertical_alignment, vertical_alignment)
-    HIX_GETSET(hi::unit::length_f, x_height)
     HIX_GETSET(hi::text_style_set, text_style)
 #undef HIX_GETSET
 
@@ -172,13 +170,12 @@ public:
         reset_border_bottom_right_radius();
         reset_border_top_left_radius();
         reset_border_top_right_radius();
-        reset_foreground_color();
+        reset_color();
         reset_background_color();
         reset_border_color();
         reset_accent_color();
         reset_horizontal_alignment();
         reset_vertical_alignment();
-        reset_x_height();
         reset_text_style();
     }
 
@@ -212,14 +209,12 @@ public:
         HIX_APPLY(border_bottom_right_radius)
         HIX_APPLY(border_top_left_radius)
         HIX_APPLY(border_top_right_radius)
-        HIX_APPLY(x_height)
-        HIX_APPLY(foreground_color)
+        HIX_APPLY(color)
         HIX_APPLY(background_color)
         HIX_APPLY(border_color)
         HIX_APPLY(accent_color)
         HIX_APPLY(horizontal_alignment)
         HIX_APPLY(vertical_alignment)
-        HIX_APPLY(x_height)
         HIX_APPLY(text_style)
 #undef HIX_APPLY
     }
@@ -241,13 +236,12 @@ private:
     hi::unit::length_f _border_bottom_right_radius = unit::points(0.0f);
     hi::unit::length_f _border_top_left_radius = unit::points(0.0f);
     hi::unit::length_f _border_top_right_radius = unit::points(0.0f);
-    hi::color _foreground_color = {};
+    hi::color _color = {};
     hi::color _background_color = {};
     hi::color _border_color = {};
     hi::color _accent_color = {};
     hi::horizontal_alignment _horizontal_alignment = hi::horizontal_alignment::left;
     hi::vertical_alignment _vertical_alignment = hi::vertical_alignment::top;
-    hi::unit::length_f _x_height = unit::points(0.0f);
     hi::text_style_set _text_style = {};
 
     size_t _width_inherit : 1 = 1;
@@ -266,13 +260,12 @@ private:
     size_t _border_bottom_right_radius_inherit : 1 = 1;
     size_t _border_top_left_radius_inherit : 1 = 1;
     size_t _border_top_right_radius_inherit : 1 = 1;
-    size_t _foreground_color_inherit : 1 = 1;
+    size_t _color_inherit : 1 = 1;
     size_t _background_color_inherit : 1 = 1;
     size_t _border_color_inherit : 1 = 1;
     size_t _accent_color_inherit : 1 = 1;
     size_t _horizontal_alignment_inherit : 1 = 1;
     size_t _vertical_alignment_inherit : 1 = 1;
-    size_t _x_height_inherit : 1 = 1;
     size_t _text_style_inherit : 1 = 1;
 
     style_priority _width_priority;
@@ -291,13 +284,12 @@ private:
     style_priority _border_bottom_right_radius_priority;
     style_priority _border_top_left_radius_priority;
     style_priority _border_top_right_radius_priority;
-    style_priority _foreground_color_priority;
+    style_priority _color_priority;
     style_priority _background_color_priority;
     style_priority _border_color_priority;
     style_priority _accent_color_priority;
     style_priority _horizontal_alignment_priority;
     style_priority _vertical_alignment_priority;
-    style_priority _x_height_priority;
     style_priority _text_style_priority;
 };
 

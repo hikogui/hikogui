@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "hikogui/units/pixels.hpp"
 #include "style_cascade.hpp"
 #include "style_path.hpp"
 #include "style_properties.hpp"
 #include "style_computed_properties.hpp"
 #include "style_pseudo_class.hpp"
-#include "style_query.hpp"
 #include "../text/text.hpp"
 #include "../units/units.hpp"
 #include "../dispatch/dispatch.hpp"
@@ -51,7 +51,22 @@ public:
     float border_bottom_right_radius_px;
     float border_top_left_radius_px;
     float border_top_right_radius_px;
+
+    /** The x-height of the primary font.
+     */
+    unit::pixels_f x_height;
+
+    /** The cap-height of the primary font.
+     */
+    unit::pixels_f cap_height;
+
+    /** The x-height of the primary font.
+     */
     float x_height_px;
+
+    /** The cap-height of the primary font.
+     */
+    float cap_height_px;
 
     extent2 size_px;
     hi::margins margins_px;
@@ -236,7 +251,16 @@ private:
             height_px = height.in(unit::pixels);
             size_px = extent2{width_px, height_px};
             font_size_px = font_size.in(unit::pixels_per_em);
+
+            auto const &style = text_style.front();
+            auto const &primary_font = get_font(style.font_chain().front());
+
+            auto const scaled_font_size = font_size * style.scale();
+            x_height = round_as(unit::pixels, primary_font.metrics.x_height * scaled_font_size);
+            cap_height = round_as(unit::pixels, primary_font.metrics.cap_height * scaled_font_size);
+
             x_height_px = x_height.in(unit::pixels);
+            cap_height_px = cap_height.in(unit::pixels);
         }
 
         if (to_bool(mask & style_modify_mask::margin)) {

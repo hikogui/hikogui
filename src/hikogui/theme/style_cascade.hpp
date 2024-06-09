@@ -30,7 +30,7 @@ struct style_property_element {
         // Match all widgets with the :root pseudo class.
         // Set actual properties to make the GUI work without a style sheet.
         auto selector = style_selector{};
-        selector.emplace_back(std::vector<std::string>{}, std::vector<std::string>{"root"});
+        selector.push_back(style_selector_segment::from_pseudo_class("root"));
 
         auto const priority = style_priority{style_importance::initial, selector.specificity()};
 
@@ -51,10 +51,9 @@ struct style_property_element {
         properties.set_border_bottom_right_radius(unit::pixels(0.0f), priority);
         properties.set_border_top_left_radius(unit::pixels(0.0f), priority);
         properties.set_border_top_right_radius(unit::pixels(0.0f), priority);
-        properties.set_x_height(unit::pixels(10.0f), priority);
         properties.set_horizontal_alignment(horizontal_alignment::left, priority);
         properties.set_vertical_alignment(vertical_alignment::middle, priority);
-        properties.set_foreground_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
+        properties.set_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
         properties.set_background_color(color{1.0f, 1.0f, 1.0f, 1.0f}, priority);
         properties.set_border_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
         properties.set_accent_color(color{0.0f, 0.0f, 1.0f, 1.0f}, priority);
@@ -102,14 +101,8 @@ constexpr void generate_pseudo_classes_from_nesting_depth(size_t depth, std::vec
         r.emplace_back("nth-depth(even)");
     }
 
-    for (size_t i = 2; i != 11; ++i) {
-        auto const j = (depth + 1) % i;
-        if (j == 0) {
-            r.push_back(std::format("nth-depth({}n)", i));
-        } else {
-            r.push_back(std::format("nth-depth({}n+{})", i, j));
-            r.push_back(std::format("nth-depth({}n-{})", i, i - j));
-        }
+    for (size_t n = 2; n != 11; ++n) {
+        r.push_back(make_nth_depth_pseudo_class(n, depth));
     }
 }
 

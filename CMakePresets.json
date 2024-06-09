@@ -99,7 +99,8 @@
       "inherits": "x64-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-	      "CMAKE_CXX_COMPILER": "clang++"
+	      "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "1"
       },
       "environment": {
         "CXXFLAGS": "-march=x86-64-v3"

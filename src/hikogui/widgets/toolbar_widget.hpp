@@ -166,7 +166,7 @@ public:
         if (mode() >= widget_mode::partial) {
             return theme().accent_color();
         } else {
-            return theme().border_color(_layout.layer - 1);
+            return theme().disabled_color();
         }
     }
     /// @endprivatesection

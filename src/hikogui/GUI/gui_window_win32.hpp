@@ -135,6 +135,7 @@ public:
         create_window(new_position);
 
         theme = get_selected_theme().transform(pixel_density);
+        theme.apply_as_styles();
         _widget->set_window(this);
         _widget->restyle(pixel_density);
 
@@ -201,9 +202,9 @@ public:
         _relayout = true;
     }
 
-    void request_redraw(aarectangle const& rectangle) noexcept
+    void request_redraw(aarectangle const& dirty_rectangle) noexcept
     {
-        _redraw_rectangle |= rectangle;
+        _redraw_rectangle |= dirty_rectangle;
     }
 
     /** Update window.
@@ -226,6 +227,7 @@ public:
             auto const _ = trace<"window::restyle">();
 
             theme = get_selected_theme().transform(pixel_density);
+            theme.apply_as_styles();
             _widget->restyle(pixel_density);
             request_reconstrain();
         }

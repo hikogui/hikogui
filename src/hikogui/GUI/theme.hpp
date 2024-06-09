@@ -12,6 +12,8 @@
 #include "../codec/codec.hpp"
 #include "../theme/theme.hpp"
 #include "../macros.hpp"
+#include "hikogui/theme/style_cascade.hpp"
+#include "hikogui/theme/style_selector.hpp"
 #include <gsl/gsl>
 #include <array>
 #include <filesystem>
@@ -170,22 +172,24 @@ public:
         return r;
     }
 
-    [[nodiscard]] hi::color accent_color(size_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color accent_color() const noexcept
     {
-        hi_assert(not _accent_colors.empty());
-        return _accent_colors[nesting_level % _accent_colors.size()];
+        return _accent_color;
     }
 
-    [[nodiscard]] hi::color foreground_color(size_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color color() const noexcept
     {
-        hi_assert(not _foreground_colors.empty());
-        return _foreground_colors[nesting_level % _foreground_colors.size()];
+        return _color;
     }
 
-    [[nodiscard]] hi::color border_color(size_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color border_color() const noexcept
     {
-        hi_assert(not _border_colors.empty());
-        return _border_colors[nesting_level % _border_colors.size()];
+        return _color;
+    }
+
+    [[nodiscard]] hi::color disabled_color() const noexcept
+    {
+        return _disabled_color;
     }
 
     [[nodiscard]] hi::color fill_color(size_t nesting_level = 0) const noexcept
@@ -194,22 +198,19 @@ public:
         return _fill_colors[nesting_level % _fill_colors.size()];
     }
 
-    [[nodiscard]] hi::color text_select_color(size_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color text_select_color() const noexcept
     {
-        hi_assert(not _text_select_colors.empty());
-        return _text_select_colors[nesting_level % _text_select_colors.size()];
+        return _text_select_color;
     }
 
-    [[nodiscard]] hi::color primary_cursor_color(size_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color primary_cursor_color() const noexcept
     {
-        hi_assert(not _primary_cursor_colors.empty());
-        return _primary_cursor_colors[nesting_level % _primary_cursor_colors.size()];
+        return _primary_cursor_color;
     }
 
-    [[nodiscard]] hi::color secondary_cursor_color(size_t nesting_level = 0) const noexcept
+    [[nodiscard]] hi::color secondary_cursor_color() const noexcept
     {
-        hi_assert(not _secondary_cursor_colors.empty());
-        return _secondary_cursor_colors[nesting_level % _secondary_cursor_colors.size()];
+        return _secondary_cursor_color;
     }
 
     [[nodiscard]] hi::text_style_set const& text_style_set() const noexcept
@@ -217,160 +218,174 @@ public:
         return _text_style_set;
     }
 
-    struct style_query_type : style_query {
-        hi::theme const* theme;
-
-        style_query_type(hi::theme const& theme) noexcept : theme(&theme), style_query() {}
-
-        [[nodiscard]] bool operator==(style_query const& rhs) const noexcept override
-        {
-            if (auto const rhs_ = dynamic_cast<style_query_type const*>(&rhs)) {
-                assert(this->theme != nullptr);
-                assert(rhs_->theme != nullptr);
-                return *this->theme == *rhs_->theme;
-            } else {
-                return false;
-            }
-        }
-
-        [[nodiscard]] style_properties get_properties(style_path const& path, style_pseudo_class pseudo_class) const override
-        {
-            assert(not path.empty());
-
-            auto semantic_level = size_t{};
-            for (auto const& segment : path) {
-                if (segment.name == "overlay" or segment.name == "window") {
-                    semantic_level = 0;
-                } else if (
-                    segment.name == "grid-view" or segment.name == "scroll-view" or segment.name == "scroll-aperture" or
-                    segment.name == "tab-view" or segment.name == "with-label") {
-                    // skip levels on container widgets.
-                } else {
-                    ++semantic_level;
-                }
-            }
-
-            auto const should_center = [&]() {
-                for (auto const& segment : path) {
-                    if (segment.name == "menu-button") {
-                        return true;
-                    }
-                }
-                return false;
-            }();
-
-            constexpr auto priority = style_priority{style_importance::theme, style_specificity::none};
-            auto r = style_properties{};
-            if (path.back().name == "toggle") {
-                r.set_width(unit::dips(theme->size() * 4.0f), priority);
-                r.set_height(unit::dips(theme->size() * 2.0f), priority);
-            } else {
-                r.set_width(unit::dips(theme->size() * 2.0f), priority);
-                r.set_height(unit::dips(theme->size() * 2.0f), priority);
-            }
-            r.set_font_size(unit::points_per_em(theme->font_size()), priority);
-            r.set_margin_left(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_margin_bottom(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_margin_right(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_margin_top(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_padding_left(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_padding_bottom(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_padding_right(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_padding_top(unit::dips(theme->margin<float>() * 2.0f), priority);
-            r.set_border_width(unit::dips(theme->border_width() * 2.0f), priority);
-            r.set_border_bottom_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
-            r.set_border_bottom_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
-            r.set_border_top_left_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
-            r.set_border_top_right_radius(unit::dips(theme->rounding_radius<float>() * 2.0f), priority);
-
-
-            if (should_center) {
-                r.set_horizontal_alignment(hi::horizontal_alignment::center, priority);
-                r.set_vertical_alignment(hi::vertical_alignment::middle, priority);
-            } else {
-                r.set_horizontal_alignment(hi::horizontal_alignment::left, priority);
-                r.set_vertical_alignment(hi::vertical_alignment::top, priority);
-            }
-            r.set_x_height(unit::points_per_em(theme->font_size()) * unit::em_squares(0.45f), priority);
-            r.set_text_style(theme->text_style_set(), priority);
-
-            r.set_background_color([&]() {
-                switch (pseudo_class & style_pseudo_class::mode_mask) {
-                case style_pseudo_class::disabled:
-                    return theme->fill_color(semantic_level - 1);
-                case style_pseudo_class::enabled:
-                    return theme->fill_color(semantic_level);
-                case style_pseudo_class::hover:
-                    return theme->fill_color(semantic_level + 1);
-                case style_pseudo_class::active:
-                    return theme->fill_color(semantic_level + 2);
-                default:
-                    std::unreachable();
-                }
-            }(), priority);
-
-            r.set_foreground_color([&]() {
-                switch (pseudo_class & style_pseudo_class::mode_mask) {
-                case style_pseudo_class::disabled:
-                    return theme->foreground_color(semantic_level - 1);
-                case style_pseudo_class::enabled:
-                    return theme->foreground_color(semantic_level);
-                case style_pseudo_class::hover:
-                    return theme->foreground_color(semantic_level + 1);
-                case style_pseudo_class::active:
-                    return theme->foreground_color(semantic_level + 1);
-                default:
-                    std::unreachable();
-                }
-            }(), priority);
-
-            r.set_border_color([&]() {
-                if (std::to_underlying(pseudo_class & style_pseudo_class::focus)) {
-                    return theme->accent_color();
-                } else {
-                    switch (pseudo_class & style_pseudo_class::mode_mask) {
-                    case style_pseudo_class::disabled:
-                        return theme->border_color(semantic_level - 1);
-                    case style_pseudo_class::enabled:
-                        return theme->border_color(semantic_level);
-                    case style_pseudo_class::hover:
-                        return theme->border_color(semantic_level + 1);
-                    case style_pseudo_class::active:
-                        return theme->border_color(semantic_level + 1);
-                    default:
-                        std::unreachable();
-                    }
-                }
-            }(), priority);
-
-            r.set_accent_color([&]() {
-                switch (pseudo_class & style_pseudo_class::mode_mask) {
-                case style_pseudo_class::disabled:
-                    return theme->border_color(semantic_level - 1);
-                case style_pseudo_class::enabled:
-                case style_pseudo_class::hover:
-                case style_pseudo_class::active:
-                    if (path.back().name == "toggle") {
-                        if (std::to_underlying(pseudo_class & style_pseudo_class::checked)) {
-                            return theme->accent_color();
-                        } else {
-                            return theme->border_color(semantic_level);
-                        }
-                    } else {
-                        return theme->accent_color();
-                    }
-                default:
-                    std::unreachable();
-                }
-            }(), priority);
-
-            return r;
-        }
-    };
-
-    [[nodiscard]] std::shared_ptr<style_query_type> query() const noexcept
+    void apply_as_styles() const
     {
-        return std::make_shared<style_query_type>(*this);
+        named_color<"blue"> = _blue;
+        named_color<"green"> = _green;
+        named_color<"indigo"> = _indigo;
+        named_color<"orange"> = _orange;
+        named_color<"pink"> = _pink;
+        named_color<"purple"> = _purple;
+        named_color<"red"> = _red;
+        named_color<"teal"> = _teal;
+        named_color<"yellow"> = _yellow;
+
+        named_color<"gray0"> = _gray0;
+        named_color<"gray1"> = _gray1;
+        named_color<"gray2"> = _gray2;
+        named_color<"gray3"> = _gray3;
+        named_color<"gray4"> = _gray4;
+        named_color<"gray5"> = _gray5;
+        named_color<"gray6"> = _gray6;
+        named_color<"gray7"> = _gray7;
+        named_color<"gray8"> = _gray8;
+        named_color<"gray9"> = _gray9;
+        named_color<"gray10"> = _gray10;
+
+        auto const importance = style_importance::theme;
+
+        reset_style_properties(importance);
+
+        {
+            auto const selector = style_selector{style_selector_segment::from_pseudo_class("root")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_width(unit::dips(size() * 2.0f), priority);
+            properties.set_height(unit::dips(size() * 2.0f), priority);
+            properties.set_font_size(unit::points_per_em(font_size()), priority);
+            properties.set_margin_left(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_margin_bottom(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_margin_right(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_margin_top(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_padding_left(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_padding_bottom(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_padding_right(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_padding_top(unit::dips(margin<float>() * 2.0f), priority);
+            properties.set_border_width(unit::dips(border_width() * 2.0f), priority);
+            properties.set_border_bottom_left_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
+            properties.set_border_bottom_right_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
+            properties.set_border_top_left_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
+            properties.set_border_top_right_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
+            properties.set_text_style(text_style_set(), priority);
+            properties.set_accent_color(_accent_color, priority);
+            properties.set_color(_color, priority);
+            properties.set_background_color(fill_color(0), priority);
+            properties.set_border_color(_color, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // toggle - is wider than other elements.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("toggle")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_width(unit::dips(size() * 4.0f), priority);
+            properties.set_height(unit::dips(size() * 2.0f), priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // menu-button - is aligned left and middle.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("menu-button")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_horizontal_alignment(horizontal_alignment::left, priority);
+            properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // :nth-depth() - colors for different nesting levels.
+        {
+            auto const n = _fill_colors.size();
+            for (auto i = 0; i != n; ++i) {
+                auto const pseudo_class = make_nth_depth_pseudo_class(n, i);
+                auto const selector = style_selector{style_selector_segment::from_pseudo_class(pseudo_class)};
+                auto const priority = style_priority{importance, selector.specificity()};
+
+                auto properties = style_properties{};
+                properties.set_background_color(fill_color(i), priority);
+                add_style_properties(style_importance::theme, selector, properties);
+            }
+        }
+
+        // :hover:nth-depth() - colors for different nesting levels when mouse is hovering.
+        {
+            auto const n = _fill_colors.size();
+            for (auto i = 0; i != n; ++i) {
+                auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
+                auto const selector = style_selector{
+                    style_selector_segment::from_pseudo_class("hover"),
+                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
+                auto const priority = style_priority{importance, selector.specificity()};
+
+                auto properties = style_properties{};
+                properties.set_background_color(fill_color(i + 1), priority);
+                add_style_properties(style_importance::theme, selector, properties);
+            }
+        }
+
+        // :active:nth-depth() - colors for different nesting levels when mouse is pressed.
+        {
+            auto const n = _fill_colors.size();
+            for (auto i = 0; i != n; ++i) {
+                auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
+                auto const selector = style_selector{
+                    style_selector_segment::from_pseudo_class("active"),
+                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
+                auto const priority = style_priority{importance, selector.specificity()};
+
+                auto properties = style_properties{};
+                properties.set_background_color(fill_color(i + 2), priority);
+                add_style_properties(style_importance::theme, selector, properties);
+            }
+        }
+
+        // :disabled:nth-depth() - colors for different nesting levels when disabled.
+        {
+            auto const n = _fill_colors.size();
+            for (auto i = 0; i != n; ++i) {
+                auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
+                auto const selector = style_selector{
+                    style_selector_segment::from_pseudo_class("disabled"),
+                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
+                auto const priority = style_priority{importance, selector.specificity()};
+
+                auto properties = style_properties{};
+                properties.set_border_color(_disabled_color, priority);
+                add_style_properties(style_importance::theme, selector, properties);
+            }
+        }
+
+        // toggle:unchecked:nth-depth() - accent color for different nesting levels when unchecked.
+        {
+            auto const n = _fill_colors.size();
+            for (auto i = 0; i != n; ++i) {
+                auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
+                auto const selector = style_selector{
+                    style_selector_segment::from_pseudo_class("unchecked"),
+                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
+                auto const priority = style_priority{importance, selector.specificity()};
+
+                auto properties = style_properties{};
+                properties.set_accent_color(_color, priority);
+                add_style_properties(style_importance::theme, selector, properties);
+            }
+        }
+
+        // :disabled pseudo-class
+        {
+            auto const selector = style_selector{style_selector_segment::from_pseudo_class("disabled")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_color(_disabled_color, priority);
+            properties.set_border_color(_disabled_color, priority);
+            properties.set_accent_color(_disabled_color, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
     }
 
 private:
@@ -407,20 +422,42 @@ private:
     float _label_icon_size = 15.0f;
 
     /** Size of the font.
-    */
+     */
     float _font_size = 12.0f;
 
     /** The amount the base-line needs to be moved downwards when a label is aligned to top.
      */
     float _baseline_adjustment = 9.0f;
 
-    std::vector<hi::color> _foreground_colors = {hi::color::black()};
-    std::vector<hi::color> _border_colors = {hi::color::black()};
+    hi::color _blue;
+    hi::color _green;
+    hi::color _indigo;
+    hi::color _orange;
+    hi::color _pink;
+    hi::color _purple;
+    hi::color _red;
+    hi::color _teal;
+    hi::color _yellow;
+
+    hi::color _gray0;
+    hi::color _gray1;
+    hi::color _gray2;
+    hi::color _gray3;
+    hi::color _gray4;
+    hi::color _gray5;
+    hi::color _gray6;
+    hi::color _gray7;
+    hi::color _gray8;
+    hi::color _gray9;
+    hi::color _gray10;
+
     std::vector<hi::color> _fill_colors = {hi::color::white()};
-    std::vector<hi::color> _accent_colors = {hi::color::blue()};
-    std::vector<hi::color> _text_select_colors = {hi::color::blue()};
-    std::vector<hi::color> _primary_cursor_colors = {hi::color::black()};
-    std::vector<hi::color> _secondary_cursor_colors = {hi::color::orange()};
+    hi::color _color;
+    hi::color _disabled_color;
+    hi::color _accent_color;
+    hi::color _text_select_color;
+    hi::color _primary_cursor_color;
+    hi::color _secondary_cursor_color;
 
     hi::text_style_set _text_style_set;
 
@@ -666,34 +703,35 @@ private:
             throw parse_error(std::format("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
         }
 
-        named_color<"blue"> = parse_color(data, "blue");
-        named_color<"green"> = parse_color(data, "green");
-        named_color<"indigo"> = parse_color(data, "indigo");
-        named_color<"orange"> = parse_color(data, "orange");
-        named_color<"pink"> = parse_color(data, "pink");
-        named_color<"purple"> = parse_color(data, "purple");
-        named_color<"red"> = parse_color(data, "red");
-        named_color<"teal"> = parse_color(data, "teal");
-        named_color<"yellow"> = parse_color(data, "yellow");
+        _blue = parse_color(data, "blue");
+        _green = parse_color(data, "green");
+        _indigo = parse_color(data, "indigo");
+        _orange = parse_color(data, "orange");
+        _pink = parse_color(data, "pink");
+        _purple = parse_color(data, "purple");
+        _red = parse_color(data, "red");
+        _teal = parse_color(data, "teal");
+        _yellow = parse_color(data, "yellow");
 
-        named_color<"gray0"> = parse_color(data, "gray0");
-        named_color<"gray1"> = parse_color(data, "gray1");
-        named_color<"gray2"> = parse_color(data, "gray2");
-        named_color<"gray3"> = parse_color(data, "gray3");
-        named_color<"gray4"> = parse_color(data, "gray4");
-        named_color<"gray5"> = parse_color(data, "gray5");
-        named_color<"gray6"> = parse_color(data, "gray6");
-        named_color<"gray7"> = parse_color(data, "gray7");
-        named_color<"gray8"> = parse_color(data, "gray8");
-        named_color<"gray9"> = parse_color(data, "gray9");
-        named_color<"gray10"> = parse_color(data, "gray10");
+        _gray0 = parse_color(data, "gray0");
+        _gray1 = parse_color(data, "gray1");
+        _gray2 = parse_color(data, "gray2");
+        _gray3 = parse_color(data, "gray3");
+        _gray4 = parse_color(data, "gray4");
+        _gray5 = parse_color(data, "gray5");
+        _gray6 = parse_color(data, "gray6");
+        _gray7 = parse_color(data, "gray7");
+        _gray8 = parse_color(data, "gray8");
+        _gray9 = parse_color(data, "gray9");
+        _gray10 = parse_color(data, "gray10");
 
-        _accent_colors = parse_color_list(data, "accent-color");
-        _border_colors = parse_color_list(data, "border-color");
         _fill_colors = parse_color_list(data, "fill-color");
-        _text_select_colors = parse_color_list(data, "text-select-color");
-        _primary_cursor_colors = parse_color_list(data, "primary-cursor-color");
-        _secondary_cursor_colors = parse_color_list(data, "secondary-cursor-color");
+        _color = parse_color(data, "color");
+        _disabled_color = parse_color(data, "disabled-color");
+        _accent_color = parse_color(data, "accent-color");
+        _text_select_color = parse_color(data, "text-select-color");
+        _primary_cursor_color = parse_color(data, "primary-cursor-color");
+        _secondary_cursor_color = parse_color(data, "secondary-cursor-color");
 
         _text_style_set.clear();
         _text_style_set.push_back({}, parse_text_style(data, "label-style"));

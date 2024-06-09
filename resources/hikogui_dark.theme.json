@@ -64,18 +64,8 @@
         [ 72,  72,  74]
     ],
     
-    // Colors used by widgets for internal elements and disabled icons.
-    "border-color": [
-        [ 72,  72,  74],
-        [ 99,  99, 102],
-        [142, 142, 147],
-        [174, 174, 178]
-    ],
-
-    // Color for textual or primary elements like icons.
-    "foreground-color":       "gray10",
-
-    // Accent color used by widgets, to show icons, hover and keyboard focus
+    "color":                  "gray8",
+    "disabled-color":         "gray5",
     "accent-color":           "blue",
     "text-select-color":      "blue",
     "primary-cursor-color":   "gray10",

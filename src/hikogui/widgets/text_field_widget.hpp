@@ -280,14 +280,12 @@ public:
                 return error_style.color();
             } else if (_text_widget->focus()) {
                 return theme().accent_color();
-            } else if (phase() == widget_phase::hover) {
-                return theme().border_color(_layout.layer + 1);
             } else {
-                return theme().border_color(_layout.layer);
+                return theme().border_color();
             }
 
         } else {
-            return theme().border_color(_layout.layer - 1);
+            return theme().disabled_color();
         }
     }
     /// @endprivatesection
