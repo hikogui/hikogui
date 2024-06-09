@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cassert>
 #include <format>
+#include <cstddef>
 
 hi_export_module(hikogui.theme : style_selector);
 

@@ -49,7 +49,7 @@ public:
     constexpr tagged_id& operator=(tagged_id&& other) noexcept = default;
     constexpr tagged_id(std::nullopt_t) noexcept : _v(empty_value) {}
 
-    constexpr tagged_id(value_type rhs) : _v(rhs) {
+    constexpr explicit tagged_id(value_type rhs) : _v(rhs) {
         if (rhs == empty_value) {
             throw std::overflow_error("The given identifier was the empty-value");
         }
@@ -108,6 +108,18 @@ public:
 
     [[nodiscard]] constexpr friend auto operator<=>(tagged_id const&, tagged_id const &) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(tagged_id const&, tagged_id const &) noexcept = default;
+
+    template<std::integral LHS>
+    [[nodiscard]] constexpr friend bool operator==(LHS const& lhs, tagged_id const& rhs) noexcept
+    {
+        return std::cmp_equal(lhs, rhs._v);
+    }
+
+    template<std::integral RHS>
+    [[nodiscard]] constexpr friend bool operator==(tagged_id const& lhs, RHS const& rhs) noexcept
+    {
+        return std::cmp_equal(lhs._v, rhs);
+    }
 
 private:
     value_type _v = empty_value;
