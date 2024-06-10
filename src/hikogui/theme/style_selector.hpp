@@ -27,8 +27,10 @@ struct style_selector_segment {
     std::vector<std::string> pseudo_classes;
 
     /** The next child must follow directly after this segment.
+     *
+     * By default this is true, as the last segment must have set this to true.
      */
-    bool child_combinator = false;
+    bool child_combinator = true;
 
     constexpr style_selector_segment() noexcept = default;
     constexpr style_selector_segment(style_selector_segment const&) = default;
@@ -41,7 +43,7 @@ struct style_selector_segment {
         std::string id = {},
         std::vector<std::string> classes = {},
         std::vector<std::string> pseudo_classes = {},
-        bool child_combinator = false) :
+        bool child_combinator = true) :
         name(std::move(name)),
         id(std::move(id)),
         classes(std::move(classes)),
@@ -183,7 +185,8 @@ public:
             if (lhs_it_last->child_combinator or rhs_it_first == rhs_it_last) {
                 return false;
             }
-            return matches(lhs_it_first, lhs_it_last, rhs_it_first, rhs_it_last - 1);
+            // Try to match the current selector segment again, but with the next segment in the path.
+            return matches(lhs_it_first, lhs_it_last + 1, rhs_it_first, rhs_it_last);
         }
     }
 

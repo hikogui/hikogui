@@ -297,6 +297,16 @@ public:
             add_style_properties(style_importance::theme, selector, properties);
         }
 
+        // :focus - The border is the same as the accent color when focused.
+        {
+            auto const selector = style_selector{style_selector_segment::from_pseudo_class("focus")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_border_color(_accent_color, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
         // :nth-depth() - colors for different nesting levels.
         {
             auto const n = _fill_colors.size();
@@ -311,14 +321,12 @@ public:
             }
         }
 
-        // :hover:nth-depth() - colors for different nesting levels when mouse is hovering.
+        // :hover:nth-depth() - background color slightly highlights when mouse is hovering.
         {
             auto const n = _fill_colors.size();
             for (auto i = 0; i != n; ++i) {
                 auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
-                auto const selector = style_selector{
-                    style_selector_segment::from_pseudo_class("hover"),
-                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
+                auto const selector = style_selector{style_selector_segment::from_pseudo_class("hover", nth_depth_pseudo_class)};
                 auto const priority = style_priority{importance, selector.specificity()};
 
                 auto properties = style_properties{};
@@ -327,14 +335,12 @@ public:
             }
         }
 
-        // :active:nth-depth() - colors for different nesting levels when mouse is pressed.
+        // :active:nth-depth() - background color highlights when clicked.
         {
             auto const n = _fill_colors.size();
             for (auto i = 0; i != n; ++i) {
                 auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
-                auto const selector = style_selector{
-                    style_selector_segment::from_pseudo_class("active"),
-                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
+                auto const selector = style_selector{style_selector_segment::from_pseudo_class("active", nth_depth_pseudo_class)};
                 auto const priority = style_priority{importance, selector.specificity()};
 
                 auto properties = style_properties{};
@@ -343,39 +349,18 @@ public:
             }
         }
 
-        // :disabled:nth-depth() - colors for different nesting levels when disabled.
+        // toggle:unchecked - The toggle changes color depending if checked or unchecked.
         {
             auto const n = _fill_colors.size();
-            for (auto i = 0; i != n; ++i) {
-                auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
-                auto const selector = style_selector{
-                    style_selector_segment::from_pseudo_class("disabled"),
-                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
-                auto const priority = style_priority{importance, selector.specificity()};
+            auto const selector = style_selector{style_selector_segment::from_pseudo_class("unchecked")};
+            auto const priority = style_priority{importance, selector.specificity()};
 
-                auto properties = style_properties{};
-                properties.set_border_color(_disabled_color, priority);
-                add_style_properties(style_importance::theme, selector, properties);
-            }
+            auto properties = style_properties{};
+            properties.set_accent_color(_color, priority);
+            add_style_properties(style_importance::theme, selector, properties);
         }
 
-        // toggle:unchecked:nth-depth() - accent color for different nesting levels when unchecked.
-        {
-            auto const n = _fill_colors.size();
-            for (auto i = 0; i != n; ++i) {
-                auto const nth_depth_pseudo_class = make_nth_depth_pseudo_class(n, i);
-                auto const selector = style_selector{
-                    style_selector_segment::from_pseudo_class("unchecked"),
-                    style_selector_segment::from_pseudo_class(nth_depth_pseudo_class)};
-                auto const priority = style_priority{importance, selector.specificity()};
-
-                auto properties = style_properties{};
-                properties.set_accent_color(_color, priority);
-                add_style_properties(style_importance::theme, selector, properties);
-            }
-        }
-
-        // :disabled pseudo-class
+        // :disabled - Change the colors to grey to show as disabled.
         {
             auto const selector = style_selector{style_selector_segment::from_pseudo_class("disabled")};
             auto const priority = style_priority{importance, selector.specificity()};

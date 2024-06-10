@@ -8,7 +8,8 @@
 
 TEST_SUITE(style_selector_suite) {
     TEST_CASE(matches_descendant_combinator_test) {
-        auto const selector = hi::style_selector{{"foo"}, {"bar"}};
+        auto selector = hi::style_selector{{"foo"}, {"bar"}};
+        selector[0].child_combinator = false;
         auto const path1 = hi::style_path{{"foo"}, {"bar"}};
         REQUIRE(hi::matches(selector, path1));
 
@@ -18,11 +19,16 @@ TEST_SUITE(style_selector_suite) {
 
     TEST_CASE(matches_child_combinator_test) {
         auto selector = hi::style_selector{{"foo"}, {"bar"}};
-        selector[0].child_combinator = true;
         auto const path1 = hi::style_path{{"foo"}, {"bar"}};
         REQUIRE(hi::matches(selector, path1));
 
         auto const path2 = hi::style_path{{"foo"}, {"x"}, {"bar"}};
         REQUIRE(not hi::matches(selector, path2));
+    }
+
+    TEST_CASE(bug1_test) {
+        auto selector = hi::style_selector{{"toggle"}};
+        auto const path = hi::style_path{{"window"}, {"grid-view"}, {"tab-view"}, {"scroll-view"}, {"scroll-aperture"}, {"grid-view"}, {"with-label"}, {"checkbox"}};
+        REQUIRE(not hi::matches(selector, path));
     }
 };

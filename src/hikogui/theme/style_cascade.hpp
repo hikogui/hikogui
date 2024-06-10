@@ -134,6 +134,8 @@ constexpr void generate_pseudo_classes_from_enum(style_pseudo_class pseudo_class
 
     if (std::to_underlying(pseudo_class & style_pseudo_class::checked)) {
         r.emplace_back("checked");
+    } else {
+        r.emplace_back("unchecked");
     }
 
     if (std::to_underlying(pseudo_class & style_pseudo_class::front)) {
