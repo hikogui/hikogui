@@ -6,6 +6,7 @@
 
 #include "../macros.hpp"
 #include "terminate.hpp"
+#include <gsl/gsl>
 #include <limits>
 #include <typeinfo>
 #include <typeindex>
@@ -57,13 +58,7 @@ public:
     }
 
     template<std::integral RHS>
-    constexpr tagged_id(RHS rhs) : _v(rhs) {
-        if (std::cmp_greater(rhs, std::numeric_limits<value_type>::max())) {
-            throw std::overflow_error("The given identifier was too large");
-        }
-        if (std::cmp_less(rhs, std::numeric_limits<value_type>::lowest())) {
-            throw std::overflow_error("The given identifier was too small");
-        }
+    constexpr tagged_id(RHS rhs) : _v(gsl::narrow<value_type>(rhs)) {
         if (rhs == empty_value) {
             throw std::domain_error("The given identifier was the empty-value");
         }

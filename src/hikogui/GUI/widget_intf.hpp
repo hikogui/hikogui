@@ -75,27 +75,10 @@ public:
 
         // This lambda allows the state to be set once before it will trigger
         // notifications.
-        _state_cbt = state.subscribe([&](widget_state new_state) {
-            style.set_pseudo_class(new_state.pseudo_class());
-
-            static std::optional<widget_state> old_state = std::nullopt;
-
-            if (old_state) {
-                if (need_reconstrain(*old_state, *state)) {
-                    ++global_counter<"widget:state:reconstrain">;
-                    request_reconstrain();
-
-                } else if (need_relayout(*old_state, *state)) {
-                    ++global_counter<"widget:state:relayout">;
-                    request_relayout();
-
-                } else if (need_redraw(*old_state, *state)) {
-                    ++global_counter<"widget:state:redraw">;
-                    request_redraw();
-                }
-            }
-            old_state = *state;
+        _state_cbt = state.subscribe([&](auto...) {
+            style.set_pseudo_class(state->pseudo_class());
         });
+        _state_cbt(*state);
     }
 
     /** Pointer to the parent widget.

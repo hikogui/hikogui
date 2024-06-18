@@ -220,6 +220,8 @@ public:
 
     void apply_as_styles() const
     {
+        constexpr auto scalar_to_dips = unit::dips(1.25f);
+
         named_color<"blue"> = _blue;
         named_color<"green"> = _green;
         named_color<"indigo"> = _indigo;
@@ -251,27 +253,42 @@ public:
             auto const priority = style_priority{importance, selector.specificity()};
 
             auto properties = style_properties{};
-            properties.set_width(unit::dips(size() * 2.0f), priority);
-            properties.set_height(unit::dips(size() * 2.0f), priority);
+            properties.set_width(size() * scalar_to_dips, priority);
+            properties.set_height(size() * scalar_to_dips, priority);
             properties.set_font_size(unit::points_per_em(font_size()), priority);
-            properties.set_margin_left(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_margin_bottom(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_margin_right(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_margin_top(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_padding_left(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_padding_bottom(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_padding_right(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_padding_top(unit::dips(margin<float>() * 2.0f), priority);
-            properties.set_border_width(unit::dips(border_width() * 2.0f), priority);
-            properties.set_border_bottom_left_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
-            properties.set_border_bottom_right_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
-            properties.set_border_top_left_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
-            properties.set_border_top_right_radius(unit::dips(rounding_radius<float>() * 2.0f), priority);
+            properties.set_margin_left(margin<float>() * scalar_to_dips, priority);
+            properties.set_margin_bottom(margin<float>() * scalar_to_dips, priority);
+            properties.set_margin_right(margin<float>() * scalar_to_dips, priority);
+            properties.set_margin_top(margin<float>() * scalar_to_dips, priority);
+            properties.set_padding_left(margin<float>() * scalar_to_dips, priority);
+            properties.set_padding_bottom(margin<float>() * scalar_to_dips, priority);
+            properties.set_padding_right(margin<float>() * scalar_to_dips, priority);
+            properties.set_padding_top(margin<float>() * scalar_to_dips, priority);
+            properties.set_border_width(border_width() * scalar_to_dips, priority);
+            properties.set_border_bottom_left_radius(0.0f * scalar_to_dips, priority);
+            properties.set_border_bottom_right_radius(0.0f * scalar_to_dips, priority);
+            properties.set_border_top_left_radius(0.0f * scalar_to_dips, priority);
+            properties.set_border_top_right_radius(0.0f * scalar_to_dips, priority);
             properties.set_text_style(text_style_set(), priority);
             properties.set_accent_color(_accent_color, priority);
             properties.set_color(_color, priority);
             properties.set_background_color(fill_color(0), priority);
             properties.set_border_color(_color, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // momentary-button - has rounded corners.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("momentary-button")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_border_bottom_left_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_border_bottom_right_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_border_top_left_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_border_top_right_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_horizontal_alignment(horizontal_alignment::center, priority);
+            properties.set_vertical_alignment(vertical_alignment::middle, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 
@@ -281,8 +298,8 @@ public:
             auto const priority = style_priority{importance, selector.specificity()};
 
             auto properties = style_properties{};
-            properties.set_width(unit::dips(size() * 4.0f), priority);
-            properties.set_height(unit::dips(size() * 2.0f), priority);
+            properties.set_width(size() * scalar_to_dips * 2.0f, priority);
+            properties.set_height(size() * scalar_to_dips, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 
@@ -294,6 +311,50 @@ public:
             auto properties = style_properties{};
             properties.set_horizontal_alignment(horizontal_alignment::left, priority);
             properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // selection - is aligned left and middle.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("selection")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_horizontal_alignment(horizontal_alignment::left, priority);
+            properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // toolbar-button - is aligned left and middle.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("toolbar-button")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_horizontal_alignment(horizontal_alignment::left, priority);
+            properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // toolbar-tab-button - is aligned center and top.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("toolbar-tab-button")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_horizontal_alignment(horizontal_alignment::center, priority);
+            properties.set_vertical_alignment(vertical_alignment::top, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // toolbar-tab-button icon - is aligned center and top.
+        {
+            auto selector = style_selector{style_selector_segment::from_element("toolbar-tab-button"), style_selector_segment::from_element("icon")};
+            selector[0].child_combinator = false;
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_font_size(unit::dips_per_em(large_icon_size() * scalar_to_dips.in(unit::dips)), priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 
@@ -351,7 +412,6 @@ public:
 
         // toggle:unchecked - The toggle changes color depending if checked or unchecked.
         {
-            auto const n = _fill_colors.size();
             auto const selector = style_selector{style_selector_segment::from_pseudo_class("unchecked")};
             auto const priority = style_priority{importance, selector.specificity()};
 
@@ -369,6 +429,16 @@ public:
             properties.set_color(_disabled_color, priority);
             properties.set_border_color(_disabled_color, priority);
             properties.set_accent_color(_disabled_color, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // .right - Align to the right.
+        {
+            auto const selector = style_selector{style_selector_segment::from_class("right")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_horizontal_alignment(horizontal_alignment::right, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
     }

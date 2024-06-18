@@ -120,14 +120,7 @@ public:
             if (_icon_type == icon_type::no or not _icon_size) {
                 _icon_rectangle = {};
             } else {
-                auto const width = std::clamp(context.shape.width(), minimum->width(), maximum->width());
-                auto const height = std::clamp(context.shape.height(), minimum->height(), maximum->height());
-
-                auto const icon_scale =
-                    scale2::uniform(_icon_size, extent2{narrow_cast<float>(width), narrow_cast<float>(height)});
-                auto const new_icon_size = narrow_cast<extent2>(icon_scale * _icon_size);
-                auto const resolved_alignment = resolve(style.alignment, os_settings::left_to_right());
-                _icon_rectangle = align(context.rectangle(), new_icon_size, resolved_alignment);
+                _icon_rectangle = align(context.rectangle(), _icon_size, os_settings::alignment(style.alignment));
             }
         }
     }
@@ -153,7 +146,7 @@ public:
 
             case icon_type::glyph:
                 {
-                    context.draw_glyph(layout(), _icon_rectangle, _glyph, icon_color());
+                    context.draw_glyph(layout(), _icon_rectangle, _glyph, style.color);
                 }
                 break;
 

@@ -13,6 +13,7 @@
 #include "toggle_delegate.hpp"
 #include "../telemetry/telemetry.hpp"
 #include "../macros.hpp"
+#include <utility>
 
 hi_export_module(hikogui.widgets.toggle_widget);
 
@@ -117,15 +118,14 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment));
+            _button_rectangle =
+                align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment), style.cap_height);
 
-            auto const button_square =
-                aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
+            auto const pip_square = aarectangle{get<0>(_button_rectangle), extent2{style.height_px, style.height_px}};
+            _pip_circle = align(pip_square, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
 
-            _pip_circle = align(button_square, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
-
-            auto const pip_to_button_margin_x2 = _button_rectangle.height() - _pip_circle.diameter();
-            _pip_move_range = _button_rectangle.width() - _pip_circle.diameter() - pip_to_button_margin_x2;
+            auto const pip_to_button_margin_x2 = style.height_px - _pip_circle.diameter();
+            _pip_move_range = style.width_px - _pip_circle.diameter() - pip_to_button_margin_x2;
         }
         super::set_layout(context);
     }
@@ -143,6 +143,8 @@ public:
                 corner_radii{style.height_px * 0.5f});
 
             switch (_animated_value.update(value() == widget_value::on ? 1.0f : 0.0f, context.display_time_point)) {
+            case animator_state::uninitialized:
+                std::unreachable();
             case animator_state::idle:
                 break;
             case animator_state::running:
@@ -150,13 +152,10 @@ public:
                 break;
             case animator_state::end:
                 notifier();
-                break;
-            default:
-                hi_no_default();
             }
 
-            auto const positioned_pip_circle =
-                translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_circle;
+            auto const pip_offset = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f};
+            auto const positioned_pip_circle = pip_offset * _pip_circle;
             context.draw_circle(layout(), positioned_pip_circle * 1.02f, style.accent_color);
         }
     }
@@ -165,7 +164,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and _button_rectangle.contains(position)) {
             return {id, _layout.elevation, hitbox_type::button};
         } else {
             return {};
@@ -188,28 +187,6 @@ public:
                 delegate->activate(*this);
                 ++global_counter<"toggle_widget:handle_event:relayout">;
                 request_relayout();
-                return true;
-            }
-            break;
-
-        case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
-                return true;
-            }
-            break;
-
-        case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
-
-                // with_label_widget or other widgets may have accepted the hitbox
-                // for this widget. Which means the widget_id in the mouse-event
-                // may match up with the toggle.
-                if (event.mouse().hitbox.widget_id == id) {
-                    handle_event(gui_event_type::gui_activate);
-                }
-                request_redraw();
                 return true;
             }
             break;

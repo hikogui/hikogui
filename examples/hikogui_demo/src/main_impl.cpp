@@ -85,8 +85,9 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     using namespace hi;
 
     grid.emplace<label_widget>(
-        "A1",
-        txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:")).style = ".right";
+            "A1",
+            txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:"))
+        .style = ".right";
     auto& toggle = grid.emplace<toggle_with_label_widget>("B1", preferences.toggle_value);
     toggle.on_label = txt("true");
     toggle.off_label = txt("false");
@@ -99,12 +100,12 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     checkbox2.other_label = txt("other");
 
     grid.emplace<label_widget>("A3", txt("These are radio buttons:")).style = ".right";
-    auto &radio1 = grid.emplace<radio_with_label_widget>("B3", preferences.radio_value, 0);
+    auto& radio1 = grid.emplace<radio_with_label_widget>("B3", preferences.radio_value, 0);
     radio1.on_label = radio1.off_label = txt("Radio 1");
-    auto &radio2 = grid.emplace<radio_with_label_widget>("B4", preferences.radio_value, 1);
+    auto& radio2 = grid.emplace<radio_with_label_widget>("B4", preferences.radio_value, 1);
     radio2.on_label = txt("Radio 2 (on)");
     radio2.off_label = txt("Radio 2 (off)");
-    auto &radio3 = grid.emplace<radio_with_label_widget>("B5", preferences.radio_value, 2);
+    auto& radio3 = grid.emplace<radio_with_label_widget>("B5", preferences.radio_value, 2);
     radio3.on_label = radio3.off_label = txt("Radio 3");
 
     auto option_list = std::vector{

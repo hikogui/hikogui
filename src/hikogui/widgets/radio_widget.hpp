@@ -9,6 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include "utility.hpp"
 #include "with_label_widget.hpp"
 #include "menu_button_widget.hpp"
 #include "radio_delegate.hpp"
@@ -20,24 +21,58 @@ hi_export_module(hikogui.widgets.radio_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-/** A GUI widget that permits the user to make a binary choice.
+/** A radio widget is used in a set to select one of the options.
  *
- * A radio is a button with three different states with different visual
+ * A radio is a button with two different states with different visual
  * representation:
  *  - **on**: A pip is shown inside the circle.
  *  - **off**: An empty circle is shown.
  *
+ * The user can activate the radio button by clicking on it, or using the
+ * keyboard activate (space bar or enter) when the radio button is focused.
+ * Activating the radio button will set it to the 'on' state. Using another
+ * radio button in a set may turn the current radio button to the 'off' state.
+ *
  * @image html radio_widget.gif
  *
- * Each time a user activates the radio-button it toggles between the 'on' and 'off' states.
- * If the radio is in the 'other' state an activation will switch it to
- * the 'off' state.
+ * Style:
  *
- * In the following example we create a radio widget on the window
- * which observes `value`. When the value is 1 the radio is 'on',
- * when the value is 2 the radio is 'off'.
+ *  - `width`: The width of the widget.
+ *  - `height`: The height of the widget, and the diameter of the radio button.
+ *  - `margin-left`: The margin to the left of the radio button.
+ *  - `margin-bottom`: The margin below the radio button.
+ *  - `margin-right`: The margin to the right of the radio button.
+ *  - `margin-top`: The margin above the radio button.
+ *  - `border-width`: The width of the border of the radio button.
+ *  - `border-color`: The color of the border of the radio button.
+ *  - `background-color`: The color of the background of the radio button.
+ *  - `accent-color`: The color of the pip when the radio button is in the 'on'
+ *                    state.
+ *  - `horizontal-alignment`: The horizontal alignment of the radio button.
+ *  - `vertical-alignment`: The vertical alignment of the radio button.
  *
- * @snippet widgets/radio_example_impl.cpp Create a radio
+ * The alignment is used to place the radio button inside the layout rectangle,
+ * which may be larger than the style's width and height. Horizontally the radio
+ * button is aligned to the left, center, or right of the layout rectangle.
+ * Vertically the radio button's alignment is a little bit more complex:
+ *
+ *  - **top**:    The middle of the radio button is aligned to the middle of
+ *                text when the text is aligned to top. The middle of the text
+ *                is determined from the `font-size` and computed `cap-height`.
+ *                This may mean that the radio button will be drawn into its
+ *                margins.
+ *  - **middle**: The middle of the radio button is aligned to the middle of the
+ *                layout rectangle.
+ *  - **bottom**: The middle of the radio button is aligned to the middle of
+ *                text when the text is aligned to bottom. The middle of the
+ *                text is determined from the `font-size` and computed
+ *                `cap-height`. This may mean that the radio button will be
+ *                drawn into its margins.
+ *
+ * Since a radio button is a circle it is drawn slightly larger than the
+ * given diameter to make it look visual the same size as a square.
+ *
+ * @snippet widgets/radio_example_impl.cpp Create a radio button
  */
 class radio_widget : public widget {
 public:
@@ -100,11 +135,17 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment));
+            auto const button_diameter = style.size_px.height();
+            auto const button_radius = std::round(button_diameter * 0.5f);
+            auto const button_size = extent2{button_diameter, button_diameter};
+
+            _button_rectangle =
+                align(context.rectangle(), button_size, os_settings::alignment(style.alignment), style.cap_height);
 
             _button_circle = circle{_button_rectangle};
 
-            _pip_circle = align(_button_rectangle, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
+            _pip_circle =
+                align(_button_rectangle, circle{button_radius - style.border_width_px * 3.0f}, alignment::middle_center());
         }
         super::set_layout(context);
     }
@@ -147,7 +188,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and _button_rectangle.contains(position)) {
             return {id, _layout.elevation, hitbox_type::button};
         } else {
             return {};
@@ -168,29 +209,6 @@ public:
         case gui_event_type::gui_activate:
             if (mode() >= widget_mode::partial) {
                 delegate->activate(*this);
-                request_redraw();
-                return true;
-            }
-            break;
-
-        case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
-                return true;
-            }
-            break;
-
-        case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
-
-                // with_label_widget or other widgets may have accepted the hitbox
-                // for this widget. Which means the widget_id in the mouse-event
-                // may match up with the radio.
-                if (event.mouse().hitbox.widget_id == id) {
-                    // By staying we can give focus to the parent widget.
-                    handle_event(gui_event_type::gui_activate_stay);
-                }
                 request_redraw();
                 return true;
             }

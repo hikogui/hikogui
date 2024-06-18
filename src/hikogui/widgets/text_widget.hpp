@@ -17,6 +17,7 @@
 #include "../container/container.hpp"
 #include "../observer/observer.hpp"
 #include "../macros.hpp"
+#include <concepts>
 #include <memory>
 #include <string>
 #include <array>
@@ -29,9 +30,6 @@ hi_export_module(hikogui.widgets.text_widget);
 
 hi_export namespace hi {
 inline namespace v1 {
-
-template<typename Context>
-concept text_widget_attribute = forward_of<Context, observer<hi::alignment>>;
 
 /** A text widget.
  *
@@ -66,9 +64,11 @@ public:
 
     std::shared_ptr<delegate_type> delegate;
 
-    /** The horizontal alignment of the text inside the space of the widget.
-     */
-    observer<alignment> alignment = hi::alignment::top_flush();
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
+    {
+        return make_shared_ctad<default_text_delegate>(std::forward<Args>(args)...);
+    }
 
     ~text_widget()
     {
@@ -81,11 +81,11 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), delegate(std::move(delegate))
+    template<std::derived_from<delegate_type> Delegate>
+    text_widget(std::shared_ptr<Delegate> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_assert_not_null(this->delegate);
-        
+
         set_mode(widget_mode::select);
 
         _delegate_cbt = this->delegate->subscribe([&] {
@@ -132,26 +132,14 @@ public:
         style.set_name("text");
     }
 
-    template<text_widget_attribute... Attributes>
-    text_widget(
-        std::shared_ptr<delegate_type> delegate,
-        Attributes&&... attributes) noexcept :
-        text_widget(std::move(delegate))
-    {
-        set_attributes(std::forward<Attributes>(attributes)...);
-    }
-
     /** Construct a text widget.
      *
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
      * @param attributes A set of attributes used to configure the text widget: a `alignment`.
      */
-    template<incompatible_with<std::shared_ptr<delegate_type>> Text, text_widget_attribute... Attributes>
-    text_widget(
-        Text&& text,
-        Attributes&&... attributes) noexcept requires requires { make_default_text_delegate(std::forward<Text>(text)); }
-        : text_widget(make_default_text_delegate(std::forward<Text>(text)), std::forward<Attributes>(attributes)...)
+    template<typename... Args>
+    text_widget(Args&&... args) noexcept : text_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
 
@@ -161,17 +149,19 @@ public:
         _layout = {};
 
         // Read the latest text from the delegate.
-        hi_assert_not_null(delegate);
         _text_cache = delegate->read(*this);
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text_cache.size());
 
-        // Create a new text_shaper with the new text.
-        auto alignment_ = os_settings::left_to_right() ? *alignment : mirror(*alignment);
-
         assert(window());
-        _shaped_text = text_shaper{_text_cache, style.font_size, style.text_style, window()->pixel_density, alignment_, os_settings::left_to_right()};
+        _shaped_text = text_shaper{
+            _text_cache,
+            style.font_size,
+            style.text_style,
+            window()->pixel_density,
+            os_settings::alignment(style.alignment),
+            os_settings::left_to_right()};
 
         auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
         auto const shaped_text_size = shaped_text_rectangle.size();
@@ -179,7 +169,7 @@ public:
         if (mode() == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
             return _constraints_cache = {
-                       shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), theme().margin()};
+                       shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), style.margins_px};
 
         } else {
             // Allow the text to be 550.0f pixels wide.
@@ -201,7 +191,20 @@ public:
         if (compare_store(_layout, context)) {
             hi_assert(context.shape.baseline);
 
-            _shaped_text.layout(context.rectangle(), *context.shape.baseline, context.sub_pixel_size);
+            auto const baseline = [&] {
+                switch (style.vertical_alignment) {
+                case vertical_alignment::none:
+                    std::unreachable();
+                case vertical_alignment::top:
+                    return context.shape.y() + context.shape.height() - style.cap_height_px;
+                case vertical_alignment::middle:
+                    return context.shape.y() + context.shape.height() * 0.5f - style.cap_height_px * 0.5f;
+                case vertical_alignment::bottom:
+                    return context.shape.y();
+                }
+                std::unreachable();
+            }();
+            _shaped_text.layout(context.rectangle(), baseline, context.sub_pixel_size);
         }
     }
 
@@ -813,20 +816,6 @@ private:
     callback<void()> _delegate_cbt;
     callback<void(cursor_state_type)> _cursor_state_cbt;
 
-    void set_attributes() noexcept {}
-
-    template<text_widget_attribute First, text_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&... rest) noexcept
-    {
-        if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes(std::forward<Rest>(rest)...);
-    }
-
     /** Make parent scroll views, scroll to show the current selection and cursor.
      */
     void scroll_to_show_selection() noexcept
@@ -884,7 +873,7 @@ private:
 
     [[nodiscard]] gstring_view selected_text() const noexcept
     {
-        auto const[first, last] = _selection.selection_indices();
+        auto const [first, last] = _selection.selection_indices();
 
         return gstring_view{_text_cache}.substr(first, last - first);
     }
@@ -897,7 +886,7 @@ private:
     void undo() noexcept
     {
         if (_undo_stack.can_undo()) {
-            auto const & [ text, selection ] = _undo_stack.undo(_text_cache, _selection);
+            auto const& [text, selection] = _undo_stack.undo(_text_cache, _selection);
 
             delegate->write(*this, text);
             _selection = selection;
@@ -907,7 +896,7 @@ private:
     void redo() noexcept
     {
         if (_undo_stack.can_redo()) {
-            auto const & [ text, selection ] = _undo_stack.redo();
+            auto const& [text, selection] = _undo_stack.redo();
 
             delegate->write(*this, text);
             _selection = selection;
@@ -962,7 +951,7 @@ private:
     {
         undo_push();
 
-        auto const[first, last] = _selection.selection_indices();
+        auto const [first, last] = _selection.selection_indices();
 
         auto text = _text_cache;
         text.replace(first, last - first, replacement);
@@ -979,13 +968,13 @@ private:
      */
     void add_character(grapheme c, add_type keyboard_mode) noexcept
     {
-        auto const[start_selection, end_selection] = _selection.selection(_text_cache.size());
+        auto const [start_selection, end_selection] = _selection.selection(_text_cache.size());
         auto original_grapheme = grapheme{char32_t{0xffff}};
 
         if (_selection.empty() and _overwrite_mode and start_selection.before()) {
             original_grapheme = _text_cache[start_selection.index()];
 
-            auto const[first, last] = _shaped_text.select_char(start_selection);
+            auto const [first, last] = _shaped_text.select_char(start_selection);
             _selection.drag_selection(last);
         }
         replace_selection(gstring{c});
@@ -1025,7 +1014,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.before_neighbor(_shaped_text.size());
 
-            auto const[first, last] = _shaped_text.select_char(cursor);
+            auto const [first, last] = _shaped_text.select_char(cursor);
             _selection.drag_selection(last);
         }
 
@@ -1038,7 +1027,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.after_neighbor(_shaped_text.size());
 
-            auto const[first, last] = _shaped_text.select_char(cursor);
+            auto const [first, last] = _shaped_text.select_char(cursor);
             _selection.drag_selection(first);
         }
 
@@ -1051,7 +1040,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.before_neighbor(_shaped_text.size());
 
-            auto const[first, last] = _shaped_text.select_word(cursor);
+            auto const [first, last] = _shaped_text.select_word(cursor);
             _selection.drag_selection(last);
         }
 
@@ -1064,7 +1053,7 @@ private:
             auto cursor = _selection.cursor();
             cursor = cursor.after_neighbor(_shaped_text.size());
 
-            auto const[first, last] = _shaped_text.select_word(cursor);
+            auto const [first, last] = _shaped_text.select_word(cursor);
             _selection.drag_selection(first);
         }
 

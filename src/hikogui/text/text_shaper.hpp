@@ -202,8 +202,8 @@ public:
      *
      * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
      *        the natural text size without folding.
-     * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
-     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
+     * @return The rectangle surrounding the text. The rectangle excludes ascenders & descenders, as if
+     *         each line is cap-height. y = 0 of the rectangle is at the base-line of the text.
      */
     [[nodiscard]] aarectangle
     bounding_rectangle(float maximum_line_width) noexcept
@@ -1285,7 +1285,7 @@ private:
 
     /** Get the height of the text.
      *
-     * This is the vertical distance from the x-height of the top most line, and the base-line of the bottom most line.
+     * This is the vertical distance from the cap-height of the top most line, and the base-line of the bottom most line.
      *
      * @param lines A list of number-of-graphemes per line.
      */
@@ -1299,9 +1299,9 @@ private:
         auto char_it_first = _text.begin();
         auto char_it_last = char_it_first + *line_it++;
 
-        // Add the x-height of the first line.
+        // Add the cap-height of the first line.
         auto [previous_metrics, previous_category] = get_line_metrics(char_it_first, char_it_last);
-        auto total_height = previous_metrics.x_height;
+        auto total_height = previous_metrics.cap_height;
 
         for (; line_it != lines.cend(); ++line_it) {
             char_it_first = std::exchange(char_it_last, char_it_last + *line_it);

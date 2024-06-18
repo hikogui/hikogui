@@ -52,7 +52,7 @@ struct style_property_element {
         properties.set_border_top_left_radius(unit::pixels(0.0f), priority);
         properties.set_border_top_right_radius(unit::pixels(0.0f), priority);
         properties.set_horizontal_alignment(horizontal_alignment::left, priority);
-        properties.set_vertical_alignment(vertical_alignment::middle, priority);
+        properties.set_vertical_alignment(vertical_alignment::top, priority);
         properties.set_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
         properties.set_background_color(color{1.0f, 1.0f, 1.0f, 1.0f}, priority);
         properties.set_border_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);

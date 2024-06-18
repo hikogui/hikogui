@@ -20,31 +20,64 @@ hi_export_module(hikogui.widgets.checkbox_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-/** A GUI widget that permits the user to make a binary choice.
- * @ingroup widgets
+/** A checkbox widget is used to select a true/false option.
  *
  * A checkbox is a button with three different states with different visual
  * representation:
- *  - **on**: A check-mark is shown inside the box, and the `checkbox_widget::on_label` is shown.
- *  - **off**: An empty box is shown, and the `checkbox_widget::off_label` is shown.
- *  - **other**: A dash is shown inside the box, and the `checkbox_widget::other_label` is shown.
+ *  - **on**: A checkmark is shown inside the square.
+ *  - **off**: An empty square is shown.
+ *  - **other**: A minus sign is shown inside the square.
+ *
+ * The user can activate the checkbox button by clicking on it, or using the
+ * keyboard activate (space bar or enter) when the checkbox button is focused.
+ * Activating the checkbox button will toggle it between the 'on' and 'off'
+ * states, or to the 'off' state when the checkbox was in the 'other' state.
  *
  * @image html checkbox_widget.gif
  *
- * Each time a user activates the checkbox-button it toggles between the 'on' and 'off' states.
- * If the checkbox is in the 'other' state an activation will switch it to
- * the 'off' state.
+ * Style:
  *
- * A checkbox cannot itself switch state to 'other', this state may be
- * caused by external factors. The canonical example is a tree structure
- * of checkboxes; when child checkboxes have different values from each other
- * the parent checkbox state is set to 'other'.
+ *  - `width`: The width of the widget.
+ *  - `height`: The height of the widget.
+ *  - `margin-left`: The margin to the left of the checkbox.
+ *  - `margin-bottom`: The margin below the checkbox.
+ *  - `margin-right`: The margin to the right of the checkbox.
+ *  - `margin-top`: The margin above the checkbox.
+ *  - `border-width`: The width of the border of the checkbox.
+ *  - `border-color`: The color of the border of the checkbox.
+ *  - `border-bottom-left-radius`: The radius of the bottom left corner of the
+ *                                 checkbox.
+ *  - `border-bottom-right-radius`: The radius of the bottom right corner of the
+ *                                  checkbox.
+ *  - `border-top-left-radius`: The radius of the top left corner of the
+ *                              checkbox.
+ *  - `border-top-right-radius`: The radius of the top right corner of the
+ *                               checkbox.
+ *  - `background-color`: The color of the background of the checkbox.
+ *  - `accent-color`: The color of the checkmark or minus sign when the checkbox
+ *                    is in the 'on' or 'other' state.
+ *  - `horizontal-alignment`: The horizontal alignment of the checkbox.
+ *  - `vertical-alignment`: The vertical alignment of the checkbox.
  *
- * In the following example we create a checkbox widget on the window
- * which observes `value`. When the value is 1 the checkbox is 'on',
- * when the value is 2 the checkbox is 'off'.
+ * The alignment is used to place the checkbox inside the layout rectangle,
+ * which may be larger than the style's width and height. Horizontally the
+ * checkbox is aligned to the left, center, or right of the layout rectangle.
+ * Vertically the checkbox's alignment is a little bit more complex:
  *
- * @snippet widgets/checkbox_example_impl.cpp Create a checkbox
+ *  - **top**:    The middle of the checkbox is aligned to the middle of
+ *                text when the text is aligned to top. The middle of the text
+ *                is determined from the `font-size` and computed `cap-height`.
+ *                This may mean that the checkbox will be drawn into its
+ *                margins.
+ *  - **middle**: The middle of the checkbox is aligned to the middle of the
+ *                layout rectangle.
+ *  - **bottom**: The middle of the checkbox is aligned to the middle of
+ *                text when the text is aligned to bottom. The middle of the
+ *                text is determined from the `font-size` and computed
+ *                `cap-height`. This may mean that the checkbox will be
+ *                drawn into its margins.
+ *
+ * @snippet widgets/checkbox_example_impl.cpp Create a checkbox button
  */
 class checkbox_widget : public widget {
 public:
@@ -58,7 +91,7 @@ public:
     keyboard_focus_group focus_group = keyboard_focus_group::normal;
 
     template<typename... Args>
-    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&... args)
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
     {
         return make_shared_ctad<default_toggle_delegate>(std::forward<Args>(args)...);
     }
@@ -106,7 +139,8 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment));
+            _button_rectangle =
+                align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment), style.cap_height);
 
             _check_glyph = find_glyph(elusive_icon::Ok);
             auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
@@ -128,15 +162,18 @@ public:
                 style.background_color,
                 style.border_color,
                 style.border_width_px,
-                border_side::inside);
+                border_side::inside,
+                style.border_radius_px);
 
             switch (value()) {
             case widget_value::on:
                 context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, style.accent_color);
                 break;
             case widget_value::off:
+                // Do nothing, the checkbox is off.
                 break;
             default:
+                // Indeterminate
                 context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, _minus_glyph, style.accent_color);
             }
         }
@@ -146,7 +183,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (mode() >= widget_mode::partial and _button_rectangle.contains(position)) {
             return {id, _layout.elevation, hitbox_type::button};
         } else {
             return {};
@@ -168,27 +205,6 @@ public:
             if (mode() >= widget_mode::partial) {
                 delegate->activate(*this);
                 request_redraw();
-                return true;
-            }
-            break;
-
-        case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
-                return true;
-            }
-            break;
-
-        case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
-
-                // with_label_widget or other widgets may have accepted the hitbox
-                // for this widget. Which means the widget_id in the mouse-event
-                // may match up with the checkbox.
-                if (event.mouse().hitbox.widget_id == id) {
-                    handle_event(gui_event_type::gui_activate);
-                }
                 return true;
             }
             break;

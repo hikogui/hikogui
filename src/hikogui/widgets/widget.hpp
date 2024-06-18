@@ -157,6 +157,19 @@ public:
             set_hover(false);
             return true;
 
+        case gui_event_type::mouse_down:
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(true);
+                handle_event(gui_event_type::gui_activate_stay);
+            }
+            return true;
+
+        case gui_event_type::mouse_up:
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(false);
+            }
+            return true;
+
         case gui_event_type::window_activate:
             set_active(true);
             // All widgets need the active value set.
