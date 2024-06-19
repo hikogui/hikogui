@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "baseline.hpp"
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -11,7 +12,7 @@
 #include <limits>
 #include <concepts>
 
-hi_export_module(hikogui.layout.box_constraints);
+hi_export_module(hikogui.layout : box_constraints);
 
 hi_export namespace hi { inline namespace v1 {
 
@@ -27,28 +28,27 @@ struct box_constraints {
     extent2 preferred = {};
     extent2 maximum = {};
     hi::margins margins = {};
+    hi::baseline baseline = {};
 
-    hi::alignment alignment = hi::alignment{};
+    box_constraints() noexcept = default;
+    box_constraints(box_constraints const&) noexcept = default;
+    box_constraints(box_constraints&&) noexcept = default;
+    box_constraints& operator=(box_constraints const&) noexcept = default;
+    box_constraints& operator=(box_constraints&&) noexcept = default;
+    [[nodiscard]] friend bool operator==(box_constraints const&, box_constraints const&) noexcept = default;
 
-    constexpr box_constraints() noexcept = default;
-    constexpr box_constraints(box_constraints const&) noexcept = default;
-    constexpr box_constraints(box_constraints&&) noexcept = default;
-    constexpr box_constraints& operator=(box_constraints const&) noexcept = default;
-    constexpr box_constraints& operator=(box_constraints&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(box_constraints const&, box_constraints const&) noexcept = default;
-
-    constexpr box_constraints(
+    box_constraints(
         extent2 minimum,
         extent2 preferred,
         extent2 maximum,
-        hi::alignment alignment = hi::alignment{},
-        hi::margins margins = hi::margins{}) noexcept :
-        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), alignment(alignment)
+        hi::margins margins = hi::margins{}
+        hi::baseline baseline = hi::baseline{}) noexcept :
+        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), baseline(baseline)
     {
         hi_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr box_constraints constrain(extent2 new_minimum, extent2 new_maximum) const noexcept
+    [[nodiscard]] box_constraints constrain(extent2 new_minimum, extent2 new_maximum) const noexcept
     {
         hi_assert(new_minimum <= new_maximum);
 
@@ -63,7 +63,7 @@ struct box_constraints {
         return r;
     }
 
-    constexpr box_constraints& operator+=(extent2 const& rhs) noexcept
+    box_constraints& operator+=(extent2 const& rhs) noexcept
     {
         minimum.width() += rhs.width();
         preferred.width() += rhs.width();
@@ -76,25 +76,22 @@ struct box_constraints {
         return *this;
     }
 
-    [[nodiscard]] constexpr box_constraints operator+(extent2 const& rhs) const noexcept
+    [[nodiscard]] box_constraints operator+(extent2 const& rhs) const noexcept
     {
         auto r = *this;
         r += rhs;
         return r;
     }
 
-    [[nodiscard]] constexpr bool holds_invariant() const noexcept
+    [[nodiscard]] bool holds_invariant() const noexcept
     {
-        if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
-            return false;
-        }
         if (minimum > preferred or preferred > maximum) {
             return false;
         }
         return true;
     }
 
-    [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
+    [[nodiscard]] friend box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
     {
         auto r = lhs;
         inplace_max(r.minimum, rhs);
@@ -119,6 +116,7 @@ struct box_constraints {
         inplace_max(r.preferred, rhs.preferred);
         inplace_max(r.maximum, rhs.maximum);
         inplace_max(r.margins, rhs.margins);
+        inplace_max(r.baseline, rhs.baseline);
 
         hi_axiom(r.holds_invariant());
         return r;
