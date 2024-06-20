@@ -40,6 +40,7 @@ struct style_computed_properties {
     hi::color border_color;
     hi::color accent_color;
     text_style_set text_style;
+    unsigned int baseline_priority = 0;
 
     size_t _width_inherit : 1 = 0;
     size_t _height_inherit : 1 = 0;
@@ -64,6 +65,7 @@ struct style_computed_properties {
     size_t _border_color_inherit : 1 = 0;
     size_t _accent_color_inherit : 1 = 0;
     size_t _text_style_inherit : 1 = 0;
+    size_t _baseline_priority_inherit : 1 = 0;
 
     void inherit(style_computed_properties const& rhs) noexcept
     {
@@ -97,6 +99,7 @@ struct style_computed_properties {
         HIX_INHERIT(border_color);
         HIX_INHERIT(accent_color);
         HIX_INHERIT(text_style);
+        HIX_INHERIT(baseline_priority);
 
 #undef HIX_INHERIT
     }
@@ -139,6 +142,7 @@ struct style_computed_properties {
         if (to_bool(mask & style_modify_mask::alignment)) {
             horizontal_alignment = rhs.horizontal_alignment;
             vertical_alignment = rhs.vertical_alignment;
+            baseline_priority = rhs.baseline_priority;
         }
     }
 
@@ -176,6 +180,7 @@ struct style_computed_properties {
         HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
         HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
         HIX_COMPARE(text_style, style_modify_mask::size)
+        HIX_COMPARE(baseline_priority, style_modify_mask::alignment)
 #undef HIX_COMPARE
         return r;
     }

@@ -14,7 +14,8 @@
 
 hi_export_module(hikogui.layout : box_constraints);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** 2D constraints.
  * @ingroup geometry
@@ -35,13 +36,12 @@ struct box_constraints {
     box_constraints(box_constraints&&) noexcept = default;
     box_constraints& operator=(box_constraints const&) noexcept = default;
     box_constraints& operator=(box_constraints&&) noexcept = default;
-    [[nodiscard]] friend bool operator==(box_constraints const&, box_constraints const&) noexcept = default;
 
     box_constraints(
         extent2 minimum,
         extent2 preferred,
         extent2 maximum,
-        hi::margins margins = hi::margins{}
+        hi::margins margins = hi::margins{},
         hi::baseline baseline = hi::baseline{}) noexcept :
         minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), baseline(baseline)
     {
@@ -109,7 +109,7 @@ struct box_constraints {
      * @param rhs The right hand side box constraints.
      * @return A box constraints that encompasses both given constraints.
      */
-    [[nodiscard]] friend constexpr box_constraints max(box_constraints const& lhs, box_constraints const& rhs) noexcept
+    [[nodiscard]] friend box_constraints max(box_constraints const& lhs, box_constraints const& rhs) noexcept
     {
         auto r = lhs;
         inplace_max(r.minimum, rhs.minimum);
@@ -123,11 +123,12 @@ struct box_constraints {
     }
 
     template<std::convertible_to<box_constraints>... Args>
-    [[nodiscard]] friend constexpr box_constraints
-    max(box_constraints const& first, box_constraints const& second, box_constraints const& third, Args const&...args) noexcept
+    [[nodiscard]] friend box_constraints
+    max(box_constraints const& first, box_constraints const& second, box_constraints const& third, Args const&... args) noexcept
     {
         return max(first, max(second, third, args...));
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

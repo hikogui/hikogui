@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "box_constraints.hpp"
+#include "baseline.hpp"
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
@@ -13,70 +13,46 @@
 
 hi_export_module(hikogui.layout.box_shape);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 struct box_shape {
     aarectangle rectangle;
-    std::optional<float> baseline = {};
-    std::optional<float> centerline = {};
+    hi::baseline baseline;
 
-    constexpr box_shape() noexcept = default;
-    constexpr box_shape(box_shape const&) noexcept = default;
-    constexpr box_shape(box_shape&&) noexcept = default;
-    constexpr box_shape& operator=(box_shape const&) noexcept = default;
-    constexpr box_shape& operator=(box_shape&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(box_shape const&, box_shape const&) noexcept = default;
+    box_shape() noexcept = default;
+    box_shape(box_shape const&) noexcept = default;
+    box_shape(box_shape&&) noexcept = default;
+    box_shape& operator=(box_shape const&) noexcept = default;
+    box_shape& operator=(box_shape&&) noexcept = default;
 
-    constexpr box_shape(extent2 size) noexcept : rectangle(size), baseline(), centerline() {}
+    box_shape(aarectangle rectangle, hi::baseline baseline) noexcept : rectangle(rectangle), baseline(baseline) {}
 
-    constexpr box_shape(
-        std::in_place_t,
-        box_constraints const& constraints,
-        aarectangle const& rectangle,
-        float baseline_adjustment) noexcept :
-        rectangle(rectangle),
-        baseline(make_guideline(
-            constraints.alignment.vertical(),
-            rectangle.bottom(),
-            rectangle.top(),
-            baseline_adjustment)),
-        centerline(make_guideline(
-            constraints.alignment.horizontal(),
-            rectangle.left(),
-            rectangle.right()))
-    {
-    }
-
-    constexpr box_shape(box_constraints const& constraints, aarectangle rectangle, float baseline_adjustment) noexcept :
-        box_shape(std::in_place, constraints, rectangle, baseline_adjustment)
-    {
-        hi_axiom(rectangle.size() >= constraints.minimum);
-    }
-
-    [[nodiscard]] constexpr float x() const noexcept
+    [[nodiscard]] float x() const noexcept
     {
         return rectangle.x();
     }
 
-    [[nodiscard]] constexpr float y() const noexcept
+    [[nodiscard]] float y() const noexcept
     {
         return rectangle.y();
     }
 
-    [[nodiscard]] constexpr extent2 size() const noexcept
+    [[nodiscard]] extent2 size() const noexcept
     {
         return rectangle.size();
     }
 
-    [[nodiscard]] constexpr float width() const noexcept
+    [[nodiscard]] float width() const noexcept
     {
         return rectangle.width();
     }
 
-    [[nodiscard]] constexpr float height() const noexcept
+    [[nodiscard]] float height() const noexcept
     {
         return rectangle.height();
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

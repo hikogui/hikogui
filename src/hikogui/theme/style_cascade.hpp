@@ -24,15 +24,15 @@ struct style_property_element {
 
 [[nodiscard]] inline auto initial_style_properties_init() noexcept
 {
+    constexpr auto importance = style_importance::initial;
+
     auto r = std::vector<style_property_element>{};
 
+    // Match all widgets with the :root pseudo class.
+    // Set actual properties to make the GUI work without a style sheet.
     {
-        // Match all widgets with the :root pseudo class.
-        // Set actual properties to make the GUI work without a style sheet.
-        auto selector = style_selector{};
-        selector.push_back(style_selector_segment::from_pseudo_class("root"));
-
-        auto const priority = style_priority{style_importance::initial, selector.specificity()};
+        auto const selector = style_selector{style_selector_segment::from_pseudo_class("root")};
+        auto const priority = style_priority{importance, selector.specificity()};
 
         auto properties = style_properties{};
         properties.set_width(unit::pixels(20.0f), priority);
@@ -57,6 +57,7 @@ struct style_property_element {
         properties.set_background_color(color{1.0f, 1.0f, 1.0f, 1.0f}, priority);
         properties.set_border_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
         properties.set_accent_color(color{0.0f, 0.0f, 1.0f, 1.0f}, priority);
+        properties.set_baseline_priority(1, priority);
 
         auto text_styles = text_style_set{};
         auto text_style = hi::text_style{};
@@ -77,7 +78,25 @@ struct style_property_element {
         text_styles.push_back(grapheme_attribute_mask{}, text_style);
         properties.set_text_style(text_styles, priority);
 
-        r.emplace_back(std::move(selector), std::move(properties));
+        r.emplace_back(selector, properties);
+    }
+
+    for (auto const& element : std::vector{"radio-button", "checkbox", "toggle"}) {
+        auto const selector = style_selector{style_selector_segment::from_element(element)};
+        auto const priority = style_priority{importance, selector.specificity()};
+
+        auto properties = style_properties{};
+        properties.set_baseline_priority(10, priority);
+        r.emplace_back(selector, properties);
+    }
+
+    for (auto const& element : std::vector{"selection"}) {
+        auto const selector = style_selector{style_selector_segment::from_element(element)};
+        auto const priority = style_priority{importance, selector.specificity()};
+
+        auto properties = style_properties{};
+        properties.set_baseline_priority(100, priority);
+        r.emplace_back(selector, properties);
     }
 
     return r;

@@ -65,7 +65,10 @@ public:
      *                 the object. The arguments of the function us the height
      *                 of the box which contains the object to be aligned.
      */
-    baseline(size_t priority, baseline_function_type function) noexcept : _priority(priority), _function(std::move(function)) {}
+    baseline(unsigned int priority, baseline_function_type function) noexcept :
+        _priority(priority), _function(std::move(function))
+    {
+    }
 
     /**
      * @brief Creates a baseline object from the given cap height.
@@ -77,11 +80,12 @@ public:
      * @param cap_height The cap-height of the font in pixels.
      * @return The baseline object.
      */
-    [[nodiscard]] static baseline from_cap_height(size_t priority, unit::pixels_f cap_height) noexcept
+    [[nodiscard]] static baseline from_cap_height(unsigned int priority, unit::pixels_f cap_height) noexcept
     {
-        return baseline(priority, [cap_height](unit::pixels_f height) {
-            return baseline_function_result{unit::pixels(0.0f), height / 2.0f - cap_height / 2.0f, height - cap_height};
-        });
+        return hi::baseline{
+            priority, [cap_height](unit::pixels_f height) {
+                return baseline_function_result{unit::pixels(0.0f), height / 2.0f - cap_height / 2.0f, height - cap_height};
+            }};
     }
 
     /**
@@ -96,19 +100,45 @@ public:
      * @return The created baseline object.
      */
     [[nodiscard]] static baseline from_cap_height_and_padding(
-        size_t priority,
+        unsigned int priority,
         unit::pixels_f cap_height,
         unit::pixels_f bottom_padding,
         unit::pixels_f top_padding) noexcept
     {
-        return baseline(priority, [cap_height, bottom_padding, top_padding](unit::pixels_f height) {
-            auto const padded_height = height - bottom_padding - top_padding;
+        return hi::baseline{priority, [cap_height, bottom_padding, top_padding](unit::pixels_f height) {
+                                auto const padded_height = height - bottom_padding - top_padding;
 
-            return baseline_function_result{
-                bottom_padding,
-                bottom_padding + padded_height / 2.0f - cap_height / 2.0f,
-                bottom_padding + padded_height - cap_height};
-        });
+                                return baseline_function_result{
+                                    bottom_padding,
+                                    bottom_padding + padded_height / 2.0f - cap_height / 2.0f,
+                                    bottom_padding + padded_height - cap_height};
+                            }};
+    }
+
+    /**
+     * Embeds the given baseline function into a new baseline function with additional padding.
+     *
+     * @param priority The priority of the new baseline function.
+     * @param other The baseline function to embed.
+     * @param bottom_padding The amount of bottom padding to add.
+     * @param top_padding The amount of top padding to add.
+     * @return The new embedded baseline function.
+     */
+    [[nodiscard]] static baseline
+    embed(unsigned int priority, baseline const& other, unit::pixels_f bottom_padding, unit::pixels_f top_padding) noexcept
+    {
+        return hi::baseline{
+            priority, [embedded_func = other._function, bottom_padding, top_padding](unit::pixels_f height) {
+                auto const padded_height = height - bottom_padding - top_padding;
+                auto const [bottom, middle, top] = embedded_func(padded_height);
+
+                return baseline_function_result{bottom_padding + bottom, bottom_padding + middle, bottom_padding + top};
+            }};
+    }
+
+    [[nodiscard]] constexpr unsigned int priority() const noexcept
+    {
+        return _priority;
     }
 
     /**
@@ -154,7 +184,7 @@ public:
     }
 
 private:
-    size_t _priority = 0;
+    unsigned int _priority = 0;
     baseline_function_type _function = {};
 };
 }

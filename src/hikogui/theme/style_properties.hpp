@@ -65,6 +65,7 @@ public:
         HIX_COPY(horizontal_alignment);
         HIX_COPY(vertical_alignment);
         HIX_COPY(text_style);
+        HIX_COPY(baseline_priority);
 #undef HIX_COPY
 
         return r;
@@ -126,6 +127,7 @@ public:
     HIX_GETSET(hi::horizontal_alignment, horizontal_alignment)
     HIX_GETSET(hi::vertical_alignment, vertical_alignment)
     HIX_GETSET(hi::text_style_set, text_style)
+    HIX_GETSET(unsigned int, baseline_priority)
 #undef HIX_GETSET
 
     void set_margin(unit::length_f margin, style_priority priority) noexcept
@@ -177,6 +179,7 @@ public:
         reset_horizontal_alignment();
         reset_vertical_alignment();
         reset_text_style();
+        reset_baseline_priority();
     }
 
     /** Apply attributes of other ontop of the current.
@@ -216,6 +219,7 @@ public:
         HIX_APPLY(horizontal_alignment)
         HIX_APPLY(vertical_alignment)
         HIX_APPLY(text_style)
+        HIX_APPLY(baseline_priority)
 #undef HIX_APPLY
     }
 
@@ -243,6 +247,7 @@ private:
     hi::horizontal_alignment _horizontal_alignment = hi::horizontal_alignment::left;
     hi::vertical_alignment _vertical_alignment = hi::vertical_alignment::top;
     hi::text_style_set _text_style = {};
+    unsigned int _baseline_priority = 0;
 
     size_t _width_inherit : 1 = 1;
     size_t _height_inherit : 1 = 1;
@@ -267,6 +272,7 @@ private:
     size_t _horizontal_alignment_inherit : 1 = 1;
     size_t _vertical_alignment_inherit : 1 = 1;
     size_t _text_style_inherit : 1 = 1;
+    size_t _baseline_priority_inherit : 1 = 1;
 
     style_priority _width_priority;
     style_priority _height_priority;
@@ -291,6 +297,7 @@ private:
     style_priority _horizontal_alignment_priority;
     style_priority _vertical_alignment_priority;
     style_priority _text_style_priority;
+    style_priority _baseline_priority_priority;
 };
 
 } // namespace v1

@@ -6,6 +6,7 @@
 
 #include "box_constraints.hpp"
 #include "box_shape.hpp"
+#include "hikogui/layout/baseline.hpp"
 #include "spreadsheet_address.hpp"
 #include "../geometry/geometry.hpp"
 #include "../utility/utility.hpp"
@@ -19,7 +20,8 @@
 
 hi_export_module(hikogui.layout.grid_layout);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 namespace detail {
 
 template<typename T>
@@ -34,14 +36,14 @@ struct grid_layout_cell {
     value_type value = {};
     box_shape shape = {};
 
-    constexpr grid_layout_cell() noexcept = default;
-    constexpr grid_layout_cell(grid_layout_cell const&) noexcept = default;
-    constexpr grid_layout_cell(grid_layout_cell&&) noexcept = default;
-    constexpr grid_layout_cell& operator=(grid_layout_cell const&) noexcept = default;
-    constexpr grid_layout_cell& operator=(grid_layout_cell&&) noexcept = default;
+    grid_layout_cell() noexcept = default;
+    grid_layout_cell(grid_layout_cell const&) noexcept = default;
+    grid_layout_cell(grid_layout_cell&&) noexcept = default;
+    grid_layout_cell& operator=(grid_layout_cell const&) noexcept = default;
+    grid_layout_cell& operator=(grid_layout_cell&&) noexcept = default;
 
     template<std::convertible_to<value_type> Value>
-    constexpr grid_layout_cell(
+    grid_layout_cell(
         size_t first_column,
         size_t first_row,
         size_t last_column,
@@ -59,13 +61,13 @@ struct grid_layout_cell {
         hi_assert(first_row < last_row);
     }
 
-    constexpr void set_constraints(box_constraints const& constraints) noexcept
+    void set_constraints(box_constraints const& constraints) noexcept
     {
         _constraints = constraints;
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr size_t first() const noexcept
+    [[nodiscard]] size_t first() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return first_column;
@@ -77,7 +79,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr size_t last() const noexcept
+    [[nodiscard]] size_t last() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return last_column;
@@ -89,26 +91,14 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr size_t span() const noexcept
+    [[nodiscard]] size_t span() const noexcept
     {
         hi_axiom(first<Axis>() < last<Axis>());
         return last<Axis>() - first<Axis>();
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr auto alignment() const noexcept
-    {
-        if constexpr (Axis == axis::x) {
-            return _constraints.alignment.horizontal();
-        } else if constexpr (Axis == axis::y) {
-            return _constraints.alignment.vertical();
-        } else {
-            hi_static_no_default();
-        }
-    }
-
-    template<hi::axis Axis>
-    [[nodiscard]] constexpr float minimum() const noexcept
+    [[nodiscard]] float minimum() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return _constraints.minimum.width();
@@ -120,7 +110,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr float preferred() const noexcept
+    [[nodiscard]] float preferred() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return _constraints.preferred.width();
@@ -132,7 +122,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr float maximum() const noexcept
+    [[nodiscard]] float maximum() const noexcept
     {
         if constexpr (Axis == axis::x) {
             return _constraints.maximum.width();
@@ -144,7 +134,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr float margin_before(bool forward) const noexcept
+    [[nodiscard]] float margin_before(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
@@ -164,7 +154,7 @@ struct grid_layout_cell {
     }
 
     template<hi::axis Axis>
-    [[nodiscard]] constexpr float margin_after(bool forward) const noexcept
+    [[nodiscard]] float margin_after(bool forward) const noexcept
     {
         if constexpr (Axis == axis::x) {
             if (forward) {
@@ -178,6 +168,18 @@ struct grid_layout_cell {
             } else {
                 return _constraints.margins.bottom();
             }
+        } else {
+            hi_static_no_default();
+        }
+    }
+
+    template<hi::axis Axis>
+    [[nodiscard]] hi::baseline baseline() const noexcept
+    {
+        if constexpr (Axis == axis::x) {
+            return {};
+        } else if constexpr (Axis == axis::y) {
+            return _constraints.baseline;
         } else {
             hi_static_no_default();
         }
@@ -218,9 +220,9 @@ public:
          */
         float margin_after = 0.0f;
 
-        /** The alignment of the cells.
+        /** The baseline of a row of cells.
          */
-        alignment_type alignment = alignment_type::none;
+        hi::baseline baseline = {};
 
         /** Allow this cell to be resized beyond the maximum constraint.
          */
@@ -251,13 +253,13 @@ public:
     using reference = constraint_vector::reference;
     using const_reference = constraint_vector::const_reference;
 
-    constexpr ~grid_layout_axis_constraints() = default;
-    constexpr grid_layout_axis_constraints() noexcept = default;
-    constexpr grid_layout_axis_constraints(grid_layout_axis_constraints const&) noexcept = default;
-    constexpr grid_layout_axis_constraints(grid_layout_axis_constraints&&) noexcept = default;
-    constexpr grid_layout_axis_constraints& operator=(grid_layout_axis_constraints const&) noexcept = default;
-    constexpr grid_layout_axis_constraints& operator=(grid_layout_axis_constraints&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool
+    ~grid_layout_axis_constraints() = default;
+    grid_layout_axis_constraints() noexcept = default;
+    grid_layout_axis_constraints(grid_layout_axis_constraints const&) noexcept = default;
+    grid_layout_axis_constraints(grid_layout_axis_constraints&&) noexcept = default;
+    grid_layout_axis_constraints& operator=(grid_layout_axis_constraints const&) noexcept = default;
+    grid_layout_axis_constraints& operator=(grid_layout_axis_constraints&&) noexcept = default;
+    [[nodiscard]] friend bool
     operator==(grid_layout_axis_constraints const&, grid_layout_axis_constraints const&) noexcept = default;
 
     /** Construct constraints for this axis.
@@ -267,7 +269,7 @@ public:
      * @param forward True if the axis is used from left-to-right or bottom-to-top,
      *                False if the axis is used from right-to-left or top-to-bottom.
      */
-    constexpr grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
+    grid_layout_axis_constraints(cell_vector const& cells, size_t num, bool forward) noexcept :
         _constraints(num), _forward(forward)
     {
         for (auto const& cell : cells) {
@@ -281,27 +283,27 @@ public:
         construct_fixup();
     }
 
-    [[nodiscard]] constexpr float margin_before() const noexcept
+    [[nodiscard]] float margin_before() const noexcept
     {
         return empty() ? 0 : _forward ? front().margin_before : back().margin_before;
     }
 
-    [[nodiscard]] constexpr float margin_after() const noexcept
+    [[nodiscard]] float margin_after() const noexcept
     {
         return empty() ? 0 : _forward ? back().margin_after : front().margin_after;
     }
 
-    [[nodiscard]] constexpr float padding_before() const noexcept
+    [[nodiscard]] float padding_before() const noexcept
     {
         return empty() ? 0 : _forward ? front().padding_before : back().padding_before;
     }
 
-    [[nodiscard]] constexpr float padding_after() const noexcept
+    [[nodiscard]] float padding_after() const noexcept
     {
         return empty() ? 0 : _forward ? back().padding_after : front().padding_after;
     }
 
-    [[nodiscard]] constexpr std::tuple<float, float, float> update_constraints() const noexcept
+    [[nodiscard]] std::tuple<float, float, float> update_constraints() const noexcept
     {
         return constraints(begin(), end());
     }
@@ -313,28 +315,24 @@ public:
      * @param cell The reference to the cell in the grid.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<float, float, float> constraints(cell_type const& cell) const noexcept
+    [[nodiscard]] std::tuple<float, float, float> constraints(cell_type const& cell) const noexcept
     {
         return constraints(cell.template first<axis>(), cell.template last<axis>());
     }
 
-    [[nodiscard]] constexpr float position(cell_type const& cell) const noexcept
+    [[nodiscard]] float position(cell_type const& cell) const noexcept
     {
         return position(cell.template first<axis>(), cell.template last<axis>());
     }
 
-    [[nodiscard]] constexpr float extent(cell_type const& cell) const noexcept
+    [[nodiscard]] float extent(cell_type const& cell) const noexcept
     {
         return extent(cell.template first<axis>(), cell.template last<axis>());
     }
 
-    [[nodiscard]] constexpr std::optional<float> guideline(cell_type const& cell) const noexcept
+    [[nodiscard]] hi::baseline baseline(cell_type const& cell) const noexcept
     {
-        if (cell.template span<axis>() == 1) {
-            return guideline(cell.template first<axis>());
-        } else {
-            return std::nullopt;
-        }
+        return baseline(cell.template first<axis>(), cell.template last<axis>());
     }
 
     /** Layout each cell along an axis.
@@ -356,10 +354,8 @@ public:
      *
      * @param new_position The start of the grid along its axis.
      * @param new_extent The size of the grid along its axis.
-     * @param external_guideline The position of the guideline external from the grid.
-     * @param guideline_width The width of the guideline.
      */
-    constexpr void layout(float new_position, float new_extent, std::optional<float> external_guideline, float guideline_width) noexcept
+    void layout(float new_position, float new_extent) noexcept
     {
         // Start with the extent of each constraint equal to the preferred extent.
         for (auto& constraint : _constraints) {
@@ -408,84 +404,78 @@ public:
         }
 
         if (_forward) {
-            layout_position(begin(), end(), new_position, guideline_width);
+            layout_position(begin(), end(), new_position);
         } else {
-            layout_position(rbegin(), rend(), new_position, guideline_width);
-        }
-
-        if (external_guideline and size() == 1) {
-            // When there is only 1 cell on this axis, the external guideline is used.
-            // XXX If there are more cell, then the external alignment should be taken into account.
-            front().guideline = *external_guideline;
+            layout_position(rbegin(), rend(), new_position);
         }
     }
 
     /** Number of cell on this axis.
      */
-    [[nodiscard]] constexpr size_t size() const noexcept
+    [[nodiscard]] size_t size() const noexcept
     {
         return _constraints.size();
     }
 
     /** Check if this axis is empty.
      */
-    [[nodiscard]] constexpr bool empty() const noexcept
+    [[nodiscard]] bool empty() const noexcept
     {
         return _constraints.empty();
     }
 
     /** Iterator to the first cell on this axis.
      */
-    [[nodiscard]] constexpr iterator begin() noexcept
+    [[nodiscard]] iterator begin() noexcept
     {
         return _constraints.begin();
     }
 
     /** Iterator to the first cell on this axis.
      */
-    [[nodiscard]] constexpr const_iterator begin() const noexcept
+    [[nodiscard]] const_iterator begin() const noexcept
     {
         return _constraints.begin();
     }
 
     /** Iterator to the first cell on this axis.
      */
-    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
+    [[nodiscard]] const_iterator cbegin() const noexcept
     {
         return _constraints.cbegin();
     }
 
     /** Iterator to beyond the last cell on this axis.
      */
-    [[nodiscard]] constexpr iterator end() noexcept
+    [[nodiscard]] iterator end() noexcept
     {
         return _constraints.end();
     }
 
     /** Iterator to beyond the last cell on this axis.
      */
-    [[nodiscard]] constexpr const_iterator end() const noexcept
+    [[nodiscard]] const_iterator end() const noexcept
     {
         return _constraints.end();
     }
 
     /** Iterator to beyond the last cell on this axis.
      */
-    [[nodiscard]] constexpr const_iterator cend() const noexcept
+    [[nodiscard]] const_iterator cend() const noexcept
     {
         return _constraints.cend();
     }
 
     /** Iterator to the first cell on this axis.
      */
-    [[nodiscard]] constexpr reverse_iterator rbegin() noexcept
+    [[nodiscard]] reverse_iterator rbegin() noexcept
     {
         return _constraints.rbegin();
     }
 
     /** Iterator to the first cell on this axis.
      */
-    [[nodiscard]] constexpr reverse_iterator rend() noexcept
+    [[nodiscard]] reverse_iterator rend() noexcept
     {
         return _constraints.rend();
     }
@@ -496,7 +486,7 @@ public:
      * @param index The index of the cell.
      * @return A reference to the cell.
      */
-    [[nodiscard]] constexpr reference operator[](size_t index) noexcept
+    [[nodiscard]] reference operator[](size_t index) noexcept
     {
         hi_axiom(index < size());
         return _constraints[index];
@@ -508,7 +498,7 @@ public:
      * @param index The index of the cell.
      * @return A reference to the cell.
      */
-    [[nodiscard]] constexpr const_reference operator[](size_t index) const noexcept
+    [[nodiscard]] const_reference operator[](size_t index) const noexcept
     {
         hi_axiom(index < size());
         return _constraints[index];
@@ -519,7 +509,7 @@ public:
      * @note It is undefined behavior to call this function on an empty axis.
      * @return A reference to the first cell.
      */
-    [[nodiscard]] constexpr reference front() noexcept
+    [[nodiscard]] reference front() noexcept
     {
         hi_axiom(not empty());
         return _constraints.front();
@@ -530,7 +520,7 @@ public:
      * @note It is undefined behavior to call this function on an empty axis.
      * @return A reference to the first cell.
      */
-    [[nodiscard]] constexpr const_reference front() const noexcept
+    [[nodiscard]] const_reference front() const noexcept
     {
         hi_axiom(not empty());
         return _constraints.front();
@@ -541,7 +531,7 @@ public:
      * @note It is undefined behavior to call this function on an empty axis.
      * @return A reference to the last cell.
      */
-    [[nodiscard]] constexpr reference back() noexcept
+    [[nodiscard]] reference back() noexcept
     {
         hi_axiom(not empty());
         return _constraints.back();
@@ -552,7 +542,7 @@ public:
      * @note It is undefined behavior to call this function on an empty axis.
      * @return A reference to the last cell.
      */
-    [[nodiscard]] constexpr const_reference back() const noexcept
+    [[nodiscard]] const_reference back() const noexcept
     {
         hi_axiom(not empty());
         return _constraints.back();
@@ -589,7 +579,7 @@ private:
      * @param count The number of cells between first/last that can be shrunk, from previous iteration.
      * @return Number of pixels of the cells and inner-margins, number of cells in the range that can shrink more.
      */
-    [[nodiscard]] constexpr std::pair<float, size_t>
+    [[nodiscard]] std::pair<float, size_t>
     layout_shrink(const_iterator first, const_iterator last, float shrink = 0.0f, size_t count = 1) noexcept
     {
         auto const first_ = begin() + std::distance(cbegin(), first);
@@ -635,7 +625,7 @@ private:
      * @param count The number of cells between first/last that can be expanded, from previous iteration.
      * @return Number of pixels of the cells and inner-margins, number of cells in the range that can expand more.
      */
-    [[nodiscard]] constexpr std::pair<float, size_t>
+    [[nodiscard]] std::pair<float, size_t>
     layout_expand(const_iterator first, const_iterator last, float expand = 0.0f, size_t count = 1) noexcept
     {
         auto const first_ = begin() + std::distance(cbegin(), first);
@@ -666,12 +656,11 @@ private:
         return {new_extent, new_count};
     }
 
-    constexpr void layout_position(auto first, auto last, float start_position, float guideline_width) noexcept
+    void layout_position(auto first, auto last, float start_position) noexcept
     {
         auto position = start_position;
         for (auto it = first; it != last; ++it) {
             it->position = position;
-            it->guideline = make_guideline(it->alignment, position, position + it->extent, guideline_width);
 
             position += it->extent;
             position += it->margin_after;
@@ -685,7 +674,7 @@ private:
      *
      * @param cell The cell to construct.
      */
-    constexpr void construct_simple_cell(cell_type const& cell) noexcept
+    void construct_simple_cell(cell_type const& cell) noexcept
     {
         inplace_max(_constraints[cell.template first<axis>()].margin_before, cell.template margin_before<axis>(_forward));
         inplace_max(_constraints[cell.template last<axis>() - 1].margin_after, cell.template margin_after<axis>(_forward));
@@ -699,6 +688,7 @@ private:
             inplace_max(_constraints[cell.template first<axis>()].minimum, cell.template minimum<axis>());
             inplace_max(_constraints[cell.template first<axis>()].preferred, cell.template preferred<axis>());
             inplace_min(_constraints[cell.template first<axis>()].maximum, cell.template maximum<axis>());
+            inplace_max(_constraints[cell.template first<axis>()].baseline, cell.template baseline<axis>());
         }
     }
 
@@ -708,12 +698,12 @@ private:
      *
      * @param cell The cell to construct.
      */
-    constexpr void construct_span_cell(cell_type const& cell) noexcept
+    void construct_span_cell(cell_type const& cell) noexcept
     {
         auto num_cells = narrow_cast<float>(cell.template span<axis>());
 
         if (cell.template span<axis>() > 1) {
-            auto const[span_minimum, span_preferred, span_maximum] = constraints(cell);
+            auto const [span_minimum, span_preferred, span_maximum] = constraints(cell);
             if (auto const extra = cell.template minimum<axis>() - span_minimum; extra > 0) {
                 auto const extra_per_cell = std::floor(extra / num_cells);
                 for (auto i = cell.template first<axis>(); i != cell.template last<axis>(); ++i) {
@@ -742,7 +732,7 @@ private:
      *
      * Fix-up minimum, preferred, maximum. And calculate the padding.
      */
-    constexpr void construct_fixup() noexcept
+    void construct_fixup() noexcept
     {
         for (auto it = begin(); it != end(); ++it) {
             // Fix the margins so that between two constraints they are equal.
@@ -764,7 +754,7 @@ private:
      * @param last The iterator beyond the last cell.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<float, float, float> constraints(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] std::tuple<float, float, float> constraints(const_iterator first, const_iterator last) const noexcept
     {
         auto r_minimum = 0.0f;
         auto r_preferred = 0.0f;
@@ -793,7 +783,7 @@ private:
      * @param last The index beyond the last cell.
      * @return The minimum, preferred and maximum size.
      */
-    [[nodiscard]] constexpr std::tuple<float, float, float> constraints(size_t first, size_t last) const noexcept
+    [[nodiscard]] std::tuple<float, float, float> constraints(size_t first, size_t last) const noexcept
     {
         hi_axiom(first <= last);
         hi_axiom(last <= size());
@@ -805,9 +795,9 @@ private:
      * @note valid after layout.
      * @param first The iterator to the first cell.
      * @param last The iterator beyond the last cell.
-     * @return The current size of the span, including internal margins.
+     * @return The current position of the span.
      */
-    [[nodiscard]] constexpr float position(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] float position(const_iterator first, const_iterator last) const noexcept
     {
         hi_axiom(first != last);
         if (_forward) {
@@ -822,9 +812,9 @@ private:
      * @note valid after layout.
      * @param first The index to the first cell.
      * @param last The index beyond the last cell.
-     * @return The current size of the span, including internal margins.
+     * @return The current position of the span.
      */
-    [[nodiscard]] constexpr float position(size_t first, size_t last) const noexcept
+    [[nodiscard]] float position(size_t first, size_t last) const noexcept
     {
         hi_axiom(first < last);
         hi_axiom(last <= size());
@@ -838,7 +828,7 @@ private:
      * @param last The iterator beyond the last cell.
      * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr float extent(const_iterator first, const_iterator last) const noexcept
+    [[nodiscard]] float extent(const_iterator first, const_iterator last) const noexcept
     {
         auto r = 0.0f;
         if (first != last) {
@@ -858,21 +848,22 @@ private:
      * @param last The index beyond the last cell.
      * @return The current size of the span, including internal margins.
      */
-    [[nodiscard]] constexpr float extent(size_t first, size_t last) const noexcept
+    [[nodiscard]] float extent(size_t first, size_t last) const noexcept
     {
         hi_axiom(first <= last);
         hi_axiom(last <= size());
         return extent(cbegin() + first, cbegin() + last);
     }
 
-    [[nodiscard]] constexpr std::optional<float> guideline(const_iterator it) const noexcept
+    [[nodiscard]] hi::baseline baseline(const_iterator it, const_iterator last) const noexcept
     {
-        return it->guideline;
+        // Each cell of the span has the same baseline.
+        return it->baseline;
     }
 
-    [[nodiscard]] constexpr std::optional<float> guideline(size_t i) const noexcept
+    [[nodiscard]] hi::baseline baseline(size_t first, size_t last) const noexcept
     {
-        return guideline(cbegin() + i);
+        return baseline(cbegin() + first, cbegin() + last);
     }
 };
 
@@ -896,69 +887,69 @@ public:
     using const_reference = cell_vector::const_reference;
 
     ~grid_layout() = default;
-    constexpr grid_layout() noexcept = default;
-    constexpr grid_layout(grid_layout const&) noexcept = default;
-    constexpr grid_layout(grid_layout&&) noexcept = default;
-    constexpr grid_layout& operator=(grid_layout const&) noexcept = default;
-    constexpr grid_layout& operator=(grid_layout&&) noexcept = default;
-    [[nodiscard]] constexpr friend bool operator==(grid_layout const&, grid_layout const&) noexcept = default;
+    grid_layout() noexcept = default;
+    grid_layout(grid_layout const&) noexcept = default;
+    grid_layout(grid_layout&&) noexcept = default;
+    grid_layout& operator=(grid_layout const&) noexcept = default;
+    grid_layout& operator=(grid_layout&&) noexcept = default;
+    [[nodiscard]] friend bool operator==(grid_layout const&, grid_layout const&) noexcept = default;
 
-    [[nodiscard]] constexpr bool empty() const noexcept
+    [[nodiscard]] bool empty() const noexcept
     {
         return _cells.empty();
     }
 
-    [[nodiscard]] constexpr size_t size() const noexcept
+    [[nodiscard]] size_t size() const noexcept
     {
         return _cells.size();
     }
 
-    [[nodiscard]] constexpr size_t num_columns() const noexcept
+    [[nodiscard]] size_t num_columns() const noexcept
     {
         return _num_columns;
     }
 
-    [[nodiscard]] constexpr size_t num_rows() const noexcept
+    [[nodiscard]] size_t num_rows() const noexcept
     {
         return _num_rows;
     }
 
-    [[nodiscard]] constexpr iterator begin() noexcept
+    [[nodiscard]] iterator begin() noexcept
     {
         return _cells.begin();
     }
 
-    [[nodiscard]] constexpr iterator end() noexcept
+    [[nodiscard]] iterator end() noexcept
     {
         return _cells.end();
     }
 
-    [[nodiscard]] constexpr const_iterator begin() const noexcept
+    [[nodiscard]] const_iterator begin() const noexcept
     {
         return _cells.begin();
     }
 
-    [[nodiscard]] constexpr const_iterator end() const noexcept
+    [[nodiscard]] const_iterator end() const noexcept
     {
         return _cells.end();
     }
 
-    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
+    [[nodiscard]] const_iterator cbegin() const noexcept
     {
         return _cells.cbegin();
     }
 
-    [[nodiscard]] constexpr const_iterator cend() const noexcept
+    [[nodiscard]] const_iterator cend() const noexcept
     {
         return _cells.cend();
     }
 
-    [[nodiscard]] constexpr const_reference operator[](size_t i) const noexcept
+    [[nodiscard]] const_reference operator[](size_t i) const noexcept
     {
         return _cells[i];
     }
 
-    [[nodiscard]] constexpr reference operator[](size_t i) noexcept
+    [[nodiscard]] reference operator[](size_t i) noexcept
     {
         return _cells[i];
     }
@@ -971,7 +962,7 @@ public:
      * @param last_row One beyond the last row of the cell-span.
      * @retval true If the given cell-span overlaps with an already existing cell.
      */
-    [[nodiscard]] constexpr bool cell_in_use(size_t first_column, size_t first_row, size_t last_column, size_t last_row) noexcept
+    [[nodiscard]] bool cell_in_use(size_t first_column, size_t first_row, size_t last_column, size_t last_row) noexcept
     {
         // At least one cell must be in the range.
         hi_axiom(first_column < last_column);
@@ -1006,7 +997,7 @@ public:
      * @return A reference to the created cell.
      */
     template<forward_of<value_type> Value>
-    constexpr reference add_cell(
+    reference add_cell(
         size_t first_column,
         size_t first_row,
         size_t last_column,
@@ -1032,18 +1023,18 @@ public:
      * @return A reference to the created cell.
      */
     template<forward_of<value_type> Value>
-    constexpr reference add_cell(size_t column, size_t row, Value&& value, bool beyond_maximum = false) noexcept
+    reference add_cell(size_t column, size_t row, Value&& value, bool beyond_maximum = false) noexcept
     {
         return add_cell(column, row, column + 1, row + 1, std::forward<Value>(value), beyond_maximum);
     }
 
-    constexpr void clear() noexcept
+    void clear() noexcept
     {
         _cells.clear();
         update_after_insert_or_delete();
     }
 
-    [[nodiscard]] constexpr box_constraints constraints(bool left_to_right) const noexcept
+    [[nodiscard]] box_constraints constraints(bool left_to_right) const noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
         _row_constraints = {_cells, num_rows(), false};
@@ -1076,13 +1067,12 @@ public:
     /** Layout the cells based on the width and height.
      *
      * @param shape The shape of the box to place the grid in.
-     * @param baseline_adjustment How much the baseline needs to be adjusted when aligned to the top.
      */
-    constexpr void set_layout(box_shape const& shape, float baseline_adjustment) noexcept
+    void set_layout(box_shape const& shape) noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
-        _column_constraints.layout(shape.x(), shape.width(), shape.centerline, 0);
-        _row_constraints.layout(shape.y(), shape.height(), shape.baseline, baseline_adjustment);
+        _column_constraints.layout(shape.x(), shape.width());
+        _row_constraints.layout(shape.y(), shape.height());
 
         // Assign the shape for each cell.
         for (auto& cell : _cells) {
@@ -1091,8 +1081,7 @@ public:
                 _row_constraints.position(cell),
                 _column_constraints.extent(cell),
                 _row_constraints.extent(cell)};
-            cell.shape.centerline = _column_constraints.guideline(cell);
-            cell.shape.baseline = _row_constraints.guideline(cell);
+            cell.shape.baseline = _row_constraints.baseline(cell);
         }
     }
 
@@ -1107,7 +1096,7 @@ private:
      *
      * The ordering is the same as they keyboard focus chain order.
      */
-    constexpr void sort_cells() noexcept
+    void sort_cells() noexcept
     {
         std::sort(_cells.begin(), _cells.end(), [](cell_type const& lhs, cell_type const& rhs) {
             if (lhs.first_row != rhs.first_row) {
@@ -1120,7 +1109,7 @@ private:
 
     /** Updates needed after a cell was added or removed.
      */
-    constexpr void update_after_insert_or_delete() noexcept
+    void update_after_insert_or_delete() noexcept
     {
         sort_cells();
 
@@ -1133,4 +1122,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
