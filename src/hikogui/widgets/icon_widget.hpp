@@ -72,16 +72,27 @@ public:
         _layout = {};
 
         if (_icon_has_modified.exchange(false)) {
-            _icon_type = icon_type::no;
-            _icon_size = {};
-            _glyph = {};
-            _pixmap_backing = {};
-
             if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
-                _icon_type = icon_type::pixmap;
-                _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
+                auto const bounding_rectangle = [&] {
+                    assert(pixmap->height() != 0);
+                    assert(pixmap->width() != 0);
 
-                if (not(_pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap})) {
+                    auto const width = narrow_cast<float>(pixmap->width());
+                    auto const height = narrow_cast<float>(pixmap->height());
+                    if (pixmap->height() > pixmap->width()) {
+                        // Portrait.
+                        return extent2{width / height, 1.0f};
+                    } else {
+                        // Landscape.
+                        return extent2{1.0f, height / width};
+                    }
+                }();
+
+                _glyph = {};
+                _icon_type = icon_type::pixmap;
+                _icon_size = bounding_rectangle * style.font_size_px;
+                _pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap};
+                if (not _pixmap_backing) {
                     // Could not get an image, retry.
                     _icon_has_modified = true;
                     ++global_counter<"icon_widget:no-backing-image:constrain">;
@@ -92,26 +103,33 @@ public:
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
+                _pixmap_backing = {};
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
+                _pixmap_backing = {};
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
+                _pixmap_backing = {};
+
+            } else {
+                _glyph = {};
+                _icon_type = icon_type::no;
+                _icon_size = {};
+                _pixmap_backing = {};
             }
         }
 
-        auto const resolved_alignment = resolve(style.alignment, os_settings::left_to_right());
-        return box_constraints{
-            extent2{0, 0},
+        // Icons have a very low priority as it needs to be aligned with text.
+        return {
             _icon_size,
-            _icon_size,
-            resolved_alignment,
-            style.margins_px};
+            style.margins_px,
+            baseline::from_middle_of_object(1, style.cap_height, unit::pixels(_icon_size.height()))};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -120,7 +138,12 @@ public:
             if (_icon_type == icon_type::no or not _icon_size) {
                 _icon_rectangle = {};
             } else {
-                _icon_rectangle = align(context.rectangle(), _icon_size, os_settings::alignment(style.alignment));
+                auto const middle = context.get_middle(style.vertical_alignment, style.cap_height);
+                _icon_rectangle = align_to_middle(
+                    context.rectangle() + style.vertical_margins_px,
+                    _icon_size,
+                    os_settings::alignment(style.horizontal_alignment),
+                    middle.in(unit::pixels));
             }
         }
     }

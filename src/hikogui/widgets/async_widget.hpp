@@ -147,14 +147,13 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _button_size = {theme().size(), theme().size()};
-        return box_constraints{_button_size, _button_size, _button_size, *attributes.alignment, theme().margin()};
+        return box_constraints{style.size_px, style.margins_px, baseline::from_middle_of_object(20, style.cap_height, style.height)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), _button_size, os_settings::alignment(*attributes.alignment));
+            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(*attributes.alignment));
 
             _check_glyph = find_glyph(elusive_icon::Ok);
             auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
@@ -254,7 +253,6 @@ public:
     /// @endprivatesection
 
 private:
-    extent2 _button_size;
     aarectangle _button_rectangle;
     font_glyph_ids _check_glyph;
     aarectangle _check_glyph_rectangle;

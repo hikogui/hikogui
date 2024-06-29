@@ -70,7 +70,11 @@ public:
 
     extent2 size_px;
     hi::margins margins_px;
+    hi::margins horizontal_margins_px;
+    hi::margins vertical_margins_px;
     hi::margins padding_px;
+    hi::margins horizontal_padding_px;
+    hi::margins vertical_padding_px;
     hi::corner_radii border_radius_px;
 
     hi::alignment alignment;
@@ -273,7 +277,11 @@ private:
             padding_right_px = padding_right.in(unit::pixels);
             padding_top_px = padding_top.in(unit::pixels);
             margins_px = hi::margins{margin_left_px, margin_bottom_px, margin_right_px, margin_top_px};
+            horizontal_margins_px = hi::margins{margin_left_px, 0.0f, margin_right_px, 0.0f};
+            vertical_margins_px = hi::margins{0.0f, margin_bottom_px, 0.0f, margin_top_px};
             padding_px = hi::margins{padding_left_px, padding_bottom_px, padding_right_px, padding_top_px};
+            horizontal_padding_px = hi::margins{padding_left_px, 0.0f, padding_right_px, 0.0f};
+            vertical_padding_px = hi::margins{0.0f, padding_bottom_px, 0.0f, padding_top_px};
         }
 
         if (to_bool(mask & style_modify_mask::weight)) {

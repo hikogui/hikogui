@@ -26,7 +26,8 @@
 
 hi_export_module(hikogui.geometry : aarectangle);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** Class which represents an axis-aligned rectangle.
  * @ingroup geometry
@@ -61,8 +62,7 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    constexpr aarectangle(float x, float y, float width, float height) noexcept :
-        v{x, y, x + width, y + height}
+    constexpr aarectangle(float x, float y, float width, float height) noexcept : v{x, y, x + width, y + height}
     {
         hi_axiom(holds_invariant());
     }
@@ -165,7 +165,7 @@ public:
     }
 
     template<int I>
-    [[nodiscard]] constexpr friend point2 get(aarectangle const &rhs) noexcept
+    [[nodiscard]] constexpr friend point2 get(aarectangle const& rhs) noexcept
     {
         if constexpr (I == 0) {
             return point2{rhs.v.xy01()};
@@ -288,8 +288,7 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend constexpr aarectangle
-    align(aarectangle haystack, extent2 needle, alignment alignment) noexcept
+    [[nodiscard]] friend constexpr aarectangle align(aarectangle haystack, extent2 needle, alignment alignment) noexcept
     {
         auto x = value_type{0};
         if (alignment == horizontal_alignment::left) {
@@ -331,6 +330,47 @@ public:
     [[nodiscard]] friend constexpr aarectangle align(aarectangle haystack, aarectangle needle, alignment alignment) noexcept
     {
         return align(haystack, needle.size(), alignment);
+    }
+
+    /**
+     * Aligns a rectangle to the middle of another rectangle based on the
+     * specified horizontal alignment and middle position.
+     *
+     * The rectangle will not move beyond the bounds of the haystack.
+     *
+     * @param haystack The rectangle to align to.
+     * @param needle The rectangle to align.
+     * @param alignment The horizontal alignment.
+     * @param middle The middle value.
+     * @return The aligned rectangle.
+     */
+    [[nodiscard]] friend constexpr aarectangle
+    align_to_middle(aarectangle haystack, extent2 needle, horizontal_alignment alignment, value_type middle) noexcept
+    {
+        auto const needle_half_height = needle.height() / value_type{2};
+        auto const needle_half_width = needle.width() / value_type{2};
+
+        auto const x = [&] {
+            switch (alignment) {
+            case horizontal_alignment::left:
+            case horizontal_alignment::flush:
+            case horizontal_alignment::justified:
+                return haystack.left();
+            case horizontal_alignment::right:
+                return haystack.right() - needle.width();
+            case horizontal_alignment::center:
+                return haystack.center() - needle_half_width;
+            case horizontal_alignment::none:
+                std::unreachable();
+            }
+            std::unreachable();
+        }();
+
+        middle = std::clamp(
+            middle, haystack.bottom() + needle_half_height, haystack.top() - needle_half_height);
+
+        auto const y = middle - needle_half_height;
+        return {point2{x, y}, needle};
     }
 
     /** Need to call the hidden friend function from within another class.
@@ -412,12 +452,12 @@ public:
         return aarectangle{lhs.v - neg_mask<0b0011>(array_type{rhs})};
     }
 
-    friend constexpr aarectangle &operator+=(aarectangle &lhs, margins const& rhs) noexcept
+    friend constexpr aarectangle& operator+=(aarectangle& lhs, margins const& rhs) noexcept
     {
         return lhs = lhs + rhs;
     }
 
-    friend constexpr aarectangle &operator-=(aarectangle &lhs, margins const& rhs) noexcept
+    friend constexpr aarectangle& operator-=(aarectangle& lhs, margins const& rhs) noexcept
     {
         return lhs = lhs - rhs;
     }
@@ -444,12 +484,12 @@ public:
         return lhs - margins{rhs};
     }
 
-    friend constexpr aarectangle &operator+=(aarectangle &lhs, value_type rhs) noexcept
+    friend constexpr aarectangle& operator+=(aarectangle& lhs, value_type rhs) noexcept
     {
         return lhs = lhs + rhs;
     }
 
-    friend constexpr aarectangle &operator-=(aarectangle &lhs, value_type rhs) noexcept
+    friend constexpr aarectangle& operator-=(aarectangle& lhs, value_type rhs) noexcept
     {
         return lhs = lhs - rhs;
     }
@@ -526,7 +566,8 @@ private:
     array_type v;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
 
 template<>
 class std::atomic<hi::aarectangle> {

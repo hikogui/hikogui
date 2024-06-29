@@ -48,6 +48,15 @@ struct box_constraints {
         hi_axiom(holds_invariant());
     }
 
+    box_constraints(
+        extent2 size,
+        hi::margins margins = hi::margins{},
+        hi::baseline baseline = hi::baseline{}) noexcept :
+        minimum(size), preferred(size), maximum(size), margins(margins), baseline(baseline)
+    {
+        hi_axiom(holds_invariant());
+    }
+
     [[nodiscard]] box_constraints constrain(extent2 new_minimum, extent2 new_maximum) const noexcept
     {
         hi_assert(new_minimum <= new_maximum);

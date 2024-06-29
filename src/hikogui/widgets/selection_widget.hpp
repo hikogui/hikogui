@@ -26,7 +26,8 @@
 
 hi_export_module(hikogui.widgets.selection_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
 concept selection_widget_attribute = label_widget_attribute<Context>;
@@ -63,7 +64,7 @@ public:
         attributes_type& operator=(attributes_type&&) noexcept = default;
 
         template<selection_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&...attributes) noexcept
+        explicit attributes_type(Attributes&&... attributes) noexcept
         {
             set_attributes(std::forward<Attributes>(attributes)...);
         }
@@ -71,7 +72,7 @@ public:
         void set_attributes() noexcept {}
 
         template<selection_widget_attribute First, selection_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
+        void set_attributes(First&& first, Rest&&... rest) noexcept
         {
             if constexpr (forward_of<First, observer<hi::label>>) {
                 off_label = std::forward<First>(first);
@@ -90,7 +91,7 @@ public:
     std::shared_ptr<delegate_type> delegate;
 
     template<typename... Args>
-    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
         requires requires { make_shared_ctad<default_selection_delegate>(std::forward<Args>(args)...); }
     {
         return make_shared_ctad<default_selection_delegate>(std::forward<Args>(args)...);
@@ -128,14 +129,18 @@ public:
             request_reconstrain();
         });
 
-        _delegate_options_cbt = this->delegate->subscribe_on_options([&] {
-            update_options();
-        }, callback_flags::main);
+        _delegate_options_cbt = this->delegate->subscribe_on_options(
+            [&] {
+                update_options();
+            },
+            callback_flags::main);
         _delegate_options_cbt();
 
-        _delegate_value_cbt = this->delegate->subscribe_on_value([&] {
-            update_value();
-        }, callback_flags::main);
+        _delegate_value_cbt = this->delegate->subscribe_on_value(
+            [&] {
+                update_value();
+            },
+            callback_flags::main);
         _delegate_value_cbt();
 
         hi_axiom_not_null(this->delegate);
@@ -160,14 +165,11 @@ public:
         incompatible_with<attributes_type> Value,
         forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
         selection_widget_attribute... Attributes>
-    selection_widget(
-        Value&& value,
-        OptionList&& option_list,
-        Attributes&&...attributes) noexcept requires requires
-    {
+    selection_widget(Value&& value, OptionList&& option_list, Attributes&&... attributes) noexcept requires requires {
         make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list));
         attributes_type{std::forward<Attributes>(attributes)...};
-    } :
+    }
+        :
         selection_widget(
             attributes_type{std::forward<Attributes>(attributes)...},
             make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
@@ -193,18 +195,22 @@ public:
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
 
-        auto const extra_size = extent2{theme().size() + theme().margin<float>() * 2.0f, theme().margin<float>() * 2.0f};
+        auto const chevron_size = extent2{
+            style.width_px + style.padding_left_px + style.padding_right_px, style.padding_top_px + style.padding_bottom_px};
 
-        auto r = max(_off_label_constraints + extra_size, _current_label_constraints + extra_size);
+        // The width of the selection widget is the width of the off_label and the current_label, together with the with of
+        // the chevron.
+        auto r = max(_off_label_constraints + chevron_size, _current_label_constraints + chevron_size);
 
         // Make it so that the scroll widget can scroll vertically.
-        _scroll_widget->minimum->height() = theme().size();
+        // XXX: This is a hack, the scroll widget should be able to calculate its own constraints.
+        _scroll_widget->minimum->height() = style.height_px;
 
-        r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + extra_size.width());
-        r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + extra_size.width());
-        r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + extra_size.width());
-        r.margins = theme().margin();
-        r.alignment = resolve(*attributes.alignment, os_settings::left_to_right());
+        r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + chevron_size.width());
+        r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + chevron_size.width());
+        r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + chevron_size.width());
+        r.margins = style.margins_px;
+        r.baseline = baseline::embed(50, _off_label_constraints.baseline, style.padding_bottom, style.padding_top);
         hi_axiom(r.holds_invariant());
         return r;
     }
@@ -221,7 +227,7 @@ public:
                     0.0f,
                     context.width() - _left_box_rectangle.width() - theme().margin<float>() * 2.0f,
                     context.height()};
-                _off_label_shape = box_shape{_off_label_constraints, option_rectangle, theme().baseline_adjustment()};
+                _off_label_shape = box_shape{option_rectangle, _off_label_constraints.baseline};
                 _current_label_shape = box_shape{_off_label_constraints, option_rectangle, theme().baseline_adjustment()};
 
             } else {
@@ -283,7 +289,8 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and not delegate->empty(*this) and layout().rectangle().contains(event.mouse().position)) {
+            if (mode() >= widget_mode::partial and not delegate->empty(*this) and
+                layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
             return true;
@@ -319,7 +326,8 @@ public:
             auto r = _overlay_widget->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
+                r = std::max(
+                    r, hitbox{id, _layout.elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
             }
 
             return r;
@@ -331,7 +339,8 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and not delegate->empty(*this);
+        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and
+            not delegate->empty(*this);
     }
 
     [[nodiscard]] color focus_color() const noexcept override
@@ -347,11 +356,7 @@ public:
 
     /// @endprivatesection
 private:
-    enum class overlay_state_type {
-        open,
-        closing,
-        closed
-    };
+    enum class overlay_state_type { open, closing, closed };
 
     constexpr static std::chrono::nanoseconds _overlay_close_delay = std::chrono::milliseconds(200);
 
@@ -377,8 +382,8 @@ private:
     box_constraints _overlay_constraints;
     box_shape _overlay_shape;
 
-    vertical_scroll_widget *_scroll_widget = nullptr;
-    grid_widget *_grid_widget = nullptr;
+    vertical_scroll_widget* _scroll_widget = nullptr;
+    grid_widget* _grid_widget = nullptr;
 
     callback<void()> _delegate_options_cbt;
     callback<void()> _delegate_value_cbt;
@@ -494,4 +499,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

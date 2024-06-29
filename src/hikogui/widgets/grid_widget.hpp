@@ -303,7 +303,7 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape, theme().baseline_adjustment());
+            _grid.set_layout(context.shape);
         }
 
         for (auto const& cell : _grid) {

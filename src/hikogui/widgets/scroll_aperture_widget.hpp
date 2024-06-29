@@ -14,7 +14,8 @@
 
 hi_export_module(hikogui.widgets.scroll_aperture_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A scroll aperture widget.
  *
@@ -82,7 +83,7 @@ public:
     }
 
     template<typename Widget, typename... Args>
-    Widget& emplace(Args&&...args)
+    Widget& emplace(Args&&... args)
     {
         hi_axiom(loop::main().on_thread());
         hi_axiom(_content == nullptr);
@@ -104,7 +105,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         if (_content) {
             co_yield *_content;
@@ -137,7 +138,7 @@ public:
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
             content_width = *aperture_width < _content_constraints.preferred.width() ? _content_constraints.preferred.width() :
-                                                                                        *aperture_width;
+                                                                                       *aperture_width;
             content_height = *aperture_height < _content_constraints.preferred.height() ?
                 _content_constraints.preferred.height() :
                 *aperture_height;
@@ -152,13 +153,12 @@ public:
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
         _content_shape = box_shape{
-            _content_constraints,
             aarectangle{
                 -*offset_x + _content_constraints.margins.left(),
                 -*offset_y + _content_constraints.margins.bottom(),
                 *content_width,
                 *content_height},
-            theme().baseline_adjustment()};
+            baseline{}};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -194,8 +194,10 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            auto const new_offset_x = *offset_x + std::round((unit::dips(event.mouse().wheel_delta.x()) * theme().pixel_density).in(unit::pixels));
-            auto const new_offset_y = *offset_y + std::round((unit::dips(event.mouse().wheel_delta.y()) * theme().pixel_density).in(unit::pixels));
+            auto const new_offset_x =
+                *offset_x + std::round((unit::dips(event.mouse().wheel_delta.x()) * theme().pixel_density).in(unit::pixels));
+            auto const new_offset_y =
+                *offset_y + std::round((unit::dips(event.mouse().wheel_delta.y()) * theme().pixel_density).in(unit::pixels));
             auto const max_offset_x = std::max(0.0f, *content_width - *aperture_width);
             auto const max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 
@@ -216,7 +218,8 @@ public:
             auto delta_x = 0.0f;
             auto delta_y = 0.0f;
 
-            if (safe_rectangle.width() > theme().margin<float>() * 2.0f and safe_rectangle.height() > theme().margin<float>() * 2.0f) {
+            if (safe_rectangle.width() > theme().margin<float>() * 2.0f and
+                safe_rectangle.height() > theme().margin<float>() * 2.0f) {
                 // This will look visually better, if the selected widget is moved with some margin from
                 // the edge of the scroll widget. The margins of the content do not have anything to do
                 // with the margins that are needed here.
@@ -240,7 +243,7 @@ public:
             }
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
-            if (auto *p = parent()) {
+            if (auto* p = parent()) {
                 p->scroll_to_show(_layout.to_parent * translate2(delta_x, delta_y) * to_show);
             }
 
@@ -262,4 +265,5 @@ private:
     callback<void(extent2)> _minimum_cbt;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

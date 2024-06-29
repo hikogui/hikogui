@@ -168,8 +168,7 @@ public:
 
         if (mode() == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
-            return _constraints_cache = {
-                       shaped_text_size, shaped_text_size, shaped_text_size, _shaped_text.resolved_alignment(), style.margins_px};
+            return _constraints_cache = {shaped_text_size, style.margins_px, baseline::from_cap_height(10, style.cap_height)};
 
         } else {
             // Allow the text to be 550.0f pixels wide.
@@ -181,30 +180,16 @@ public:
                        extent2{preferred_shaped_text_size.width(), height},
                        extent2{preferred_shaped_text_size.width(), height},
                        extent2{shaped_text_size.width(), height},
-                       _shaped_text.resolved_alignment(),
-                       theme().margin()};
+                       style.margins_px,
+                       baseline::from_cap_height(10, style.cap_height)};
         }
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         if (compare_store(_layout, context)) {
-            hi_assert(context.shape.baseline);
-
-            auto const baseline = [&] {
-                switch (style.vertical_alignment) {
-                case vertical_alignment::none:
-                    std::unreachable();
-                case vertical_alignment::top:
-                    return context.shape.y() + context.shape.height() - style.cap_height_px;
-                case vertical_alignment::middle:
-                    return context.shape.y() + context.shape.height() * 0.5f - style.cap_height_px * 0.5f;
-                case vertical_alignment::bottom:
-                    return context.shape.y();
-                }
-                std::unreachable();
-            }();
-            _shaped_text.layout(context.rectangle(), baseline, context.sub_pixel_size);
+            auto const baseline = context.get_baseline(style.vertical_alignment);
+            _shaped_text.layout(context.rectangle(), baseline.in(unit::pixels), context.sub_pixel_size);
         }
     }
 

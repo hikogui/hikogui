@@ -73,7 +73,7 @@ public:
     /**
      * @brief Creates a baseline object from the given cap height.
      *
-     * This is for basic widgets where the object to be aligned is the only
+     * This is for basic widgets where the text to be aligned is the only
      * object that will be rendered in the widget.
      *
      * @param priority The priority of the baseline.
@@ -85,6 +85,25 @@ public:
         return hi::baseline{
             priority, [cap_height](unit::pixels_f height) {
                 return baseline_function_result{unit::pixels(0.0f), height / 2.0f - cap_height / 2.0f, height - cap_height};
+            }};
+    }
+
+    /**
+     * Calculates the baseline from the middle of an object.
+     * 
+     * @param priority The priority of the baseline.
+     * @param cap_height The cap height of the font in pixels.
+     * @param object_height The height of the object in pixels.
+     * @return The baseline.
+     */
+    [[nodiscard]] static baseline from_middle_of_object(unsigned int priority, unit::pixels_f cap_height, unit::pixels_f object_height) noexcept
+    {
+        return hi::baseline{
+            priority, [cap_height, object_height](unit::pixels_f height) {
+                return baseline_function_result{
+                    unit::pixels(0.0f) + object_height / 2.0f - cap_height / 2.0f,
+                    height / 2.0f - cap_height / 2.0f,
+                    height - object_height / 2.0f - cap_height / 2.0f};
             }};
     }
 
@@ -147,9 +166,9 @@ public:
      * @param height The height of the box in which an object must be aligned to
      *               the baseline.
      * @param alignment The vertical alignment of the object.
-     * @return The baseline position in pixels from the bottom of the box.
+     * @return The baseline position from the bottom of the box.
      */
-    [[nodiscard]] constexpr unit::pixels_f operator()(unit::pixels_f height, vertical_alignment alignment) const
+    [[nodiscard]] constexpr unit::pixels_f get_baseline(unit::pixels_f height, vertical_alignment alignment) const
     {
         assert(_function);
 
@@ -165,6 +184,44 @@ public:
             return middle;
         }
         std::unreachable();
+    }
+
+    /**
+     * Calculates the baseline position based on the given height and vertical alignment.
+     *
+     * @param height The height of the element in pixels.
+     * @param alignment The vertical alignment of the element.
+     * @return The baseline position in pixels.
+     */
+    [[nodiscard]] constexpr float get_baseline_px(unit::pixels_f height, vertical_alignment alignment) const
+    {
+        return get_baseline(height, alignment).in(unit::pixels);
+    }
+
+    /**
+     * Calculates the middle position of an element based on its height, vertical alignment, and cap height.
+     * 
+     * @param height The height of the element.
+     * @param alignment The vertical alignment of the element.
+     * @param cap_height The cap height of the font of the element.
+     * @return The middle position of text aligned to the @a alignment.
+     */
+    [[nodiscard]] constexpr unit::pixels_f get_middle(unit::pixels_f height, vertical_alignment alignment, unit::pixels_f cap_height) const
+    {
+        return get_baseline(height, alignment) + cap_height / 2.0f;
+    }
+
+    /**
+     * Calculates the middle position based on the given height, alignment, and cap height.
+     *
+     * @param height The height of the element.
+     * @param alignment The vertical alignment of the element.
+     * @param cap_height The cap height of the element.
+     * @return The middle position in pixels.
+     */
+    [[nodiscard]] constexpr float get_middle_px(unit::pixels_f height, vertical_alignment alignment, unit::pixels_f cap_height) const
+    {
+        return get_middle(height, alignment, cap_height).in(unit::pixels);
     }
 
     /**

@@ -240,6 +240,54 @@ public:
         return shape.baseline;
     }
 
+    /**
+     * @brief Retrieves the baseline of the widget's shape based on the
+     * specified vertical alignment.
+     *
+     * @param alignment The vertical alignment of the baseline.
+     * @return The position of the baseline from the bottom of the widget's
+     * shape.
+     */
+    [[nodiscard]] unit::pixels_f get_baseline(vertical_alignment alignment) const noexcept
+    {
+        return shape.baseline.get_baseline(unit::pixels(shape.height()), alignment);
+    }
+
+    /**
+     * @brief Returns the baseline position in pixels for the specified vertical alignment.
+     * 
+     * @param alignment The vertical alignment of the widget.
+     * @return The baseline position in pixels.
+     */
+    [[nodiscard]] float get_baseline_px(vertical_alignment alignment) const noexcept
+    {
+        return get_baseline(alignment).in(unit::pixels);
+    }
+
+    /**
+     * @brief Calculates the middle position of aligned text in the widget.
+     * 
+     * @param alignment The vertical alignment of the widget.
+     * @param cap_height The cap height of the widget.
+     * @return The position of the middle of aligned text widget.
+     */
+    [[nodiscard]] unit::pixels_f get_middle(vertical_alignment alignment, unit::pixels_f cap_height) const noexcept
+    {
+        return shape.baseline.get_middle(unit::pixels(shape.height()), alignment, cap_height);
+    }
+
+    /**
+     * @brief Calculates the middle position of aligned text in the widget.
+     * 
+     * @param alignment The vertical alignment of the widget.
+     * @param cap_height The cap height of the widget.
+     * @return The position of the middle of aligned text widget in pixels.
+     */
+    [[nodiscard]] float get_middle_px(vertical_alignment alignment, unit::pixels_f cap_height) const noexcept
+    {
+        return get_middle(alignment, cap_height).in(unit::pixels);
+    }
+
     /** Create a new widget_layout for the child widget.
      *
      * @param child_shape The location and size of the child widget, relative to the current widget.
