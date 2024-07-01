@@ -123,10 +123,7 @@ public:
             }
         }
 
-        return {
-            _icon_size,
-            style.margins_px,
-            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, _icon_size.height())};
+        return super::update_constraints();
     }
 
     void set_layout(widget_layout const& context) noexcept override
