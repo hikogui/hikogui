@@ -42,54 +42,136 @@ struct box_constraints {
         extent2 preferred,
         extent2 maximum,
         hi::margins margins = hi::margins{},
-        hi::baseline baseline = hi::baseline{}) noexcept :
+        hi::baseline baseline = hi::baseline{}) :
         minimum(minimum), preferred(preferred), maximum(maximum), margins(margins), baseline(baseline)
     {
-        hi_axiom(holds_invariant());
+        assert(holds_invariant());
     }
 
     box_constraints(
         extent2 size,
         hi::margins margins = hi::margins{},
-        hi::baseline baseline = hi::baseline{}) noexcept :
+        hi::baseline baseline = hi::baseline{}) :
         minimum(size), preferred(size), maximum(size), margins(margins), baseline(baseline)
     {
-        hi_axiom(holds_invariant());
+        assert(holds_invariant());
     }
 
-    [[nodiscard]] box_constraints constrain(extent2 new_minimum, extent2 new_maximum) const noexcept
+    box_constraints& constrain(extent2 const& new_minimum, extent2 const& new_maximum) noexcept
     {
-        hi_assert(new_minimum <= new_maximum);
+        assert(new_minimum <= new_maximum);
 
-        auto r = *this;
+        minimum = max(minimum, new_minimum);
+        maximum = min(maximum, new_maximum);
+        preferred = clamp(preferred, minimum, maximum);
+        assert(holds_invariant());
+        return *this;
+    }
 
-        inplace_max(r.minimum, new_minimum);
-        inplace_min(r.maximum, new_maximum);
-
-        inplace_max(r.preferred, r.minimum);
-        inplace_max(r.maximum, r.preferred);
-        hi_axiom(r.holds_invariant());
+    /**
+     * Adds an extent to a box_constraints object.
+     *
+     * This function adds an extent2 object to a box_constraints object and
+     * returns a new box_constraints object. The addition is performed by adding
+     * the extent values to the minimum, preferred and maximum size values in
+     * the box_constraints object. The margins value of the box_constraints
+     * object are preserved in the result. The baseline value is reset to zero.
+     *
+     * @param lhs The box_constraints object to be added to.
+     * @param rhs The extent2 object to be added.
+     * @return A new box_constraints object resulting from the addition.
+     */
+    [[nodiscard]] friend box_constraints operator+(box_constraints const& lhs, extent2 const& rhs)
+    {
+        auto r = box_constraints{};
+        r.minimum = lhs.minimum + rhs;
+        r.preferred = lhs.preferred + rhs;
+        r.maximum = lhs.maximum + rhs;
+        r.margins = lhs.margins;
+        r.baseline = {};
+        assert(r.holds_invariant());
         return r;
+    }
+
+    /**
+     * Subtracts an extent from a box_constraints object.
+     * 
+     * This function subtracts an extent2 object to a box_constraints object and
+     * returns a new box_constraints object. The operation is performed by
+     * subtracting the extent values from the minimum, preferred and maximum
+     * size values in the box_constraints object. The margins value of the
+     * box_constraints object are preserved in the result. The baseline value is
+     * reset to zero.
+     *
+     * @param lhs The box_constraints object to subtract from.
+     * @param rhs The extent to subtract.
+     * @return A new box_constraints object with the extent subtracted.
+     */
+    [[nodiscard]] friend box_constraints operator-(box_constraints const& lhs, extent2 const& rhs)
+    {
+        auto r = box_constraints{};
+        r.minimum = lhs.minimum - rhs;
+        r.preferred = lhs.preferred - rhs;
+        r.maximum = lhs.maximum - rhs;
+        r.margins = lhs.margins;
+        r.baseline = {};
+        assert(r.holds_invariant());
+        return r;
+    }
+
+    [[nodiscard]] friend box_constraints operator+(box_constraints const& lhs, hi::margins const& rhs)
+    {
+        return lhs + rhs.size();
+    }
+
+    [[nodiscard]] friend box_constraints operator-(box_constraints const& lhs, hi::margins const& rhs)
+    {
+        return lhs - rhs.size();
     }
 
     box_constraints& operator+=(extent2 const& rhs) noexcept
     {
-        minimum.width() += rhs.width();
-        preferred.width() += rhs.width();
-        maximum.width() += rhs.width();
-        minimum.height() += rhs.height();
-        preferred.height() += rhs.height();
-        maximum.height() += rhs.height();
-
-        hi_axiom(holds_invariant());
-        return *this;
+        return *this = *this + rhs;
     }
 
-    [[nodiscard]] box_constraints operator+(extent2 const& rhs) const noexcept
+    box_constraints& operator-=(extent2 const& rhs) noexcept
     {
-        auto r = *this;
-        r += rhs;
+        return *this = *this - rhs;
+    }
+
+    box_constraints& operator+=(hi::margins const& rhs) noexcept
+    {
+        return *this = *this + rhs;
+    }
+
+    box_constraints& operator-=(hi::margins const& rhs) noexcept
+    {
+        return *this = *this - rhs;
+    }
+
+    /**
+     * Returns the maximum of two box constraints.
+     *
+     * @param lhs The first box constraint.
+     * @param rhs The second box constraint.
+     * @return The maximum box constraint.
+     */
+    [[nodiscard]] friend box_constraints max(box_constraints const& lhs, box_constraints const& rhs)
+    {
+        auto r = box_constraints{};
+        r.minimum = max(lhs.minimum, rhs.minimum);
+        r.preferred = max(lhs.preferred, rhs.preferred);
+        r.maximum = max(lhs.maximum, rhs.maximum);
+        r.margins = max(lhs.margins, rhs.margins);
+        r.baseline = max(lhs.baseline, rhs.baseline);
+        assert(r.holds_invariant());
         return r;
+    }
+
+    template<std::convertible_to<box_constraints>... Rest>
+    [[nodiscard]] friend box_constraints max(box_constraints const& lhs, box_constraints const& rhs, Rest const&... rest)
+    {
+        return max(lhs, max(rhs, rest...));
     }
 
     [[nodiscard]] bool holds_invariant() const noexcept
@@ -98,44 +180,6 @@ struct box_constraints {
             return false;
         }
         return true;
-    }
-
-    [[nodiscard]] friend box_constraints max(box_constraints const& lhs, extent2 const& rhs) noexcept
-    {
-        auto r = lhs;
-        inplace_max(r.minimum, rhs);
-        inplace_max(r.preferred, rhs);
-        inplace_max(r.maximum, rhs);
-
-        hi_axiom(r.holds_invariant());
-        return r;
-    }
-
-    /** Makes a constraint that encompasses both given constraints.
-     *
-     * @note The alignment is selected from the left-hand-side.
-     * @param lhs The left hand side box constraints.
-     * @param rhs The right hand side box constraints.
-     * @return A box constraints that encompasses both given constraints.
-     */
-    [[nodiscard]] friend box_constraints max(box_constraints const& lhs, box_constraints const& rhs) noexcept
-    {
-        auto r = lhs;
-        inplace_max(r.minimum, rhs.minimum);
-        inplace_max(r.preferred, rhs.preferred);
-        inplace_max(r.maximum, rhs.maximum);
-        inplace_max(r.margins, rhs.margins);
-        inplace_max(r.baseline, rhs.baseline);
-
-        hi_axiom(r.holds_invariant());
-        return r;
-    }
-
-    template<std::convertible_to<box_constraints>... Args>
-    [[nodiscard]] friend box_constraints
-    max(box_constraints const& first, box_constraints const& second, box_constraints const& third, Args const&... args) noexcept
-    {
-        return max(first, max(second, third, args...));
     }
 };
 

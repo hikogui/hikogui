@@ -17,7 +17,8 @@
 
 hi_export_module(hikogui.widgets.window_controls_win32_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** Window control button widget.
  * This widget will display a set of buttons to control the
@@ -38,45 +39,43 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto const size = extent2{theme().large_size() * 3.0f, theme().large_size()};
         return {size, size, size};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto extent = context.size();
-            if (extent.height() > floor_cast<int>(theme().large_size() * 1.2f)) {
-                extent = extent2{extent.width(), theme().large_size()};
-            }
-            auto y = context.height() - extent.height();
+        super::set_layout(context);
 
-            closeRectangle =
-                aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
-
-            maximizeRectangle =
-                aarectangle{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
-
-            minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
-
-            closeWindowGlyph = find_glyph(hikogui_icon::CloseWindow);
-            minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
-            maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMS);
-            restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
-            auto const glyph_size = theme().icon_size();
-
-            auto const closeWindowGlyphBB = closeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-            auto const minimizeWindowGlyphBB = minimizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-            auto const maximizeWindowGlyphBB = maximizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-            auto const restoreWindowGlyphBB = restoreWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-
-            closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
-            minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
-            maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB, alignment::middle_center());
-            restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB, alignment::middle_center());
+        auto extent = context.size();
+        if (extent.height() > floor_cast<int>(theme().large_size() * 1.2f)) {
+            extent = extent2{extent.width(), theme().large_size()};
         }
+        auto y = context.height() - extent.height();
+
+        closeRectangle =
+            aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
+
+        maximizeRectangle =
+            aarectangle{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
+
+        minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
+
+        closeWindowGlyph = find_glyph(hikogui_icon::CloseWindow);
+        minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
+        maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMS);
+        restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMS);
+        auto const glyph_size = theme().icon_size();
+
+        auto const closeWindowGlyphBB = closeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+        auto const minimizeWindowGlyphBB = minimizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+        auto const maximizeWindowGlyphBB = maximizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+        auto const restoreWindowGlyphBB = restoreWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+
+        closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
+        minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
+        maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB, alignment::middle_center());
+        restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB, alignment::middle_center());
     }
 
     void draw(draw_context const& context) noexcept override
@@ -228,4 +227,5 @@ private:
     bool pressedMaximize = false;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

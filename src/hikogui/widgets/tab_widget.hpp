@@ -124,8 +124,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto& selected_child_ = selected_child();
 
         if (_previous_selected_child != &selected_child_) {
@@ -143,7 +141,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        super::set_layout(context);
 
         for (auto const& child : _children) {
             if (child->mode() > widget_mode::invisible) {

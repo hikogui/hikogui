@@ -92,8 +92,6 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         _grid.clear();
         _grid.add_cell(0, 0, grid_cell_type::button);
         _grid.add_cell(1, 0, grid_cell_type::label, true);
@@ -132,11 +130,11 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto shape = context.shape;
-            shape.rectangle -= style.padding_px;
-            _grid.set_layout(shape, style.x_height_px);
-        }
+        super::set_layout(context);
+
+        auto shape = context.shape;
+        shape.rectangle -= style.padding_px;
+        _grid.set_layout(shape);
 
         for (auto const& cell : _grid) {
             if (cell.value == grid_cell_type::button) {

@@ -53,6 +53,8 @@ auto border_width_list = std::vector<std::pair<float, hi::label>>{
 // Every widget must inherit from hi::widget.
 class drawing_widget : public hi::widget {
 public:
+    using super = hi::widget;
+    
     constexpr static auto blue = hi::color(0.05f, 0.05f, 0.50f);
     constexpr static auto red = hi::color(0.50f, 0.05f, 0.05f);
     constexpr static auto cyan = hi::color(0.05f, 0.50f, 0.50f);
@@ -73,8 +75,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `emplace()` function.
-    drawing_widget() noexcept :
-        widget(), _image(hi::URL("resource:mars3.png"))
+    drawing_widget() noexcept : widget(), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
         _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
@@ -93,10 +94,6 @@ public:
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
         this->_glyph = find_glyph(hi::elusive_icon::Briefcase);
-
-        // Almost all widgets will reset the `_layout` variable here so that it will
-        // trigger the calculations in `set_layout()` as well.
-        _layout = {};
 
         if (_image_was_modified.exchange(false)) {
             if (not(_image_backing = hi::gfx_pipeline_image::paged_image{surface(), _image})) {
@@ -123,25 +120,23 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
-        // calculations when the size of the widget was changed.
-        if (compare_store(_layout, context)) {
-            // Make a size scaled to the layout.
-            auto const max_size = hi::narrow_cast<hi::extent2>(_layout.size()) * 0.9f;
-            auto const max_rectangle = hi::aarectangle{hi::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};
+        super::set_layout(context);
 
-            // Here we can do some semi-expensive calculations which must be done when resizing the widget.
-            // In this case we make two rectangles which are used in the `draw()` function.
-            auto const glyph_size = _glyph.front_glyph_metrics().bounding_rectangle.size();
-            auto const glyph_scale = hi::scale2::uniform(glyph_size, max_size);
-            auto const new_glyph_size = glyph_scale * glyph_size;
-            _glyph_rectangle = align(max_rectangle, new_glyph_size, hi::alignment::middle_center());
+        // Make a size scaled to the layout.
+        auto const max_size = hi::narrow_cast<hi::extent2>(_layout.size()) * 0.9f;
+        auto const max_rectangle = hi::aarectangle{hi::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};
 
-            auto const image_size = hi::extent2{static_cast<float>(_image.width()), static_cast<float>(_image.height())};
-            auto const image_scale = hi::scale2::uniform(image_size, max_size);
-            auto const new_image_size = image_scale * image_size;
-            _image_rectangle = align(max_rectangle, new_image_size, hi::alignment::middle_center());
-        }
+        // Here we can do some semi-expensive calculations which must be done when resizing the widget.
+        // In this case we make two rectangles which are used in the `draw()` function.
+        auto const glyph_size = _glyph.front_glyph_metrics().bounding_rectangle.size();
+        auto const glyph_scale = hi::scale2::uniform(glyph_size, max_size);
+        auto const new_glyph_size = glyph_scale * glyph_size;
+        _glyph_rectangle = align(max_rectangle, new_glyph_size, hi::alignment::middle_center());
+
+        auto const image_size = hi::extent2{static_cast<float>(_image.width()), static_cast<float>(_image.height())};
+        auto const image_scale = hi::scale2::uniform(image_size, max_size);
+        auto const new_image_size = image_scale * image_size;
+        _image_rectangle = align(max_rectangle, new_image_size, hi::alignment::middle_center());
     }
 
     [[nodiscard]] hi::quad_color fill_color() const noexcept
@@ -243,7 +238,8 @@ public:
         auto const clipping_rectangle =
             *clip ? hi::aarectangle{0, 0, _layout.width(), _layout.height() / 2} : _layout.rectangle();
 
-        auto const translation = hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
+        auto const translation =
+            hi::translate3(std::floor(_layout.width() * 0.5f), std::floor(hi::narrow_cast<float>(_layout.height())) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
 
         auto const circle_radius = hypot(shape_quad().bottom()) * 0.5f;
@@ -323,7 +319,7 @@ private:
     hi::callback<void(bool)> _rounded_cbt;
 };
 
-int hi_main(int argc, char *argv[])
+int hi_main(int argc, char* argv[])
 {
     hi::set_application_name("Custom widget drawing example");
     hi::set_application_vendor("HikoGUI");

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "hikogui/layout/baseline.hpp"
 #include "style_computed_properties.hpp"
 #include "style_priority.hpp"
 #include "../text/text.hpp"
@@ -127,7 +128,7 @@ public:
     HIX_GETSET(hi::horizontal_alignment, horizontal_alignment)
     HIX_GETSET(hi::vertical_alignment, vertical_alignment)
     HIX_GETSET(hi::text_style_set, text_style)
-    HIX_GETSET(unsigned int, baseline_priority)
+    HIX_GETSET(hi::baseline_priority, baseline_priority)
 #undef HIX_GETSET
 
     void set_margin(unit::length_f margin, style_priority priority) noexcept
@@ -247,7 +248,7 @@ private:
     hi::horizontal_alignment _horizontal_alignment = hi::horizontal_alignment::left;
     hi::vertical_alignment _vertical_alignment = hi::vertical_alignment::top;
     hi::text_style_set _text_style = {};
-    unsigned int _baseline_priority = 0;
+    hi::baseline_priority _baseline_priority = hi::baseline_priority::none;
 
     size_t _width_inherit : 1 = 1;
     size_t _height_inherit : 1 = 1;

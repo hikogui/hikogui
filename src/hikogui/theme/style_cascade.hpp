@@ -57,7 +57,7 @@ struct style_property_element {
         properties.set_background_color(color{1.0f, 1.0f, 1.0f, 1.0f}, priority);
         properties.set_border_color(color{0.0f, 0.0f, 0.0f, 1.0f}, priority);
         properties.set_accent_color(color{0.0f, 0.0f, 1.0f, 1.0f}, priority);
-        properties.set_baseline_priority(1, priority);
+        properties.set_baseline_priority(hi::baseline_priority::label, priority);
 
         auto text_styles = text_style_set{};
         auto text_style = hi::text_style{};
@@ -86,16 +86,16 @@ struct style_property_element {
         auto const priority = style_priority{importance, selector.specificity()};
 
         auto properties = style_properties{};
-        properties.set_baseline_priority(10, priority);
+        properties.set_baseline_priority(hi::baseline_priority::small_widget, priority);
         r.emplace_back(selector, properties);
     }
 
-    for (auto const& element : std::vector{"selection"}) {
+    for (auto const& element : std::vector{"selection", "button", "momentary-button", "text-field"}) {
         auto const selector = style_selector{style_selector_segment::from_element(element)};
         auto const priority = style_priority{importance, selector.specificity()};
 
         auto properties = style_properties{};
-        properties.set_baseline_priority(100, priority);
+        properties.set_baseline_priority(hi::baseline_priority::large_widget, priority);
         r.emplace_back(selector, properties);
     }
 

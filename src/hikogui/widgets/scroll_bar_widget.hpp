@@ -75,8 +75,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         if (mode() <= widget_mode::collapse) {
             return {};
         }
@@ -97,7 +95,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        super::set_layout(context);
 
         if (mode() <= widget_mode::collapse) {
             _slider_rectangle = {};

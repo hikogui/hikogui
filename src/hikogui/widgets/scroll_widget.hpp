@@ -125,8 +125,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->update_constraints());
         }
@@ -136,9 +134,9 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape, theme().baseline_adjustment());
-        }
+        super::set_layout(context);
+
+        _grid.set_layout(context.shape);
 
         for (auto const& cell : _grid) {
             auto shape = cell.shape;

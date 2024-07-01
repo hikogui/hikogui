@@ -112,22 +112,28 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return box_constraints{style.size_px, style.size_px, style.size_px, style.alignment, style.margins_px};
+        return box_constraints{
+            style.size_px,
+            style.size_px,
+            style.size_px,
+            style.margins_px,
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _button_rectangle =
-                align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment), style.cap_height);
-
-            auto const pip_square = aarectangle{get<0>(_button_rectangle), extent2{style.height_px, style.height_px}};
-            _pip_circle = align(pip_square, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
-
-            auto const pip_to_button_margin_x2 = style.height_px - _pip_circle.diameter();
-            _pip_move_range = style.width_px - _pip_circle.diameter() - pip_to_button_margin_x2;
-        }
         super::set_layout(context);
+
+        auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+        auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
+        _button_rectangle =
+            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle);
+
+        auto const pip_square = aarectangle{get<0>(_button_rectangle), extent2{style.height_px, style.height_px}};
+        _pip_circle = align(pip_square, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
+
+        auto const pip_to_button_margin_x2 = style.height_px - _pip_circle.diameter();
+        _pip_move_range = style.width_px - _pip_circle.diameter() - pip_to_button_margin_x2;
     }
 
     void draw(draw_context const& context) noexcept override

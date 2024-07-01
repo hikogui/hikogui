@@ -107,17 +107,6 @@ public:
         return false;
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override
-    {
-        _layout = {};
-        return {*minimum, *minimum, *maximum};
-    }
-
-    void set_layout(widget_layout const& context) noexcept override
-    {
-        _layout = context;
-    }
-
     void draw(draw_context const& context) noexcept override {}
 
     /** Send a event to the window.

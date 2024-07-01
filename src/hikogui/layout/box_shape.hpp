@@ -26,7 +26,7 @@ struct box_shape {
     box_shape& operator=(box_shape const&) noexcept = default;
     box_shape& operator=(box_shape&&) noexcept = default;
 
-    box_shape(aarectangle rectangle, hi::baseline baseline) noexcept : rectangle(rectangle), baseline(baseline) {}
+    explicit box_shape(aarectangle rectangle, hi::baseline baseline = {}) noexcept : rectangle(rectangle), baseline(baseline) {}
 
     [[nodiscard]] float x() const noexcept
     {
@@ -51,6 +51,26 @@ struct box_shape {
     [[nodiscard]] float height() const noexcept
     {
         return rectangle.height();
+    }
+
+    [[nodiscard]] float left() const noexcept
+    {
+        return rectangle.left();
+    }
+
+    [[nodiscard]] float right() const noexcept
+    {
+        return rectangle.right();
+    }
+
+    [[nodiscard]] float bottom() const noexcept
+    {
+        return rectangle.bottom();
+    }
+
+    [[nodiscard]] float top() const noexcept
+    {
+        return rectangle.top();
     }
 };
 

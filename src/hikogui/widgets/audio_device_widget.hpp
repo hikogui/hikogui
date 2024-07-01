@@ -22,7 +22,8 @@
 
 hi_export_module(hikogui.widgets.audio_device_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** Audio device configuration widget.
  * @ingroup widgets
@@ -61,18 +62,15 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _grid_constraints = _grid_widget->update_constraints();
         return _grid_constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const grid_rectangle = context.rectangle();
-            _grid_shape = {_grid_constraints, grid_rectangle, theme().baseline_adjustment()};
-        }
+        super::set_layout(context);
 
+        _grid_shape = box_shape{context.rectangle()};
         _grid_widget->set_layout(context.transform(_grid_shape, transform_command::level));
     }
 
@@ -93,7 +91,7 @@ public:
             return hitbox{};
         }
     }
-    
+
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         if (mode() >= widget_mode::partial) {
@@ -112,7 +110,7 @@ private:
 
     /** The widget used to select the audio device.
      */
-    selection_widget *_device_selection_widget = nullptr;
+    selection_widget* _device_selection_widget = nullptr;
 
     observer<std::vector<std::pair<std::string, label>>> _device_list;
 
@@ -134,4 +132,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

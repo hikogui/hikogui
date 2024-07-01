@@ -91,8 +91,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         // Resolve as if in left-to-right mode, the grid will flip itself.
         auto const resolved_alignment = resolve(style.alignment, true);
 
@@ -140,10 +138,9 @@ public:
     }
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape);
-        }
+        super::set_layout(context);
 
+        _grid.set_layout(context.shape);
         for (auto const& cell : _grid) {
             cell.value->set_layout(context.transform(cell.shape, transform_command::level));
         }

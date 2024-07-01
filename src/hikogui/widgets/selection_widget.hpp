@@ -190,76 +190,83 @@ public:
         hi_assert_not_null(_current_label_widget);
         hi_assert_not_null(_overlay_widget);
 
-        _layout = {};
         _off_label_constraints = _off_label_widget->update_constraints();
         _current_label_constraints = _current_label_widget->update_constraints();
         _overlay_constraints = _overlay_widget->update_constraints();
-
-        auto const chevron_size = extent2{
-            style.width_px + style.padding_left_px + style.padding_right_px, style.padding_top_px + style.padding_bottom_px};
-
-        // The width of the selection widget is the width of the off_label and the current_label, together with the with of
-        // the chevron.
-        auto r = max(_off_label_constraints + chevron_size, _current_label_constraints + chevron_size);
 
         // Make it so that the scroll widget can scroll vertically.
         // XXX: This is a hack, the scroll widget should be able to calculate its own constraints.
         _scroll_widget->minimum->height() = style.height_px;
 
-        r.minimum.width() = std::max(r.minimum.width(), _overlay_constraints.minimum.width() + chevron_size.width());
-        r.preferred.width() = std::max(r.preferred.width(), _overlay_constraints.preferred.width() + chevron_size.width());
-        r.maximum.width() = std::max(r.maximum.width(), _overlay_constraints.maximum.width() + chevron_size.width());
+        auto const chevron_size = extent2{style.width_px, 0.0f};
+
+        auto const overlay_minimum = extent2{_overlay_constraints.minimum.width(), 0.0f};
+        auto const overlay_preferred = extent2{_overlay_constraints.preferred.width(), 0.0f};
+        auto const overlay_maximum = extent2{_overlay_constraints.maximum.width(), 0.0f};
+
+        auto const content_minimum = max(_off_label_constraints.minimum, _current_label_constraints.minimum, overlay_minimum);
+        auto const content_preferred =
+            max(_off_label_constraints.preferred, _current_label_constraints.preferred, overlay_preferred);
+        auto const content_maximum = max(_off_label_constraints.maximum, _current_label_constraints.maximum, overlay_maximum);
+        auto const content_padding = max(_off_label_constraints.margins, _current_label_constraints.margins, style.padding_px);
+        auto const content_baseline = max(_off_label_constraints.baseline, _current_label_constraints.baseline);
+
+        auto r = box_constraints{};
+        r.minimum = content_minimum + chevron_size + content_padding;
+        r.preferred = content_preferred + chevron_size + content_padding;
+        r.maximum = content_maximum + chevron_size + content_padding;
         r.margins = style.margins_px;
-        r.baseline = baseline::embed(50, _off_label_constraints.baseline, style.padding_bottom, style.padding_top);
+        r.baseline = embed(content_baseline, style.baseline_priority, content_padding.bottom(), content_padding.top());
         hi_axiom(r.holds_invariant());
         return r;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
+        super::set_layout(context);
+
+        _chevron_box_rectangle = [&] {
             if (os_settings::left_to_right()) {
-                _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size(), context.height()};
-
-                // The unknown_label is located to the right of the selection box icon.
-                auto const option_rectangle = aarectangle{
-                    _left_box_rectangle.right() + theme().margin<float>(),
-                    0.0f,
-                    context.width() - _left_box_rectangle.width() - theme().margin<float>() * 2.0f,
-                    context.height()};
-                _off_label_shape = box_shape{option_rectangle, _off_label_constraints.baseline};
-                _current_label_shape = box_shape{_off_label_constraints, option_rectangle, theme().baseline_adjustment()};
-
+                return aarectangle{0.0f, 0.0f, style.width_px, context.height()};
             } else {
-                _left_box_rectangle = aarectangle{context.width() - theme().size(), 0.0f, theme().size(), context.height()};
-
-                // The unknown_label is located to the left of the selection box icon.
-                auto const option_rectangle = aarectangle{
-                    theme().margin<float>(),
-                    0.0f,
-                    context.width() - _left_box_rectangle.width() - theme().margin<float>() * 2.0f,
-                    context.height()};
-                _off_label_shape = box_shape{_off_label_constraints, option_rectangle, theme().baseline_adjustment()};
-                _current_label_shape = box_shape{_off_label_constraints, option_rectangle, theme().baseline_adjustment()};
+                return aarectangle{point2{context.right() - style.width_px, 0.0f}, point2{context.right(), context.top()}};
             }
+        }();
 
-            _chevrons_glyph = find_glyph(elusive_icon::ChevronUp);
-            auto const chevrons_glyph_bbox = _chevrons_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
-            _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox, alignment::middle_center());
-        }
+        auto const option_rectangle = [&] {
+            if (os_settings::left_to_right()) {
+                return aarectangle{
+                    point2{_chevron_box_rectangle.right() + style.padding_left_px, style.padding_bottom_px},
+                    point2{context.right() - style.padding_right_px, context.top() - style.padding_top_px}};
+            } else {
+                return aarectangle{
+                    point2{style.padding_left_px, style.padding_bottom_px},
+                    point2{_chevron_box_rectangle.left() - style.padding_right_px, context.top() - style.padding_top_px}};
+            }
+        }();
+
+        auto const padding = max(_off_label_constraints.margins, _current_label_constraints.margins, style.padding_px);
+
+        _off_label_shape = box_shape{option_rectangle, lift(_off_label_constraints.baseline, padding.bottom(), padding.top())};
+        _current_label_shape =
+            box_shape{option_rectangle, lift(_current_label_constraints.baseline, padding.bottom(), padding.top())};
+
+        _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
+        auto const chevron_glyph_bbox = _chevron_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
+        _chevron_rectangle = align(_chevron_box_rectangle, chevron_glyph_bbox, alignment::middle_center());
 
         // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
         // from the point of view of the selection widget.
         // The overlay should start on the same left edge as the selection box and the same width.
         // The height of the overlay should be the maximum height, which will show all the options.
         auto const overlay_width = std::clamp(
-            context.width() - theme().size(), _overlay_constraints.minimum.width(), _overlay_constraints.maximum.width());
+            context.width() - style.width_px, _overlay_constraints.minimum.width(), _overlay_constraints.maximum.width());
         auto const overlay_height = _overlay_constraints.preferred.height();
-        auto const overlay_x = os_settings::left_to_right() ? theme().size() : context.width() - theme().size() - overlay_width;
-        auto const overlay_y = (context.height() - overlay_height) / 2;
+        auto const overlay_x = os_settings::left_to_right() ? style.width_px : context.width() - style.width_px - overlay_width;
+        auto const overlay_y = std::round((context.height() - overlay_height) / 2.0f);
         auto const overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
         auto const overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-        _overlay_shape = box_shape{_overlay_constraints, overlay_rectangle, theme().baseline_adjustment()};
+        _overlay_shape = box_shape{overlay_rectangle};
         _overlay_widget->set_layout(context.transform(_overlay_shape, transform_command::overlay));
 
         _off_label_widget->set_layout(context.transform(_off_label_shape));
@@ -273,8 +280,8 @@ public:
         if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
                 draw_outline(context);
-                draw_left_box(context);
-                draw_chevrons(context);
+                draw_chevron_box(context);
+                draw_chevron(context);
 
                 _off_label_widget->draw(context);
                 _current_label_widget->draw(context);
@@ -343,17 +350,6 @@ public:
             not delegate->empty(*this);
     }
 
-    [[nodiscard]] color focus_color() const noexcept override
-    {
-        hi_axiom(loop::main().on_thread());
-
-        if (mode() >= widget_mode::partial and not overlay_closed()) {
-            return theme().accent_color();
-        } else {
-            return super::focus_color();
-        }
-    }
-
     /// @endprivatesection
 private:
     enum class overlay_state_type { open, closing, closed };
@@ -373,10 +369,10 @@ private:
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
-    aarectangle _left_box_rectangle;
+    aarectangle _chevron_box_rectangle;
 
-    font_glyph_ids _chevrons_glyph;
-    aarectangle _chevrons_rectangle;
+    font_glyph_ids _chevron_glyph;
+    aarectangle _chevron_rectangle;
 
     std::unique_ptr<overlay_widget> _overlay_widget;
     box_constraints _overlay_constraints;
@@ -478,24 +474,29 @@ private:
         context.draw_box(
             layout(),
             layout().rectangle(),
-            background_color(),
-            focus_color(),
-            theme().border_width(),
+            style.background_color,
+            style.border_color,
+            style.border_width_px,
             border_side::inside,
-            theme().rounding_radius());
+            style.border_radius_px);
     }
 
-    void draw_left_box(draw_context const& context) noexcept
+    void draw_chevron_box(draw_context const& context) noexcept
     {
-        auto const corner_radii = os_settings::left_to_right() ?
-            hi::corner_radii(theme().rounding_radius<float>(), 0.0f, theme().rounding_radius<float>(), 0.0f) :
-            hi::corner_radii(0.0f, theme().rounding_radius<float>(), 0.0f, theme().rounding_radius<float>());
-        context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);
+        auto const corner_radii = [&] {
+            if (os_settings::left_to_right()) {
+                return hi::corner_radii(style.border_bottom_left_radius_px, 0.0f, style.border_top_left_radius_px, 0.0f);
+            } else {
+                return hi::corner_radii(0.0f, style.border_bottom_right_radius_px, 0.0f, style.border_top_right_radius_px);
+            }
+        }();
+
+        context.draw_box(layout(), translate_z(0.1f) * _chevron_box_rectangle, style.border_color, corner_radii);
     }
 
-    void draw_chevrons(draw_context const& context) noexcept
+    void draw_chevron(draw_context const& context) noexcept
     {
-        context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, _chevrons_glyph, background_color());
+        context.draw_glyph(layout(), translate_z(0.2f) * _chevron_rectangle, _chevron_glyph, style.background_color);
     }
 };
 

@@ -128,7 +128,9 @@ public:
      * @param attributes A set of attributes used to configure the text widget: a `alignment`.
      */
     template<typename... Args>
-    text_field_widget(Args&&... args) noexcept : text_field_widget(make_default_delegate(std::forward<Args>(args)...)) {}
+    text_field_widget(Args&&... args) noexcept : text_field_widget(make_default_delegate(std::forward<Args>(args)...))
+    {
+    }
 
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
@@ -156,7 +158,6 @@ public:
             revert(false);
         }
 
-        _layout = {};
         _scroll_constraints = _scroll_widget->update_constraints();
 
         auto const scroll_width = 100;
@@ -165,7 +166,7 @@ public:
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         auto size = box_size;
-        auto margins = theme().margin();
+        auto margins = style.margins_px;
         if (_error_label->empty()) {
             _error_label_widget->set_mode(widget_mode::invisible);
             _error_label_constraints = _error_label_widget->update_constraints();
@@ -180,27 +181,30 @@ public:
             inplace_max(margins.bottom(), _error_label_constraints.margins.bottom());
         }
 
-        // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
-        auto const resolved_alignment = os_settings::alignment(style.alignment);
-
-        return {size, size, size, resolved_alignment, margins};
+        return {
+            size,
+            size,
+            size,
+            margins,
+            embed(_scroll_constraints.baseline, style.baseline_priority, style.padding_bottom_px, style.padding_top_px)};
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const scroll_size = extent2{
-                context.width(),
-                _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() +
-                    _scroll_constraints.margins.bottom()};
+        super::set_layout(context);
 
-            auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
-            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, style.cap_height_px};
+        auto const scroll_size = extent2{
+            context.width(),
+            _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
-            if (_error_label_widget->mode() > widget_mode::invisible) {
-                auto const error_label_rectangle =
-                    aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
-                _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, style.cap_height_px};
-            }
+        auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
+        _scroll_shape = box_shape{scroll_rectangle, lift(context.baseline(), style.padding_bottom_px, style.padding_top_px)};
+
+        if (_error_label_widget->mode() > widget_mode::invisible) {
+            auto const error_label_rectangle =
+                aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
+            _error_label_shape =
+                box_shape{error_label_rectangle, lift(context.baseline(), style.padding_bottom_px, style.padding_top_px)};
         }
 
         if (_error_label_widget->mode() > widget_mode::invisible) {
@@ -284,7 +288,7 @@ private:
 
     /** The text widget inside the scroll widget.
      */
-    text_widget *_text_widget = nullptr;
+    text_widget* _text_widget = nullptr;
 
     /** The text edited by the _text_widget.
      */

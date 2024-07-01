@@ -35,16 +35,9 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto r = box_constraints{};
         r.maximum = extent2::large();
         return r;
-    }
-
-    void set_layout(widget_layout const& context) noexcept override
-    {
-        _layout = context;
     }
 
     void draw(draw_context const& context) noexcept override {}

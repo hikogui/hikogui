@@ -18,7 +18,8 @@
 
 hi_export_module(hikogui.widgets.toolbar_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.
@@ -46,7 +47,7 @@ public:
     toolbar_widget() noexcept : super()
     {
         hi_axiom(loop::main().on_thread());
-        
+
         auto spacer = std::make_unique<spacer_widget>();
         spacer->set_parent(this);
 
@@ -71,16 +72,16 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    Widget& emplace(Args&&...args)
+    Widget& emplace(Args&&... args)
     {
         auto widget = std::make_unique<Widget>(std::forward<Args>(args)...);
-        auto &ref = *widget;
+        auto& ref = *widget;
         insert(Alignment, std::move(widget));
         return ref;
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         for (auto const& child : _children) {
             co_yield *child.value;
@@ -89,8 +90,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         for (auto& child : _children) {
             child.set_constraints(child.value->update_constraints());
         }
@@ -107,12 +106,12 @@ public:
     }
     void set_layout(widget_layout const& context) noexcept override
     {
+        super::set_layout(context);
+
         // Clip directly around the toolbar, so that tab buttons looks proper.
-        if (compare_store(_layout, context)) {
-            auto shape = context.shape;
-            shape.rectangle = aarectangle{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
-            _children.set_layout(shape, theme().baseline_adjustment());
-        }
+        auto shape = context.shape;
+        shape.rectangle = aarectangle{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
+        _children.set_layout(shape);
 
         auto const overhang = context.redraw_overhang;
 
@@ -207,7 +206,7 @@ private:
     bool tab_button_has_focus() const noexcept
     {
         for (auto const& cell : _children) {
-            if (auto const *const c = dynamic_cast<toolbar_tab_button_widget *>(cell.value.get())) {
+            if (auto const* const c = dynamic_cast<toolbar_tab_button_widget*>(cell.value.get())) {
                 if (c->focus() and c->value() == widget_value::on) {
                     return true;
                 }
@@ -218,4 +217,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

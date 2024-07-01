@@ -69,8 +69,6 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         if (_icon_has_modified.exchange(false)) {
             if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
                 auto const bounding_rectangle = [&] {
@@ -125,26 +123,25 @@ public:
             }
         }
 
-        // Icons have a very low priority as it needs to be aligned with text.
         return {
             _icon_size,
             style.margins_px,
-            baseline::from_middle_of_object(1, style.cap_height, unit::pixels(_icon_size.height()))};
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, _icon_size.height())};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            if (_icon_type == icon_type::no or not _icon_size) {
-                _icon_rectangle = {};
-            } else {
-                auto const middle = context.get_middle(style.vertical_alignment, style.cap_height);
-                _icon_rectangle = align_to_middle(
-                    context.rectangle() + style.vertical_margins_px,
-                    _icon_size,
-                    os_settings::alignment(style.horizontal_alignment),
-                    middle.in(unit::pixels));
-            }
+        super::set_layout(context);
+
+        if (_icon_type == icon_type::no or not _icon_size) {
+            _icon_rectangle = {};
+        } else {
+            auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+            _icon_rectangle = align_to_middle(
+                context.rectangle() + style.vertical_margins_px,
+                _icon_size,
+                os_settings::alignment(style.horizontal_alignment),
+                middle);
         }
     }
 

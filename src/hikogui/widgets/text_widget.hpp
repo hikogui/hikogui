@@ -104,7 +104,9 @@ public:
                     std::max(new_layout.shape.height(), new_constraints.minimum.height())};
                 set_layout(new_layout);
 
-                if (new_constraints != old_constraints) {
+                if (new_constraints.minimum != old_constraints.minimum or
+                    new_constraints.preferred != old_constraints.preferred or
+                    new_constraints.maximum != old_constraints.maximum) {
                     // The constraints have changed, properly constrain and layout on the next frame.
                     ++global_counter<"text_widget:delegate:constrain">;
                     request_scroll();
@@ -146,8 +148,6 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         // Read the latest text from the delegate.
         _text_cache = delegate->read(*this);
 
@@ -168,7 +168,10 @@ public:
 
         if (mode() == widget_mode::partial) {
             // In line-edit mode the text should not wrap.
-            return _constraints_cache = {shaped_text_size, style.margins_px, baseline::from_cap_height(10, style.cap_height)};
+            return _constraints_cache = {
+                       shaped_text_size,
+                       style.margins_px,
+                       baseline::from_cap_height(style.baseline_priority, style.cap_height_px)};
 
         } else {
             // Allow the text to be 550.0f pixels wide.
@@ -181,16 +184,16 @@ public:
                        extent2{preferred_shaped_text_size.width(), height},
                        extent2{shaped_text_size.width(), height},
                        style.margins_px,
-                       baseline::from_cap_height(10, style.cap_height)};
+                       baseline::from_cap_height(style.baseline_priority, style.cap_height_px)};
         }
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const baseline = context.get_baseline(style.vertical_alignment);
-            _shaped_text.layout(context.rectangle(), baseline.in(unit::pixels), context.sub_pixel_size);
-        }
+        super::set_layout(context);
+
+        auto const baseline = context.get_baseline(style.vertical_alignment);
+        _shaped_text.layout(context.rectangle(), baseline, context.sub_pixel_size);
     }
 
     void draw(draw_context const& context) noexcept override

@@ -133,24 +133,30 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return box_constraints{style.size_px, style.size_px, style.size_px, style.alignment, style.margins_px};
+        return box_constraints{
+            style.size_px,
+            style.size_px,
+            style.size_px,
+            style.margins_px,
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _button_rectangle =
-                align(context.rectangle(), style.size_px, os_settings::alignment(style.alignment), style.cap_height);
-
-            _check_glyph = find_glyph(elusive_icon::Ok);
-            auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
-            _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
-
-            _minus_glyph = find_glyph(elusive_icon::Minus);
-            auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
-            _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
-        }
         super::set_layout(context);
+
+        auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+        auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
+        _button_rectangle =
+            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle);
+
+        _check_glyph = find_glyph(elusive_icon::Ok);
+        auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
+
+        _minus_glyph = find_glyph(elusive_icon::Minus);
+        auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
     }
 
     void draw(draw_context const& context) noexcept override

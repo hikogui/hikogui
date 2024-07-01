@@ -684,7 +684,6 @@ private:
         }
 
         if (cell.template span<axis>() == 1) {
-            inplace_max(_constraints[cell.template first<axis>()].alignment, cell.template alignment<axis>());
             inplace_max(_constraints[cell.template first<axis>()].minimum, cell.template minimum<axis>());
             inplace_max(_constraints[cell.template first<axis>()].preferred, cell.template preferred<axis>());
             inplace_min(_constraints[cell.template first<axis>()].maximum, cell.template maximum<axis>());
@@ -1048,18 +1047,6 @@ public:
         std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.update_constraints();
         r.margins.bottom() = _row_constraints.margin_after();
         r.margins.top() = _row_constraints.margin_before();
-
-        r.alignment = [&] {
-            if (num_rows() == 1 and num_columns() == 1) {
-                return hi::alignment{_column_constraints.front().alignment, _row_constraints.front().alignment};
-            } else if (num_rows() == 1) {
-                return hi::alignment{_row_constraints.front().alignment};
-            } else if (num_columns() == 1) {
-                return hi::alignment{_column_constraints.front().alignment};
-            } else {
-                return hi::alignment{};
-            }
-        }();
 
         return r;
     }

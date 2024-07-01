@@ -235,6 +235,26 @@ public:
         return shape.y();
     }
 
+    [[nodiscard]] float left() const noexcept
+    {
+        return shape.left();
+    }
+
+    [[nodiscard]] float right() const noexcept
+    {
+        return shape.right();
+    }
+
+    [[nodiscard]] float top() const noexcept
+    {
+        return shape.top();
+    }
+
+    [[nodiscard]] float bottom() const noexcept
+    {
+        return shape.bottom();
+    }
+
     [[nodiscard]] hi::baseline baseline() const noexcept
     {
         return shape.baseline;
@@ -248,20 +268,9 @@ public:
      * @return The position of the baseline from the bottom of the widget's
      * shape.
      */
-    [[nodiscard]] unit::pixels_f get_baseline(vertical_alignment alignment) const noexcept
+    [[nodiscard]] float get_baseline(vertical_alignment alignment) const noexcept
     {
-        return shape.baseline.get_baseline(unit::pixels(shape.height()), alignment);
-    }
-
-    /**
-     * @brief Returns the baseline position in pixels for the specified vertical alignment.
-     * 
-     * @param alignment The vertical alignment of the widget.
-     * @return The baseline position in pixels.
-     */
-    [[nodiscard]] float get_baseline_px(vertical_alignment alignment) const noexcept
-    {
-        return get_baseline(alignment).in(unit::pixels);
+        return shape.baseline.get_baseline(shape.height(), alignment);
     }
 
     /**
@@ -271,21 +280,9 @@ public:
      * @param cap_height The cap height of the widget.
      * @return The position of the middle of aligned text widget.
      */
-    [[nodiscard]] unit::pixels_f get_middle(vertical_alignment alignment, unit::pixels_f cap_height) const noexcept
+    [[nodiscard]] float get_middle(vertical_alignment alignment, float cap_height) const noexcept
     {
-        return shape.baseline.get_middle(unit::pixels(shape.height()), alignment, cap_height);
-    }
-
-    /**
-     * @brief Calculates the middle position of aligned text in the widget.
-     * 
-     * @param alignment The vertical alignment of the widget.
-     * @param cap_height The cap height of the widget.
-     * @return The position of the middle of aligned text widget in pixels.
-     */
-    [[nodiscard]] float get_middle_px(vertical_alignment alignment, unit::pixels_f cap_height) const noexcept
-    {
-        return get_middle(alignment, cap_height).in(unit::pixels);
+        return shape.baseline.get_middle(shape.height(), alignment, cap_height);
     }
 
     /** Create a new widget_layout for the child widget.

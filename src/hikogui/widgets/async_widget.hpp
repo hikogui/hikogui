@@ -17,11 +17,11 @@
 
 hi_export_module(hikogui.widgets.async_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 template<typename Context>
-concept async_widget_attribute =
-    label_widget_attribute<Context> or forward_of<Context, keyboard_focus_group>;
+concept async_widget_attribute = label_widget_attribute<Context> or forward_of<Context, keyboard_focus_group>;
 
 /** A GUI widget that permits the user to make a binary choice.
  * @ingroup widgets
@@ -53,23 +53,21 @@ public:
         observer<hi::label> label = hi::txt{"<label>"};
         keyboard_focus_group focus_group = keyboard_focus_group::normal;
 
-        attributes_type(attributes_type const &) noexcept = default;
-        attributes_type(attributes_type &&) noexcept = default;
-        attributes_type &operator=(attributes_type const &) noexcept = default;
-        attributes_type &operator=(attributes_type &&) noexcept = default;
+        attributes_type(attributes_type const&) noexcept = default;
+        attributes_type(attributes_type&&) noexcept = default;
+        attributes_type& operator=(attributes_type const&) noexcept = default;
+        attributes_type& operator=(attributes_type&&) noexcept = default;
 
         template<async_widget_attribute... Attributes>
-        explicit attributes_type(Attributes &&...attributes) noexcept
+        explicit attributes_type(Attributes&&... attributes) noexcept
         {
             set_attributes(std::forward<Attributes>(attributes)...);
         }
 
-        void set_attributes() noexcept
-        {
-        }
+        void set_attributes() noexcept {}
 
         template<async_widget_attribute First, async_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
+        void set_attributes(First&& first, Rest&&... rest) noexcept
         {
             if constexpr (forward_of<First, observer<hi::alignment>>) {
                 alignment = std::forward<First>(first);
@@ -95,7 +93,7 @@ public:
     std::shared_ptr<delegate_type> delegate;
 
     template<typename... Args>
-    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args &&...args)
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
         requires requires { default_async_delegate{std::forward<Args>(args)...}; }
     {
         return make_shared_ctad<default_async_delegate>(std::forward<Args>(args)...);
@@ -111,9 +109,7 @@ public:
      * @param parent The parent widget that owns this async widget.
      * @param delegate The delegate to use to manage the state of the async button.
      */
-    async_widget(
-        attributes_type attributes,
-        std::shared_ptr<delegate_type> delegate) noexcept :
+    async_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
         super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         this->delegate->init(*this);
@@ -132,38 +128,37 @@ public:
      * @param value The value or `observer` value which represents the state of the async.
      */
     template<incompatible_with<attributes_type> Value, async_widget_attribute... Attributes>
-    async_widget(
-        Value&& value,
-        Attributes &&...attributes) requires requires
-    {
+    async_widget(Value&& value, Attributes&&... attributes) requires requires {
         make_default_delegate(std::forward<Value>(value));
         attributes_type{std::forward<Attributes>(attributes)...};
-    } : async_widget(
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value)))
+    }
+        :
+        async_widget(attributes_type{std::forward<Attributes>(attributes)...}, make_default_delegate(std::forward<Value>(value)))
     {
     }
 
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return box_constraints{style.size_px, style.margins_px, baseline::from_middle_of_object(20, style.cap_height, style.height)};
+        return box_constraints{
+            style.size_px,
+            style.margins_px,
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(*attributes.alignment));
-
-            _check_glyph = find_glyph(elusive_icon::Ok);
-            auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
-            _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
-
-            _minus_glyph = find_glyph(elusive_icon::Minus);
-            auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
-            _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
-        }
         super::set_layout(context);
+
+        _button_rectangle = align(context.rectangle(), style.size_px, os_settings::alignment(*attributes.alignment));
+
+        _check_glyph = find_glyph(elusive_icon::Ok);
+        auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb, alignment::middle_center());
+
+        _minus_glyph = find_glyph(elusive_icon::Minus);
+        auto const minus_glyph_bb = _minus_glyph.front_glyph_metrics().bounding_rectangle * theme().icon_size();
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
     }
 
     void draw(draw_context const& context) noexcept override
@@ -265,4 +260,5 @@ private:
 using async_with_label_widget = with_label_widget<async_widget>;
 using async_menu_button_widget = menu_button_widget<async_widget>;
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "../units/units.hpp"
 #include "../macros.hpp"
 #include "hikogui/units/pixels.hpp"
 #include <functional>
@@ -13,6 +12,14 @@
 hi_export_module(hikogui.text : baseline);
 
 hi_export namespace hi::inline v1 {
+
+enum class baseline_priority : unsigned int {
+    none = 0,
+    label = 1,
+    small_widget = 10,
+    large_widget = 100,
+};
+
 /** The negotiated baseline between multiple objects with different alignments.
  *
  * This is used when multiple widgets are side by side, for example when they
@@ -30,8 +37,12 @@ hi_export namespace hi::inline v1 {
  */
 class baseline {
 public:
-    using baseline_function_result = std::tuple<unit::pixels_f, unit::pixels_f, unit::pixels_f>;
-    using baseline_function_type = std::function<baseline_function_result(unit::pixels_f)>;
+    struct baseline_function_result {
+        float bottom;
+        float middle;
+        float top;
+    };
+    using baseline_function_type = std::function<baseline_function_result(float)>;
 
     baseline(baseline const&) noexcept = default;
     baseline(baseline&&) noexcept = default;
@@ -48,8 +59,8 @@ public:
      *       a baseline offset of half the height, and the given height.
      */
     baseline() noexcept :
-        _priority(0), _function([](unit::pixels_f height) {
-            return baseline_function_result{unit::pixels(0.0f), height / 2.0f, height};
+        _priority(baseline_priority::none), _function([](float height) {
+            return baseline_function_result{0.0f, height / 2.0f, height};
         })
     {
     }
@@ -65,7 +76,7 @@ public:
      *                 the object. The arguments of the function us the height
      *                 of the box which contains the object to be aligned.
      */
-    baseline(unsigned int priority, baseline_function_type function) noexcept :
+    baseline(baseline_priority priority, baseline_function_type function) noexcept :
         _priority(priority), _function(std::move(function))
     {
     }
@@ -80,11 +91,11 @@ public:
      * @param cap_height The cap-height of the font in pixels.
      * @return The baseline object.
      */
-    [[nodiscard]] static baseline from_cap_height(unsigned int priority, unit::pixels_f cap_height) noexcept
+    [[nodiscard]] static baseline from_cap_height(baseline_priority priority, float cap_height) noexcept
     {
         return hi::baseline{
-            priority, [cap_height](unit::pixels_f height) {
-                return baseline_function_result{unit::pixels(0.0f), height / 2.0f - cap_height / 2.0f, height - cap_height};
+            priority, [cap_height](float height) {
+                return baseline_function_result{0.0f, height / 2.0f - cap_height / 2.0f, height - cap_height};
             }};
     }
 
@@ -96,12 +107,12 @@ public:
      * @param object_height The height of the object in pixels.
      * @return The baseline.
      */
-    [[nodiscard]] static baseline from_middle_of_object(unsigned int priority, unit::pixels_f cap_height, unit::pixels_f object_height) noexcept
+    [[nodiscard]] static baseline from_middle_of_object(baseline_priority priority, float cap_height, float object_height) noexcept
     {
         return hi::baseline{
-            priority, [cap_height, object_height](unit::pixels_f height) {
+            priority, [cap_height, object_height](float height) {
                 return baseline_function_result{
-                    unit::pixels(0.0f) + object_height / 2.0f - cap_height / 2.0f,
+                    object_height / 2.0f - cap_height / 2.0f,
                     height / 2.0f - cap_height / 2.0f,
                     height - object_height / 2.0f - cap_height / 2.0f};
             }};
@@ -119,12 +130,12 @@ public:
      * @return The created baseline object.
      */
     [[nodiscard]] static baseline from_cap_height_and_padding(
-        unsigned int priority,
-        unit::pixels_f cap_height,
-        unit::pixels_f bottom_padding,
-        unit::pixels_f top_padding) noexcept
+        baseline_priority priority,
+        float cap_height,
+        float bottom_padding,
+        float top_padding) noexcept
     {
-        return hi::baseline{priority, [cap_height, bottom_padding, top_padding](unit::pixels_f height) {
+        return hi::baseline{priority, [cap_height, bottom_padding, top_padding](float height) {
                                 auto const padded_height = height - bottom_padding - top_padding;
 
                                 return baseline_function_result{
@@ -137,17 +148,20 @@ public:
     /**
      * Embeds the given baseline function into a new baseline function with additional padding.
      *
+     * This is used when a object with a baseline is embedded inside an object
+     * which introduces padding around the object.
+     *
      * @param priority The priority of the new baseline function.
      * @param other The baseline function to embed.
      * @param bottom_padding The amount of bottom padding to add.
      * @param top_padding The amount of top padding to add.
      * @return The new embedded baseline function.
      */
-    [[nodiscard]] static baseline
-    embed(unsigned int priority, baseline const& other, unit::pixels_f bottom_padding, unit::pixels_f top_padding) noexcept
+    [[nodiscard]] friend baseline
+    embed(baseline const& other, baseline_priority priority, float bottom_padding, float top_padding) noexcept
     {
         return hi::baseline{
-            priority, [embedded_func = other._function, bottom_padding, top_padding](unit::pixels_f height) {
+            priority, [embedded_func = other._function, bottom_padding, top_padding](float height) {
                 auto const padded_height = height - bottom_padding - top_padding;
                 auto const [bottom, middle, top] = embedded_func(padded_height);
 
@@ -155,7 +169,29 @@ public:
             }};
     }
 
-    [[nodiscard]] constexpr unsigned int priority() const noexcept
+    /**
+     * Lifts the given baseline by applying bottom and top padding.
+     *
+     * This is used when an embedded object is layed out, and the padding
+     * around the embedded object is removed.
+     *
+     * @param other The baseline to lift.
+     * @param bottom_padding The amount of bottom padding to apply.
+     * @param top_padding The amount of top padding to apply.
+     * @return The lifted baseline.
+     */
+    [[nodiscard]] friend baseline lift(baseline const& other, float bottom_padding, float top_padding) noexcept
+    {
+        return hi::baseline{
+            other._priority, [embedded_func = other._function, bottom_padding, top_padding](float height) {
+                auto const padded_height = height + bottom_padding + top_padding;
+                auto const [bottom, middle, top] = embedded_func(padded_height);
+
+                return baseline_function_result{bottom - bottom_padding, middle - bottom_padding, top - bottom_padding};
+            }};
+    }
+
+    [[nodiscard]] constexpr baseline_priority priority() const noexcept
     {
         return _priority;
     }
@@ -168,7 +204,7 @@ public:
      * @param alignment The vertical alignment of the object.
      * @return The baseline position from the bottom of the box.
      */
-    [[nodiscard]] constexpr unit::pixels_f get_baseline(unit::pixels_f height, vertical_alignment alignment) const
+    [[nodiscard]] constexpr float get_baseline(float height, vertical_alignment alignment) const
     {
         assert(_function);
 
@@ -187,18 +223,6 @@ public:
     }
 
     /**
-     * Calculates the baseline position based on the given height and vertical alignment.
-     *
-     * @param height The height of the element in pixels.
-     * @param alignment The vertical alignment of the element.
-     * @return The baseline position in pixels.
-     */
-    [[nodiscard]] constexpr float get_baseline_px(unit::pixels_f height, vertical_alignment alignment) const
-    {
-        return get_baseline(height, alignment).in(unit::pixels);
-    }
-
-    /**
      * Calculates the middle position of an element based on its height, vertical alignment, and cap height.
      * 
      * @param height The height of the element.
@@ -206,22 +230,9 @@ public:
      * @param cap_height The cap height of the font of the element.
      * @return The middle position of text aligned to the @a alignment.
      */
-    [[nodiscard]] constexpr unit::pixels_f get_middle(unit::pixels_f height, vertical_alignment alignment, unit::pixels_f cap_height) const
+    [[nodiscard]] constexpr float get_middle(float height, vertical_alignment alignment, float cap_height) const
     {
         return get_baseline(height, alignment) + cap_height / 2.0f;
-    }
-
-    /**
-     * Calculates the middle position based on the given height, alignment, and cap height.
-     *
-     * @param height The height of the element.
-     * @param alignment The vertical alignment of the element.
-     * @param cap_height The cap height of the element.
-     * @return The middle position in pixels.
-     */
-    [[nodiscard]] constexpr float get_middle_px(unit::pixels_f height, vertical_alignment alignment, unit::pixels_f cap_height) const
-    {
-        return get_middle(height, alignment, cap_height).in(unit::pixels);
     }
 
     /**
@@ -231,17 +242,23 @@ public:
      * @param rhs The second baseline object.
      * @return The baseline object with the higher priority.
      */
-    [[nodiscard]] friend baseline max(baseline const& lhs, baseline const& rhs) noexcept
+    [[nodiscard]] friend baseline max(baseline const& a, baseline const& b) noexcept
     {
-        if (lhs._priority > rhs._priority) {
-            return lhs;
+        if (a._priority > b._priority) {
+            return a;
         } else {
-            return rhs;
+            return b;
         }
     }
 
+    template<std::convertible_to<baseline>... Rest>
+    [[nodiscard]] friend baseline max(baseline const& a, baseline const& b, baseline const& c, Rest const&... rest) noexcept
+    {
+        return max(a, max(b, c, rest...));
+    }
+
 private:
-    unsigned int _priority = 0;
+    baseline_priority _priority = baseline_priority::none;
     baseline_function_type _function = {};
 };
 }

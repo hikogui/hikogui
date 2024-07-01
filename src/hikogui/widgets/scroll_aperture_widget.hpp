@@ -114,14 +114,13 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _content_constraints = _content->update_constraints();
 
         // The aperture can scroll so its minimum width and height are zero.
         auto aperture_constraints = _content_constraints;
         aperture_constraints.minimum = extent2{0, 0};
 
-        aperture_constraints = aperture_constraints.constrain(*minimum, *maximum);
+        aperture_constraints.constrain(*minimum, *maximum);
         aperture_constraints += extent2{
             _content_constraints.margins.left() + _content_constraints.margins.right(),
             _content_constraints.margins.top() + _content_constraints.margins.bottom()};
@@ -131,19 +130,17 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            aperture_width = context.width() - _content_constraints.margins.left() - _content_constraints.margins.right();
-            aperture_height = context.height() - _content_constraints.margins.bottom() - _content_constraints.margins.top();
+        super::set_layout(context);
 
-            // Start scrolling with the preferred size as minimum, so
-            // that widgets in the content don't get unnecessarily squeezed.
-            content_width = *aperture_width < _content_constraints.preferred.width() ? _content_constraints.preferred.width() :
-                                                                                       *aperture_width;
-            content_height = *aperture_height < _content_constraints.preferred.height() ?
-                _content_constraints.preferred.height() :
-                *aperture_height;
-        }
+        aperture_width = context.width() - _content_constraints.margins.left() - _content_constraints.margins.right();
+        aperture_height = context.height() - _content_constraints.margins.bottom() - _content_constraints.margins.top();
 
+        // Start scrolling with the preferred size as minimum, so
+        // that widgets in the content don't get unnecessarily squeezed.
+        content_width =
+            *aperture_width < _content_constraints.preferred.width() ? _content_constraints.preferred.width() : *aperture_width;
+        content_height = *aperture_height < _content_constraints.preferred.height() ? _content_constraints.preferred.height() :
+                                                                                      *aperture_height;
         // Make sure the offsets are limited to the scrollable area.
         auto const offset_x_max = std::max(*content_width - *aperture_width, 0.0f);
         auto const offset_y_max = std::max(*content_height - *aperture_height, 0.0f);

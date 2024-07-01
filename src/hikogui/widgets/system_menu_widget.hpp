@@ -19,7 +19,8 @@
 
 hi_export_module(hikogui.widgets.system_menu_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** The system menu widget.
  * This widget displays an icon in the menu bar of the window and is used to call-up
@@ -44,14 +45,13 @@ public:
     }
 
     template<forward_of<observer<hi::icon>> Icon>
-    system_menu_widget(Icon&& icon) noexcept :
-        system_menu_widget()
+    system_menu_widget(Icon&& icon) noexcept : system_menu_widget()
     {
         this->icon = std::forward<Icon>(icon);
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_yield *_icon_widget;
     }
@@ -60,27 +60,25 @@ public:
     {
         hi_assert_not_null(_icon_widget);
 
-        _layout = {};
         _icon_constraints = _icon_widget->update_constraints();
 
-        auto const size = extent2{theme().large_size(), theme().large_size()};
-        return {size, size, size};
+        return {
+            style.size_px,
+            style.size_px,
+            style.size_px,
+            style.margins_px,
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const icon_height =
-                context.height() < round_cast<int>(theme().large_size() * 1.2f) ? context.height() : theme().large_size();
-            auto const icon_rectangle = aarectangle{0, context.height() - icon_height, context.width(), icon_height};
-            _icon_shape = box_shape{_icon_constraints, icon_rectangle, theme().baseline_adjustment()};
-            // Leave space for window resize handles on the left and top.
-            _system_menu_rectangle = aarectangle{
-                theme().margin<float>(),
-                0.0f,
-                context.width() - theme().margin<float>(),
-                context.height() - theme().margin<float>()};
-        }
+        super::set_layout(context);
+
+        _icon_shape = box_shape{context.rectangle(), context.baseline()};
+        // Leave space for window resize handles on the left and top.
+        _system_menu_rectangle = aarectangle{
+            point2{context.left() + style.margin_left_px, context.bottom()},
+            point2{context.right(), context.top() - style.margin_top_px}};
 
         _icon_widget->set_layout(context.transform(_icon_shape));
     }
@@ -114,4 +112,5 @@ private:
     aarectangle _system_menu_rectangle;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

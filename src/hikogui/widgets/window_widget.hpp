@@ -107,7 +107,6 @@ public:
         hi_assert_not_null(_content);
         hi_assert_not_null(_toolbar);
 
-        _layout = {};
         _content_constraints = _content->update_constraints();
         _toolbar_constraints = _toolbar->update_constraints();
 
@@ -162,23 +161,22 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const toolbar_height = _toolbar_constraints.preferred.height();
-            auto const between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
+        super::set_layout(context);
 
-            auto const toolbar_rectangle = aarectangle{
-                point2{
-                    _toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
-                point2{
-                    context.width() - _toolbar_constraints.margins.right(),
-                    context.height() - _toolbar_constraints.margins.top()}};
-            _toolbar_shape = box_shape{_toolbar_constraints, toolbar_rectangle, theme().baseline_adjustment()};
+        auto const toolbar_height = _toolbar_constraints.preferred.height();
+        auto const between_margin = std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top());
 
-            auto const content_rectangle = aarectangle{
-                point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
-                point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
-            _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
-        }
+        auto const toolbar_rectangle = aarectangle{
+            point2{_toolbar_constraints.margins.left(), context.height() - toolbar_height - _toolbar_constraints.margins.top()},
+            point2{
+                context.width() - _toolbar_constraints.margins.right(), context.height() - _toolbar_constraints.margins.top()}};
+        _toolbar_shape = box_shape{toolbar_rectangle};
+
+        auto const content_rectangle = aarectangle{
+            point2{_content_constraints.margins.left(), _content_constraints.margins.bottom()},
+            point2{context.width() - _content_constraints.margins.right(), toolbar_rectangle.bottom() - between_margin}};
+        _content_shape = box_shape{content_rectangle};
+
         _toolbar->set_layout(context.transform(_toolbar_shape));
         _content->set_layout(context.transform(_content_shape));
     }

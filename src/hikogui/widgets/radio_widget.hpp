@@ -129,27 +129,28 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return {style.size_px, style.margins_px, baseline::from_middle_of_object(20, style.cap_height, style.height)};
+        return {
+            style.size_px,
+            style.margins_px,
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const button_diameter = style.size_px.height();
-            auto const button_radius = std::round(button_diameter * 0.5f);
-            auto const button_size = extent2{button_diameter, button_diameter};
-
-            auto const middle_px = context.get_middle_px(style.vertical_alignment, style.cap_height);
-            auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
-            _button_rectangle = align_to_middle(
-                extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle_px);
-
-            _button_circle = circle{_button_rectangle};
-
-            _pip_circle =
-                align(_button_rectangle, circle{button_radius - style.border_width_px * 3.0f}, alignment::middle_center());
-        }
         super::set_layout(context);
+
+        auto const button_diameter = style.size_px.height();
+        auto const button_radius = std::round(button_diameter * 0.5f);
+        auto const button_size = extent2{button_diameter, button_diameter};
+
+        auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+        auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
+        _button_rectangle =
+            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle);
+
+        _button_circle = circle{_button_rectangle};
+
+        _pip_circle = align(_button_rectangle, circle{button_radius - style.border_width_px * 3.0f}, alignment::middle_center());
     }
 
     void draw(draw_context const& context) noexcept override

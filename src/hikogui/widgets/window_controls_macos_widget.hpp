@@ -17,7 +17,8 @@
 
 hi_export_module(hikogui.widgets.window_controls_macos_widget);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /** Window control button widget.
  * This widget will display a set of buttons to control the
@@ -38,63 +39,61 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto const size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
         return {size, size, size};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto extent = context.size();
-            if (extent.height() > floor_cast<int>(theme().large_size() * 1.2f)) {
-                extent = extent2{extent.width(), theme().large_size()};
-            }
+        super::set_layout(context);
 
-            closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
-
-            minimizeRectangle =
-                aarectangle{point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
-
-            maximizeRectangle = aarectangle{
-                point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
-                extent2{DIAMETER, DIAMETER}};
-
-            closeWindowGlyph = find_glyph(hikogui_icon::CloseWindow);
-            minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
-            maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMacOS);
-            restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
-            auto const glyph_size = 5.0f;
-
-            auto const closeWindowGlyphBB = closeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-            auto const minimizeWindowGlyphBB = minimizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-            auto const maximizeWindowGlyphBB = maximizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-            auto const restoreWindowGlyphBB = restoreWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
-
-            closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
-            minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
-            maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB, alignment::middle_center());
-            restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB, alignment::middle_center());
+        auto extent = context.size();
+        if (extent.height() > floor_cast<int>(theme().large_size() * 1.2f)) {
+            extent = extent2{extent.width(), theme().large_size()};
         }
+
+        closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
+
+        minimizeRectangle =
+            aarectangle{point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
+
+        maximizeRectangle = aarectangle{
+            point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
+            extent2{DIAMETER, DIAMETER}};
+
+        closeWindowGlyph = find_glyph(hikogui_icon::CloseWindow);
+        minimizeWindowGlyph = find_glyph(hikogui_icon::MinimizeWindow);
+        maximizeWindowGlyph = find_glyph(hikogui_icon::MaximizeWindowMacOS);
+        restoreWindowGlyph = find_glyph(hikogui_icon::RestoreWindowMacOS);
+        auto const glyph_size = 5.0f;
+
+        auto const closeWindowGlyphBB = closeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+        auto const minimizeWindowGlyphBB = minimizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+        auto const maximizeWindowGlyphBB = maximizeWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+        auto const restoreWindowGlyphBB = restoreWindowGlyph.front_glyph_metrics().bounding_rectangle * glyph_size;
+
+        closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB, alignment::middle_center());
+        minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB, alignment::middle_center());
+        maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB, alignment::middle_center());
+        restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB, alignment::middle_center());
     }
 
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible and overlaps(context, layout())) {
             auto const close_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
-                pressedClose                                               ? color(1.0f, 0.242f, 0.212f) :
-                                                                             color(1.0f, 0.1f, 0.082f);
+                pressedClose                                                    ? color(1.0f, 0.242f, 0.212f) :
+                                                                                  color(1.0f, 0.1f, 0.082f);
             context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
             auto const minimize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
-                pressedMinimize                                               ? color(1.0f, 0.847f, 0.093f) :
-                                                                                color(0.784f, 0.521f, 0.021f);
+                pressedMinimize                                                    ? color(1.0f, 0.847f, 0.093f) :
+                                                                                     color(0.784f, 0.521f, 0.021f);
             context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
             auto const maximize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
-                pressedMaximize                                               ? color(0.223f, 0.863f, 0.1f) :
-                                                                                color(0.082f, 0.533f, 0.024f);
+                pressedMaximize                                                    ? color(0.223f, 0.863f, 0.1f) :
+                                                                                     color(0.082f, 0.533f, 0.024f);
 
             context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_radii{RADIUS});
 
@@ -234,4 +233,5 @@ private:
     bool pressedMaximize = false;
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1

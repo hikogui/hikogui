@@ -100,14 +100,13 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _content_constraints = _content->update_constraints();
         return _content_constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        super::set_layout(context);
 
         // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
         _layout.clipping_rectangle = context.rectangle() + style.border_width_px;

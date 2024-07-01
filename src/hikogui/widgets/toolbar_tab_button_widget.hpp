@@ -73,7 +73,7 @@ public:
         attributes_type& operator=(attributes_type&&) noexcept = default;
 
         template<toolbar_tab_button_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&...attributes) noexcept
+        explicit attributes_type(Attributes&&... attributes) noexcept
         {
             set_attributes<0>(std::forward<Attributes>(attributes)...);
         }
@@ -84,7 +84,7 @@ public:
         }
 
         template<size_t NumLabels, toolbar_tab_button_widget_attribute First, toolbar_tab_button_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&...rest) noexcept
+        void set_attributes(First&& first, Rest&&... rest) noexcept
         {
             if constexpr (forward_of<First, observer<hi::label>>) {
                 if constexpr (NumLabels == 0) {
@@ -134,9 +134,7 @@ public:
      *                   passed it will be shown in all states. If two labels are passed
      *                   the first label is shown in on-state and the second for off-state.
      */
-    toolbar_tab_button_widget(
-        attributes_type attributes,
-        std::shared_ptr<delegate_type> delegate) noexcept :
+    toolbar_tab_button_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
         super(), attributes(std::move(attributes)), delegate(std::move(delegate))
     {
         _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label);
@@ -162,8 +160,7 @@ public:
      *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    toolbar_tab_button_widget(Args&&...args)
-        requires(num_default_delegate_arguments<Args...>() != 0)
+    toolbar_tab_button_widget(Args&&... args) requires(num_default_delegate_arguments<Args...>() != 0)
         :
         toolbar_tab_button_widget(
             make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
@@ -176,7 +173,7 @@ public:
         // A toolbar tab button draws a focus line across the whole toolbar
         // which is beyond it's own clipping rectangle. The parent is the toolbar
         // so it will include everything that needs to be redrawn.
-        if (auto *p = parent()) {
+        if (auto* p = parent()) {
             p->request_redraw();
         } else {
             super::request_redraw();
@@ -186,28 +183,27 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _on_label_constraints = _on_label_widget->update_constraints();
         _off_label_constraints = _off_label_widget->update_constraints();
 
         _label_constraints = max(_on_label_constraints, _off_label_constraints);
+        auto const padding = max(_label_constraints.margins, style.padding_px);
 
-        // On left side a check mark, on right side short-cut. Around the label extra margin.
-        auto const extra_size = extent2{theme().margin<float>() * 2.0f, theme().margin<float>()};
-        return _label_constraints + extra_size;
+        auto r = _label_constraints + padding;
+        r.margins = {};
+        r.baseline = embed(_label_constraints.baseline, style.baseline_priority, padding.bottom(), padding.top());
+        return r;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const label_rectangle = aarectangle{
-                theme().margin<float>(),
-                0.0f,
-                context.width() - theme().margin<float>() * 2.0f,
-                context.height() - theme().margin<float>()};
-            _on_label_shape = _off_label_shape =
-                box_shape{_label_constraints, label_rectangle, theme().baseline_adjustment()};
-        }
+        super::set_layout(context);
+
+        auto const padding = max(_label_constraints.margins, style.padding_px);
+        auto const label_rectangle = context.rectangle() + padding;
+
+        _on_label_shape = _off_label_shape =
+            box_shape{label_rectangle, lift(context.baseline(), padding.bottom(), padding.top())};
 
         _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
         _off_label_widget->set_mode(value() != widget_value::on ? widget_mode::display : widget_mode::invisible);
@@ -330,7 +326,8 @@ private:
             theme().fill_color(_layout.layer);
         // clang-format on
 
-        auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
+        auto const corner_radii =
+            hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
 
         context.draw_box(
             layout(),

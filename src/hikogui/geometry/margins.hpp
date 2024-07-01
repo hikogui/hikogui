@@ -115,14 +115,30 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr friend margins max(margins const& lhs, margins const& rhs) noexcept
+    [[nodiscard]] constexpr friend margins max(margins const& a, margins const& b) noexcept
     {
-        return margins{max(lhs._v, rhs._v)};
+        return margins{max(a._v, b._v)};
+    }
+
+    template<std::convertible_to<margins>... Rest>
+    [[nodiscard]] constexpr friend margins max(margins const& a, margins const& b, margins const& c, Rest const&... rest) noexcept
+    {
+        return max(a, max(b, c, rest...));
     }
 
     [[nodiscard]] constexpr friend bool operator==(margins const& lhs, margins const& rhs) noexcept
     {
         return equal(lhs._v, rhs._v);
+    }
+
+    [[nodiscard]] constexpr friend extent2 operator+(extent2 const& lhs, margins const& rhs) noexcept
+    {
+        return lhs + rhs.size();
+    }
+
+    [[nodiscard]] constexpr friend extent2 operator-(extent2 const& lhs, margins const& rhs) noexcept
+    {
+        return lhs - rhs.size();
     }
 
 private:
