@@ -209,11 +209,12 @@ private:
         make_option_widget(widget_intf const& sender, value_type const& value, label const& label, std::shared_ptr<option_delegate_type> shared_this) noexcept
         {
             using button_widget = radio_menu_button_widget;
-            using button_attributes = radio_menu_button_widget::attributes_type;
 
             // Prepare the value for the next widget, so that the widget immediately can retrieve its value.
             _next_value = value;
-            return std::make_unique<button_widget>(button_attributes{label}, std::move(shared_this));
+            auto button = std::make_unique<button_widget>(std::move(shared_this));
+            button->label = label;
+            return button;
         }
 
         [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override

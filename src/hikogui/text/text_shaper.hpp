@@ -82,6 +82,7 @@ public:
      */
     [[nodiscard]] text_shaper(
         gstring const& text,
+        unit::font_size_f const& font_size,
         text_style_set const& style,
         unit::pixel_density pixel_density,
         hi::alignment alignment,
@@ -93,13 +94,13 @@ public:
         _script(script)
     {
         auto const font = style.front().font_chain()[0];
-        _initial_line_metrics = style.front().size() * _pixel_density * font->metrics;
+        _initial_line_metrics = font_size * style.front().scale() * _pixel_density * font->metrics;
 
         _text.reserve(text.size());
         for (auto const& c : text) {
             auto const clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
-            auto& tmp = _text.emplace_back(clean_c, style, _pixel_density);
+            auto& tmp = _text.emplace_back(clean_c, font_size, style, _pixel_density);
             tmp.initialize_glyph(font);
         }
 
@@ -133,12 +134,13 @@ public:
 
     [[nodiscard]] text_shaper(
         std::string_view text,
+        unit::font_size_f const& font_size,
         text_style_set const& style,
         unit::pixel_density pixel_density,
         hi::alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
-        text_shaper(to_gstring(text), style, pixel_density, alignment, left_to_right, script)
+        text_shaper(to_gstring(text), font_size, style, pixel_density, alignment, left_to_right, script)
     {
     }
 
@@ -200,8 +202,8 @@ public:
      *
      * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
      *        the natural text size without folding.
-     * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
-     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
+     * @return The rectangle surrounding the text. The rectangle excludes ascenders & descenders, as if
+     *         each line is cap-height. y = 0 of the rectangle is at the base-line of the text.
      */
     [[nodiscard]] aarectangle
     bounding_rectangle(float maximum_line_width) noexcept
@@ -1283,7 +1285,7 @@ private:
 
     /** Get the height of the text.
      *
-     * This is the vertical distance from the x-height of the top most line, and the base-line of the bottom most line.
+     * This is the vertical distance from the cap-height of the top most line, and the base-line of the bottom most line.
      *
      * @param lines A list of number-of-graphemes per line.
      */
@@ -1297,9 +1299,9 @@ private:
         auto char_it_first = _text.begin();
         auto char_it_last = char_it_first + *line_it++;
 
-        // Add the x-height of the first line.
+        // Add the cap-height of the first line.
         auto [previous_metrics, previous_category] = get_line_metrics(char_it_first, char_it_last);
-        auto total_height = previous_metrics.x_height;
+        auto total_height = previous_metrics.cap_height;
 
         for (; line_it != lines.cend(); ++line_it) {
             char_it_first = std::exchange(char_it_last, char_it_last + *line_it);

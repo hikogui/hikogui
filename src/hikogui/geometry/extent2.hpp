@@ -319,6 +319,18 @@ public:
         return extent2{max(static_cast<array_type>(lhs), static_cast<array_type>(rhs))};
     }
 
+    template<std::convertible_to<extent2>... Rest>
+    [[nodiscard]] constexpr friend extent2 min(extent2 const& lhs, extent2 const& rhs, Rest const&... rest) noexcept
+    {
+        return min(lhs, min(rhs, rest...));
+    }
+
+    template<std::convertible_to<extent2>... Rest>
+    [[nodiscard]] constexpr friend extent2 max(extent2 const& lhs, extent2 const& rhs, Rest const&... rest) noexcept
+    {
+        return max(lhs, max(rhs, rest...));
+    }
+
     [[nodiscard]] constexpr friend extent2 clamp(extent2 const& value, extent2 const& min, extent2 const& max) noexcept
     {
         return extent2{clamp(static_cast<array_type>(value), static_cast<array_type>(min), static_cast<array_type>(max))};

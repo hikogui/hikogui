@@ -194,19 +194,7 @@ private:
     callback<void(value_type)> _value_cbt;
 };
 
-/** Create a shared pointer to a default text delegate.
- *
- * @ingroup widget_delegates
- * @see default_text_field_delegate
- * @param value The observer value which is editable by the text field widget.
- * @return shared pointer to a text field delegate
- */
 template<typename Value>
-[[nodiscard]] std::shared_ptr<text_field_delegate> make_default_text_field_delegate(Value&& value) noexcept
-    requires requires { default_text_field_delegate<observer_decay_t<decltype(value)>>{std::forward<Value>(value)}; }
-{
-    using value_type = observer_decay_t<Value>;
-    return std::make_shared<default_text_field_delegate<value_type>>(std::forward<Value>(value));
-}
+default_text_field_delegate(Value&&) -> default_text_field_delegate<observer_decay_t<Value>>;
 
 }} // namespace hi::v1

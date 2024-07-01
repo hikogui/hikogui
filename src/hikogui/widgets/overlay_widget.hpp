@@ -50,7 +50,10 @@ public:
      *
      * @param parent The parent widget.
      */
-    overlay_widget() noexcept : super() {}
+    overlay_widget() noexcept : super()
+    {
+        style.set_name("overlay");
+    }
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept
     {
@@ -63,7 +66,7 @@ public:
         }
 
         ++global_counter<"overlay_widget:set_widget:constrain">;
-        process_event({gui_event_type::window_reconstrain});
+        request_reconstrain();
     }
 
     /** Add a content widget directly to this overlay widget.
@@ -97,20 +100,19 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _content_constraints = _content->update_constraints();
         return _content_constraints;
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        super::set_layout(context);
 
         // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-        _layout.clipping_rectangle = context.rectangle() + theme().border_width();
+        _layout.clipping_rectangle = context.rectangle() + style.border_width_px;
 
         auto const content_rectangle = context.rectangle();
-        _content_shape = box_shape{_content_constraints, content_rectangle, theme().baseline_adjustment()};
+        _content_shape = box_shape{content_rectangle, baseline{}};
 
         // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
         _content->set_layout(_layout.transform(_content_shape, context.rectangle()));
@@ -133,7 +135,7 @@ public:
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme().border_color(_layout.layer + 1);
+        return theme().border_color();
     }
 
     void scroll_to_show(hi::aarectangle rectangle) noexcept override

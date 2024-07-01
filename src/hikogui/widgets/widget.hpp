@@ -107,17 +107,6 @@ public:
         return false;
     }
 
-    [[nodiscard]] box_constraints update_constraints() noexcept override
-    {
-        _layout = {};
-        return {*minimum, *minimum, *maximum};
-    }
-
-    void set_layout(widget_layout const& context) noexcept override
-    {
-        _layout = context;
-    }
-
     void draw(draw_context const& context) noexcept override {}
 
     /** Send a event to the window.
@@ -129,13 +118,6 @@ public:
         } else {
             return true;
         }
-    }
-
-    /** Request the widget to be redrawn on the next frame.
-     */
-    void request_redraw() const noexcept override
-    {
-        process_event({gui_event_type::window_redraw, layout().clipping_rectangle_on_window()});
     }
 
     /** Handle command.
@@ -162,6 +144,19 @@ public:
 
         case gui_event_type::mouse_exit:
             set_hover(false);
+            return true;
+
+        case gui_event_type::mouse_down:
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(true);
+                handle_event(gui_event_type::gui_activate_stay);
+            }
+            return true;
+
+        case gui_event_type::mouse_up:
+            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
+                set_pressed(false);
+            }
             return true;
 
         case gui_event_type::window_activate:
@@ -329,14 +324,17 @@ public:
 
     [[nodiscard]] hi::theme const& theme() const noexcept
     {
-        hi_assert_not_null(window);
-        return window->theme;
+        if (auto w = window()) {
+            return w->theme;
+        } else {
+            std::unreachable();
+        }
     }
 
     [[nodiscard]] gfx_surface const *surface() const noexcept
     {
-        if (window) {
-            return window->surface.get();
+        if (auto w = window()) {
+            return w->surface.get();
         } else {
             return nullptr;
         }
@@ -358,13 +356,9 @@ public:
     [[nodiscard]] virtual color foreground_color() const noexcept
     {
         if (mode() >= widget_mode::partial) {
-            if (phase() == widget_phase::hover) {
-                return theme().border_color(_layout.layer + 1);
-            } else {
-                return theme().border_color(_layout.layer);
-            }
+            return theme().border_color();
         } else {
-            return theme().border_color(_layout.layer - 1);
+            return theme().disabled_color();
         }
     }
 
@@ -373,13 +367,11 @@ public:
         if (mode() >= widget_mode::partial) {
             if (focus()) {
                 return theme().accent_color();
-            } else if (phase() == widget_phase::hover) {
-                return theme().border_color(_layout.layer + 1);
             } else {
-                return theme().border_color(_layout.layer);
+                return theme().border_color();
             }
         } else {
-            return theme().border_color(_layout.layer - 1);
+            return theme().disabled_color();
         }
     }
 
@@ -388,7 +380,7 @@ public:
         if (mode() >= widget_mode::partial) {
             return theme().accent_color();
         } else {
-            return theme().border_color(_layout.layer - 1);
+            return theme().disabled_color();
         }
     }
 

@@ -23,7 +23,10 @@ class spacer_widget : public widget {
 public:
     using super = widget;
 
-    spacer_widget() noexcept : super() {}
+    spacer_widget() noexcept : super()
+    {
+        style.set_name("spacer");
+    }
 
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
     {
@@ -32,16 +35,9 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto r = box_constraints{};
         r.maximum = extent2::large();
         return r;
-    }
-
-    void set_layout(widget_layout const& context) noexcept override
-    {
-        _layout = context;
     }
 
     void draw(draw_context const& context) noexcept override {}

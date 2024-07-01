@@ -328,6 +328,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/l10n/po_translations.hpp
     src/hikogui/l10n/translation.hpp
     src/hikogui/l10n/txt.hpp
+    src/hikogui/layout/baseline.hpp
     src/hikogui/layout/box_constraints.hpp
     src/hikogui/layout/box_shape.hpp
     src/hikogui/layout/grid_layout.hpp
@@ -414,11 +415,17 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_style.hpp
     src/hikogui/text/text_style_set.hpp
     src/hikogui/theme/style.hpp
-    src/hikogui/theme/style_attributes.hpp
+    src/hikogui/theme/style_cascade.hpp
+    src/hikogui/theme/style_computed_properties.hpp
+    src/hikogui/theme/style_importance.hpp
     src/hikogui/theme/style_modify_mask.hpp
     src/hikogui/theme/style_parser.hpp
     src/hikogui/theme/style_path.hpp
+    src/hikogui/theme/style_priority.hpp
+    src/hikogui/theme/style_properties.hpp
     src/hikogui/theme/style_pseudo_class.hpp
+    src/hikogui/theme/style_selector.hpp
+    src/hikogui/theme/style_specificity.hpp
     src/hikogui/theme/theme.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp
@@ -544,6 +551,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/toolbar_button_widget.hpp
     src/hikogui/widgets/toolbar_tab_button_widget.hpp
     src/hikogui/widgets/toolbar_widget.hpp
+    src/hikogui/widgets/utility.hpp
     src/hikogui/widgets/widget.hpp
     src/hikogui/widgets/widgets.hpp
     src/hikogui/widgets/window_controls_macos_widget.hpp
