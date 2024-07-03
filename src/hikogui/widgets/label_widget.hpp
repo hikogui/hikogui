@@ -134,8 +134,9 @@ public:
             cell.set_constraints(cell.value->update_constraints());
         }
 
-        return _grid.constraints(os_settings::left_to_right());
+        return _grid.constraints(os_settings::left_to_right(), style.vertical_alignment);
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);

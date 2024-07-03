@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "baseline.hpp"
 #include "box_constraints.hpp"
 #include "box_shape.hpp"
+#include "hikogui/geometry/alignment.hpp"
 #include "hikogui/layout/baseline.hpp"
 #include "spreadsheet_address.hpp"
 #include "../geometry/geometry.hpp"
@@ -239,12 +241,6 @@ public:
          * @note This field is valid after layout.
          */
         float extent = 0.0f;
-
-        /** The before-position within this cell where to align to.
-         *
-         * @note This field is valid after layout.
-         */
-        std::optional<float> guideline = 0.0f;
     };
     using constraint_vector = std::vector<constraint_type>;
     using iterator = constraint_vector::iterator;
@@ -308,9 +304,25 @@ public:
         return constraints(begin(), end());
     }
 
+    [[nodiscard]] std::tuple<float, float, float, hi::baseline> update_constraints(vertical_alignment alignment) const noexcept
+    {
+        auto const [minimum, preferred, maximum] = update_constraints();
+
+        if (alignment == vertical_alignment::top and not _constraints.empty()) {
+            return {minimum, preferred, maximum, _constraints.front().baseline};
+        } else if (alignment == vertical_alignment::bottom and not _constraints.empty()) {
+            return {minimum, preferred, maximum, _constraints.back().baseline};
+        } else if (_constraints.size() == 1) {
+            return {minimum, preferred, maximum, _constraints.front().baseline};
+        } else {
+            return {minimum, preferred, maximum, {}};
+        }
+    }
+
     /** Get the minimum, preferred, maximum size of the span.
      *
-     * The returned minimum, preferred and maximum include the internal margin within the span.
+     * The returned minimum, preferred and maximum include the internal margin
+     * within the span.
      *
      * @param cell The reference to the cell in the grid.
      * @return The minimum, preferred and maximum size.
@@ -549,14 +561,6 @@ public:
     }
 
 private:
-    /** The constraints.
-     *
-     * There is one merged-constraint per cell along the axis;
-     * plus one extra constraint with only `margin_before` being valid.
-     *
-     * Using one extra constraint reduces the amount of if-statements.
-     *
-     */
     constraint_vector _constraints = {};
 
     /** The constraints are defined in left-to-right, bottom-to-top order.
@@ -1033,9 +1037,10 @@ public:
         update_after_insert_or_delete();
     }
 
-    [[nodiscard]] box_constraints constraints(bool left_to_right) const noexcept
+    [[nodiscard]] box_constraints constraints(bool left_to_right, vertical_alignment alignment) const noexcept
     {
         // Rows in the grid are laid out from top to bottom which is reverse from the y-axis up.
+        _alignment = alignment;
         _row_constraints = {_cells, num_rows(), false};
         _column_constraints = {_cells, num_columns(), left_to_right};
 
@@ -1044,7 +1049,7 @@ public:
         r.margins.left() = _column_constraints.margin_before();
         r.margins.right() = _column_constraints.margin_after();
 
-        std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height()) = _row_constraints.update_constraints();
+        std::tie(r.minimum.height(), r.preferred.height(), r.maximum.height(), r.baseline) = _row_constraints.update_constraints(alignment);
         r.margins.bottom() = _row_constraints.margin_after();
         r.margins.top() = _row_constraints.margin_before();
 
@@ -1068,7 +1073,16 @@ public:
                 _row_constraints.position(cell),
                 _column_constraints.extent(cell),
                 _row_constraints.extent(cell)};
-            cell.shape.baseline = _row_constraints.baseline(cell);
+
+            auto const is_top_aligned = _alignment == hi::vertical_alignment::top and cell.last_row == 1;
+            auto const is_bottom_aligned = _alignment == hi::vertical_alignment::bottom and cell.first_row == num_rows() - 1;
+            auto const is_single_row = num_rows() == 1;
+
+            if (is_top_aligned or is_bottom_aligned or is_single_row) {
+                cell.shape.baseline = max(_row_constraints.baseline(cell), shape.baseline);
+            } else {
+                cell.shape.baseline = _row_constraints.baseline(cell);
+            }
         }
     }
 
@@ -1076,6 +1090,7 @@ private:
     cell_vector _cells = {};
     size_t _num_rows = 0;
     size_t _num_columns = 0;
+    mutable vertical_alignment _alignment = vertical_alignment::none;
     mutable detail::grid_layout_axis_constraints<axis::y, value_type> _row_constraints = {};
     mutable detail::grid_layout_axis_constraints<axis::x, value_type> _column_constraints = {};
 

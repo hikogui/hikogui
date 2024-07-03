@@ -65,37 +65,37 @@
         [199, 199, 204]
     ],
 
-    "color":  "gray8",
-    "disabled-color": "gray5",
-    "accent-color":           "blue",
-    "text-select-color":      "blue",
-    "primary-cursor-color":   "gray10",
-    "secondary-cursor-color": "yellow",
+    "color":  [28, 28, 30],
+    "disabled-color": [142, 142, 147],
+    "accent-color":           [  0, 122, 255],
+    "text-select-color":      [  0, 122, 255],
+    "primary-cursor-color":   [28, 28, 30],
+    "secondary-cursor-color": [255, 204,   0],
 
     "small-label-style": {
         "family": "Arial",
         "weight": "regular",
         "scale": 1,
-        "color": "gray10"
+        "color": [28, 28, 30]
     },
 
     "label-style": {
         "family": "Arial",
         "weight": "regular",
         "scale": 1,
-        "color": "gray10"
+        "color": [28, 28, 30]
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "regular",
         "scale": 1,
-        "color": "gray10"
+        "color": [28, 28, 30]
     },
     "error-label-style": {
         "family": "Arial",
         "weight": "regular",
         "scale": 1,
-        "color": "red"
+        "color": [255,  59,  48]
     },
     "help-label-style": {
         "family": "Arial",

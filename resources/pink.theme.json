@@ -68,7 +68,7 @@
 
     // Color for textual or primary elements like icons.
     "color":       [62, 2, 20],
-    "disabled-color": "gray5",
+    "disabled-color": [142, 142, 147],
     // Accent color used by widgets, to show icons, hover and keyboard focus
     "accent-color":           [169,  24,  28],
     "text-select-color":      [156, 143, 209],
@@ -98,7 +98,7 @@
         "family": "Corbel",
         "weight": "regular",
         "scale": 1,
-        "color": "red"
+        "color": [255,  59,  48]
     },
     "help-label-style": {
         "family": "Corbel",

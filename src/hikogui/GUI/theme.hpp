@@ -314,7 +314,7 @@ public:
             add_style_properties(style_importance::theme, selector, properties);
         }
 
-        // selection - is aligned left and middle.
+        // selection - is aligned left and middle, also has rounded corners.
         {
             auto const selector = style_selector{style_selector_segment::from_element("selection")};
             auto const priority = style_priority{importance, selector.specificity()};
@@ -322,6 +322,10 @@ public:
             auto properties = style_properties{};
             properties.set_horizontal_alignment(horizontal_alignment::left, priority);
             properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            properties.set_border_bottom_left_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_border_bottom_right_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_border_top_left_radius(rounding_radius<float>() * scalar_to_dips, priority);
+            properties.set_border_top_right_radius(rounding_radius<float>() * scalar_to_dips, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 
@@ -347,7 +351,7 @@ public:
             add_style_properties(style_importance::theme, selector, properties);
         }
 
-        // toolbar-tab-button icon - is aligned center and top.
+        // toolbar-tab-button icon - is a larger icon
         {
             auto selector = style_selector{style_selector_segment::from_element("toolbar-tab-button"), style_selector_segment::from_element("icon")};
             selector[0].child_combinator = false;
@@ -355,6 +359,8 @@ public:
 
             auto properties = style_properties{};
             properties.set_font_size(unit::dips_per_em(large_icon_size() * scalar_to_dips.in(unit::dips)), priority);
+            properties.set_width(large_icon_size() * scalar_to_dips, priority);
+            properties.set_height(large_icon_size() * scalar_to_dips, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 
@@ -606,7 +612,7 @@ private:
                 hi_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
                 hi_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
 
-                return color_from_sRGB(
+                return color_from_sRGB<8>(
                     static_cast<uint8_t>(r_), static_cast<uint8_t>(g_), static_cast<uint8_t>(b_), static_cast<uint8_t>(a_));
 
             } else if (
@@ -627,8 +633,6 @@ private:
             auto const color_name_ = to_lower(*color_name);
             if (color_name_.starts_with("#")) {
                 return color_from_sRGB(color_name_);
-            } else if (auto color_ptr = color::find(color_name_)) {
-                return *color_ptr;
             } else {
                 throw parse_error(std::format("Unable to parse color, got {}.", data));
             }

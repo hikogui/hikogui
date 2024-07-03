@@ -88,7 +88,7 @@ public:
 
                 _glyph = {};
                 _icon_type = icon_type::pixmap;
-                _icon_size = bounding_rectangle * style.font_size_px;
+                _icon_size = aspect_clamp(bounding_rectangle * style.font_size_px, style.size_px);
                 _pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap};
                 if (not _pixmap_backing) {
                     // Could not get an image, retry.
@@ -100,19 +100,22 @@ public:
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
+                _icon_size =
+                    aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
+                _icon_size =
+                    aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size = _glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px;
+                _icon_size =
+                    aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
             } else {

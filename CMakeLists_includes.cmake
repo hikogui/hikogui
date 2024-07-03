@@ -160,6 +160,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/color/Rec2020.hpp
     src/hikogui/color/Rec2100.hpp
     src/hikogui/color/color.hpp
+    src/hikogui/color/color_impl.hpp
     src/hikogui/color/color_intf.hpp
     src/hikogui/color/color_space.hpp
     src/hikogui/color/quad_color.hpp

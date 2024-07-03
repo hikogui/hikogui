@@ -120,7 +120,7 @@ public:
             }
         }
 
-        auto constraints = _grid.constraints(os_settings::left_to_right());
+        auto constraints = _grid.constraints(os_settings::left_to_right(), style.vertical_alignment);
         constraints.minimum += style.padding_px.size();
         constraints.preferred += style.padding_px.size();
         constraints.maximum += style.padding_px.size();

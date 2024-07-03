@@ -81,7 +81,7 @@ struct style_property_element {
         r.emplace_back(selector, properties);
     }
 
-    for (auto const& element : std::vector{"radio-button", "checkbox", "toggle"}) {
+    for (auto const& element : std::vector{"radio", "checkbox", "toggle"}) {
         auto const selector = style_selector{style_selector_segment::from_element(element)};
         auto const priority = style_priority{importance, selector.specificity()};
 

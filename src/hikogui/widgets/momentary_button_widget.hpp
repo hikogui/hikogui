@@ -76,6 +76,7 @@ private:
     void draw_label_button(draw_context const& context) noexcept
     {
         // Move the border of the button in the middle of a pixel.
+        hi_log_info("border-color: {}", style.border_color);
         context.draw_box(
             layout(),
             layout().rectangle(),

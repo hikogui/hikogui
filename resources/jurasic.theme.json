@@ -65,7 +65,7 @@
     ],
     
     "color":       [234, 207, 103],
-    "disabled-color": "gray5",
+    "disabled-color": [142, 142, 147],
     "accent-color":           [185, 49,  62],
     "text-select-color":      [ 31, 105, 29],
     "primary-cursor-color":   [211, 181,  51],
@@ -94,7 +94,7 @@
         "family": "Candara",
         "weight": "regular",
         "scale": 1,
-        "color": "orange"
+        "color":  [255, 159,  10]
     },
     "help-label-style": {
         "family": "Candara",

@@ -128,7 +128,7 @@ public:
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->update_constraints());
         }
-        auto grid_constraints = _grid.constraints(os_settings::left_to_right());
+        auto grid_constraints = _grid.constraints(os_settings::left_to_right(), style.vertical_alignment);
         return grid_constraints.constrain(*minimum, *maximum);
     }
 

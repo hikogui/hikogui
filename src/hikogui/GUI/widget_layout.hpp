@@ -270,7 +270,7 @@ public:
      */
     [[nodiscard]] float get_baseline(vertical_alignment alignment) const noexcept
     {
-        return shape.baseline.get_baseline(shape.height(), alignment);
+        return std::round(shape.baseline.get_baseline(shape.height(), alignment));
     }
 
     /**
@@ -282,7 +282,7 @@ public:
      */
     [[nodiscard]] float get_middle(vertical_alignment alignment, float cap_height) const noexcept
     {
-        return shape.baseline.get_middle(shape.height(), alignment, cap_height);
+        return std::round(shape.baseline.get_middle(shape.height(), alignment, cap_height));
     }
 
     /** Create a new widget_layout for the child widget.

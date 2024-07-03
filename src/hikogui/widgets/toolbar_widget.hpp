@@ -94,7 +94,7 @@ public:
             child.set_constraints(child.value->update_constraints());
         }
 
-        auto r = _children.constraints(os_settings::left_to_right());
+        auto r = _children.constraints(os_settings::left_to_right(), style.vertical_alignment);
         _child_height_adjustment = -r.margins.top();
 
         r.minimum.height() += r.margins.top();
@@ -104,6 +104,7 @@ public:
 
         return r;
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
@@ -122,6 +123,7 @@ public:
             child.value->set_layout(context.transform(child.shape, transform_command::menu_item, child_clipping_rectangle));
         }
     }
+
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible) {
@@ -142,6 +144,7 @@ public:
             }
         }
     }
+
     hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
@@ -160,6 +163,7 @@ public:
             return {};
         }
     }
+    
     [[nodiscard]] color focus_color() const noexcept override
     {
         if (mode() >= widget_mode::partial) {

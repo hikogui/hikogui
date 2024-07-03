@@ -347,6 +347,9 @@ public:
     [[nodiscard]] friend constexpr aarectangle
     align_to_middle(aarectangle haystack, extent2 needle, horizontal_alignment alignment, value_type middle) noexcept
     {
+        assert(needle.width() <= haystack.width());
+        assert(needle.height() <= haystack.height());
+        
         auto const needle_half_height = needle.height() / value_type{2};
         auto const needle_half_width = needle.width() / value_type{2};
 

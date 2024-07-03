@@ -336,6 +336,35 @@ public:
         return extent2{clamp(static_cast<array_type>(value), static_cast<array_type>(min), static_cast<array_type>(max))};
     }
 
+    /**
+     * @brief Clamp an extent to fit inside another extent while maintaining the
+     * aspect ratio.
+     *
+     * This function returns a new extent that fits the @a needle extent into
+     * the @a haystack extent without distorting the aspect ratio.
+     *
+     * @param needle The extent to fit into the @a haystack extent.
+     * @param haystack The extent to fit the @a needle extent into.
+     * @return The new extent that fits the @a needle extent into the @a haystack extent.
+     */
+    [[nodiscard]] constexpr friend extent2 aspect_clamp(extent2 const &needle, extent2 const& haystack) noexcept
+    {
+        auto const needle_aspect = needle.width() / needle.height();
+
+        auto r = needle;
+
+        if (r.width() > haystack.width()) {
+            r.width() = haystack.width();
+            r.height() = r.width() / needle_aspect;
+        }
+        if (r.height() > haystack.height()) {
+            r.height() = haystack.height();
+            r.width() = r.height() * needle_aspect;
+        }
+        
+        return r;
+    }
+
     /** Check if the extent is valid.
      * Extends must be positive.
      * This function will check if w is zero, and with 2D extent is z is zero.
