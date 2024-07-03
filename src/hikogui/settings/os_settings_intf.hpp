@@ -302,6 +302,18 @@ public:
      */
     [[nodiscard]] static std::vector<uuid> preferred_gpus(hi::policy performance_policy) noexcept;
 
+    /** The number of logical processors in the system.
+     *
+     * Logical processors include all the physical processors, cores and hyperthreading.
+     *
+     * @return The number of logical processors.
+     */
+    [[nodiscard]] static size_t num_logical_processors() noexcept
+    {
+        hi_axiom(_populated.load(std::memory_order::acquire));
+        return _num_logical_processors.load(std::memory_order::relaxed);
+    }
+
     template<forward_of<void()> Func>
     [[nodiscard]] static callback<void()> subscribe(Func &&func, callback_flags flags = callback_flags::synchronous) noexcept
     {
@@ -532,6 +544,11 @@ public:
             hi_log_error("Failed to get the GPU policy: {}", e.what());
         }
 
+        if (compare_store(_num_logical_processors, gather_num_logical_processor())) {
+            setting_has_changes = true;
+            hi_log_info("Number of logical processors have changed: {}", _num_logical_processors.load());
+        }
+
         _populated.store(true, std::memory_order::release);
         if (setting_has_changed) {
             _notifier();
@@ -570,6 +587,7 @@ private:
     static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
     static inline aarectangle _desktop_rectangle = aarectangle{0.0f, 0.0f, 1920.0f, 1080.0f};
     static inline std::atomic<hi::policy> _gpu_policy = policy::unspecified;
+    static inline std::atomic<size_t> _num_logical_processors = 1;
 
     static inline callback<void()> _gather_cbt;
 
@@ -610,6 +628,7 @@ private:
     [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
     [[nodiscard]] static aarectangle gather_desktop_rectangle();
     [[nodiscard]] static hi::policy gather_gpu_policy();
+    [[nodiscard]] static size_t gather_num_logical_processor();
 };
 
 } // namespace hi::inline v1
