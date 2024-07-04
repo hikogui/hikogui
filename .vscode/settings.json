@@ -134,7 +134,12 @@
         "xutility": "cpp",
         "resumable": "cpp",
         "string_span": "cpp",
-        "pointers": "cpp"
+        "pointers": "cpp",
+        "*.tcc": "cpp",
+        "__bit_reference": "cpp",
+        "__config": "cpp",
+        "__locale": "cpp",
+        "__verbose_abort": "cpp"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"

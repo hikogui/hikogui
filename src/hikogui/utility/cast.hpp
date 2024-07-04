@@ -82,7 +82,7 @@ template<typename Out, typename In>
  * @return A nullptr of the output type
  */
 template<typename Out>
-[[nodiscard]] constexpr Out up_cast(nullptr_t) noexcept
+[[nodiscard]] constexpr Out up_cast(std::nullptr_t) noexcept
 {
     static_assert(std::is_pointer_v<Out>, "up_cast() Out template paramater must be a pointer.");
     return nullptr;
@@ -136,7 +136,7 @@ template<typename Out, typename In>
  * @return A pointer to the same object with a new type.
  */
 template<typename Out>
-[[nodiscard]] constexpr Out down_cast(nullptr_t) noexcept
+[[nodiscard]] constexpr Out down_cast(std::nullptr_t) noexcept
     requires std::is_pointer_v<Out>
 {
     return nullptr;
@@ -680,7 +680,7 @@ template<typename T>
 }
 
 /** Create a mask from a boolean value.
- * 
+ *
  * @param v The boolean value to represent as a mask
  * @return A value which bit representations are all '1' when @a v == `true`, or
  *         all '0' when @a v == `false`.
