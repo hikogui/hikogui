@@ -1,6 +1,6 @@
 {
     "name": "HikoGui DevBox",
-    "image": "ghcr.io/jakoch/cpp-devbox:with-vulkansdk-latest",
+    "image": "ghcr.io/jakoch/cpp-devbox:bookworm-with-vulkansdk-1.0.4",
     "customizations": {
         "vscode": {
             "extensions": [
