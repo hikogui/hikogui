@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <stdint.h>
 #include <limits.h>
+#include <utility>
 
 hi_export_module(hikocpu : array_generic);
 
