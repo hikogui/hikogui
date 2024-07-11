@@ -163,29 +163,57 @@ public:
             os_settings::alignment(style.alignment),
             os_settings::left_to_right()};
 
-        auto const shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity()));
-        auto const shaped_text_size = shaped_text_rectangle.size();
+        auto const max_width = [&] {
+            if (mode() == widget_mode::partial) {
+                // In line-edit mode the text should not wrap.
+                return std::numeric_limits<float>::infinity();
+            } else {
+                // Labels and text-fields should wrap at 550.0f pixels.
+                // 550.0f pixels is about the width of a A4 paper.
+                return 550.0f;
+            }
+        }();
 
-        if (mode() == widget_mode::partial) {
-            // In line-edit mode the text should not wrap.
-            return _constraints_cache = {
-                       shaped_text_size,
-                       style.margins_px,
-                       baseline::from_cap_height(style.baseline_priority, style.cap_height_px)};
+        auto const [bounds, bottom_baseline, middle_baseline, top_baseline, top_cap_height] = _shaped_text.bounds(max_width);
 
-        } else {
-            // Allow the text to be 550.0f pixels wide.
-            auto const preferred_shaped_text_rectangle = ceil(_shaped_text.bounding_rectangle(550.0f));
-            auto const preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
+        // The size of the widget is based on the size of the text from baseline
+        // to cap-height. This excludes the descenders and ascenders.
+        auto const text_height = top_cap_height - bottom_baseline;
+        auto const bottom_baseline_ = 0.0f;
+        auto const middle_baseline_ = middle_baseline - bottom_baseline;
+        auto const top_baseline_ = top_baseline - bottom_baseline;
 
-            auto const height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
-            return _constraints_cache = {
-                       extent2{preferred_shaped_text_size.width(), height},
-                       extent2{preferred_shaped_text_size.width(), height},
-                       extent2{shaped_text_size.width(), height},
-                       style.margins_px,
-                       baseline::from_cap_height(style.baseline_priority, style.cap_height_px)};
-        }
+        auto const top_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
+            auto const bottom_padding = height - text_height;
+            return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
+        };
+
+        auto const middle_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
+            auto const bottom_padding = std::round((height - text_height) / 2.0f);
+            return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
+        };
+
+        auto const bottom_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
+            auto const bottom_padding = 0.0f;
+            return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
+        };
+
+        auto baseline_function = [&] -> baseline::baseline_function_type {
+            switch (style.vertical_alignment) {
+            case vertical_alignment::top:
+                return top_baseline_function;
+            case vertical_alignment::middle:
+                return middle_baseline_function;
+            case vertical_alignment::bottom:
+                return bottom_baseline_function;
+            default:
+                std::unreachable();
+            }
+        }();
+
+        auto const size = extent2{bounds.width(), text_height};
+        return _constraints_cache = {
+                   size, size, size, style.margins_px, baseline{style.baseline_priority, std::move(baseline_function)}};
     }
 
     void set_layout(widget_layout const& context) noexcept override

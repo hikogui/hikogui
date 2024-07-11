@@ -186,7 +186,7 @@ public:
             size,
             size,
             margins,
-            embed(_scroll_constraints.baseline, style.baseline_priority, style.padding_bottom_px, style.padding_top_px)};
+            embed(_scroll_constraints.baseline, style.padding_bottom_px, style.padding_top_px)};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -198,13 +198,13 @@ public:
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
-        _scroll_shape = box_shape{scroll_rectangle, lift(context.baseline(), style.padding_bottom_px, style.padding_top_px)};
+        _scroll_shape = box_shape{scroll_rectangle, context.baseline()};
 
         if (_error_label_widget->mode() > widget_mode::invisible) {
             auto const error_label_rectangle =
                 aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
             _error_label_shape =
-                box_shape{error_label_rectangle, lift(context.baseline(), style.padding_bottom_px, style.padding_top_px)};
+                box_shape{error_label_rectangle};
         }
 
         if (_error_label_widget->mode() > widget_mode::invisible) {

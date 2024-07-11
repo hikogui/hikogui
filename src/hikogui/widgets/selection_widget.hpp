@@ -208,15 +208,15 @@ public:
         auto const content_preferred =
             max(_off_label_constraints.preferred, _current_label_constraints.preferred, overlay_preferred);
         auto const content_maximum = max(_off_label_constraints.maximum, _current_label_constraints.maximum, overlay_maximum);
-        auto const content_padding = max(_off_label_constraints.margins, _current_label_constraints.margins, style.padding_px);
+        _content_padding = max(_off_label_constraints.margins, _current_label_constraints.margins, style.padding_px);
         auto const content_baseline = max(_off_label_constraints.baseline, _current_label_constraints.baseline);
 
         auto r = box_constraints{};
-        r.minimum = content_minimum + chevron_size + content_padding;
-        r.preferred = content_preferred + chevron_size + content_padding;
-        r.maximum = content_maximum + chevron_size + content_padding;
+        r.minimum = content_minimum + chevron_size + _content_padding;
+        r.preferred = content_preferred + chevron_size + _content_padding;
+        r.maximum = content_maximum + chevron_size + _content_padding;
         r.margins = style.margins_px;
-        r.baseline = embed(content_baseline, style.baseline_priority, content_padding.bottom(), content_padding.top());
+        r.baseline = embed(content_baseline, _content_padding.bottom(), _content_padding.top());
         hi_axiom(r.holds_invariant());
         return r;
     }
@@ -233,23 +233,19 @@ public:
             }
         }();
 
-        auto const option_rectangle = [&] {
+        auto const content_rectangle = [&] {
             if (os_settings::left_to_right()) {
                 return aarectangle{
-                    point2{_chevron_box_rectangle.right() + style.padding_left_px, style.padding_bottom_px},
-                    point2{context.right() - style.padding_right_px, context.top() - style.padding_top_px}};
+                    point2{_chevron_box_rectangle.right() + _content_padding.left(), _content_padding.bottom()},
+                    point2{context.right() - _content_padding.right(), context.top() - _content_padding.top()}};
             } else {
                 return aarectangle{
-                    point2{style.padding_left_px, style.padding_bottom_px},
-                    point2{_chevron_box_rectangle.left() - style.padding_right_px, context.top() - style.padding_top_px}};
+                    point2{_content_padding.left(), _content_padding.bottom()},
+                    point2{_chevron_box_rectangle.left() - _content_padding.right(), context.top() - _content_padding.top()}};
             }
         }();
 
-        auto const padding = max(_off_label_constraints.margins, _current_label_constraints.margins, style.padding_px);
-
-        _off_label_shape = box_shape{option_rectangle, lift(_off_label_constraints.baseline, padding.bottom(), padding.top())};
-        _current_label_shape =
-            box_shape{option_rectangle, lift(_current_label_constraints.baseline, padding.bottom(), padding.top())};
+        auto const content_shape = box_shape{content_rectangle, lift(context.baseline(), _content_padding.bottom(), _content_padding.top())};
 
         _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
         auto const chevron_glyph_bbox = _chevron_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
@@ -266,11 +262,10 @@ public:
         auto const overlay_y = std::round((context.height() - overlay_height) / 2.0f);
         auto const overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
         auto const overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-        _overlay_shape = box_shape{overlay_rectangle};
-        _overlay_widget->set_layout(context.transform(_overlay_shape, transform_command::overlay));
+        _overlay_widget->set_layout(context.transform(box_shape{overlay_rectangle}, transform_command::overlay));
 
-        _off_label_widget->set_layout(context.transform(_off_label_shape));
-        _current_label_widget->set_layout(context.transform(_current_label_shape));
+        _off_label_widget->set_layout(context.transform(content_shape));
+        _current_label_widget->set_layout(context.transform(content_shape));
     }
 
     void draw(draw_context const& context) noexcept override
@@ -361,13 +356,13 @@ private:
 
     bool _notification_from_delegate = true;
 
+    margins _content_padding;
+
     std::unique_ptr<label_widget> _current_label_widget;
     box_constraints _current_label_constraints;
-    box_shape _current_label_shape;
 
     std::unique_ptr<label_widget> _off_label_widget;
     box_constraints _off_label_constraints;
-    box_shape _off_label_shape;
 
     aarectangle _chevron_box_rectangle;
 
@@ -376,7 +371,6 @@ private:
 
     std::unique_ptr<overlay_widget> _overlay_widget;
     box_constraints _overlay_constraints;
-    box_shape _overlay_shape;
 
     vertical_scroll_widget* _scroll_widget = nullptr;
     grid_widget* _grid_widget = nullptr;

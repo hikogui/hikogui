@@ -86,7 +86,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
 
     grid.emplace<label_widget>(
             "A1",
-            txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\nAnd another sentence. One more:"))
+            txt("This is a [he-IL]\xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92[.].\rAnd another sentence. One more:"))
         .style = ".right";
     auto& toggle = grid.emplace<toggle_with_label_widget>("B1", preferences.toggle_value);
     toggle.on_label = txt("true");

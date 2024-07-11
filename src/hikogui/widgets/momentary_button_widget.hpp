@@ -48,7 +48,7 @@ public:
 
         auto r = _label_constraints + padding;
         r.margins = style.margins_px;
-        r.baseline = embed(_label_constraints.baseline, style.baseline_priority, padding.bottom(), padding.top());
+        r.baseline = embed(_label_constraints.baseline, padding.bottom(), padding.top());
         return r;
     }
 
