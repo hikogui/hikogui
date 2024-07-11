@@ -8,6 +8,8 @@
 // Every widget must inherit from hi::widget.
 class command_widget : public hi::widget {
 public:
+    using super = hi::widget;
+
     // Using an observer allows reading, writing and monitoring of the value outside of the widget.
     hi::observer<bool> value;
 
@@ -25,21 +27,8 @@ public:
     // or when a widget wants to change its constraints.
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
-        // Reset _layout so that the set_layout() calculations will be triggered.
-        _layout = {};
-
         // Set the minimum, preferred, maximum sizes and the margin around the widget.
-        return {{100, 20}, {200, 20}, {300, 50}, hi::alignment{}, theme().margin()};
-    }
-
-    // The `set_layout()` function is called when the window has resized, or when
-    // a widget wants to change the internal layout.
-    //
-    // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const& context) noexcept override
-    {
-        // Update the `_layout` with the new context.
-        if (compare_store(_layout, context)) {}
+        return {{100, 20}, {200, 20}, {300, 50}, style.margins_px};
     }
 
     // It is common to override the context sensitive colors of the default widget.

@@ -213,18 +213,7 @@ private:
     callback<void(value_type)> _value_cbt;
 };
 
-/** Create a shared pointer to a default text delegate.
- *
- * @ingroup widget_delegates
- * @see default_text_delegate
- * @param value The observer value which represents the displayed text.
- * @return shared pointer to a text delegate
- */
 template<typename Value>
-std::shared_ptr<text_delegate> make_default_text_delegate(Value&& value) noexcept
-    requires requires { default_text_delegate<observer_decay_t<Value>>{std::forward<Value>(value)}; }
-{
-    return std::make_shared<default_text_delegate<observer_decay_t<Value>>>(std::forward<Value>(value));
-}
+default_text_delegate(Value&&) -> default_text_delegate<observer_decay_t<Value>>;
 
 }} // namespace hi::v1

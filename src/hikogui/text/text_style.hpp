@@ -32,7 +32,7 @@ public:
         uint32_t tmp = 0;
         tmp |= _font_valid;
         tmp |= _color_valid;
-        tmp |= _size_valid;
+        tmp |= _scale_valid;
         tmp |= _line_spacing_valid;
         tmp |= _paragraph_spacing_valid;
         return not tmp;
@@ -43,7 +43,7 @@ public:
         uint32_t tmp = 1;
         tmp &= _font_valid;
         tmp &= _color_valid;
-        tmp &= _size_valid;
+        tmp &= _scale_valid;
         tmp &= _line_spacing_valid;
         tmp &= _paragraph_spacing_valid;
         return tmp;
@@ -90,18 +90,18 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr unit::font_size_s size() const
+    [[nodiscard]] constexpr float scale() const
     {
-        hi_axiom(_size_valid);
-        return _size;
+        hi_axiom(_scale_valid);
+        return _scale;
     }
 
-    constexpr void set_size(unit::font_size_s size, bool important = false)
+    constexpr void set_scale(float scale, bool important = false)
     {
-        if (important or not _size_important) {
-            _size_important |= static_cast<uint32_t>(important);
-            _size_valid = 1;
-            _size = size;
+        if (important or not _scale_important) {
+            _scale_important |= static_cast<uint32_t>(important);
+            _scale_valid = 1;
+            _scale = scale;
         }
     }
 
@@ -152,8 +152,8 @@ public:
             set_color(other._color, other._color_important);
         }
 
-        if (other._size_valid) {
-            set_size(other._size, other._size_important);
+        if (other._scale_valid) {
+            set_scale(other._scale, other._scale_important);
         }
 
         if (other._line_spacing_valid) {
@@ -168,7 +168,7 @@ public:
 private:
     lean_vector<font_id> _font_chain = {};
     hi::color _color = {};
-    unit::font_size_s _size = {};
+    float _scale = 1.0f;
     float _line_spacing = 1.0f;
     float _paragraph_spacing = 1.5f;
 
@@ -176,8 +176,8 @@ private:
     uint32_t _color_important : 1 = 0;
     uint32_t _font_valid : 1 = 0;
     uint32_t _font_important : 1 = 0;
-    uint32_t _size_valid : 1 = 0;
-    uint32_t _size_important : 1 = 0;
+    uint32_t _scale_valid : 1 = 0;
+    uint32_t _scale_important : 1 = 0;
     uint32_t _line_spacing_valid : 1 = 0;
     uint32_t _line_spacing_important : 1 = 0;
     uint32_t _paragraph_spacing_valid : 1 = 0;

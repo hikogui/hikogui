@@ -69,11 +69,11 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _on_label_widget = std::make_unique<label_widget>(on_label, alignment);
+        _on_label_widget = std::make_unique<label_widget>(on_label);
         _on_label_widget->set_parent(this);
-        _off_label_widget = std::make_unique<label_widget>(off_label, alignment);
+        _off_label_widget = std::make_unique<label_widget>(off_label);
         _off_label_widget->set_parent(this);
-        _other_label_widget = std::make_unique<label_widget>(other_label, alignment);
+        _other_label_widget = std::make_unique<label_widget>(other_label);
         _other_label_widget->set_parent(this);
 
         this->delegate->init(*this);
@@ -86,7 +86,6 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
         _on_label_constraints = _on_label_widget->update_constraints();
         _off_label_constraints = _off_label_widget->update_constraints();
         _other_label_constraints = _other_label_widget->update_constraints();
@@ -95,6 +94,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
+        super::set_layout(context);
         _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
         _off_label_widget->set_mode(value() == widget_value::off ? widget_mode::display : widget_mode::invisible);
         _other_label_widget->set_mode(value() == widget_value::other ? widget_mode::display : widget_mode::invisible);

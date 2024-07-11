@@ -296,9 +296,7 @@ public:
         }
 
         if (value() != widget_value::off) {
-            r |= style_pseudo_class::_true;
-        } else {
-            r |= style_pseudo_class::_false;
+            r |= style_pseudo_class::checked;
         }
         
         return r;
@@ -399,27 +397,6 @@ public:
         _end = true;
         return *this;
     }
-
-    /** Check if the change in widget-state requires the widget to reconstrain.
-     */
-    [[nodiscard]] constexpr friend bool need_reconstrain(widget_state const &lhs, widget_state const &rhs) noexcept
-    {
-        return lhs._mode != rhs._mode;
-    } 
-
-    /** Check if the change in widget-state requires the widget to relayout.
-     */
-    [[nodiscard]] constexpr friend bool need_relayout(widget_state const &lhs, widget_state const &rhs) noexcept
-    {
-        return need_reconstrain(lhs, rhs) or lhs._layer != rhs._layer;
-    } 
-
-    /** Check if the change in widget-state requires the widget to redraw.
-     */
-    [[nodiscard]] constexpr friend bool need_redraw(widget_state const &lhs, widget_state const &rhs) noexcept
-    {
-        return lhs != rhs;
-    } 
 
 private:
     /** hi::widget_mode.

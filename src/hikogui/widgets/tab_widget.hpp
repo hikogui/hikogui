@@ -58,14 +58,16 @@ public:
     tab_widget(std::shared_ptr<delegate_type> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         hi_axiom(loop::main().on_thread());
-
         hi_assert_not_null(this->delegate);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"tab_widget:delegate:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
 
         this->delegate->init(*this);
+
+        style.set_name("tab-view");
     }
 
     /** Construct a tab widget with an observer value.
@@ -90,7 +92,7 @@ public:
         _children.push_back(std::move(child));
 
         ++global_counter<"tab_widget:emplace:constrain">;
-        process_event({gui_event_type::window_reconstrain});
+        request_reconstrain();
     }
 
     /** Make and add a child widget.
@@ -122,14 +124,12 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         auto& selected_child_ = selected_child();
 
         if (_previous_selected_child != &selected_child_) {
             _previous_selected_child = &selected_child_;
             hi_log_info("tab_widget::update_constraints() selected tab changed");
-            process_event({gui_event_type::window_resize});
+            request_resize();
         }
 
         for (auto const& child : _children) {
@@ -141,7 +141,7 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = context;
+        super::set_layout(context);
 
         for (auto const& child : _children) {
             if (child->mode() > widget_mode::invisible) {

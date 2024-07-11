@@ -96,6 +96,8 @@ public:
         _grid.add_cell(0, 0, std::move(aperture));
         _grid.add_cell(1, 0, std::move(vertical_scroll_bar));
         _grid.add_cell(0, 1, std::move(horizontal_scroll_bar));
+
+        style.set_name("scroll-view");
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -123,20 +125,18 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        _layout = {};
-
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->update_constraints());
         }
-        auto grid_constraints = _grid.constraints(os_settings::left_to_right());
+        auto grid_constraints = _grid.constraints(os_settings::left_to_right(), style.vertical_alignment);
         return grid_constraints.constrain(*minimum, *maximum);
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            _grid.set_layout(context.shape, theme().baseline_adjustment());
-        }
+        super::set_layout(context);
+
+        _grid.set_layout(context.shape);
 
         for (auto const& cell : _grid) {
             auto shape = cell.shape;

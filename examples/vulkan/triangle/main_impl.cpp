@@ -27,10 +27,6 @@ public:
     // or when a widget wants to change its constraints.
     [[nodiscard]] hi::box_constraints update_constraints() noexcept override
     {
-        // Almost all widgets will reset the `_layout` variable here so that it will
-        // trigger the calculations in `set_layout()` as well.
-        _layout = {};
-
         // Certain expensive calculations, such as loading of images and shaping of text
         // can be done in this function.
 
@@ -38,7 +34,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return {{400, 300}, {640, 480}, {1024, 860}, hi::alignment{}, theme().margin()};
+        return {{400, 300}, {640, 480}, {1024, 860}, style.margins_px};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -47,19 +43,17 @@ public:
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
     void set_layout(hi::widget_layout const& context) noexcept override
     {
-        // Update the `_layout` with the new context, in this case we want to do some
-        // calculations when the size or location of the widget was changed.
-        if (compare_store(_layout, context)) {
-            auto view_port = context.rectangle_on_window();
-            auto window_height = context.window_size.height();
+        hi::widget::set_layout(context);
 
-            // We calculate the view-port used for 3D rendering from the location and size
-            // of the widget within the window. We use the window-height so that we can make
-            // Vulkan compatible coordinates. Vulkan uses y-axis down, while HikoGUI uses y-axis up.
-            _view_port = VkRect2D{
-                VkOffset2D{hi::round_cast<int32_t>(view_port.left()), hi::round_cast<int32_t>(window_height - view_port.top())},
-                VkExtent2D{hi::round_cast<uint32_t>(view_port.width()), hi::round_cast<uint32_t>(view_port.height())}};
-        }
+        auto view_port = context.rectangle_on_window();
+        auto window_height = context.window_size.height();
+
+        // We calculate the view-port used for 3D rendering from the location and size
+        // of the widget within the window. We use the window-height so that we can make
+        // Vulkan compatible coordinates. Vulkan uses y-axis down, while HikoGUI uses y-axis up.
+        _view_port = VkRect2D{
+            VkOffset2D{hi::round_cast<int32_t>(view_port.left()), hi::round_cast<int32_t>(window_height - view_port.top())},
+            VkExtent2D{hi::round_cast<uint32_t>(view_port.width()), hi::round_cast<uint32_t>(view_port.height())}};
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -180,7 +174,7 @@ hi::task<> main_window()
 
     // Create a window, when `window` gets out-of-scope the window is destroyed.
     auto widget_ptr = std::make_unique<hi::window_widget>(hi::label{std::move(icon), hi::txt("Vulkan Triangle")});
-    auto &widget = *widget_ptr;
+    auto& widget = *widget_ptr;
 
     // Create the window before we add the triangle widget as we need to get
     // the gfx_surface of the window to let the widget register itself to it.
@@ -196,7 +190,7 @@ hi::task<> main_window()
 }
 
 // The main (platform independent) entry point of the application.
-int hi_main(int argc, char *argv[])
+int hi_main(int argc, char* argv[])
 {
     hi::set_application_name("Triangle example");
     hi::set_application_vendor("HikoGUI");

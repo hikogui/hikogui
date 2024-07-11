@@ -23,10 +23,8 @@
 
 hi_export_module(hikogui.widgets.text_field_widget);
 
-hi_export namespace hi { inline namespace v1 {
-
-template<typename Context>
-concept text_field_widget_attribute = text_widget_attribute<Context>;
+hi_export namespace hi {
+inline namespace v1 {
 
 /** A single line text field.
  *
@@ -75,9 +73,11 @@ public:
      */
     observer<bool> continues = false;
 
-    /** The alignment of the text.
-     */
-    observer<alignment> alignment = alignment::middle_flush();
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
+    {
+        return make_shared_ctad<default_text_field_delegate>(std::forward<Args>(args)...);
+    }
 
     virtual ~text_field_widget()
     {
@@ -85,46 +85,40 @@ public:
         delegate->deinit(*this);
     }
 
-    text_field_widget(std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), delegate(std::move(delegate)), _text()
+    template<std::derived_from<delegate_type> Delegate>
+    text_field_widget(std::shared_ptr<Delegate> delegate) noexcept : super(), delegate(std::move(delegate)), _text()
     {
         hi_assert_not_null(this->delegate);
+
         _delegate_cbt = this->delegate->subscribe([&] {
             ++global_counter<"text_field_widget:delegate:layout">;
-            process_event({gui_event_type::window_relayout});
+            request_relayout();
         });
         this->delegate->init(*this);
 
         _scroll_widget = std::make_unique<scroll_widget<axis::none>>();
         _scroll_widget->set_parent(this);
 
-        _text_widget = &_scroll_widget->emplace<text_widget>(_text, alignment);
+        _text_widget = &_scroll_widget->emplace<text_widget>(_text);
         _text_widget->set_mode(widget_mode::partial);
 
-        _error_label_widget = std::make_unique<label_widget>(_error_label, alignment::top_left());
+        _error_label_widget = std::make_unique<label_widget>(_error_label);
         _error_label_widget->set_parent(this);
 
         _continues_cbt = continues.subscribe([&](auto...) {
             ++global_counter<"text_field_widget:continues:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
         _text_cbt = _text.subscribe([&](auto...) {
             ++global_counter<"text_field_widget:text:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
         _error_label_cbt = _error_label.subscribe([&](auto const& new_value) {
             ++global_counter<"text_field_widget:error_label:constrain">;
-            process_event({gui_event_type::window_reconstrain});
+            request_reconstrain();
         });
-    }
 
-    template<text_field_widget_attribute... Attributes>
-    text_field_widget(
-        std::shared_ptr<delegate_type> delegate,
-        Attributes&&...attributes) noexcept :
-        text_field_widget(std::move(delegate))
-    {
-        set_attributes(std::forward<Attributes>(attributes)...);
+        style.set_name("text-field");
     }
 
     /** Construct a text field widget.
@@ -133,13 +127,10 @@ public:
      * @param value The value or `observer` value which represents the state of the text-field.
      * @param attributes A set of attributes used to configure the text widget: a `alignment`.
      */
-    template<incompatible_with<std::shared_ptr<delegate_type>> Value, text_field_widget_attribute... Attributes>
-    text_field_widget(
-        Value&& value,
-        Attributes&&...attributes) noexcept requires requires
+    template<typename... Args>
+    text_field_widget(Args&&... args) noexcept : text_field_widget(make_default_delegate(std::forward<Args>(args)...))
     {
-        make_default_text_field_delegate(std::forward<Value>(value));
-    } : text_field_widget(make_default_text_field_delegate(std::forward<Value>(value)), std::forward<Attributes>(attributes)...) {}
+    }
 
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
@@ -167,7 +158,6 @@ public:
             revert(false);
         }
 
-        _layout = {};
         _scroll_constraints = _scroll_widget->update_constraints();
 
         auto const scroll_width = 100;
@@ -176,7 +166,7 @@ public:
             _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
         auto size = box_size;
-        auto margins = theme().margin();
+        auto margins = style.margins_px;
         if (_error_label->empty()) {
             _error_label_widget->set_mode(widget_mode::invisible);
             _error_label_constraints = _error_label_widget->update_constraints();
@@ -191,27 +181,30 @@ public:
             inplace_max(margins.bottom(), _error_label_constraints.margins.bottom());
         }
 
-        // The alignment of a text-field is not based on the text-widget due to the intermediate scroll widget.
-        auto const resolved_alignment = resolve_mirror(*alignment, os_settings::left_to_right());
-
-        return {size, size, size, resolved_alignment, margins};
+        return {
+            size,
+            size,
+            size,
+            margins,
+            embed(_scroll_constraints.baseline, style.padding_bottom_px, style.padding_top_px)};
     }
+
     void set_layout(widget_layout const& context) noexcept override
     {
-        if (compare_store(_layout, context)) {
-            auto const scroll_size = extent2{
-                context.width(),
-                _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() +
-                    _scroll_constraints.margins.bottom()};
+        super::set_layout(context);
 
-            auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
-            _scroll_shape = box_shape{_scroll_constraints, scroll_rectangle, theme().baseline_adjustment()};
+        auto const scroll_size = extent2{
+            context.width(),
+            _scroll_constraints.margins.top() + _scroll_constraints.preferred.height() + _scroll_constraints.margins.bottom()};
 
-            if (_error_label_widget->mode() > widget_mode::invisible) {
-                auto const error_label_rectangle =
-                    aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
-                _error_label_shape = box_shape{_error_label_constraints, error_label_rectangle, theme().baseline_adjustment()};
-            }
+        auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
+        _scroll_shape = box_shape{scroll_rectangle, context.baseline()};
+
+        if (_error_label_widget->mode() > widget_mode::invisible) {
+            auto const error_label_rectangle =
+                aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
+            _error_label_shape =
+                box_shape{error_label_rectangle};
         }
 
         if (_error_label_widget->mode() > widget_mode::invisible) {
@@ -277,14 +270,12 @@ public:
                 return error_style.color();
             } else if (_text_widget->focus()) {
                 return theme().accent_color();
-            } else if (phase() == widget_phase::hover) {
-                return theme().border_color(_layout.layer + 1);
             } else {
-                return theme().border_color(_layout.layer);
+                return theme().border_color();
             }
 
         } else {
-            return theme().border_color(_layout.layer - 1);
+            return theme().disabled_color();
         }
     }
     /// @endprivatesection
@@ -297,7 +288,7 @@ private:
 
     /** The text widget inside the scroll widget.
      */
-    text_widget *_text_widget = nullptr;
+    text_widget* _text_widget = nullptr;
 
     /** The text edited by the _text_widget.
      */
@@ -314,20 +305,6 @@ private:
     callback<void(bool)> _continues_cbt;
     callback<void(gstring)> _text_cbt;
     callback<void(label)> _error_label_cbt;
-
-    void set_attributes() noexcept {}
-
-    template<text_field_widget_attribute First, text_field_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
-    {
-        if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes(std::forward<Rest>(rest)...);
-    }
 
     void revert(bool force) noexcept
     {
@@ -357,7 +334,8 @@ private:
     {
         auto const outline = _scroll_shape.rectangle;
 
-        auto const corner_radii = hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
+        auto const corner_radii =
+            hi::corner_radii(0.0f, 0.0f, theme().rounding_radius<float>(), theme().rounding_radius<float>());
         context.draw_box(layout(), outline, background_color(), corner_radii);
 
         auto const line = line_segment(get<0>(outline), get<1>(outline));
@@ -365,4 +343,5 @@ private:
     }
 };
 
-}} // namespace hi::v1
+} // namespace v1
+} // namespace hi::v1
