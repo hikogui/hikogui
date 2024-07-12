@@ -82,8 +82,10 @@ public:
 
         proxy_type& operator=(proxy_type&& other) noexcept
         {
-            notify();
             _observer = std::exchange(other._observer, nullptr);
+            if(_observer) {
+                _observer->notify();
+            }
             _ptr = std::exchange(other._ptr, nullptr);
             _original_value = std::exchange(other._original_value, std::nullopt);
             return *this;
@@ -200,11 +202,11 @@ public:
             start_write(); \
             return op (*_ptr); \
         }
-    
+
         X(++)
         X(--)
 #undef X
-    
+
         // suffix operators
 #define X(op) \
         template<typename Rhs> \
@@ -214,11 +216,11 @@ public:
             start_write(); \
             return (*_ptr) op; \
         }
-    
+
         X(++)
         X(--)
 #undef X
-    
+
         // inplace operators
 #define X(op) \
         template<typename Rhs> \
@@ -228,7 +230,7 @@ public:
             start_write(); \
             return (*_ptr) op rhs; \
         }
-    
+
         X(+=)
         X(-=)
         X(*=)
@@ -240,7 +242,7 @@ public:
         X(<<=)
         X(>>=)
 #undef X
-    
+
         // mono operators
 #define X(op) \
         template<typename Rhs> \
@@ -250,13 +252,13 @@ public:
             hi_axiom_not_null(_ptr); \
             return op (*_ptr); \
         }
-    
+
         X(-)
         X(+)
         X(~)
         X(!)
 #undef X
-    
+
         // binary operators
 #define X(op) \
         template<typename Rhs> \
@@ -266,7 +268,7 @@ public:
             hi_axiom_not_null(_ptr); \
             return (*_ptr) op rhs; \
         }
-    
+
         X(==)
         X(<=>)
         X(+)
@@ -280,7 +282,7 @@ public:
         X(<<)
         X(>>)
 #undef X
-    
+
         // call operator
         template<typename... Args>
         auto operator()(Args &&... args) const noexcept
@@ -289,7 +291,7 @@ public:
             hi_axiom_not_null(_ptr);
             return (*_ptr)(std::forward<Args>(args)...);
         }
-    
+
         template<typename... Args>
         decltype(auto) operator()(Args &&... args) noexcept
             requires requires(value_type & a, Args &&...args) { a(std::forward<Args>(args)...); }
@@ -297,7 +299,7 @@ public:
             start_write();
             return (*_ptr)(std::forward<Args>(args)...);
         }
-        
+
         // index operator
         // XXX c++23
         template<typename Arg>

@@ -12,7 +12,9 @@
 #include "awaitable_timer_impl.hpp" // export
 #include "awaitable.hpp" // export
 #include "function_timer.hpp" // export
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include "loop_win32_intf.hpp" // export
+#endif
 #include "notifier.hpp" // export
 #include "progress.hpp" // export
 #include "socket_event.hpp" // export
@@ -31,7 +33,7 @@
  *
  * There are also two well-known loops which can be accessed using the
  * static functions `hi::loop::main()` and `hi::loop::timer()`.
- * 
+ *
  * The main-loop is used to handle events from the GUI, Audio-control and
  * network. The main-loop is latency sensitive and any event should be
  * handled quickly.
@@ -80,7 +82,7 @@
  * take a `std::stop_token` and `hi::progress_token` to cancel and track progress
  * of the given function. The given function's `std::stop_token` and
  * `hi::progress_token` arguments are optional, and `hi::cancelable_async_task()`
- * will 
- * 
+ * will
+ *
  */
 hi_export_module(hikogui.dispatch);

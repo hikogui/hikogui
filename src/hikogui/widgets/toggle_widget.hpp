@@ -283,7 +283,7 @@ private:
 
     callback<void()> _delegate_cbt;
 
-    template<size_t I>
+    /*template<size_t I>
     void set_attributes() noexcept
     {
     }
@@ -298,7 +298,7 @@ private:
         } else {
             hi_static_no_default();
         }
-    }
+    }*/
 };
 
 using toggle_with_label_widget = with_label_widget<toggle_widget>;

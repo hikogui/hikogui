@@ -61,9 +61,6 @@
       "environment": {
         "CXXFLAGS": "/arch:AVX2"
       },
-      "environment": {
-        "CXXFLAGS": "/arch:AVX2"
-      },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "intelliSenseMode": "windows-msvc-x64"
@@ -79,7 +76,7 @@
       }
     },
     {
-      "name": "msvcanalyze-x64-windows",
+      "name": "msvc-analyze-x64-windows",
       "displayName": "MSVC-analyze",
       "inherits": "x64-windows",
       "generator": "Ninja",
@@ -122,12 +119,21 @@
       }
     },
     {
-      "name": "gcc12-x64-linux",
-      "displayName": "gcc",
+      "name": "gcc13-x64-linux",
+      "displayName": "gcc-13",
       "inherits": "x64-linux",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "g++-12"
+        "CMAKE_CXX_COMPILER": "g++-13"
+      }
+    },
+    {
+      "name": "clang17-x64-linux",
+      "displayName": "clang-17",
+      "inherits": "x64-linux",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++-17"
       }
     }
   ],
@@ -155,7 +161,7 @@
       "name": "msvc-x64-windows-ana",
       "displayName": "Default",
       "inherits": "targets",
-      "configurePreset": "msvcanalyze-x64-windows"
+      "configurePreset": "msvc-analyze-x64-windows"
     },
     {
       "name": "msvc-x64-windows-deb",

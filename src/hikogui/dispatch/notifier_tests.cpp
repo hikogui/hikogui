@@ -4,7 +4,9 @@
 
 #include "notifier.hpp"
 #include "task.hpp"
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include "loop_win32_intf.hpp"
+#endif
 #include <hikotest/hikotest.hpp>
 #include <coroutine>
 
