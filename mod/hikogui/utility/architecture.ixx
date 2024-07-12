@@ -17,6 +17,9 @@ module;
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #endif
+#if HI_OPERATING_SYSTEM == HI_OS_LINUX || HI_OPERATING_SYSTEM == HI_OS_MACOS
+#include <sched.h>
+#endif
 
 export module hikogui_utility_architecture;
 

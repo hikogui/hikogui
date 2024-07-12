@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "array_intrinsic.hpp"
@@ -10,6 +8,9 @@
 #include <type_traits>
 #include <bit>
 #include <algorithm>
+#include <stdint.h>
+#include <limits.h>
+#include <utility>
 
 hi_export_module(hikocpu : array_generic);
 
@@ -754,7 +755,7 @@ struct array_generic {
 
         auto r = array_type{};
         auto dst_i = 0;
-        
+
         for (std::size_t src_i = 0; src_i != N; src_i += 2) {
             r[dst_i++] = a[src_i] + a[src_i + 1];
         }
@@ -775,7 +776,7 @@ struct array_generic {
 
         auto r = array_type{};
         auto dst_i = 0;
-        
+
         for (std::size_t src_i = 0; src_i != N; src_i += 2) {
             r[dst_i++] = a[src_i] - a[src_i + 1];
         }
