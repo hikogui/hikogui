@@ -7,6 +7,7 @@
 #include <expected>
 #include <optional>
 #include <variant>
+#include <exception>
 
 hi_export_module(hikogui.parser : expected_optional);
 
