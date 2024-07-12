@@ -8,6 +8,7 @@
 #include "../macros.hpp"
 #include <iterator>
 #include <tuple>
+#include <exception>
 
 hi_export_module(hikogui.theme : theme_tag);
 
@@ -278,13 +279,13 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 
             } catch (std::exception const &e) {
                 return std::unexpected{std::format("{}: Could not parse hex color '{}': {}", token_location(it, last), color_name, e.what())};
-            } 
+            }
 
         } else if (auto const* color_ptr = color::find(color_name)) {
             return *color_ptr;
         } else {
             return std::unexpected{std::format("{}: Unknown color name '{}'.", token_location(it, last), color_name)};
-        }    
+        }
 
     } else {
         return std::unexpected{std::format("{}: Unknown color value {}.", token_location(it, last), *it)};
