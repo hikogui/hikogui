@@ -24,12 +24,6 @@ class gui_window;
 
 class widget_intf {
 public:
-    /** The numeric identifier of a widget.
-     *
-     * @note This is a uint32_t equal to the operating system's accessibility identifier.
-     */
-    widget_id id = {};
-
     /** The style of this widget.
      *
      * You can assign a style-string to this style variable to change
@@ -48,10 +42,10 @@ public:
 
     virtual ~widget_intf()
     {
-        release_widget_id(id);
+        release_widget_id(_id);
     }
 
-    widget_intf() noexcept : id(make_widget_id())
+    widget_intf() noexcept : _id(make_widget_id())
     {
         _style_cbt = style.subscribe([&](style_modify_mask mask, bool restyle) {
             if (restyle) {
@@ -81,12 +75,21 @@ public:
         _state_cbt(*state);
     }
 
+        /** The numeric identifier of a widget.
+     *
+     * @note This is a uint32_t equal to the operating system's accessibility identifier.
+     */
+    [[nodiscard]] virtual widget_id id() const noexcept
+    {
+        return _id;
+    }
+
     /** Pointer to the parent widget.
      *
      * May be a nullptr only when this is the top level widget, or when
      * the widget is removed from its parent.
      */
-    [[nodiscard]] widget_intf* parent() const noexcept
+    [[nodiscard]] virtual widget_intf* parent() const noexcept
     {
         return _parent;
     }
@@ -107,7 +110,7 @@ public:
         }
     }
 
-    [[nodiscard]] gui_window* window() const noexcept
+    [[nodiscard]] virtual gui_window* window() const noexcept
     {
         return _window;
     }
@@ -370,9 +373,9 @@ public:
         std::vector<widget_id> chain;
 
         if (auto w = this) {
-            chain.push_back(w->id);
+            chain.push_back(w->id());
             while ((w = w->parent())) {
-                chain.push_back(w->id);
+                chain.push_back(w->id());
             }
         }
 
@@ -394,22 +397,22 @@ public:
         scroll_to_show(layout().rectangle());
     }
 
-protected:
+private:
+    widget_id _id = {};
+    widget_intf* _parent = nullptr;
+    gui_window* _window = nullptr;
+
     callback<void(widget_state)> _state_cbt;
     hi::style::callback_type _style_cbt;
 
     widget_layout _layout;
-
-private:
-    widget_intf* _parent = nullptr;
-    gui_window* _window = nullptr;
 };
 
 inline widget_intf* get_if(widget_intf* start, widget_id id, bool include_invisible) noexcept
 {
     hi_assert_not_null(start);
 
-    if (start->id == id) {
+    if (start->id() == id) {
         return start;
     }
     for (auto& child : start->children(include_invisible)) {

@@ -97,7 +97,7 @@ public:
         if (mode() >= widget_mode::partial and layout().contains(position)) {
             // Only the top-left square should return ApplicationIcon, leave
             // the reset to the toolbar implementation.
-            return {id, _layout.elevation, hitbox_type::application_icon};
+            return {id(), layout().elevation, hitbox_type::application_icon};
         } else {
             return {};
         }

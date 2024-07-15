@@ -54,8 +54,8 @@ public:
         if (mode() > hi::widget_mode::invisible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(_layout, _left_rectangle, hi::color::indigo());
-            context.draw_box(_layout, _right_rectangle, hi::color::blue());
+            context.draw_box(layout(), _left_rectangle, hi::color::indigo());
+            context.draw_box(layout(), _right_rectangle, hi::color::blue());
         }
     }
 

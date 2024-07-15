@@ -106,16 +106,17 @@ public:
 
     void set_layout(widget_layout const& context) noexcept override
     {
-        super::set_layout(context);
-
         // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-        _layout.clipping_rectangle = context.rectangle() + style.border_width_px;
+        auto context_ = context;
+        context_.clipping_rectangle = context_.rectangle() + style.border_width_px;
+
+        super::set_layout(context_);
 
         auto const content_rectangle = context.rectangle();
         _content_shape = box_shape{content_rectangle, baseline{}};
 
         // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
-        _content->set_layout(_layout.transform(_content_shape, context.rectangle()));
+        _content->set_layout(layout().transform(_content_shape, context.rectangle()));
     }
 
     void draw(draw_context const& context) noexcept override
@@ -130,7 +131,7 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().fill_color(_layout.layer + 1);
+        return theme().fill_color(layout().layer + 1);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override

@@ -192,7 +192,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (mode() >= widget_mode::partial and _button_rectangle.contains(position)) {
-            return {id, _layout.elevation, hitbox_type::button};
+            return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
         }

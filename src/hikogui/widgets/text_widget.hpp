@@ -91,8 +91,8 @@ public:
         _delegate_cbt = this->delegate->subscribe([&] {
             // On every text edit, immediately/synchronously update the shaped text.
             // This is needed for handling multiple edit commands before the next frame update.
-            if (_layout) {
-                auto new_layout = _layout;
+            if (layout()) {
+                auto new_layout = layout();
                 auto const old_constraints = _constraints_cache;
 
                 // Constrain and layout according to the old layout.
@@ -243,7 +243,7 @@ public:
                 // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
                 // back to local coordinates before handling the mouse event again.
                 auto new_mouse_event = _last_drag_mouse_event;
-                new_mouse_event.mouse().position = _layout.from_window * _last_drag_mouse_event.mouse().position;
+                new_mouse_event.mouse().position = layout().from_window * _last_drag_mouse_event.mouse().position;
 
                 // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
                 text_widget::handle_event(new_mouse_event);
@@ -730,7 +730,7 @@ public:
                 // Normally mouse positions are kept in the local coordinate system, but scrolling
                 // causes this coordinate system to shift, so translate it to the window coordinate system here.
                 _last_drag_mouse_event = event;
-                _last_drag_mouse_event.mouse().position = _layout.to_window * event.mouse().position;
+                _last_drag_mouse_event.mouse().position = layout().to_window * event.mouse().position;
                 ++global_counter<"text_widget:mouse_drag:redraw">;
                 request_redraw();
                 return true;
@@ -749,10 +749,10 @@ public:
 
         if (layout().contains(position)) {
             if (mode() >= widget_mode::partial) {
-                return hitbox{id, _layout.elevation, hitbox_type::text_edit};
+                return hitbox{id(), layout().elevation, hitbox_type::text_edit};
 
             } else if (mode() >= widget_mode::select) {
-                return hitbox{id, _layout.elevation, hitbox_type::_default};
+                return hitbox{id(), layout().elevation, hitbox_type::_default};
 
             } else {
                 return hitbox{};

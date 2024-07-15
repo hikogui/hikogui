@@ -634,7 +634,7 @@ public:
 
         // Tell the new widget that keyboard focus was entered.
         if (new_target_widget != nullptr) {
-            _keyboard_target_id = new_target_widget->id;
+            _keyboard_target_id = new_target_widget->id();
             send_events_to_widget(_keyboard_target_id, std::vector{gui_event{gui_event_type::keyboard_enter}});
         } else {
             _keyboard_target_id = {};
@@ -995,7 +995,7 @@ private:
     {
         if (target_id == 0) {
             // If there was no target, send the event to the window's widget.
-            target_id = _widget->id;
+            target_id = _widget->id();
         }
 
         auto target_widget = get_if(_widget.get(), target_id, false);

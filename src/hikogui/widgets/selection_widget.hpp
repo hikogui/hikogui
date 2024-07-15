@@ -329,7 +329,7 @@ public:
 
             if (layout().contains(position)) {
                 r = std::max(
-                    r, hitbox{id, _layout.elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
+                    r, hitbox{id(), layout().elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
             }
 
             return r;

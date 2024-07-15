@@ -83,7 +83,7 @@ public:
      */
     [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position) const noexcept
     {
-        return hitbox_test(_layout.from_parent * position);
+        return hitbox_test(layout().from_parent * position);
     }
 
     /** Call hitbox_test from a parent widget.
@@ -95,7 +95,7 @@ public:
      */
     [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position, hitbox sibling_hitbox) const noexcept
     {
-        return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
+        return std::max(sibling_hitbox, hitbox_test(layout().from_parent * position));
     }
 
     /** Check if the widget will accept keyboard focus.
@@ -185,18 +185,18 @@ public:
 
         case gui_event_type::gui_widget_next:
             process_event(
-                gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::forward));
+                gui_event::window_set_keyboard_target(id(), keyboard_focus_group::normal, keyboard_focus_direction::forward));
             return true;
 
         case gui_event_type::gui_widget_prev:
             process_event(
-                gui_event::window_set_keyboard_target(id, keyboard_focus_group::normal, keyboard_focus_direction::backward));
+                gui_event::window_set_keyboard_target(id(), keyboard_focus_group::normal, keyboard_focus_direction::backward));
             return true;
 
         case gui_event_type::gui_menu_next:
             if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 process_event(
-                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::forward));
+                    gui_event::window_set_keyboard_target(id(), keyboard_focus_group::menu, keyboard_focus_direction::forward));
                 return true;
             }
             break;
@@ -204,7 +204,7 @@ public:
         case gui_event_type::gui_menu_prev:
             if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 process_event(
-                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::menu, keyboard_focus_direction::backward));
+                    gui_event::window_set_keyboard_target(id(), keyboard_focus_group::menu, keyboard_focus_direction::backward));
                 return true;
             }
             break;
@@ -212,7 +212,7 @@ public:
         case gui_event_type::gui_toolbar_next:
             if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
-                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
+                    gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
                 return true;
             }
             break;
@@ -220,7 +220,7 @@ public:
         case gui_event_type::gui_toolbar_prev:
             if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
-                    gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
+                    gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
                 return true;
             }
             break;
@@ -244,7 +244,7 @@ public:
         }
 
         if (!std::ranges::any_of(reject_list, [&](auto const& x) {
-                return x == id;
+                return x == id();
             })) {
             handled |= handle_event(event);
         }
@@ -263,9 +263,9 @@ public:
 
         if (current_keyboard_widget == 0 and accepts_keyboard_focus(group)) {
             // If there was no current_keyboard_widget, then return this if it accepts focus.
-            return id;
+            return id();
 
-        } else if (current_keyboard_widget == id) {
+        } else if (current_keyboard_widget == id()) {
             found = true;
         }
 
@@ -318,7 +318,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (auto p = parent()) {
-            p->scroll_to_show(_layout.to_parent * rectangle);
+            p->scroll_to_show(layout().to_parent * rectangle);
         }
     }
 
@@ -344,12 +344,12 @@ public:
     {
         if (mode() >= widget_mode::partial) {
             if (phase() == widget_phase::hover) {
-                return theme().fill_color(_layout.layer + 1);
+                return theme().fill_color(layout().layer + 1);
             } else {
-                return theme().fill_color(_layout.layer);
+                return theme().fill_color(layout().layer);
             }
         } else {
-            return theme().fill_color(_layout.layer - 1);
+            return theme().fill_color(layout().layer - 1);
         }
     }
 

@@ -193,7 +193,7 @@ public:
 
         if (mode() >= widget_mode::partial and layout().contains(position)) {
             // Accept the hitbox of the menu_button_widget on behalf of the button_widget.
-            return {_button_widget->id, _layout.elevation, hitbox_type::button};
+            return {_button_widget->id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
         }

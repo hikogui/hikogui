@@ -146,10 +146,10 @@ public:
                 // The grid cells are always ordered in row-major.
                 // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
                 if (not _vertical_scroll_bar->visible()) {
-                    shape.rectangle = aarectangle{0, shape.y(), _layout.width(), shape.height()};
+                    shape.rectangle = aarectangle{0, shape.y(), layout().width(), shape.height()};
                 }
                 if (not _horizontal_scroll_bar->visible()) {
-                    shape.rectangle = aarectangle{shape.x(), 0, shape.width(), _layout.height()};
+                    shape.rectangle = aarectangle{shape.x(), 0, shape.width(), layout().height()};
                 }
             }
 
@@ -176,7 +176,7 @@ public:
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation});
+                r = std::max(r, hitbox{id(), layout().elevation});
             }
             return r;
 

@@ -197,7 +197,7 @@ public:
 
         if (mode() >= widget_mode::partial and layout().contains(position) and
             (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
-            return hitbox{id, _layout.elevation, hitbox_type::button};
+            return hitbox{id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
         }

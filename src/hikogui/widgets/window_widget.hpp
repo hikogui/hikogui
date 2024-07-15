@@ -66,7 +66,7 @@ public:
     [[nodiscard]] color background_color() noexcept
     {
         hi_axiom(loop::main().on_thread());
-        return theme().fill_color(_layout.layer);
+        return theme().fill_color(layout().layer);
     }
 
     /** Get a reference to the window's content widget.
@@ -183,7 +183,7 @@ public:
     void draw(draw_context const& context) noexcept override
     {
         if (mode() > widget_mode::invisible) {
-            context.draw_box(_layout, _layout.rectangle(), background_color(), background_color());
+            context.draw_box(layout(), layout().rectangle(), background_color(), background_color());
 
             _toolbar->draw(context);
             _content->draw(context);
@@ -206,48 +206,48 @@ public:
         // Corner resize has always priority.
         if (is_on_l_edge and is_on_b_edge) {
             if (_can_resize_width and _can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::bottom_left_resize_corner};
+                return {id(), layout().elevation, hitbox_type::bottom_left_resize_corner};
             } else if (_can_resize_width) {
-                return {id, _layout.elevation, hitbox_type::left_resize_border};
+                return {id(), layout().elevation, hitbox_type::left_resize_border};
             } else if (_can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::bottom_resize_border};
+                return {id(), layout().elevation, hitbox_type::bottom_resize_border};
             }
         } else if (is_on_r_edge and is_on_b_edge) {
             if (_can_resize_width and _can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::bottom_right_resize_corner};
+                return {id(), layout().elevation, hitbox_type::bottom_right_resize_corner};
             } else if (_can_resize_width) {
-                return {id, _layout.elevation, hitbox_type::right_resize_border};
+                return {id(), layout().elevation, hitbox_type::right_resize_border};
             } else if (_can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::bottom_resize_border};
+                return {id(), layout().elevation, hitbox_type::bottom_resize_border};
             }
         } else if (is_on_l_edge and is_on_t_edge) {
             if (_can_resize_width and _can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::top_left_resize_corner};
+                return {id(), layout().elevation, hitbox_type::top_left_resize_corner};
             } else if (_can_resize_width) {
-                return {id, _layout.elevation, hitbox_type::left_resize_border};
+                return {id(), layout().elevation, hitbox_type::left_resize_border};
             } else if (_can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::top_resize_border};
+                return {id(), layout().elevation, hitbox_type::top_resize_border};
             }
         } else if (is_on_r_edge and is_on_t_edge) {
             if (_can_resize_width and _can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::top_right_resize_corner};
+                return {id(), layout().elevation, hitbox_type::top_right_resize_corner};
             } else if (_can_resize_width) {
-                return {id, _layout.elevation, hitbox_type::right_resize_border};
+                return {id(), layout().elevation, hitbox_type::right_resize_border};
             } else if (_can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::top_resize_border};
+                return {id(), layout().elevation, hitbox_type::top_resize_border};
             }
         }
 
         // Border resize only has priority if there is no scroll-bar in the way.
         if (r.type != hitbox_type::scroll_bar) {
             if (is_on_l_edge and _can_resize_width) {
-                return {id, _layout.elevation, hitbox_type::left_resize_border};
+                return {id(), layout().elevation, hitbox_type::left_resize_border};
             } else if (is_on_r_edge and _can_resize_width) {
-                return {id, _layout.elevation, hitbox_type::right_resize_border};
+                return {id(), layout().elevation, hitbox_type::right_resize_border};
             } else if (is_on_b_edge and _can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::bottom_resize_border};
+                return {id(), layout().elevation, hitbox_type::bottom_resize_border};
             } else if (is_on_t_edge and _can_resize_height) {
-                return {id, _layout.elevation, hitbox_type::top_resize_border};
+                return {id(), layout().elevation, hitbox_type::top_resize_border};
             }
         }
 
@@ -260,7 +260,7 @@ public:
         switch (event.type()) {
         case gui_toolbar_open:
             process_event(
-                gui_event::window_set_keyboard_target(id, keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
+                gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
             return true;
         default:;
         }

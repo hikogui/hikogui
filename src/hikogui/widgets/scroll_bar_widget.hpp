@@ -130,7 +130,7 @@ public:
 
         if (mode() >= widget_mode::partial and layout().contains(position) and visible() and
             _slider_rectangle.contains(position)) {
-            return {id, _layout.elevation, hitbox_type::scroll_bar};
+            return {id(), layout().elevation, hitbox_type::scroll_bar};
         } else {
             return {};
         }
@@ -172,15 +172,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().fill_color(_layout.layer);
+        return theme().fill_color(layout().layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (phase() == widget_phase::hover) {
-            return theme().fill_color(_layout.layer + 2);
+            return theme().fill_color(layout().layer + 2);
         } else {
-            return theme().fill_color(_layout.layer + 1);
+            return theme().fill_color(layout().layer + 1);
         }
     }
 

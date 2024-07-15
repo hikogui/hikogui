@@ -177,7 +177,7 @@ public:
             auto r = _content->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {
-                r = std::max(r, hitbox{id, _layout.elevation});
+                r = std::max(r, hitbox{id(), layout().elevation});
             }
             return r;
 
@@ -210,8 +210,8 @@ public:
 
     void scroll_to_show(hi::aarectangle to_show) noexcept override
     {
-        if (_layout) {
-            auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
+        if (layout()) {
+            auto safe_rectangle = intersect(layout().rectangle(), layout().clipping_rectangle);
             auto delta_x = 0.0f;
             auto delta_y = 0.0f;
 
@@ -241,7 +241,7 @@ public:
 
             // There may be recursive scroll view, and they all need to move until the rectangle is visible.
             if (auto* p = parent()) {
-                p->scroll_to_show(_layout.to_parent * translate2(delta_x, delta_y) * to_show);
+                p->scroll_to_show(layout().to_parent * translate2(delta_x, delta_y) * to_show);
             }
 
         } else {

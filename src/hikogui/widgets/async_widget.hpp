@@ -183,7 +183,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().fill_color(_layout.layer + 2);
+            return theme().fill_color(layout().layer + 2);
         } else {
             return super::background_color();
         }
@@ -194,7 +194,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (mode() >= widget_mode::partial and layout().contains(position)) {
-            return {id, _layout.elevation, hitbox_type::button};
+            return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
         }
@@ -233,7 +233,7 @@ public:
                 // with_label_widget or other widgets may have accepted the hitbox
                 // for this widget. Which means the widget_id in the mouse-event
                 // may match up with the async.
-                if (event.mouse().hitbox.widget_id == id) {
+                if (event.mouse().hitbox.widget_id == id()) {
                     handle_event(gui_event_type::gui_activate);
                 }
                 return true;

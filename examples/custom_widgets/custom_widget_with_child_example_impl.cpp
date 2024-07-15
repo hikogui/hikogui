@@ -70,11 +70,11 @@ public:
             if (overlaps(context, layout())) {
                 // There may be stylistic reasons to draw into the margin, for example
                 // round objects need to be drawn slightly larger than square objects.
-                // The standard clipping rectangle is 2 pixels larger than the _layout.rectangle().
+                // The standard clipping rectangle is 2 pixels larger than the layout().rectangle().
                 // In this example we draw the border outside the rectangle.
                 context.draw_box(
-                    _layout,
-                    _layout.rectangle(),
+                    layout(),
+                    layout().rectangle(),
                     background_color(),
                     foreground_color(),
                     theme().border_width(),

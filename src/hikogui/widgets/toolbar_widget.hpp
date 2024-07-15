@@ -128,7 +128,7 @@ public:
     {
         if (mode() > widget_mode::invisible) {
             if (overlaps(context, layout())) {
-                context.draw_box(layout(), layout().rectangle(), theme().fill_color(_layout.layer));
+                context.draw_box(layout(), layout().rectangle(), theme().fill_color(layout().layer));
 
                 if (tab_button_has_focus()) {
                     // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
@@ -151,7 +151,7 @@ public:
 
         // By default the toolbar is used for dragging the window.
         if (mode() >= widget_mode::partial) {
-            auto r = layout().contains(position) ? hitbox{id, _layout.elevation, hitbox_type::move_area} : hitbox{};
+            auto r = layout().contains(position) ? hitbox{id(), layout().elevation, hitbox_type::move_area} : hitbox{};
 
             for (auto const& child : _children) {
                 hi_assert_not_null(child.value);

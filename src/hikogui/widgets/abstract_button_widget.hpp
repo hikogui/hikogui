@@ -115,7 +115,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         if (phase() == widget_phase::pressed) {
-            return theme().fill_color(_layout.layer + 2);
+            return theme().fill_color(layout().layer + 2);
         } else {
             return super::background_color();
         }
@@ -126,7 +126,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         if (mode() >= widget_mode::partial and layout().contains(position)) {
-            return {id, _layout.elevation, hitbox_type::button};
+            return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
         }

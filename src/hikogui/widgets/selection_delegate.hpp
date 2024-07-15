@@ -176,17 +176,17 @@ private:
         {
             hi_assert(_next_value, "The value was not set of this option widget.");
 
-            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
-            hi_assert(it == _senders.end() or it->id != sender.id, "button was already registered with selection-delegate.");
+            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id());
+            hi_assert(it == _senders.end() or it->id != sender.id(), "button was already registered with selection-delegate.");
 
-            _senders.emplace(it, sender.id, *_next_value);
+            _senders.emplace(it, sender.id(), *_next_value);
             _next_value = std::nullopt;
         }
 
         void deinit(widget_intf const& sender) noexcept override
         {
-            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
-            if (it != _senders.end() and it->id == sender.id) {
+            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id());
+            if (it != _senders.end() and it->id == sender.id()) {
                 _senders.erase(it);
             }
         }
@@ -219,9 +219,9 @@ private:
 
         [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
         {
-            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
+            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id());
 
-            if (it != _senders.end() and it->id == sender.id) {
+            if (it != _senders.end() and it->id == sender.id()) {
                 return *_parent->value == it->value ? widget_value::on : widget_value::off;
 
             } else {
@@ -232,9 +232,9 @@ private:
 
         void activate(widget_intf const& sender) noexcept override
         {
-            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id);
+            auto const it = std::lower_bound(_senders.begin(), _senders.end(), sender.id());
 
-            if (it != _senders.end() and it->id == sender.id) {
+            if (it != _senders.end() and it->id == sender.id()) {
                 _parent->value = it->value;
             }
         }

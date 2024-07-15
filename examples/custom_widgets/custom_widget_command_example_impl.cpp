@@ -50,8 +50,8 @@ public:
             // These colors are context sensitive; for example focus_color() checks if the widget is enabled,
             // has keyboard focus and the window is active.
             context.draw_box(
-                _layout,
-                _layout.rectangle(),
+                layout(),
+                layout().rectangle(),
                 background_color(),
                 focus_color(),
                 theme().border_width(),
@@ -71,13 +71,13 @@ public:
     [[nodiscard]] hi::hitbox hitbox_test(hi::point2 position) const noexcept override
     {
         // Check if the (mouse) position is within the visual-area of the widget.
-        // The hit_rectangle is the _layout.rectangle() intersected with the _layout.clipping_rectangle.
+        // The hit_rectangle is the layout().rectangle() intersected with the layout().clipping_rectangle.
         if (mode() >= hi::widget_mode::partial and layout().contains(position)) {
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
             return {
-                id, _layout.elevation, mode() >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
+                id, layout().elevation, mode() >= hi::widget_mode::partial ? hi::hitbox_type::button : hi::hitbox_type::_default};
 
         } else {
             return {};
@@ -101,7 +101,7 @@ public:
             return true;
 
         case hi::gui_event_type::mouse_up:
-            if (mode() >= hi::widget_mode::partial and event.is_left_button_up(_layout.rectangle())) {
+            if (mode() >= hi::widget_mode::partial and event.is_left_button_up(layout().rectangle())) {
                 return handle_event(hi::gui_event_type::gui_activate);
             }
             break;
