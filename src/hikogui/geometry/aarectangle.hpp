@@ -18,7 +18,7 @@
 #include "../macros.hpp"
 #include <concepts>
 #include <mutex>
-
+#include <format>
 
 
 namespace hi { inline namespace v1 {
@@ -595,15 +595,10 @@ private:
 };
 
 template<typename CharT>
-struct std::formatter<hi::aarectangle, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
+struct std::formatter<hi::aarectangle, CharT> : std::formatter<std::string, CharT> {
     auto format(hi::aarectangle const& t, auto& fc) const
     {
-        return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
+        return std::formatter<std::string, CharT>::format(std::format("{}:{}", get<0>(t), t.size()), fc);
     }
 };
 

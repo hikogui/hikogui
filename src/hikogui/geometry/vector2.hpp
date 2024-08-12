@@ -6,6 +6,7 @@
 
 #include "../SIMD/module.hpp"
 #include "../macros.hpp"
+#include <format>
 
 namespace hi { inline namespace v1 {
 
@@ -309,14 +310,9 @@ private:
 }} // namespace hi::v1
 
 template<typename CharT>
-struct std::formatter<hi::vector2, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
+struct std::formatter<hi::vector2, CharT> : std::formatter<std::string, CharT> {
     auto format(hi::vector2 const& t, auto& fc) const
     {
-        return std::vformat_to(fc.out(), "({}, {})", std::make_format_args(t.x(), t.y()));
+        return std::formatter<std::string, CharT>::format(std::format("({}, {})", t.x(), t.y()), fc);
     }
 };

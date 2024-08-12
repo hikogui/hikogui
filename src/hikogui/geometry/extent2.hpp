@@ -14,7 +14,7 @@
 #include "../macros.hpp"
 #include <compare>
 #include <concepts>
-
+#include <format>
 
 
 namespace hi { inline namespace v1 {
@@ -347,14 +347,9 @@ private:
 }} // namespace hi::v1
 
 template<typename CharT>
-struct std::formatter<hi::extent2, CharT> {
-    auto parse(auto& pc)
-    {
-        return pc.end();
-    }
-
+struct std::formatter<hi::extent2, CharT> : std::formatter<std::string, CharT> {
     auto format(hi::extent2 const& t, auto& fc) const
     {
-        return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
+        return std::formatter<std::string, CharT>::format(std::format("[{}, {}]", t.width(), t.height()), fc);
     }
 };

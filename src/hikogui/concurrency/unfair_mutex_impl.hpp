@@ -12,6 +12,7 @@
 #include "global_state.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
+#include <mutex>
 #include <atomic>
 #include <memory>
 #include <format>

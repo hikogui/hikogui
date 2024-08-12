@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
  * Changed things.
 
+## [0.8.3] - 2024-08-12 - Precious Polar Bear Tre
+
+ * Change std::formatter to match C++23 Defect Reports.
+
 ## [0.8.1] - 2023-09-18 - Precious Polar Bear Deux
 
 We've updated the CMake files quite a bit to improve installation with vcpkg:

@@ -100,7 +100,7 @@ struct formula_node {
      */
     virtual std::string get_name() const
     {
-        throw parse_error(std::format("{}:{}: Expect a name, got {})", line_nr, column_nr, *this));
+        throw parse_error(std::format("{}:{}: Expect a name, got {})", line_nr, column_nr, to_string(*this)));
     }
 
     /** Get name and argument names from a function declaration.
@@ -108,7 +108,7 @@ struct formula_node {
      */
     virtual std::vector<std::string> get_name_and_argument_names() const
     {
-        throw parse_error(std::format("{}:{}: Expect a function definition, got {})", line_nr, column_nr, *this));
+        throw parse_error(std::format("{}:{}: Expect a function definition, got {})", line_nr, column_nr, to_string(*this)));
     }
 
     virtual std::string string() const noexcept = 0;
