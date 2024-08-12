@@ -78,7 +78,7 @@ public:
 
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
-            set_value(this->delegate->state(*this));
+            set_checked(this->delegate->state(*this) != widget_value::off);
         });
         _delegate_cbt();
     }
@@ -95,10 +95,6 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
-        _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
-        _off_label_widget->set_mode(value() == widget_value::off ? widget_mode::display : widget_mode::invisible);
-        _other_label_widget->set_mode(value() == widget_value::other ? widget_mode::display : widget_mode::invisible);
-
         _on_label_widget->set_layout(context.transform(_on_label_shape));
         _off_label_widget->set_layout(context.transform(_off_label_shape));
         _other_label_widget->set_layout(context.transform(_other_label_shape));
@@ -114,7 +110,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        if (phase() == widget_phase::pressed) {
+        if (phase() == widget_phase::active) {
             return theme().fill_color(layout().layer + 2);
         } else {
             return super::background_color();
@@ -125,7 +121,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (enabled() and layout().contains(position)) {
             return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
@@ -135,7 +131,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return enabled() and to_bool(group & hi::keyboard_focus_group::normal);
     }
 
     void activate() noexcept
@@ -152,22 +148,22 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 activate();
                 return true;
             }
             break;
 
         case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(true);
                 return true;
             }
             break;
 
         case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(false);
 
                 if (layout().rectangle().contains(event.mouse().position)) {
                     handle_event(gui_event_type::gui_activate);
@@ -232,9 +228,13 @@ protected:
 
     void draw_button(draw_context const& context) noexcept
     {
-        _on_label_widget->draw(context);
-        _off_label_widget->draw(context);
-        _other_label_widget->draw(context);
+        if (delegate->state(*this) == widget_value::on) {
+            _on_label_widget->draw(context);
+        } else if (delegate->state(*this) == widget_value::off) {
+            _off_label_widget->draw(context);
+        } else {
+            _other_label_widget->draw(context);
+        }
     }
 };
 

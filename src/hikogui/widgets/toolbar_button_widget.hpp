@@ -79,7 +79,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             draw_toolbar_button(context);
             draw_button(context);
         }
@@ -87,7 +87,7 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+        return enabled() and to_bool(group & hi::keyboard_focus_group::toolbar);
     }
     // @endprivatesection
 private:

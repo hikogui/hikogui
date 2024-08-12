@@ -311,10 +311,8 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible) {
-            for (auto const& cell : _grid) {
-                cell.value->draw(context);
-            }
+        for (auto const& cell : _grid) {
+            cell.value->draw(context);
         }
     }
 
@@ -322,15 +320,11 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial) {
-            auto r = hitbox{};
-            for (auto const& cell : _grid) {
-                r = cell.value->hitbox_test_from_parent(position, r);
-            }
-            return r;
-        } else {
-            return {};
+        auto r = hitbox{};
+        for (auto const& cell : _grid) {
+            r = cell.value->hitbox_test_from_parent(position, r);
         }
+        return r;
     }
     /// @endprivatesection
 private:

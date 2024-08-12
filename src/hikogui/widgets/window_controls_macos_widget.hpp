@@ -80,18 +80,18 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            auto const close_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
+        if (overlaps(context, layout())) {
+            auto const close_circle_color = not front() ? color(0.246f, 0.246f, 0.246f) :
                 pressedClose                                                    ? color(1.0f, 0.242f, 0.212f) :
                                                                                   color(1.0f, 0.1f, 0.082f);
             context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
-            auto const minimize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
+            auto const minimize_circle_color = not front() ? color(0.246f, 0.246f, 0.246f) :
                 pressedMinimize                                                    ? color(1.0f, 0.847f, 0.093f) :
                                                                                      color(0.784f, 0.521f, 0.021f);
             context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
-            auto const maximize_circle_color = (phase() == widget_phase::inactive) ? color(0.246f, 0.246f, 0.246f) :
+            auto const maximize_circle_color = not front() ? color(0.246f, 0.246f, 0.246f) :
                 pressedMaximize                                                    ? color(0.223f, 0.863f, 0.1f) :
                                                                                      color(0.082f, 0.533f, 0.024f);
 
@@ -195,7 +195,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position) and
+        if (enabled() and layout().contains(position) and
             (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
             return hitbox{id(), layout().elevation, hitbox_type::button};
         } else {

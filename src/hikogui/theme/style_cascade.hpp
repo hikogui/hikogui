@@ -127,7 +127,7 @@ constexpr void generate_pseudo_classes_from_nesting_depth(size_t depth, std::vec
 
 constexpr void generate_pseudo_classes_from_enum(style_pseudo_class pseudo_class, std::vector<std::string>& r)
 {
-    switch(pseudo_class & style_pseudo_class::mode_mask) {
+    switch(pseudo_class & style_pseudo_class::phase_mask) {
     case style_pseudo_class::disabled:
         r.emplace_back("disabled");
         break;

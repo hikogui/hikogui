@@ -66,36 +66,23 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        auto aperture = std::make_unique<scroll_aperture_widget>();
-        aperture->set_parent(this);
+        _aperture = std::make_unique<scroll_aperture_widget>();
+        _aperture->set_parent(this);
+        _grid.add_cell(0, 0, _aperture.get());
 
-        auto horizontal_scroll_bar =
-            std::make_unique<horizontal_scroll_bar_type>(aperture->content_width, aperture->aperture_width, aperture->offset_x);
-        horizontal_scroll_bar->set_parent(this);
-
-        auto vertical_scroll_bar =
-            std::make_unique<vertical_scroll_bar_type>(aperture->content_height, aperture->aperture_height, aperture->offset_y);
-        vertical_scroll_bar->set_parent(this);
-
-        if (to_bool(axis & axis::horizontal)) {
-            minimum->width() = 0;
-        } else {
-            horizontal_scroll_bar->set_mode(widget_mode::collapse);
+        if constexpr (std::to_underlying(axis & axis::horizontal)) {
+            _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
+                aperture->content_width, aperture->aperture_width, aperture->offset_x);
+            _horizontal_scroll_bar->set_parent(this);
+            _grid.add_cell(1, 0, _horizontal_scroll_bar.get());
         }
 
-        if (to_bool(axis & axis::vertical)) {
-            minimum->height() = 0;
-        } else {
-            vertical_scroll_bar->set_mode(widget_mode::collapse);
+        if constexpr (std::to_underlying(axis & axis::vertical)) {
+            _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
+                aperture->content_height, aperture->aperture_height, aperture->offset_y);
+            _vertical_scroll_bar->set_parent(this);
+            _grid.add_cell(0, 1, _vertical_scroll_bar.get());
         }
-
-        _aperture = aperture.get();
-        _horizontal_scroll_bar = horizontal_scroll_bar.get();
-        _vertical_scroll_bar = vertical_scroll_bar.get();
-
-        _grid.add_cell(0, 0, std::move(aperture));
-        _grid.add_cell(1, 0, std::move(vertical_scroll_bar));
-        _grid.add_cell(0, 1, std::move(horizontal_scroll_bar));
 
         style.set_name("scroll-view");
     }
@@ -119,8 +106,12 @@ public:
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_yield *_aperture;
-        co_yield *_vertical_scroll_bar;
-        co_yield *_horizontal_scroll_bar;
+        if constexpr (std::to_underlying(axis & axis::vertical)) {
+            co_yield *_vertical_scroll_bar;
+        }
+        if constexpr (std::to_underlying(axis & axis::horizontal)) {
+            co_yield *_horizontal_scroll_bar;
+        }
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
@@ -159,10 +150,8 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible) {
-            for (auto const& cell : _grid) {
-                cell.value->draw(context);
-            }
+        for (auto const& cell : _grid) {
+            cell.value->draw(context);
         }
     }
 
@@ -170,7 +159,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             auto r = _aperture->hitbox_test_from_parent(position);
             r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
@@ -186,11 +175,11 @@ public:
     }
     // @endprivatesection
 private:
-    grid_layout<std::unique_ptr<widget>> _grid;
+    grid_layout<widget_intf*> _grid;
 
-    scroll_aperture_widget* _aperture;
-    horizontal_scroll_bar_type* _horizontal_scroll_bar;
-    vertical_scroll_bar_type* _vertical_scroll_bar;
+    std::unique_ptr<scroll_aperture_widget> _aperture;
+    std::unique_ptr<horizontal_scroll_bar_type> _horizontal_scroll_bar;
+    std::unique_ptr<vertical_scroll_bar_type> _vertical_scroll_bar;
 };
 
 /** Vertical scroll widget.

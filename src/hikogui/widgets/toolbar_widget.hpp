@@ -126,22 +126,20 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible) {
-            if (overlaps(context, layout())) {
-                context.draw_box(layout(), layout().rectangle(), theme().fill_color(layout().layer));
+        if (overlaps(context, layout())) {
+            context.draw_box(layout(), layout().rectangle(), theme().fill_color(layout().layer));
 
-                if (tab_button_has_focus()) {
-                    // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
-                    // line depending if that specific button is in focus or not.
-                    auto const focus_rectangle = aarectangle{0.0f, 0.0f, layout().rectangle().width(), theme().border_width()};
-                    context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
-                }
+            if (tab_button_has_focus()) {
+                // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
+                // line depending if that specific button is in focus or not.
+                auto const focus_rectangle = aarectangle{0.0f, 0.0f, layout().rectangle().width(), theme().border_width()};
+                context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
             }
+        }
 
-            for (auto const& child : _children) {
-                hi_assert_not_null(child.value);
-                child.value->draw(context);
-            }
+        for (auto const& child : _children) {
+            hi_assert_not_null(child.value);
+            child.value->draw(context);
         }
     }
 
@@ -150,7 +148,7 @@ public:
         hi_axiom(loop::main().on_thread());
 
         // By default the toolbar is used for dragging the window.
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             auto r = layout().contains(position) ? hitbox{id(), layout().elevation, hitbox_type::move_area} : hitbox{};
 
             for (auto const& child : _children) {
@@ -166,7 +164,7 @@ public:
     
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             return theme().accent_color();
         } else {
             return theme().disabled_color();
@@ -211,7 +209,7 @@ private:
     {
         for (auto const& cell : _children) {
             if (auto const* const c = dynamic_cast<toolbar_tab_button_widget*>(cell.value.get())) {
-                if (c->focus() and c->value() == widget_value::on) {
+                if (c->focus() and c->checked()) {
                     return true;
                 }
             }

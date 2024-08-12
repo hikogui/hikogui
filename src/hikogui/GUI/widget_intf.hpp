@@ -36,10 +36,6 @@ public:
      */
     notifier<void()> notifier;
 
-    /** The current state of the widget.
-     */
-    observer<widget_state> state;
-
     virtual ~widget_intf()
     {
         release_widget_id(_id);
@@ -66,13 +62,6 @@ public:
                 request_redraw();
             }
         });
-
-        // This lambda allows the state to be set once before it will trigger
-        // notifications.
-        _state_cbt = state.subscribe([&](auto...) {
-            style.set_pseudo_class(state->pseudo_class());
-        });
-        _state_cbt(*state);
     }
 
         /** The numeric identifier of a widget.
@@ -142,62 +131,128 @@ public:
 
     [[nodiscard]] size_t layer() const noexcept
     {
-        return state->layer();
+        return _layer;
     }
 
     void set_layer(size_t new_layer) noexcept
     {
-        state->set_layer(new_layer);
+        _layer = new_layer;
     }
 
-    [[nodiscard]] widget_mode mode() const noexcept
+    [[nodiscard]] virtual widget_phase phase() const noexcept
     {
-        return state->mode();
+        auto const pc = style.pseudo_class();
+        if ((pc & style_pseudo_class::phase_mask) == style_pseudo_class::disabled) {
+            return widget_phase::disabled;
+        } else if ((pc & style_pseudo_class::phase_mask) == style_pseudo_class::enabled) {
+            return widget_phase::enabled;
+        } else if ((pc & style_pseudo_class::phase_mask) == style_pseudo_class::hover) {
+            return widget_phase::hover;
+        } else if ((pc & style_pseudo_class::phase_mask) == style_pseudo_class::active) {
+            return widget_phase::active;
+        } else {
+            std::unreachable();
+        }
     }
 
-    void set_mode(widget_mode new_mode) noexcept
+    virtual void set_phase(widget_phase const& phase) noexcept
     {
-        state->set_mode(new_mode);
+        auto pc = style.pseudo_class();
+        pc &= ~style_pseudo_class::phase_mask;
+        pc |= [&] {
+            switch (phase) {
+            case widget_phase::disabled: return style_pseudo_class::disabled;
+            case widget_phase::enabled: return style_pseudo_class::enabled;
+            case widget_phase::hover: return style_pseudo_class::hover;
+            case widget_phase::active: return style_pseudo_class::active;
+            default: std::unreachable();
+            }
+        }();
+        style.set_pseudo_class(pc);
     }
 
-    [[nodiscard]] widget_value value() const noexcept
+    [[nodiscard]] virtual bool disabled() const noexcept
     {
-        return state->value();
+        return phase() == widget_phase::disabled;
     }
 
-    void set_value(widget_value new_value) noexcept
+    [[nodiscard]] virtual bool enabled() const noexcept
     {
-        state->set_value(new_value);
+        return phase() != widget_phase::disabled;
     }
 
-    [[nodiscard]] widget_phase phase() const noexcept
+    [[nodiscard]] virtual bool hover() const noexcept
     {
-        return state->phase();
+        return phase() == widget_phase::hover or phase() == widget_phase::active;
     }
 
-    void set_pressed(bool pressed) noexcept
+    [[nodiscard]] virtual bool active() const noexcept
     {
-        state->set_pressed(pressed);
+        return phase() == widget_phase::active;
     }
 
-    void set_hover(bool hover) noexcept
+    void set_enabled(bool value) noexcept
     {
-        state->set_hover(hover);
+        set_phase(value ? widget_phase::enabled : widget_phase::disabled);
     }
 
-    void set_active(bool active) noexcept
+    void set_hover(bool value) noexcept
     {
-        state->set_active(active);
+        if (phase() != widget_phase::disabled) {
+            set_phase(value ? widget_phase::hover : widget_phase::enabled);
+        }
     }
 
-    [[nodiscard]] bool focus() const noexcept
+    void set_active(bool value) noexcept
     {
-        return state->focus();
+        if (phase() != widget_phase::disabled) {
+            set_phase(value ? widget_phase::active : widget_phase::enabled);
+        }
+    }
+    
+    [[nodiscard]] virtual bool focus() const noexcept
+    {
+        return (style.pseudo_class() & style_pseudo_class::focus) != style_pseudo_class{};
     }
 
-    void set_focus(bool new_focus) noexcept
+    virtual void set_focus(bool new_focus) noexcept
     {
-        state->set_focus(new_focus);
+        auto pc = style.pseudo_class();
+        pc &= ~style_pseudo_class::focus;
+        if (new_focus) {
+            pc |= style_pseudo_class::focus;
+        }
+        style.set_pseudo_class(pc);
+    }
+
+    [[nodiscard]] virtual bool checked() const noexcept
+    {
+        return (style.pseudo_class() & style_pseudo_class::checked) != style_pseudo_class{};
+    }
+
+    virtual void set_checked(bool new_checked) noexcept
+    {
+        auto pc = style.pseudo_class();
+        pc &= ~style_pseudo_class::checked;
+        if (new_checked) {
+            pc |= style_pseudo_class::checked;
+        }
+        style.set_pseudo_class(pc);
+    }
+
+    [[nodiscard]] virtual bool front() const noexcept
+    {
+        return (style.pseudo_class() & style_pseudo_class::front) != style_pseudo_class{};
+    }
+
+    virtual void set_front(bool new_front) noexcept
+    {
+        auto pc = style.pseudo_class();
+        pc &= ~style_pseudo_class::front;
+        if (new_front) {
+            pc |= style_pseudo_class::front;
+        }
+        style.set_pseudo_class(pc);
     }
 
     /** Get a list of child widgets.
@@ -402,7 +457,8 @@ private:
     widget_intf* _parent = nullptr;
     gui_window* _window = nullptr;
 
-    callback<void(widget_state)> _state_cbt;
+    size_t _layer = 0;
+
     hi::style::callback_type _style_cbt;
 
     widget_layout _layout;

@@ -35,6 +35,8 @@ public:
     using callback_proto = notifier_type::callback_proto;
     using properties_array_type = std::array<style_computed_properties, style_pseudo_class_size>;
 
+    unit::pixel_density pixel_density;
+
     float width_px;
     float height_px;
     float font_size_px;
@@ -160,6 +162,11 @@ public:
         return *this;
     }
 
+    [[nodiscard]] style_pseudo_class pseudo_class() const noexcept
+    {
+        return _pseudo_class;
+    }
+
     void set_pseudo_class(style_pseudo_class new_pseudo_class)
     {
         assert(std::to_underlying(new_pseudo_class) < _loaded_properties.size());
@@ -181,6 +188,8 @@ public:
         style_path const& parent_path,
         properties_array_type const& parent_properties) noexcept
     {
+        this->pixel_density = pixel_density;
+
         auto path = parent_path;
         path.emplace_back(_name, _id, _classes);
 

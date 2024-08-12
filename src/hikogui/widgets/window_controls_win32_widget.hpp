@@ -80,7 +80,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             if (pressedClose) {
                 context.draw_box(layout(), closeRectangle, color{1.0f, 0.0f, 0.0f});
             } else if (hoverClose) {
@@ -195,7 +195,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position) and
+        if (enabled() and layout().contains(position) and
             (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
             return hitbox{id(), layout().elevation, hitbox_type::button};
         } else {

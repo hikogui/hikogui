@@ -146,7 +146,7 @@ public:
         hi_axiom_not_null(this->delegate);
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
-            set_value(this->delegate->state(*this));
+            set_checked(this->delegate->state(*this) != widget_value::off);
         });
         _delegate_cbt();
 
@@ -205,25 +205,26 @@ public:
         _on_label_shape = _off_label_shape =
             box_shape{label_rectangle, lift(context.baseline(), padding.bottom(), padding.top())};
 
-        _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
-        _off_label_widget->set_mode(value() != widget_value::on ? widget_mode::display : widget_mode::invisible);
-
         _on_label_widget->set_layout(context.transform(_on_label_shape));
         _off_label_widget->set_layout(context.transform(_off_label_shape));
     }
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             draw_toolbar_tab_button(context);
+        }
+
+        if (delegate->state(*this) == widget_value::on) {
             _on_label_widget->draw(context);
+        } else {
             _off_label_widget->draw(context);
         }
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
+        return enabled() and to_bool(group & hi::keyboard_focus_group::toolbar);
     }
 
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
@@ -235,7 +236,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        if (phase() == widget_phase::pressed) {
+        if (phase() == widget_phase::active) {
             return theme().fill_color(layout().layer + 2);
         } else {
             return super::background_color();
@@ -246,7 +247,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (enabled() and layout().contains(position)) {
             return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
@@ -266,26 +267,23 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 activate();
                 return true;
             }
             break;
 
         case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(true);
+                handle_event(gui_event_type::gui_activate);
                 return true;
             }
             break;
 
         case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
-
-                if (layout().rectangle().contains(event.mouse().position)) {
-                    handle_event(gui_event_type::gui_activate);
-                }
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(false);
                 return true;
             }
             break;
@@ -321,7 +319,7 @@ private:
         auto const button_z = focus() ? translate_z(0.6f) : translate_z(0.0f);
 
         // clang-format off
-        auto button_color = (phase() == widget_phase::hover or value() == widget_value::on) ?
+        auto button_color = (phase() == widget_phase::hover or checked()) ?
             theme().fill_color(layout().layer - 1) :
             theme().fill_color(layout().layer);
         // clang-format on

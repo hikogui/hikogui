@@ -76,14 +76,12 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible) {
-            _grid_widget->draw(context);
-        }
+        _grid_widget->draw(context);
     }
 
     hitbox hitbox_test(point2 position) const noexcept override
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             auto r = hitbox{};
             r = _grid_widget->hitbox_test_from_parent(position, r);
             return r;
@@ -94,7 +92,7 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             return _grid_widget->accepts_keyboard_focus(group);
         } else {
             return false;

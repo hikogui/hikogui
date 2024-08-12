@@ -182,13 +182,12 @@ public:
     }
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible) {
-            context.draw_box(layout(), layout().rectangle(), background_color(), background_color());
+        context.draw_box(layout(), layout().rectangle(), background_color(), background_color());
 
-            _toolbar->draw(context);
-            _content->draw(context);
-        }
+        _toolbar->draw(context);
+        _content->draw(context);
     }
+    
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         constexpr float BORDER_WIDTH = 10.0f;

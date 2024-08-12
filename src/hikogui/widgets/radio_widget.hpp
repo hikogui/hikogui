@@ -155,7 +155,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             if (focus_group != keyboard_focus_group::menu) {
                 context.draw_circle(
                     layout(),
@@ -166,7 +166,7 @@ public:
                     border_side::inside);
             }
 
-            switch (_animated_value.update(value() == widget_value::on ? 1.0f : 0.0f, context.display_time_point)) {
+            switch (_animated_value.update(delegate->state(*this) != widget_value::off ? 1.0f : 0.0f, context.display_time_point)) {
             case animator_state::idle:
                 break;
             case animator_state::running:
@@ -191,7 +191,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and _button_rectangle.contains(position)) {
+        if (enabled() and _button_rectangle.contains(position)) {
             return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
@@ -201,7 +201,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & this->focus_group);
+        return enabled() and to_bool(group & this->focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -210,7 +210,7 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 delegate->activate(*this);
                 request_redraw();
                 return true;

@@ -132,10 +132,6 @@ public:
             request_resize();
         }
 
-        for (auto const& child : _children) {
-            child->set_mode(child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible);
-        }
-
         return selected_child_.update_constraints();
     }
 
@@ -144,16 +140,14 @@ public:
         super::set_layout(context);
 
         for (auto const& child : _children) {
-            if (child->mode() > widget_mode::invisible) {
-                child->set_layout(context);
-            }
+            child->set_layout(context);
         }
     }
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible) {
-            for (auto const& child : _children) {
+        for (auto const& child : _children) {
+            if (child.get() == &selected_child()) {
                 child->draw(context);
             }
         }
@@ -163,7 +157,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             auto r = hitbox{};
             for (auto const& child : _children) {
                 r = child->hitbox_test_from_parent(position, r);

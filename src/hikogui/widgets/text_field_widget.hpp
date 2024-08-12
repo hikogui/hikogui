@@ -168,11 +168,9 @@ public:
         auto size = box_size;
         auto margins = style.margins_px;
         if (_error_label->empty()) {
-            _error_label_widget->set_mode(widget_mode::invisible);
             _error_label_constraints = _error_label_widget->update_constraints();
 
         } else {
-            _error_label_widget->set_mode(widget_mode::display);
             _error_label_constraints = _error_label_widget->update_constraints();
             inplace_max(size.width(), _error_label_constraints.preferred.width());
             size.height() += _error_label_constraints.margins.top() + _error_label_constraints.preferred.height();
@@ -200,39 +198,43 @@ public:
         auto const scroll_rectangle = aarectangle{point2{0, context.height() - scroll_size.height()}, scroll_size};
         _scroll_shape = box_shape{scroll_rectangle, context.baseline()};
 
-        if (_error_label_widget->mode() > widget_mode::invisible) {
+        if (not _error_label->empty()) {
             auto const error_label_rectangle =
                 aarectangle{0, 0, context.rectangle().width(), _error_label_constraints.preferred.height()};
             _error_label_shape =
                 box_shape{error_label_rectangle};
         }
 
-        if (_error_label_widget->mode() > widget_mode::invisible) {
+        if (not _error_label->empty()) {
             _error_label_widget->set_layout(context.transform(_error_label_shape));
         }
         _scroll_widget->set_layout(context.transform(_scroll_shape));
     }
+
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             draw_background_box(context);
+        }
 
-            _scroll_widget->draw(context);
+        _scroll_widget->draw(context);
+        if (not _error_label->empty()) {
             _error_label_widget->draw(context);
         }
     }
+
     bool handle_event(gui_event const& event) noexcept override
     {
         switch (event.type()) {
         case gui_event_type::gui_cancel:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 revert(true);
                 return true;
             }
             break;
 
         case gui_event_type::gui_activate:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 commit(true);
                 return super::handle_event(event);
             }
@@ -245,7 +247,7 @@ public:
     }
     hitbox hitbox_test(point2 position) const noexcept override
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             auto r = hitbox{};
             r = _scroll_widget->hitbox_test_from_parent(position, r);
             r = _error_label_widget->hitbox_test_from_parent(position, r);
@@ -256,7 +258,7 @@ public:
     }
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             return _scroll_widget->accepts_keyboard_focus(group);
         } else {
             return false;
@@ -264,7 +266,7 @@ public:
     }
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             if (not _error_label->empty()) {
                 auto const error_style = theme().text_style_set()[{phrasing::error}];
                 return error_style.color();

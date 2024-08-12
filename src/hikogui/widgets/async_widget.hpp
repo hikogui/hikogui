@@ -114,7 +114,7 @@ public:
     {
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
-            set_value(this->delegate->state(*this));
+            set_checked(this->delegate->state(*this) != widget_value::off);
         });
         _delegate_cbt();
 
@@ -163,11 +163,11 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             context.draw_box(
                 layout(), _button_rectangle, background_color(), focus_color(), theme().border_width(), border_side::inside);
 
-            switch (value()) {
+            switch (delegate->state(*this)) {
             case widget_value::on:
                 context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, accent_color());
                 break;
@@ -182,7 +182,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        if (phase() == widget_phase::pressed) {
+        if (phase() == widget_phase::active) {
             return theme().fill_color(layout().layer + 2);
         } else {
             return super::background_color();
@@ -193,7 +193,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (enabled() and layout().contains(position)) {
             return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
@@ -203,7 +203,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
+        return enabled() and to_bool(group & hi::keyboard_focus_group::normal);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -212,7 +212,7 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 delegate->activate(*this);
                 request_redraw();
                 return true;
@@ -220,22 +220,16 @@ public:
             break;
 
         case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(true);
+                handle_event(gui_event_type::gui_activate);
                 return true;
             }
             break;
 
         case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
-
-                // with_label_widget or other widgets may have accepted the hitbox
-                // for this widget. Which means the widget_id in the mouse-event
-                // may match up with the async.
-                if (event.mouse().hitbox.widget_id == id()) {
-                    handle_event(gui_event_type::gui_activate);
-                }
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(false);
                 return true;
             }
             break;

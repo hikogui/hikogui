@@ -104,6 +104,16 @@ public:
         return extent2{_v.xy00() + _v.zw00()};
     }
 
+    [[nodiscard]] constexpr float width() const noexcept
+    {
+        return _v.x() + _v.z();
+    }
+
+    [[nodiscard]] constexpr float height() const noexcept
+    {
+        return _v.y() + _v.w();
+    }
+
     [[nodiscard]] constexpr friend margins operator+(margins const& lhs, margins const& rhs) noexcept
     {
         return margins{lhs._v + rhs._v};

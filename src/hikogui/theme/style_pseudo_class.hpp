@@ -54,11 +54,16 @@ enum class style_pseudo_class {
 
     /** The mask to use extract the values: disabled, enabled, hover and active.
      */
-    mode_mask = 0b0'0'0'11,
+    phase_mask = 0b0'0'0'11,
 };
 // clang-format on
 
 constexpr auto style_pseudo_class_size = size_t{32};
+
+[[nodiscard]] constexpr style_pseudo_class operator~(style_pseudo_class const& rhs) noexcept
+{
+    return static_cast<style_pseudo_class>(~std::to_underlying(rhs));
+}
 
 [[nodiscard]] constexpr style_pseudo_class operator|(style_pseudo_class const& lhs, style_pseudo_class const& rhs) noexcept
 {

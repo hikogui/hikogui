@@ -161,7 +161,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             context.draw_box(
                 layout(),
                 _button_rectangle,
@@ -171,7 +171,7 @@ public:
                 border_side::inside,
                 style.border_radius_px);
 
-            switch (value()) {
+            switch (delegate->state(*this)) {
             case widget_value::on:
                 context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, style.accent_color);
                 break;
@@ -189,7 +189,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and _button_rectangle.contains(position)) {
+        if (enabled() and _button_rectangle.contains(position)) {
             return {id(), layout().elevation, hitbox_type::button};
         } else {
             return {};
@@ -199,7 +199,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return mode() >= widget_mode::partial and to_bool(group & this->focus_group);
+        return enabled() and to_bool(group & this->focus_group);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -208,7 +208,7 @@ public:
 
         switch (event.type()) {
         case gui_event_type::gui_activate:
-            if (mode() >= widget_mode::partial) {
+            if (enabled()) {
                 delegate->activate(*this);
                 request_redraw();
                 return true;

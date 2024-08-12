@@ -152,7 +152,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             switch (_icon_type) {
             case icon_type::no:
                 break;

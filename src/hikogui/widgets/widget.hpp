@@ -147,25 +147,25 @@ public:
             return true;
 
         case gui_event_type::mouse_down:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(true);
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(true);
                 handle_event(gui_event_type::gui_activate_stay);
             }
             return true;
 
         case gui_event_type::mouse_up:
-            if (mode() >= widget_mode::partial and event.mouse().cause.left_button) {
-                set_pressed(false);
+            if (enabled() and event.mouse().cause.left_button) {
+                set_active(false);
             }
             return true;
 
         case gui_event_type::window_activate:
-            set_active(true);
+            set_front(true);
             // All widgets need the active value set.
             return false;
 
         case gui_event_type::window_deactivate:
-            set_active(false);
+            set_front(false);
             // All widgets need the active value unset.
             return false;
 
@@ -194,7 +194,7 @@ public:
             return true;
 
         case gui_event_type::gui_menu_next:
-            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+            if (enabled() and accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::menu, keyboard_focus_direction::forward));
                 return true;
@@ -202,7 +202,7 @@ public:
             break;
 
         case gui_event_type::gui_menu_prev:
-            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::menu)) {
+            if (enabled() and accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::menu, keyboard_focus_direction::backward));
                 return true;
@@ -210,7 +210,7 @@ public:
             break;
 
         case gui_event_type::gui_toolbar_next:
-            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
+            if (enabled() and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
                 return true;
@@ -218,7 +218,7 @@ public:
             break;
 
         case gui_event_type::gui_toolbar_prev:
-            if (mode() >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
+            if (enabled() and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
                 process_event(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
                 return true;
@@ -342,8 +342,8 @@ public:
 
     [[nodiscard]] virtual color background_color() const noexcept
     {
-        if (mode() >= widget_mode::partial) {
-            if (phase() == widget_phase::hover) {
+        if (enabled()) {
+            if (hover()) {
                 return theme().fill_color(layout().layer + 1);
             } else {
                 return theme().fill_color(layout().layer);
@@ -355,7 +355,7 @@ public:
 
     [[nodiscard]] virtual color foreground_color() const noexcept
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             return theme().border_color();
         } else {
             return theme().disabled_color();
@@ -364,7 +364,7 @@ public:
 
     [[nodiscard]] virtual color focus_color() const noexcept
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             if (focus()) {
                 return theme().accent_color();
             } else {
@@ -377,7 +377,7 @@ public:
 
     [[nodiscard]] virtual color accent_color() const noexcept
     {
-        if (mode() >= widget_mode::partial) {
+        if (enabled()) {
             return theme().accent_color();
         } else {
             return theme().disabled_color();

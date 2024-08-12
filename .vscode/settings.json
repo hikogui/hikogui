@@ -135,7 +135,8 @@
         "resumable": "cpp",
         "string_span": "cpp",
         "pointers": "cpp",
-        "span_ext": "cpp"
+        "span_ext": "cpp",
+        "util": "cpp"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"
