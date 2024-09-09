@@ -37,6 +37,8 @@ public:
      */
     virtual void activate(widget_intf const& sender) noexcept {}
 
+    virtual void set_state(widget_intf const& sender, widget_value value) noexcept {}
+
     /** Used by the widget to check the state of the button.
      */
     [[nodiscard]] virtual widget_value state(widget_intf const& sender) const noexcept

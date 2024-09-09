@@ -75,13 +75,7 @@ public:
         _other_label_widget->set_parent(this);
 
         _button_widget_cbt = _button_widget->subscribe([&] {
-            set_value(_button_widget->value());
-
-            _on_label_widget->set_mode(value() == widget_value::on ? widget_mode::display : widget_mode::invisible);
-            _off_label_widget->set_mode(value() == widget_value::off ? widget_mode::display : widget_mode::invisible);
-            _other_label_widget->set_mode(value() == widget_value::other ? widget_mode::display : widget_mode::invisible);
-
-            this->request_redraw();
+            this->set_checked(_button_widget->checked());
             this->notifier();
         });
 
@@ -162,26 +156,34 @@ public:
                 _other_label_widget->set_layout(context.transform(cell.shape));
 
             } else {
-                hi_no_default();
+                std::unreachable();
             }
         }
     }
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
-            for (auto const& cell : _grid) {
-                if (cell.value == grid_cell_type::button) {
-                    _button_widget->draw(context);
+        for (auto const& cell : _grid) {
+            if (cell.value == grid_cell_type::button) {
+                _button_widget->draw(context);
 
-                } else if (cell.value == grid_cell_type::label) {
+            } else if (cell.value == grid_cell_type::label) {
+                switch (_button_widget->delegate->state(*_button_widget)) {
+                case widget_value::on:
                     _on_label_widget->draw(context);
+                    break;
+                case widget_value::off:
                     _off_label_widget->draw(context);
+                    break;
+                case widget_value::other:
                     _other_label_widget->draw(context);
-
-                } else {
-                    hi_no_default();
+                    break;
+                default:
+                    std::unreachable();
                 }
+
+            } else {
+                std::unreachable();
             }
         }
     }
@@ -189,13 +191,13 @@ public:
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
     {
         co_yield *_button_widget;
-        if (include_invisible or _on_label_widget->mode() > widget_mode::invisible) {
+        if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::on) {
             co_yield *_on_label_widget;
         }
-        if (include_invisible or _off_label_widget->mode() > widget_mode::invisible) {
+        if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::off) {
             co_yield *_off_label_widget;
         }
-        if (include_invisible or _other_label_widget->mode() > widget_mode::invisible) {
+        if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::other) {
             co_yield *_other_label_widget;
         }
     }
@@ -204,7 +206,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (enabled() and layout().contains(position)) {
             // Accept the hitbox of the with_label_widget on behalf of the button_widget.
             return {_button_widget->id(), layout().elevation, hitbox_type::button};
         } else {

@@ -100,7 +100,7 @@ public:
         _scroll_widget->set_parent(this);
 
         _text_widget = &_scroll_widget->emplace<text_widget>(_text);
-        _text_widget->set_mode(widget_mode::partial);
+        _text_widget->set_edit_mode(text_widget_edit_mode::line_edit);
 
         _error_label_widget = std::make_unique<label_widget>(_error_label);
         _error_label_widget->set_parent(this);

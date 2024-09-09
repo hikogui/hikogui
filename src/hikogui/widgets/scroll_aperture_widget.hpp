@@ -137,8 +137,8 @@ public:
 
         // Start scrolling with the preferred size as minimum, so
         // that widgets in the content don't get unnecessarily squeezed.
-        content_width = std::min(*aperture_width, _content_constraints.preferred.width);
-        content_height = std::min(*aperture_height, _content_constraints.preferred.height);
+        content_width = std::min(*aperture_width, _content_constraints.preferred.width());
+        content_height = std::min(*aperture_height, _content_constraints.preferred.height());
         
         // Make sure the offsets are limited to the scrollable area.
         auto const offset_x_max = std::max(*content_width - *aperture_width, 0.0f);

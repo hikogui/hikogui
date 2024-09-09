@@ -65,11 +65,8 @@ public:
         _shortcut_widget = std::make_unique<label_widget>(shortcut);
         _shortcut_widget->set_parent(this);
 
-        // Link the state from the button, so that both this widget and the child widget react in the same way.
-        _button_widget->state = state;
-
         _button_widget_cbt = _button_widget->subscribe([&] {
-            this->request_redraw();
+            this->set_checked(_button_widget->checked());
             this->notifier();
         });
 
@@ -154,7 +151,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout())) {
+        if (overlaps(context, layout())) {
             context.draw_box(
                 layout(),
                 layout().rectangle(),
@@ -191,7 +188,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position)) {
+        if (enabled() and layout().contains(position)) {
             // Accept the hitbox of the menu_button_widget on behalf of the button_widget.
             return {_button_widget->id(), layout().elevation, hitbox_type::button};
         } else {

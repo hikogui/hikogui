@@ -91,7 +91,8 @@ public:
 
         this->delegate->init(*this);
         _delegate_cbt = this->delegate->subscribe([&] {
-            set_value(this->delegate->state(*this));
+            set_checked(this->delegate->state(*this) != widget_value::off);
+            this->notifier();
         });
         _delegate_cbt();
 

@@ -5,18 +5,29 @@
 #pragma once
 
 #include "../macros.hpp"
-#include "hikogui/units/pixels.hpp"
+#include "../geometry/geometry.hpp"
+#include "../units/units.hpp"
 #include <functional>
 #include <utility>
 
 hi_export_module(hikogui.text : baseline);
 
+
 hi_export namespace hi::inline v1 {
+
+    
+/**
+ * @brief Enumeration representing the priority levels for baselines.
+ *
+ * The baseline_priority enumeration defines the priority levels for baselines.
+ * Each priority level represents a different alignment preference for widgets
+ * when negotiating the baseline position.
+ */
 enum class baseline_priority : unsigned int {
-    none = 0,
-    label = 1,
-    small_widget = 10,
-    large_widget = 100,
+    none = 0, //< No priority.
+    label = 1, //< Priority for labels.
+    small_widget = 10, //< Priority for small widgets.
+    large_widget = 100, //< Priority for large widgets.
 };
 
 /** The negotiated baseline between multiple objects with different alignments.

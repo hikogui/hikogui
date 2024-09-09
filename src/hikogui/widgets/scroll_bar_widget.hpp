@@ -46,10 +46,7 @@ public:
     observer<float> content;
 
     template<forward_of<observer<float>> Content, forward_of<observer<float>> Aperture, forward_of<observer<float>> Offset>
-    scroll_bar_widget(
-        Content&& content,
-        Aperture&& aperture,
-        Offset&& offset) noexcept :
+    scroll_bar_widget(Content&& content, Aperture&& aperture, Offset&& offset) noexcept :
         widget(),
         content(std::forward<Content>(content)),
         aperture(std::forward<Aperture>(aperture)),
@@ -75,10 +72,6 @@ public:
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        if (mode() <= widget_mode::collapse) {
-            return {};
-        }
-
         // The minimum size is twice the length of the slider, which is twice the theme().size()
         if constexpr (axis == axis::vertical) {
             return {
@@ -97,11 +90,6 @@ public:
     {
         super::set_layout(context);
 
-        if (mode() <= widget_mode::collapse) {
-            _slider_rectangle = {};
-            return;
-        }
-
         // Calculate the position of the slider.
         auto const slider_offset = std::round(*offset * travel_vs_hidden_content_ratio());
         if constexpr (axis == axis::vertical) {
@@ -118,7 +106,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (mode() > widget_mode::invisible and overlaps(context, layout()) and visible()) {
+        if (overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -128,8 +116,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (mode() >= widget_mode::partial and layout().contains(position) and visible() and
-            _slider_rectangle.contains(position)) {
+        if (enabled() and layout().contains(position) and _slider_rectangle.contains(position)) {
             return {id(), layout().elevation, hitbox_type::scroll_bar};
         } else {
             return {};

@@ -51,7 +51,7 @@ public:
     task<> wait_for(Awaiter&& awaiter) noexcept
     {
         co_await std::forward<Awaiter>(awaiter);
-        set_value(widget_value::off);
+        this->delegate->set_state(*this, widget_value::off);
     }
 
     /// @privatesection

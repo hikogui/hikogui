@@ -62,7 +62,7 @@ public:
 
         _text_widget = std::make_unique<text_widget>(label.sub<"text">());
         _text_widget->set_parent(this);
-        _text_widget->set_edit_mode(text_widget::edit_mode_type::selectable);
+        _text_widget->set_edit_mode(text_widget_edit_mode::selectable);
 
         style.set_name("label");
     }

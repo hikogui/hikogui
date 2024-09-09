@@ -72,14 +72,14 @@ public:
 
         if constexpr (std::to_underlying(axis & axis::horizontal)) {
             _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_type>(
-                aperture->content_width, aperture->aperture_width, aperture->offset_x);
+                _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
             _horizontal_scroll_bar->set_parent(this);
             _grid.add_cell(1, 0, _horizontal_scroll_bar.get());
         }
 
         if constexpr (std::to_underlying(axis & axis::vertical)) {
             _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_type>(
-                aperture->content_height, aperture->aperture_height, aperture->offset_y);
+                _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
             _vertical_scroll_bar->set_parent(this);
             _grid.add_cell(0, 1, _vertical_scroll_bar.get());
         }
@@ -132,7 +132,7 @@ public:
         for (auto const& cell : _grid) {
             auto shape = cell.shape;
 
-            if (cell.value.get() == _aperture) {
+            if (cell.value == _aperture.get()) {
                 // This is the content. Move the content slightly when the scroll-bars aren't visible.
                 // The grid cells are always ordered in row-major.
                 // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
