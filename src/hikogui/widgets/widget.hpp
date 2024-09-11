@@ -57,47 +57,6 @@ public:
     widget(widget&&) = delete;
     widget& operator=(widget&&) = delete;
 
-    using widget_intf::children;
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
-    {
-        co_return;
-    }
-
-    /** Find the widget that is under the mouse cursor.
-     * This function will recursively test with visual child widgets, when
-     * widgets overlap on the screen the hitbox object with the highest elevation is returned.
-     *
-     * @param position The coordinate of the mouse local to the widget.
-     * @return A hit_box object with the cursor-type and a reference to the widget.
-     */
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
-    {
-        return {};
-    }
-
-    /** Call hitbox_test from a parent widget.
-     *
-     * This function will transform the position from parent coordinates to local coordinates.
-     *
-     * @param position The coordinate of the mouse local to the parent widget.
-     */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position) const noexcept
-    {
-        return hitbox_test(layout().from_parent * position);
-    }
-
-    /** Call hitbox_test from a parent widget.
-     *
-     * This function will transform the position from parent coordinates to local coordinates.
-     *
-     * @param position The coordinate of the mouse local to the parent widget.
-     * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
-     */
-    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position, hitbox sibling_hitbox) const noexcept
-    {
-        return std::max(sibling_hitbox, hitbox_test(layout().from_parent * position));
-    }
-
     /** Check if the widget will accept keyboard focus.
      *
      */
@@ -239,7 +198,7 @@ public:
 
         auto handled = false;
 
-        for (auto& child : this->children(false)) {
+        for (auto& child : visible_children()) {
             handled |= child.handle_event_recursive(event, reject_list);
         }
 
@@ -270,7 +229,7 @@ public:
         }
 
         auto children_ = std::vector<widget_intf const *>{};
-        for (auto& child : children(false)) {
+        for (auto& child : visible_children()) {
             children_.push_back(std::addressof(child));
         }
 

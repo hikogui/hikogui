@@ -177,7 +177,7 @@ public:
         }
     }
 
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_button_widget;
         co_yield *_label_widget;

@@ -100,7 +100,7 @@ public:
         _other_label_widget->set_layout(context.transform(_other_label_shape));
     }
 
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_on_label_widget;
         co_yield *_off_label_widget;

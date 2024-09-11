@@ -234,7 +234,7 @@ public:
             return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
         };
 
-        auto baseline_function = [&] -> baseline::baseline_function_type {
+        auto baseline_function = [&]() -> baseline::baseline_function_type {
             switch (style.vertical_alignment) {
             case vertical_alignment::top:
                 return top_baseline_function;

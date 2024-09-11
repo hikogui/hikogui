@@ -163,32 +163,12 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        for (auto const& cell : _grid) {
-            if (cell.value == grid_cell_type::button) {
-                _button_widget->draw(context);
-
-            } else if (cell.value == grid_cell_type::label) {
-                switch (_button_widget->delegate->state(*_button_widget)) {
-                case widget_value::on:
-                    _on_label_widget->draw(context);
-                    break;
-                case widget_value::off:
-                    _off_label_widget->draw(context);
-                    break;
-                case widget_value::other:
-                    _other_label_widget->draw(context);
-                    break;
-                default:
-                    std::unreachable();
-                }
-
-            } else {
-                std::unreachable();
-            }
+        for (auto &child : visible_children()) {
+            child.draw(context);
         }
     }
 
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_button_widget;
         if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::on) {

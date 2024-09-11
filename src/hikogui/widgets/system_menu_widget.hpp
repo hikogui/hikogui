@@ -51,7 +51,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_icon_widget;
     }

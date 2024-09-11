@@ -209,7 +209,7 @@ public:
      * @param alignment The vertical alignment of the object.
      * @return The baseline position from the bottom of the box.
      */
-    [[nodiscard]] constexpr float get_baseline(float height, vertical_alignment alignment) const
+    [[nodiscard]] float get_baseline(float height, vertical_alignment alignment) const
     {
         assert(_function);
 
@@ -235,7 +235,7 @@ public:
      * @param cap_height The cap height of the font of the element.
      * @return The middle position of text aligned to the @a alignment.
      */
-    [[nodiscard]] constexpr float get_middle(float height, vertical_alignment alignment, float cap_height) const
+    [[nodiscard]] float get_middle(float height, vertical_alignment alignment, float cap_height) const
     {
         return get_baseline(height, alignment) + cap_height / 2.0f;
     }

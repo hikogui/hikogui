@@ -28,7 +28,7 @@ public:
         style.set_name("spacer");
     }
 
-    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf &> children(bool include_invisible) const noexcept override
     {
         co_return;
     }

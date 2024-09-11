@@ -81,7 +81,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         for (auto const& child : _children) {
             co_yield *child.value;

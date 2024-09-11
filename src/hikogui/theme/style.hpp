@@ -184,11 +184,11 @@ public:
     }
 
     [[nodiscard]] std::pair<style_path, properties_array_type const&> restyle(
-        unit::pixel_density pixel_density,
+        unit::pixel_density density,
         style_path const& parent_path,
         properties_array_type const& parent_properties) noexcept
     {
-        this->pixel_density = pixel_density;
+        this->pixel_density = density;
 
         auto path = parent_path;
         path.emplace_back(_name, _id, _classes);

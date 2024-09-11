@@ -62,6 +62,7 @@ public:
                 request_redraw();
             }
         });
+        this->set_phase(widget_phase::enabled);
     }
 
         /** The numeric identifier of a widget.
@@ -109,7 +110,7 @@ public:
         _window = new_window;
         request_restyle();
 
-        for (auto& child : children()) {
+        for (auto& child : all_children()) {
             child.set_window(new_window);
         }
     }
@@ -257,15 +258,19 @@ public:
 
     /** Get a list of child widgets.
      */
-    [[nodiscard]] virtual generator<widget_intf&> children(bool include_invisible = true) noexcept = 0;
-
-    /** Get a list of child widgets.
-     */
-    [[nodiscard]] virtual generator<widget_intf const&> children(bool include_invisible = true) const noexcept final
+    [[nodiscard]] virtual generator<widget_intf&> children(bool include_invisible) const noexcept
     {
-        for (auto& child : const_cast<widget_intf*>(this)->children(include_invisible)) {
-            co_yield child;
-        }
+        co_return;
+    }
+
+    [[nodiscard]] generator<widget_intf&> all_children() const noexcept
+    {
+        return children(true);
+    }
+
+    [[nodiscard]] generator<widget_intf&> visible_children() const noexcept
+    {
+        return children(false);
     }
 
     /** Restyle the widgets and its children.
@@ -281,7 +286,7 @@ public:
     {
         auto const [child_path, child_properties] = style.restyle(pixel_density, path, properties);
 
-        for (auto& child : children()) {
+        for (auto& child : all_children()) {
             child.restyle(pixel_density, child_path, child_properties);
         }
     }
@@ -353,7 +358,33 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept = 0;
+    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept
+    {
+        return {};
+    }
+
+    /** Call hitbox_test from a parent widget.
+     *
+     * This function will transform the position from parent coordinates to local coordinates.
+     *
+     * @param position The coordinate of the mouse local to the parent widget.
+     */
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position) const noexcept
+    {
+        return hitbox_test(layout().from_parent * position);
+    }
+
+    /** Call hitbox_test from a parent widget.
+     *
+     * This function will transform the position from parent coordinates to local coordinates.
+     *
+     * @param position The coordinate of the mouse local to the parent widget.
+     * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
+     */
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point2 position, hitbox sibling_hitbox) const noexcept
+    {
+        return std::max(sibling_hitbox, hitbox_test(layout().from_parent * position));
+    }
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -413,7 +444,7 @@ public:
      * @return A pointer to the next widget.
      * @retval current_keyboard_widget When current_keyboard_widget was found
      *         but no next widget that accepts keyboard focus was found.
-     * @retval nullptr When current_keyboard_widget is not found in this widget.
+     * @retval 0 When current_keyboard_widget is not found in this widget.
      */
     [[nodiscard]] virtual widget_id find_next_widget(
         widget_id current_keyboard_widget,

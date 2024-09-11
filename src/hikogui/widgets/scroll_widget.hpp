@@ -103,7 +103,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) noexcept override
+    [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_aperture;
         if constexpr (std::to_underlying(axis & axis::vertical)) {
@@ -133,15 +133,23 @@ public:
             auto shape = cell.shape;
 
             if (cell.value == _aperture.get()) {
-                // This is the content. Move the content slightly when the scroll-bars aren't visible.
-                // The grid cells are always ordered in row-major.
-                // This the vertical scroll bar is _grid[1] and the horizontal scroll bar is _grid[2].
-                if (not _vertical_scroll_bar->visible()) {
-                    shape.rectangle = aarectangle{0, shape.y(), layout().width(), shape.height()};
+                // This is the content. If the scroll bars are not visible make
+                // the shape of this cell overlap the entire layout.
+                auto x = shape.x();
+                auto y = shape.y();
+                auto width = shape.width();
+                auto height = shape.height();
+
+                if (not std::to_underlying(axis & axis::horizontal) or not _horizontal_scroll_bar->visible()) {
+                    y = 0;
+                    height = layout().height();
                 }
-                if (not _horizontal_scroll_bar->visible()) {
-                    shape.rectangle = aarectangle{shape.x(), 0, shape.width(), layout().height()};
+                if (not std::to_underlying(axis & axis::vertical) or not _vertical_scroll_bar->visible()) {
+                    x = 0;
+                    width = layout().width();
                 }
+
+                shape.rectangle = aarectangle{x, y, width, height};
             }
 
             cell.value->set_layout(context.transform(shape, transform_command::level));
@@ -161,8 +169,12 @@ public:
 
         if (enabled()) {
             auto r = _aperture->hitbox_test_from_parent(position);
-            r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
-            r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
+            if constexpr (std::to_underlying(axis & axis::horizontal)) {
+                r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
+            }
+            if constexpr (std::to_underlying(axis & axis::vertical)) {
+                r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
+            }
 
             if (layout().contains(position)) {
                 r = std::max(r, hitbox{id(), layout().elevation});
