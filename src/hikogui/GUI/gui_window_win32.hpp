@@ -113,7 +113,7 @@ public:
         _setting_change_cbt = os_settings::subscribe(
             [this] {
                 ++global_counter<"gui_window:os_setting:constrain">;
-                this->_restyle = true;
+                request_restyle();
             },
             callback_flags::main);
 
@@ -121,7 +121,7 @@ public:
         _selected_theme_cbt = theme_book::global().selected_theme.subscribe(
             [this](auto...) {
                 ++global_counter<"gui_window:selected_theme:constrain">;
-                this->_restyle = true;
+                request_restyle();
             },
             callback_flags::main);
 
@@ -137,13 +137,17 @@ public:
         theme = get_selected_theme().transform(pixel_density);
         theme.apply_as_styles();
         _widget->set_window(this);
+
+        _restyle = false;
         _widget->restyle(pixel_density);
+        assert(not _restyle);
 
         // Execute a constraint check to determine initial window size.
+        _reconstrain = false;
         _widget_constraints = _widget->update_constraints();
-        auto const new_size = _widget_constraints.preferred;
+        assert(not _reconstrain);
 
-        show_window(new_size);
+        show_window(_widget_constraints.preferred);
     }
 
     ~gui_window()

@@ -43,6 +43,8 @@ public:
 
     widget_intf() noexcept : _id(make_widget_id())
     {
+        ++global_counter<"widget:construct">;
+
         _style_cbt = style.subscribe([&](style_modify_mask mask, bool restyle) {
             if (restyle) {
                 ++global_counter<"widget:style:path">;
@@ -65,7 +67,7 @@ public:
         this->set_phase(widget_phase::enabled);
     }
 
-        /** The numeric identifier of a widget.
+    /** The numeric identifier of a widget.
      *
      * @note This is a uint32_t equal to the operating system's accessibility identifier.
      */

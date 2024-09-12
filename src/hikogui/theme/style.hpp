@@ -169,6 +169,8 @@ public:
 
     void set_pseudo_class(style_pseudo_class new_pseudo_class)
     {
+        auto const t = trace<"style::set_pseudo_class">{};
+
         assert(std::to_underlying(new_pseudo_class) < _loaded_properties.size());
 
         auto const old_pseudo_class = std::exchange(_pseudo_class, new_pseudo_class);
@@ -188,6 +190,8 @@ public:
         style_path const& parent_path,
         properties_array_type const& parent_properties) noexcept
     {
+        auto const t = trace<"style::restyle">{};
+
         this->pixel_density = density;
 
         auto path = parent_path;
@@ -257,6 +261,8 @@ private:
 
     void update_properties(style_modify_mask mask)
     {
+        auto const t = trace<"style::update_properties">{};
+
         this->set_properties(_loaded_properties[std::to_underlying(_pseudo_class)], mask);
 
         if (to_bool(mask & style_modify_mask::size)) {
