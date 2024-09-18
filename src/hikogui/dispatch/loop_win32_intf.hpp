@@ -191,6 +191,8 @@ public:
         return future;
     }
 
+    
+
     /** Call a function at a certain time.
      *
      * @param time_point The time at which to call the function.
@@ -205,6 +207,12 @@ public:
             notify_has_send();
         }
         return std::move(callback);
+    }
+
+    template<forward_of<bool()> Predicate, forward_of<void()>>
+    [[nodiscard]] callback<void()> function_if(Predicate &&predicate, Func&& func) noexcept
+    {
+
     }
 
     /** Call a function repeatedly.
@@ -496,7 +504,7 @@ private:
     thread_id _thread_id;
     std::vector<weak_callback<void(utc_nanoseconds)>> _render_functions;
 
-struct socket_type {
+    struct socket_type {
         int fd;
         socket_event mode;
         std::function<void(int, socket_events const&)> callback;
@@ -562,6 +570,15 @@ struct socket_type {
     /** A list of functions to call on an event to a socket.
      */
     std::vector<std::function<void(int, socket_events const&)>> _socket_functions;
+
+    struct poll_function {
+        std::function<bool()> predicate;
+        std::function<void()> callback;
+    };
+
+    /** A list of functions which are polled often until the predicate is true.
+     */
+    std::vector<poll_function> _poll_functions;
 
     /** The vsync thread.
      */
