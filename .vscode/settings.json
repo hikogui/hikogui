@@ -149,5 +149,6 @@
             {"color": "#ffff00"},
         ]
     },
-    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json"
+    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+    "github.copilot.chat.experimental.codeGeneration.instructions": [{"file":".copilot-instructions.md"}]
 }

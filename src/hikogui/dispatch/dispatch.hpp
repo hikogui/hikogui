@@ -6,6 +6,8 @@
 #include <memory> // XXX #619
 #include <chrono> // XXX #619
 #include "async_task.hpp" // export
+#include "awaitable_future_impl.hpp" // export
+#include "awaitable_future_intf.hpp" // export
 #include "awaitable_stop_token_intf.hpp" // export
 #include "awaitable_stop_token_impl.hpp" // export
 #include "awaitable_timer_intf.hpp" // export
@@ -16,6 +18,9 @@
 #include "notifier.hpp" // export
 #include "progress.hpp" // export
 #include "socket_event.hpp" // export
+#include "stop_and_progress_source.hpp" // export
+#include "stop_and_progress_token.hpp" // export
+#include "stop_and_progress.hpp" // export
 #include "task_controller.hpp" // export
 #include "task.hpp" // export
 #include "when_any.hpp" // export

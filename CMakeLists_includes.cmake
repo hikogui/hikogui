@@ -202,11 +202,14 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/crt/crt_utils_win32_impl.hpp
     src/hikogui/dispatch/async_task.hpp
     src/hikogui/dispatch/awaitable.hpp
+    src/hikogui/dispatch/awaitable_future_impl.hpp
+    src/hikogui/dispatch/awaitable_future_intf.hpp
     src/hikogui/dispatch/awaitable_stop_token_impl.hpp
     src/hikogui/dispatch/awaitable_stop_token_intf.hpp
     src/hikogui/dispatch/awaitable_timer_impl.hpp
     src/hikogui/dispatch/awaitable_timer_intf.hpp
     src/hikogui/dispatch/dispatch.hpp
+    src/hikogui/dispatch/function_predicate.hpp
     src/hikogui/dispatch/function_timer.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     src/hikogui/dispatch/loop_win32_intf.hpp
@@ -216,6 +219,9 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/dispatch/socket_event_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
     src/hikogui/dispatch/socket_event_win32_impl.hpp
+    src/hikogui/dispatch/stop_and_progress.hpp
+    src/hikogui/dispatch/stop_and_progress_source.hpp
+    src/hikogui/dispatch/stop_and_progress_token.hpp
     src/hikogui/dispatch/task.hpp
     src/hikogui/dispatch/task_controller.hpp
     src/hikogui/dispatch/when_any.hpp

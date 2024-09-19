@@ -77,6 +77,8 @@ target_sources(hikogui_htests PRIVATE
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/lean_vector_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/container/polymorphic_optional_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/async_task_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/awaitable_future_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/function_predicate_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/notifier_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/task_controller_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/file/file_view_tests.cpp
