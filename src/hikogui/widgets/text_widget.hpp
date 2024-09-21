@@ -324,7 +324,7 @@ public:
             // When the next widget is selected due to pressing the Tab key the text should be committed.
             // The `text_widget` does not handle gui_activate, so it will be forwarded to parent widgets,
             // such as `text_field_widget` which does.
-            process_event(gui_event_type::gui_activate);
+            send_to_window(gui_event_type::gui_activate);
             return super::handle_event(event);
 
         case keyboard_grapheme:
@@ -374,7 +374,7 @@ public:
             if (enabled() and edit_mode() >= text_widget_edit_mode::selectable) {
                 reset_state("BDX");
                 if (auto const selected_text_ = selected_text(); not selected_text_.empty()) {
-                    process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text_));
+                    send_to_window(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text_));
                 }
                 return true;
             }
@@ -383,7 +383,7 @@ public:
         case text_edit_cut:
             if (enabled() and edit_mode() >= text_widget_edit_mode::selectable) {
                 reset_state("BDX");
-                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text()));
+                send_to_window(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, selected_text()));
                 if (edit_mode() >= text_widget_edit_mode::line_edit) {
                     replace_selection(gstring{});
                 }

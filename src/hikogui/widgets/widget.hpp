@@ -66,17 +66,6 @@ public:
         return false;
     }
 
-    /** Send a event to the window.
-     */
-    bool process_event(gui_event const& event) const noexcept override
-    {
-        if (auto *p = parent()) {
-            return p->process_event(event);
-        } else {
-            return true;
-        }
-    }
-
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
      * command to the super class' `handle_event()`.
@@ -127,32 +116,32 @@ public:
             return false;
 
         case gui_event_type::gui_activate_stay:
-            process_event(gui_event_type::gui_activate);
+            send_to_window(gui_event_type::gui_activate);
             if (accepts_keyboard_focus(keyboard_focus_group::menu)) {
                 // By going forward and backward we select the current parent,
                 // the widget that opened the menu-stack. 
-                process_event(gui_event_type::gui_widget_next);
-                process_event(gui_event_type::gui_widget_prev);
+                send_to_window(gui_event_type::gui_widget_next);
+                send_to_window(gui_event_type::gui_widget_prev);
             }
             return true;
 
         case gui_event_type::gui_activate_next:
-            process_event(gui_event_type::gui_activate);
-            return process_event(gui_event_type::gui_widget_next);
+            send_to_window(gui_event_type::gui_activate);
+            return send_to_window(gui_event_type::gui_widget_next);
 
         case gui_event_type::gui_widget_next:
-            process_event(
+            send_to_window(
                 gui_event::window_set_keyboard_target(id(), keyboard_focus_group::normal, keyboard_focus_direction::forward));
             return true;
 
         case gui_event_type::gui_widget_prev:
-            process_event(
+            send_to_window(
                 gui_event::window_set_keyboard_target(id(), keyboard_focus_group::normal, keyboard_focus_direction::backward));
             return true;
 
         case gui_event_type::gui_menu_next:
             if (enabled() and accepts_keyboard_focus(keyboard_focus_group::menu)) {
-                process_event(
+                send_to_window(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::menu, keyboard_focus_direction::forward));
                 return true;
             }
@@ -160,7 +149,7 @@ public:
 
         case gui_event_type::gui_menu_prev:
             if (enabled() and accepts_keyboard_focus(keyboard_focus_group::menu)) {
-                process_event(
+                send_to_window(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::menu, keyboard_focus_direction::backward));
                 return true;
             }
@@ -168,7 +157,7 @@ public:
 
         case gui_event_type::gui_toolbar_next:
             if (enabled() and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
-                process_event(
+                send_to_window(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
                 return true;
             }
@@ -176,7 +165,7 @@ public:
 
         case gui_event_type::gui_toolbar_prev:
             if (enabled() and accepts_keyboard_focus(keyboard_focus_group::toolbar)) {
-                process_event(
+                send_to_window(
                     gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward));
                 return true;
             }

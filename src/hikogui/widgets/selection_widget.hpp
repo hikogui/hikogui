@@ -389,8 +389,8 @@ private:
 
         if (auto focus_id = delegate->keyboard_focus_id(*this)) {
             _overlay_state = overlay_state_type::open;
-            process_event(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
-            request_redraw();
+            send_to_window(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
+            request_redraw_window();
         }
     }
 
@@ -401,7 +401,7 @@ private:
         if (_overlay_state == overlay_state_type::open) {
             _overlay_state = overlay_state_type::closing;
             _overlay_close_start = std::chrono::utc_clock::now();
-            request_redraw();
+            request_redraw_window();
         }
     }
 
@@ -409,7 +409,7 @@ private:
     {
         if (_overlay_state != overlay_state_type::closed) {
             _overlay_state = overlay_state_type::closed;
-            request_redraw();
+            request_redraw_window();
         }
     }
 
@@ -424,7 +424,7 @@ private:
             if (display_time_point >= _overlay_close_start + _overlay_close_delay) {
                 force_close_overlay();
             } else {
-                request_redraw();
+                request_redraw_window();
             }
             break;
         case overlay_state_type::closed:

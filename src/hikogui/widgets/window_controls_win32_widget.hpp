@@ -167,18 +167,18 @@ public:
                 request_redraw();
 
                 if (closeRectangle.contains(event.mouse().position)) {
-                    return process_event({gui_event_type::window_close});
+                    return send_to_window({gui_event_type::window_close});
 
                 } else if (minimizeRectangle.contains(event.mouse().position)) {
-                    return process_event({gui_event_type::window_minimize});
+                    return send_to_window({gui_event_type::window_minimize});
 
                 } else if (maximizeRectangle.contains(event.mouse().position)) {
                     switch (layout().window_size_state) {
                     case gui_window_size::normal:
-                        return process_event({gui_event_type::window_maximize});
+                        return send_to_window({gui_event_type::window_maximize});
 
                     case gui_window_size::maximized:
-                        return process_event({gui_event_type::window_normalize});
+                        return send_to_window({gui_event_type::window_normalize});
 
                     default:
                         hi_no_default();

@@ -168,18 +168,6 @@ public:
     {
     }
 
-    void request_redraw() const noexcept override
-    {
-        // A toolbar tab button draws a focus line across the whole toolbar
-        // which is beyond it's own clipping rectangle. The parent is the toolbar
-        // so it will include everything that needs to be redrawn.
-        if (auto* p = parent()) {
-            p->request_redraw();
-        } else {
-            super::request_redraw();
-        }
-    }
-
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {

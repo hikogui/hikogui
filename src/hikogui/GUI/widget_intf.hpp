@@ -81,7 +81,7 @@ public:
      * May be a nullptr only when this is the top level widget, or when
      * the widget is removed from its parent.
      */
-    [[nodiscard]] virtual widget_intf* parent() const noexcept
+    [[nodiscard]] widget_intf* parent() const noexcept
     {
         return _parent;
     }
@@ -102,7 +102,7 @@ public:
         }
     }
 
-    [[nodiscard]] virtual gui_window* window() const noexcept
+    [[nodiscard]] gui_window* window() const noexcept
     {
         return _window;
     }
@@ -116,6 +116,40 @@ public:
             child.set_window(new_window);
         }
     }
+
+    /** Send a event to the window.
+     * 
+     * @param event The event to send to the window.
+     * @return True when the event was handled by the window.
+     */
+    bool send_to_window(gui_event const& event) const noexcept;
+
+    /** Request the window to restyle all the widgets.
+     */
+    void request_restyle() const noexcept;
+
+    /** Request the window to resize based on the preferred size of the widgets.
+     */
+    void request_resize() const noexcept;
+
+    /** Request the window to reconstrain all the widgets.
+     */
+    void request_reconstrain() const noexcept;
+
+    /** Request the window to relayout all the widgets.
+     */
+    void request_relayout() const noexcept;
+
+    /** Request the window to redraw the area used by the widget.
+     */
+    void request_redraw() const noexcept;
+
+    /** Request the window to be fully redrawn.
+     * 
+     * Use this function when a widget has changed in such a way that it
+     * affects the window outside the area of the widget.
+     */
+    void request_redraw_window() const noexcept;
 
     /** Subscribe a callback to be called when an action is completed by the widget.
      */
@@ -397,30 +431,6 @@ public:
      *
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept = 0;
-
-    /** Request the window to restyle all the widgets.
-     */
-    virtual void request_restyle() const noexcept;
-
-    /** Request the window to resize based on the preferred size of the widgets.
-     */
-    virtual void request_resize() const noexcept;
-
-    /** Request the window to reconstrain all the widgets.
-     */
-    virtual void request_reconstrain() const noexcept;
-
-    /** Request the window to relayout all the widgets.
-     */
-    virtual void request_relayout() const noexcept;
-
-    /** Request the window to redraw the area used by the widget.
-     */
-    virtual void request_redraw() const noexcept;
-
-    /** Send a event to the window.
-     */
-    virtual bool process_event(gui_event const& event) const noexcept = 0;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the

@@ -100,7 +100,7 @@ public:
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 ++hi::global_counter<"drawing_widget:no-backing-image:constrain">;
-                process_event({hi::gui_event_type::window_reconstrain});
+                send_to_window({hi::gui_event_type::window_reconstrain});
             }
         }
 

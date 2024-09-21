@@ -257,21 +257,12 @@ public:
 
         switch (event.type()) {
         case gui_toolbar_open:
-            process_event(
+            send_to_window(
                 gui_event::window_set_keyboard_target(id(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward));
             return true;
         default:;
         }
         return super::handle_event(event);
-    }
-    bool process_event(gui_event const& event) const noexcept override
-    {
-        if (auto w = window()) {
-            return w->process_event(event);
-        } else {
-            // Since there is no window, pretend that the message was handled.
-            return true;
-        }
     }
     /// @endprivatesection
 private:

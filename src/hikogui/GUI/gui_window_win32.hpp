@@ -211,6 +211,11 @@ public:
         _redraw_rectangle |= dirty_rectangle;
     }
 
+    void request_redraw_window() noexcept
+    {
+        _redraw_rectangle |= aarectangle{widget_size};
+    }
+
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
@@ -261,7 +266,7 @@ public:
             if (new_size != rectangle.size()) {
                 hi_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
                 set_window_size(new_size);
-                request_redraw(aarectangle{new_size});
+                request_redraw_window();
             }
 
         } else {
@@ -271,7 +276,7 @@ public:
             if (new_size != current_size and size_state() != gui_window_size::minimized) {
                 hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
                 set_window_size(new_size);
-                request_redraw(aarectangle{new_size});
+                request_redraw_window();
             }
         }
 
@@ -300,7 +305,7 @@ public:
             _widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
             // After layout do a complete redraw.
-            request_redraw(aarectangle{widget_size});
+            request_redraw_window();
         }
 
         // Draw widgets if the _redraw_rectangle was set.
@@ -820,7 +825,7 @@ public:
      *
      * It may also be called from within the `event_handle()` of widgets.
      */
-    bool process_event(gui_event event) noexcept
+    bool handle_event(gui_event event) noexcept
     {
         using enum gui_event_type;
 
@@ -1415,7 +1420,7 @@ private:
 
         case WM_NCPAINT:
             hi_axiom(loop::main().on_thread());
-            request_redraw(aarectangle{rectangle.size()});
+            request_redraw_window();
             break;
 
         case WM_SIZE:
@@ -1510,7 +1515,7 @@ private:
             // After a manual move of the window, it is clear that the window is in normal mode.
             _restore_rectangle = rectangle;
             _size_state = gui_window_size::normal;
-            request_redraw(aarectangle{rectangle.size()});
+            request_redraw_window();
             break;
 
         case WM_ACTIVATE:
@@ -1518,10 +1523,10 @@ private:
             switch (wParam) {
             case 1: // WA_ACTIVE
             case 2: // WA_CLICKACTIVE
-                this->process_event({gui_event_type::window_activate});
+                this->handle_event({gui_event_type::window_activate});
                 break;
             case 0: // WA_INACTIVE
-                this->process_event({gui_event_type::window_deactivate});
+                this->handle_event({gui_event_type::window_deactivate});
                 break;
             default:
                 hi_log_error("Unknown WM_ACTIVE value.");
@@ -1550,7 +1555,7 @@ private:
 
             } else if (auto const gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                 // Only pass code-points that are non-control and non-mark.
-                process_event(gui_event::keyboard_grapheme(grapheme{c}));
+                handle_event(gui_event::keyboard_grapheme(grapheme{c}));
             }
             break;
 
@@ -1558,7 +1563,7 @@ private:
             if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
                 if (auto const gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                     // Only pass code-points that are non-control and non-mark.
-                    process_event(gui_event::keyboard_partial_grapheme(grapheme{c}));
+                    handle_event(gui_event::keyboard_partial_grapheme(grapheme{c}));
                 }
             }
             break;
@@ -1567,7 +1572,7 @@ private:
             if (auto c = handle_suragates(char_cast<char32_t>(wParam))) {
                 if (auto const gc = ucd_get_general_category(c); not is_C(gc) and not is_M(gc)) {
                     // Only pass code-points that are non-control and non-mark.
-                    process_event(gui_event::keyboard_grapheme(grapheme{c}));
+                    handle_event(gui_event::keyboard_grapheme(grapheme{c}));
                 }
             }
             break;
@@ -1575,7 +1580,7 @@ private:
         case WM_SYSCOMMAND:
             if (wParam == SC_KEYMENU) {
                 keymenu_pressed = true;
-                process_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::menu});
+                handle_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::menu});
                 return 0;
             }
             break;
@@ -1596,7 +1601,7 @@ private:
                 if (virtual_key != keyboard_virtual_key::nul) {
                     auto const key_state = get_keyboard_state();
                     auto const event_type = uMsg == WM_KEYDOWN ? gui_event_type::keyboard_down : gui_event_type::keyboard_up;
-                    process_event(gui_event{event_type, virtual_key, key_modifiers, key_state});
+                    handle_event(gui_event{event_type, virtual_key, key_modifiers, key_state});
                 }
             }
             break;
@@ -1618,7 +1623,7 @@ private:
         case WM_MOUSEMOVE:
         case WM_MOUSELEAVE:
             keymenu_pressed = false;
-            process_event(create_mouse_event(uMsg, wParam, lParam));
+            handle_event(create_mouse_event(uMsg, wParam, lParam));
             break;
 
         case WM_NCCALCSIZE:
@@ -1812,6 +1817,16 @@ private:
     }
 };
 
+bool widget_intf::send_to_window(gui_event const& event) const noexcept
+{
+    if (auto w = window()) {
+        return w->handle_event(event);
+    } else {
+        // Pretend the event was handled, even though there is no window.
+        return true;
+    }
+}
+
 void widget_intf::request_restyle() const noexcept
 {
     if (auto *w = window()) {
@@ -1844,6 +1859,13 @@ void widget_intf::request_redraw() const noexcept
 {
     if (auto *w = window()) {
         w->request_redraw(layout().clipping_rectangle_on_window());
+    }
+}
+
+void widget_intf::request_redraw_window() const noexcept
+{
+    if (auto *w = window()) {
+        w->request_redraw_window();
     }
 }
 
