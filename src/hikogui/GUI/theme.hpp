@@ -277,7 +277,7 @@ public:
             add_style_properties(style_importance::theme, selector, properties);
         }
 
-        // A standard button - has rounded corners.
+        // button - has rounded corners.
         {
             auto const selector = style_selector{style_selector_segment::from_element("button")};
             auto const priority = style_priority{importance, selector.specificity()};
@@ -289,6 +289,17 @@ public:
             properties.set_border_top_right_radius(rounding_radius<float>() * scalar_to_dips, priority);
             properties.set_horizontal_alignment(horizontal_alignment::center, priority);
             properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // button:checked - has a background color as if pressed.
+        {
+            auto selector = style_selector{style_selector_segment::from_element("button")};
+            selector[0].pseudo_classes.emplace_back("checked");
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_background_color(_accent_color, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 
@@ -353,7 +364,8 @@ public:
 
         // toolbar-tab-button icon - is a larger icon
         {
-            auto selector = style_selector{style_selector_segment::from_element("toolbar-tab-button"), style_selector_segment::from_element("icon")};
+            auto selector = style_selector{
+                style_selector_segment::from_element("toolbar-tab-button"), style_selector_segment::from_element("icon")};
             selector[0].child_combinator = false;
             auto const priority = style_priority{importance, selector.specificity()};
 
@@ -416,7 +428,7 @@ public:
             }
         }
 
-        // toggle:unchecked - The toggle changes color depending if checked or unchecked.
+        // :unchecked - The toggle changes color depending if checked or unchecked.
         {
             auto const selector = style_selector{style_selector_segment::from_pseudo_class("unchecked")};
             auto const priority = style_priority{importance, selector.specificity()};

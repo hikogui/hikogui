@@ -68,12 +68,75 @@ public:
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(widget_intf const& sender) noexcept override
+    void activate(widget_intf const& sender) noexcept override
     {
         _notifier();
     }
 };
 
+template<typename F, typename... Args>
+requires std::invocable<F, Args...>
+class default_button_delegate<F, Args...> : public button_delegate {
+public:
+    default_button_delegate(F&& function, Args&&... args) noexcept :
+        button_delegate(), _function(std::forward<F>(function)), _args(std::forward<Args>(args)...)
+    {
+    }
+
+    /** Used by the widget to check the state of the button.
+     */
+    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
+    {
+        return _running ? widget_value::on : widget_value::off;
+    }
+
+    /** Called when the button is pressed by the user.
+     *
+     * Calls the function with the arguments.
+     */
+    void activate(widget_intf const& sender) noexcept override
+    {
+        assert(loop::main().on_thread());
+
+        if (_running) {
+            return;
+        }
+
+        _running = true;
+        _future = std::async(std::launch::async, [this] {
+            std::apply(_function, _args);
+        });
+        _future_cbt = loop::local().delay_function_until(
+            [this] {
+                assert(_future.valid());
+                return _future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+            },
+            [this] {
+                _running = false;
+
+                assert(_future.valid());
+                _future.get();
+                _notifier();
+            });
+
+        // Call the notifier to update the state of the button.
+        _notifier();
+    }
+
+private:
+    bool _running = false;
+    F _function;
+    std::tuple<Args...> _args;
+    std::future<void> _future;
+    callback<void()> _future_cbt;
+};
+
+
+default_button_delegate() -> default_button_delegate<>;
+
+template<typename F, typename... Args>
+    requires std::invocable<F, Args...>
+default_button_delegate(F&&, Args&&...) -> default_button_delegate<F, Args...>;
 
 } // namespace v1
 } // namespace hi::v1
