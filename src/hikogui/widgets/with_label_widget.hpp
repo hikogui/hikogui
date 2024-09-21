@@ -11,7 +11,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "button_delegate.hpp"
 #include "label_widget.hpp"
 #include "../utility/utility.hpp"
 #include "../algorithm/algorithm.hpp"

@@ -173,15 +173,13 @@ hi::task<> main_window(my_preferences& preferences)
     auto& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
 
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
-    top->content().emplace_bottom<async_widget>(
-        [] {
-            hi_log_info("hello world");
-        },
-        txt("Hello world AV"));
 
-    auto const& vma_dump_button = top->content().emplace_bottom<momentary_button_widget>(txt("vma\ncalculate stats"));
-    auto const& abort_button = top->content().emplace_bottom<momentary_button_widget>(txt("abort"));
-    auto const& break_button = top->content().emplace_bottom<momentary_button_widget>(txt("break"));
+    auto& vma_dump_button = top->content().emplace_bottom<button_widget>();
+    vma_dump_button.label = txt("VMA\rcalculate stats");
+    auto& abort_button = top->content().emplace_bottom<button_widget>();
+    abort_button.label = txt("abort");
+    auto& break_button = top->content().emplace_bottom<button_widget>();
+    break_button.label = txt("break");
 
     auto window = gui_window{std::move(top)};
 

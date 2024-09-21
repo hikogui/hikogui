@@ -90,7 +90,7 @@ struct style_property_element {
         r.emplace_back(selector, properties);
     }
 
-    for (auto const& element : std::vector{"selection", "button", "momentary-button", "text-field"}) {
+    for (auto const& element : std::vector{"selection", "button", "text-field"}) {
         auto const selector = style_selector{style_selector_segment::from_element(element)};
         auto const priority = style_priority{importance, selector.specificity()};
 

@@ -536,7 +536,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/icon_widget.hpp
     src/hikogui/widgets/label_widget.hpp
     src/hikogui/widgets/menu_button_widget.hpp
-    src/hikogui/widgets/momentary_button_widget.hpp
+    src/hikogui/widgets/button_widget.hpp
     src/hikogui/widgets/overlay_widget.hpp
     src/hikogui/widgets/radio_delegate.hpp
     src/hikogui/widgets/radio_widget.hpp

@@ -277,9 +277,9 @@ public:
             add_style_properties(style_importance::theme, selector, properties);
         }
 
-        // momentary-button - has rounded corners.
+        // A standard button - has rounded corners.
         {
-            auto const selector = style_selector{style_selector_segment::from_element("momentary-button")};
+            auto const selector = style_selector{style_selector_segment::from_element("button")};
             auto const priority = style_priority{importance, selector.specificity()};
 
             auto properties = style_properties{};

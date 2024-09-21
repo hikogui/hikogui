@@ -9,7 +9,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "button_delegate.hpp"
 #include "label_widget.hpp"
 #include "../algorithm/algorithm.hpp"
 #include "../l10n/l10n.hpp"

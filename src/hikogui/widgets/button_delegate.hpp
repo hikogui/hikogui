@@ -58,7 +58,21 @@ protected:
     notifier<void()> _notifier;
 };
 
+template<typename...>
+class default_button_delegate;
 
+template<>
+class default_button_delegate<> : public button_delegate {
+public:
+    default_button_delegate() noexcept : button_delegate() {}
+
+    /** Called when the button is pressed by the user.
+     */
+    virtual void activate(widget_intf const& sender) noexcept override
+    {
+        _notifier();
+    }
+};
 
 
 } // namespace v1

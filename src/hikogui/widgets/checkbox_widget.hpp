@@ -124,7 +124,6 @@ public:
     /** Construct a checkbox widget with a default button delegate.
      *
      * @param args The arguments to the `default_toggle_delegate`
-     *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
     checkbox_widget(Args&&... args) : checkbox_widget(make_default_delegate(std::forward<Args>(args)...))
