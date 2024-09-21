@@ -209,17 +209,13 @@ public:
         _off_label_widget->set_layout(context.transform(_off_label_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             draw_toolbar_tab_button(context);
         }
 
-        if (delegate->state(*this) == widget_value::on) {
-            _on_label_widget->draw(context);
-        } else {
-            _off_label_widget->draw(context);
-        }
+        return super::draw(context);
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
@@ -229,8 +225,12 @@ public:
 
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        co_yield *_on_label_widget;
-        co_yield *_off_label_widget;
+        if (delegate->state(*this) != widget_value::off or include_invisible) {
+            co_yield *_on_label_widget;
+        }
+        if (delegate->state(*this) == widget_value::off or include_invisible) {
+            co_yield *_off_label_widget;
+        }
     }
 
     [[nodiscard]] color background_color() const noexcept override
@@ -308,7 +308,7 @@ protected:
 private:
     box_constraints _label_constraints;
 
-    void draw_toolbar_tab_button(draw_context const& context) noexcept
+    void draw_toolbar_tab_button(draw_context const& context) const noexcept
     {
         // Draw the outline of the button across the clipping rectangle to clip the
         // bottom of the outline.

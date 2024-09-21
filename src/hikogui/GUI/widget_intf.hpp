@@ -351,7 +351,12 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    virtual void draw(draw_context const& context) noexcept = 0;
+    virtual void draw(draw_context const& context) const noexcept
+    {
+        for (auto const &child : visible_children()) {
+            child.draw(context);
+        }
+    }
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when

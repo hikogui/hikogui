@@ -74,11 +74,6 @@ public:
         _grid_widget->set_layout(context.transform(_grid_shape, transform_command::level));
     }
 
-    void draw(draw_context const& context) noexcept override
-    {
-        _grid_widget->draw(context);
-    }
-
     hitbox hitbox_test(point2 position) const noexcept override
     {
         if (enabled()) {

@@ -150,7 +150,7 @@ public:
         return style.text_style[{*phrasing}].color();
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             switch (_icon_type) {
@@ -174,6 +174,8 @@ public:
                 hi_no_default();
             }
         }
+
+        return super::draw(context);
     }
     /// @endprivatesection
 private:
@@ -181,7 +183,7 @@ private:
 
     icon_type _icon_type;
     font_glyph_ids _glyph;
-    gfx_pipeline_image::paged_image _pixmap_backing;
+    mutable gfx_pipeline_image::paged_image _pixmap_backing;
     std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;

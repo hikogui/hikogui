@@ -144,13 +144,6 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
-    {
-        for (auto &child : visible_children()) {
-            child.draw(context);
-        }
-    }
-
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());

@@ -119,12 +119,19 @@ public:
         _content->set_layout(layout().transform(_content_shape, context.rectangle()));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
-            draw_background(context);
+            context.draw_box(
+                layout(),
+                layout().rectangle(),
+                background_color(),
+                foreground_color(),
+                theme().border_width(),
+                border_side::outside);
         }
-        _content->draw(context);
+
+        return super::draw(context);
     }
 
     [[nodiscard]] color background_color() const noexcept override
@@ -159,12 +166,6 @@ private:
     std::unique_ptr<widget> _content;
     box_constraints _content_constraints;
     box_shape _content_shape;
-
-    void draw_background(draw_context const& context) noexcept
-    {
-        context.draw_box(
-            layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width(), border_side::outside);
-    }
 };
 
 } // namespace v1

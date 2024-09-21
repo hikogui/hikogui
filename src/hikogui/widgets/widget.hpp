@@ -66,8 +66,6 @@ public:
         return false;
     }
 
-    void draw(draw_context const& context) noexcept override {}
-
     /** Send a event to the window.
      */
     bool process_event(gui_event const& event) const noexcept override

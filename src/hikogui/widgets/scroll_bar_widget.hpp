@@ -104,12 +104,14 @@ public:
         return *aperture < *content;
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
         }
+
+        return super::draw(context);
     }
 
     hitbox hitbox_test(point2 position) const noexcept override
@@ -251,14 +253,14 @@ private:
         return _hidden_content != 0 ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
-    void draw_rails(draw_context const& context) noexcept
+    void draw_rails(draw_context const& context) const noexcept
     {
         auto const corner_radii =
             axis == axis::vertical ? hi::corner_radii{layout().width() * 0.5f} : hi::corner_radii{layout().height() * 0.5f};
         context.draw_box(layout(), layout().rectangle(), background_color(), corner_radii);
     }
 
-    void draw_slider(draw_context const& context) noexcept
+    void draw_slider(draw_context const& context) const noexcept
     {
         auto const corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() / 2.0f} :
                                                            hi::corner_radii{_slider_rectangle.height() / 2.0f};

@@ -137,7 +137,7 @@ public:
         _pip_move_range = style.width_px - _pip_circle.diameter() - pip_to_button_margin_x2;
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             context.draw_box(
@@ -165,6 +165,8 @@ public:
             auto const positioned_pip_circle = pip_offset * _pip_circle;
             context.draw_circle(layout(), positioned_pip_circle * 1.02f, style.accent_color);
         }
+
+        return super::draw(context);
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
@@ -209,7 +211,7 @@ private:
     constexpr static std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     aarectangle _button_rectangle;
-    animator<float> _animated_value = _animation_duration;
+    mutable animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
     float _pip_move_range;
 

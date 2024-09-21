@@ -78,7 +78,7 @@ public:
         restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB, alignment::middle_center());
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             auto const close_circle_color = not front() ? color(0.246f, 0.246f, 0.246f) :
@@ -115,6 +115,8 @@ public:
                 }
             }
         }
+
+        return super::draw(context);
     }
 
     bool handle_event(gui_event const& event) noexcept override

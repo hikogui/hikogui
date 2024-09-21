@@ -40,8 +40,6 @@ public:
         return r;
     }
 
-    void draw(draw_context const& context) noexcept override {}
-
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         return hitbox{};

@@ -177,9 +177,15 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        co_yield *_overlay_widget;
-        co_yield *_current_label_widget;
-        co_yield *_off_label_widget;
+        if (not overlay_closed() or include_invisible) {
+            co_yield *_overlay_widget;
+        }
+        if (_has_current_label or include_invisible) {
+            co_yield *_current_label_widget;
+        }
+        if (not _has_current_label or include_invisible) {
+            co_yield *_off_label_widget;
+        }
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
@@ -266,9 +272,9 @@ public:
         _current_label_widget->set_layout(context.transform(content_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
-        animate_overlay(context.display_time_point);
+        const_cast<selection_widget *>(this)->animate_overlay(context.display_time_point);
 
         if (overlaps(context, layout())) {
             draw_outline(context);
@@ -276,16 +282,7 @@ public:
             draw_chevron(context);
         }
 
-        if (_has_current_label) {
-            _current_label_widget->draw(context);
-        } else {
-            _off_label_widget->draw(context);
-        }
-
-        // Overlay is outside of the overlap of the selection widget.
-        if (not overlay_closed()) {
-            _overlay_widget->draw(context);
-        }
+        return super::draw(context);
     }
 
     bool handle_event(gui_event const& event) noexcept override
@@ -461,7 +458,7 @@ private:
         close_overlay();
     }
 
-    void draw_outline(draw_context const& context) noexcept
+    void draw_outline(draw_context const& context) const noexcept
     {
         context.draw_box(
             layout(),
@@ -473,7 +470,7 @@ private:
             style.border_radius_px);
     }
 
-    void draw_chevron_box(draw_context const& context) noexcept
+    void draw_chevron_box(draw_context const& context) const noexcept
     {
         auto const corner_radii = [&] {
             if (os_settings::left_to_right()) {
@@ -486,7 +483,7 @@ private:
         context.draw_box(layout(), translate_z(0.1f) * _chevron_box_rectangle, style.border_color, corner_radii);
     }
 
-    void draw_chevron(draw_context const& context) noexcept
+    void draw_chevron(draw_context const& context) const noexcept
     {
         context.draw_glyph(layout(), translate_z(0.2f) * _chevron_rectangle, _chevron_glyph, style.background_color);
     }

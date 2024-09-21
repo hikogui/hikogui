@@ -63,7 +63,7 @@ public:
      * This function is used during rendering to use the optimized
      * GPU clear function.
      */
-    [[nodiscard]] color background_color() noexcept
+    [[nodiscard]] color background_color() const noexcept override
     {
         hi_axiom(loop::main().on_thread());
         return theme().fill_color(layout().layer);
@@ -180,12 +180,11 @@ public:
         _toolbar->set_layout(context.transform(_toolbar_shape));
         _content->set_layout(context.transform(_content_shape));
     }
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         context.draw_box(layout(), layout().rectangle(), background_color(), background_color());
 
-        _toolbar->draw(context);
-        _content->draw(context);
+        return super::draw(context);
     }
     
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override

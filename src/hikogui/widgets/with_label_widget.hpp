@@ -160,13 +160,6 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
-    {
-        for (auto &child : visible_children()) {
-            child.draw(context);
-        }
-    }
-
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_button_widget;

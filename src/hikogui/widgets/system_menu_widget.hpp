@@ -83,13 +83,6 @@ public:
         _icon_widget->set_layout(context.transform(_icon_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
-    {
-        if (overlaps(context, layout())) {
-            _icon_widget->draw(context);
-        }
-    }
-
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());

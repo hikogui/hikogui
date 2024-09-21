@@ -77,7 +77,7 @@ public:
             box_shape{label_rectangle, lift(context.baseline(), padding.bottom(), padding.top())};
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             draw_toolbar_button(context);
@@ -94,7 +94,7 @@ private:
     box_constraints _label_constraints;
     std::stop_source _stop_source;
 
-    void draw_toolbar_button(draw_context const& context) noexcept
+    void draw_toolbar_button(draw_context const& context) const noexcept
     {
         auto const border_color = focus() ? focus_color() : color::transparent();
         context.draw_box(

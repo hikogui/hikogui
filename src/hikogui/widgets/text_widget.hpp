@@ -260,21 +260,23 @@ public:
         _shaped_text.layout(context.rectangle(), baseline, context.sub_pixel_size);
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         using namespace std::literals::chrono_literals;
 
         // After potential reconstrain and relayout, updating the shaped-text, ask the parent window to scroll if needed.
-        if (std::exchange(_request_scroll, false)) {
-            scroll_to_show_selection();
+        auto *mutable_this = const_cast<text_widget*>(this);
+
+        if (std::exchange(mutable_this->_request_scroll, false)) {
+            mutable_this->scroll_to_show_selection();
         }
 
         if (_last_drag_mouse_event) {
             if (_last_drag_mouse_event_next_repeat == utc_nanoseconds{}) {
-                _last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_delay();
+                mutable_this->_last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_delay();
 
             } else if (context.display_time_point >= _last_drag_mouse_event_next_repeat) {
-                _last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_interval();
+                mutable_this->_last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_interval();
 
                 // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
                 // back to local coordinates before handling the mouse event again.
@@ -282,9 +284,9 @@ public:
                 new_mouse_event.mouse().position = layout().from_window * _last_drag_mouse_event.mouse().position;
 
                 // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
-                text_widget::handle_event(new_mouse_event);
+                mutable_this->handle_event(new_mouse_event);
             }
-            scroll_to_show_selection();
+            mutable_this->scroll_to_show_selection();
             ++global_counter<"text_widget:mouse_drag:redraw">;
             request_redraw();
         }
@@ -305,6 +307,8 @@ public:
                     theme().secondary_cursor_color());
             }
         }
+
+        return super::draw(context);
     }
 
     bool handle_event(gui_event const& event) noexcept override

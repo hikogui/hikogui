@@ -62,7 +62,7 @@ public:
     //
     // This draw() function only draws the GUI part of the widget, there is another draw() function
     // that will draw the 3D part.
-    void draw(hi::draw_context const& context) noexcept override
+    void draw(hi::draw_context const& context) const noexcept override
     {
         // We request a redraw for each frame, in case the 3D model changes on each frame.
         // In normal cases we should take into account if the 3D model actually changes before requesting a redraw.
@@ -76,6 +76,8 @@ public:
             // the solid-background color of the GUI would show instead.
             context.draw_hole(layout(), layout().rectangle());
         }
+
+        return super::draw(context);
     }
 
     // This draw() function draws the 3D model.
@@ -83,7 +85,7 @@ public:
     //
     // As HikoGUI reuses previous drawing of the swap-chain it is important to let the render-pass
     // load the data from the frame-buffer (not set to don't-care) and to not render outside the @a render_area.
-    void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept override
+    void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) const noexcept override
     {
         assert(_triangle_example != nullptr);
 

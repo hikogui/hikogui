@@ -124,7 +124,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             context.draw_box(layout(), layout().rectangle(), theme().fill_color(layout().layer));
@@ -137,10 +137,7 @@ public:
             }
         }
 
-        for (auto const& child : _children) {
-            hi_assert_not_null(child.value);
-            child.value->draw(context);
-        }
+        return super::draw(context);
     }
 
     hitbox hitbox_test(point2 position) const noexcept override

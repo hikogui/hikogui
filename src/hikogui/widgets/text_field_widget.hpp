@@ -135,10 +135,8 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        if (_scroll_widget) {
-            co_yield *_scroll_widget;
-        }
-        if (_error_label_widget) {
+        co_yield *_scroll_widget;
+        if (not _error_label->empty() or include_invisible) {
             co_yield *_error_label_widget;
         }
     }
@@ -211,16 +209,13 @@ public:
         _scroll_widget->set_layout(context.transform(_scroll_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             draw_background_box(context);
         }
 
-        _scroll_widget->draw(context);
-        if (not _error_label->empty()) {
-            _error_label_widget->draw(context);
-        }
+        return super::draw(context);
     }
 
     bool handle_event(gui_event const& event) noexcept override

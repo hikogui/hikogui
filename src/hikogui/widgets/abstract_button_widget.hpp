@@ -226,7 +226,7 @@ protected:
         }
     }
 
-    void draw_button(draw_context const& context) noexcept
+    void draw_button(draw_context const& context) const noexcept
     {
         if (delegate->state(*this) == widget_value::on) {
             _on_label_widget->draw(context);

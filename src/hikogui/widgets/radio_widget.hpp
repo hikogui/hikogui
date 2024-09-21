@@ -154,7 +154,7 @@ public:
         _pip_circle = align(_button_rectangle, circle{button_radius - style.border_width_px * 3.0f}, alignment::middle_center());
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             if (focus_group != keyboard_focus_group::menu) {
@@ -186,6 +186,8 @@ public:
                 context.draw_circle(layout(), _pip_circle * 1.02f * float_value, style.accent_color);
             }
         }
+
+        return super::draw(context);
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
@@ -232,7 +234,7 @@ private:
 
     circle _button_circle;
 
-    animator<float> _animated_value = _animation_duration;
+    mutable animator<float> _animated_value = _animation_duration;
     circle _pip_circle;
 
     callback<void()> _delegate_cbt;

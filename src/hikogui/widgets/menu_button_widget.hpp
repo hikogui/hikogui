@@ -148,7 +148,7 @@ public:
         }
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             context.draw_box(
@@ -158,22 +158,9 @@ public:
                 style.border_color,
                 style.border_width_px,
                 border_side::inside);
-
-            for (auto const& cell : _grid) {
-                if (cell.value == grid_cell_type::button) {
-                    _button_widget->draw(context);
-
-                } else if (cell.value == grid_cell_type::label) {
-                    _label_widget->draw(context);
-
-                } else if (cell.value == grid_cell_type::shortcut) {
-                    _shortcut_widget->draw(context);
-
-                } else {
-                    hi_no_default();
-                }
-            }
         }
+        
+        return super::draw(context);
     }
 
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override

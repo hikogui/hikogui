@@ -159,7 +159,7 @@ public:
         _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb, alignment::middle_center());
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
             context.draw_box(
@@ -183,6 +183,8 @@ public:
                 context.draw_glyph(layout(), translate_z(0.1f) * _minus_glyph_rectangle, _minus_glyph, style.accent_color);
             }
         }
+
+        return super::draw(context);
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override

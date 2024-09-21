@@ -161,11 +161,6 @@ public:
         _content->set_layout(context.transform(_content_shape, transform_command::level, context.rectangle()));
     }
 
-    void draw(draw_context const& context) noexcept override
-    {
-        _content->draw(context);
-    }
-
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());

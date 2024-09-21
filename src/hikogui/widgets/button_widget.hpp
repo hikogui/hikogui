@@ -97,15 +97,13 @@ public:
         _label_widget->set_layout(context.transform(label_shape));
     }
 
-    void draw(draw_context const& context) noexcept override
+    void draw(draw_context const& context) const noexcept override
     {
-        for (auto &child : visible_children()) {
-            child.draw(context);
-        }
-
         if (overlaps(context, layout())) {
             draw_box(context);
         }
+
+        return super::draw(context);
     }
 
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
@@ -146,7 +144,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         assert(loop::main().on_thread());
-        
+
         return enabled() and to_bool(group & focus_group);
     }
     /// @endprivatesection
@@ -156,7 +154,7 @@ private:
 
     callback<void()> _delegate_cbt;
 
-    void draw_box(draw_context const& context) noexcept
+    void draw_box(draw_context const& context) const noexcept
     {
         // Move the border of the button in the middle of a pixel.
         context.draw_box(
