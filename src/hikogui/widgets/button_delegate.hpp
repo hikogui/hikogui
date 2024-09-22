@@ -74,6 +74,57 @@ public:
     }
 };
 
+/** Button delegate handling a task.
+ */
+template<typename F, typename... Args>
+requires invocable_task<F, Args...>
+class default_button_delegate<F, Args...> : public button_delegate {
+public:
+    default_button_delegate(F&& function, Args&&... args) noexcept :
+        button_delegate(), _function(std::forward<F>(function)), _args(std::forward<Args>(args)...)
+    {
+    }
+
+    /** Used by the widget to check the state of the button.
+     */
+    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
+    {
+        return _task.running() ? widget_value::on : widget_value::off;
+    }
+
+    /** Called when the button is pressed by the user.
+     *
+     * Calls the function with the arguments.
+     */
+    void activate(widget_intf const& sender) noexcept override
+    {
+        assert(loop::main().on_thread());
+
+        if (_running) {
+            return;
+        }
+
+        _task = std::apply(_function, _args);
+
+        _task_cbt = _task.subscribe([this] {
+            assert(_task.done());
+            _task.value();
+            _notifier();
+            });
+
+        // Call the notifier to update the state of the button.
+        _notifier();
+    }
+
+private:
+    F _function;
+    std::tuple<Args...> _args;
+    task<void> _task;
+    callback<void()> _task_cbt;
+};
+
+/** Button delegate handling a long-running function.
+ */
 template<typename F, typename... Args>
 requires std::invocable<F, Args...>
 class default_button_delegate<F, Args...> : public button_delegate {

@@ -356,6 +356,11 @@ struct is_invocable_task {
 template<typename Func, typename... ArgTypes>
 constexpr bool is_invocable_task_v = is_invocable_task<Func, ArgTypes...>::value;
 
+/** Concept for a invocable that returns a task.
+ */
+template<typename Func, typename... ArgTypes>
+concept invocable_task = std::invocable<Func, ArgTypes...> and is_invocable_task_v<Func, ArgTypes...>;
+
 template<typename Func, typename... ArgTypes>
 struct invoke_task_result {
     using type = task_value_type_t<std::invoke_result_t<Func, ArgTypes...>>;
