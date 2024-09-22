@@ -86,7 +86,7 @@ public:
     ~text_widget()
     {
         hi_assert_not_null(delegate);
-        delegate->deinit(*this);
+        delegate->deinit(this);
     }
 
     /** Construct a text widget.
@@ -99,7 +99,7 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _delegate_cbt = this->delegate->subscribe([&] {
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
             // On every text edit, immediately/synchronously update the shaped text.
             // This is needed for handling multiple edit commands before the next frame update.
             if (layout()) {
@@ -140,7 +140,7 @@ public:
         // is only waiting on `model` and `focus`, so this is cheap.
         _blink_cursor = blink_cursor();
 
-        this->delegate->init(*this);
+        this->delegate->init(this);
 
         style.set_name("text");
     }
@@ -185,7 +185,7 @@ public:
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         // Read the latest text from the delegate.
-        _text_cache = delegate->read(*this);
+        _text_cache = delegate->read(this);
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text_cache.size());
@@ -947,7 +947,7 @@ private:
         if (_undo_stack.can_undo()) {
             auto const& [text, selection] = _undo_stack.undo(_text_cache, _selection);
 
-            delegate->write(*this, text);
+            delegate->write(this, text);
             _selection = selection;
         }
     }
@@ -957,7 +957,7 @@ private:
         if (_undo_stack.can_redo()) {
             auto const& [text, selection] = _undo_stack.redo();
 
-            delegate->write(*this, text);
+            delegate->write(this, text);
             _selection = selection;
         }
     }
@@ -1014,7 +1014,7 @@ private:
 
         auto text = _text_cache;
         text.replace(first, last - first, replacement);
-        delegate->write(*this, text);
+        delegate->write(this, text);
 
         _selection = text_cursor{first + replacement.size() - 1, true};
         fix_cursor_position();
@@ -1057,11 +1057,11 @@ private:
             if (_has_dead_character != U'\uffff') {
                 auto text = _text_cache;
                 text[_selection.cursor().index()] = *_has_dead_character;
-                delegate->write(*this, text);
+                delegate->write(this, text);
             } else {
                 auto text = _text_cache;
                 text.erase(_selection.cursor().index(), 1);
-                delegate->write(*this, text);
+                delegate->write(this, text);
             }
         }
         _has_dead_character = std::nullopt;

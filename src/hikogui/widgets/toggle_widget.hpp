@@ -76,7 +76,7 @@ public:
 
     ~toggle_widget()
     {
-        this->delegate->deinit(*this);
+        this->delegate->deinit(this);
     }
 
     /** Construct a toggle widget.
@@ -89,9 +89,9 @@ public:
     {
         hi_axiom_not_null(this->delegate);
 
-        this->delegate->init(*this);
-        _delegate_cbt = this->delegate->subscribe([&] {
-            set_checked(this->delegate->state(*this) != widget_value::off);
+        this->delegate->init(this);
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
+            set_checked(this->delegate->state(this) != widget_value::off);
             this->notifier();
         });
         _delegate_cbt();
@@ -149,7 +149,7 @@ public:
                 border_side::inside,
                 corner_radii{style.height_px * 0.5f});
 
-            switch (_animated_value.update(delegate->state(*this) != widget_value::off ? 1.0f : 0.0f, context.display_time_point)) {
+            switch (_animated_value.update(delegate->state(this) != widget_value::off ? 1.0f : 0.0f, context.display_time_point)) {
             case animator_state::uninitialized:
                 std::unreachable();
             case animator_state::idle:
@@ -193,7 +193,7 @@ public:
         switch (event.type()) {
         case gui_event_type::gui_activate:
             if (enabled()) {
-                delegate->activate(*this);
+                delegate->activate(this);
                 ++global_counter<"toggle_widget:handle_event:relayout">;
                 request_relayout();
                 return true;

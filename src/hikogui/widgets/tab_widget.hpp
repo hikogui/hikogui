@@ -47,7 +47,7 @@ public:
     ~tab_widget()
     {
         hi_assert_not_null(delegate);
-        delegate->deinit(*this);
+        delegate->deinit(this);
     }
 
     /** Construct a tab widget with a delegate.
@@ -60,12 +60,12 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(this->delegate);
 
-        _delegate_cbt = this->delegate->subscribe([&] {
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
             ++global_counter<"tab_widget:delegate:constrain">;
             request_resize();
         });
 
-        this->delegate->init(*this);
+        this->delegate->init(this);
 
         style.set_name("tab-view");
     }
@@ -88,7 +88,7 @@ public:
         hi_assert_not_null(delegate);
 
         child->set_parent(this);
-        delegate->add_tab(*this, index, _children.size());
+        delegate->add_tab(this, index, _children.size());
         _children.push_back(std::move(child));
 
         ++global_counter<"tab_widget:emplace:constrain">;
@@ -118,7 +118,7 @@ public:
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) const noexcept override
     {
         for (auto i = size_t{0}; i < _children.size(); ++i) {
-            if (std::cmp_equal(i, delegate->index(*this)) or include_invisible) {
+            if (std::cmp_equal(i, delegate->index(this)) or include_invisible) {
                 co_yield *_children[i];
             }
         }

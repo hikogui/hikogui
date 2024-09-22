@@ -163,13 +163,13 @@ public:
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
         co_yield *_button_widget;
-        if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::on) {
+        if (include_invisible or _button_widget->delegate->state(_button_widget.get()) == widget_value::on) {
             co_yield *_on_label_widget;
         }
-        if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::off) {
+        if (include_invisible or _button_widget->delegate->state(_button_widget.get()) == widget_value::off) {
             co_yield *_off_label_widget;
         }
-        if (include_invisible or _button_widget->delegate->state(*_button_widget) == widget_value::other) {
+        if (include_invisible or _button_widget->delegate->state(_button_widget.get()) == widget_value::other) {
             co_yield *_other_label_widget;
         }
     }

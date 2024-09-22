@@ -122,7 +122,7 @@ public:
 
     ~toolbar_tab_button_widget()
     {
-        delegate->deinit(*this);
+        delegate->deinit(this);
     }
 
     /** Construct a toolbar tab button widget.
@@ -144,9 +144,9 @@ public:
         _off_label_widget->set_parent(this);
 
         hi_axiom_not_null(this->delegate);
-        this->delegate->init(*this);
-        _delegate_cbt = this->delegate->subscribe([&] {
-            set_checked(this->delegate->state(*this) != widget_value::off);
+        this->delegate->init(this);
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
+            set_checked(this->delegate->state(this) != widget_value::off);
         });
         _delegate_cbt();
 
@@ -213,10 +213,10 @@ public:
 
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        if (delegate->state(*this) != widget_value::off or include_invisible) {
+        if (delegate->state(this) != widget_value::off or include_invisible) {
             co_yield *_on_label_widget;
         }
-        if (delegate->state(*this) == widget_value::off or include_invisible) {
+        if (delegate->state(this) == widget_value::off or include_invisible) {
             co_yield *_off_label_widget;
         }
     }
@@ -244,7 +244,7 @@ public:
 
     void activate() noexcept
     {
-        delegate->activate(*this);
+        delegate->activate(this);
 
         notifier();
     }

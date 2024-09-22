@@ -99,7 +99,7 @@ public:
 
     ~selection_widget()
     {
-        delegate->deinit(*this);
+        delegate->deinit(this);
     }
 
     /** Construct a selection widget with a delegate.
@@ -128,6 +128,7 @@ public:
         });
 
         _delegate_options_cbt = this->delegate->subscribe_on_options(
+            this,
             [&] {
                 update_options();
             },
@@ -135,6 +136,7 @@ public:
         _delegate_options_cbt();
 
         _delegate_value_cbt = this->delegate->subscribe_on_value(
+            this,
             [&] {
                 update_value();
             },
@@ -142,7 +144,7 @@ public:
         _delegate_value_cbt();
 
         hi_axiom_not_null(this->delegate);
-        this->delegate->init(*this);
+        this->delegate->init(this);
 
         style.set_name("selection");
     }
@@ -289,7 +291,7 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (enabled() and not delegate->empty(*this) and
+            if (enabled() and not delegate->empty(this) and
                 layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
@@ -299,7 +301,7 @@ public:
             // Handle gui_active_next so that the next widget will NOT get keyboard focus.
             // The previously selected item needs the get keyboard focus instead.
         case gui_event_type::gui_activate:
-            if (enabled() and not delegate->empty(*this) and overlay_closed()) {
+            if (enabled() and not delegate->empty(this) and overlay_closed()) {
                 open_overlay();
             } else {
                 close_overlay();
@@ -327,7 +329,7 @@ public:
 
             if (layout().contains(position)) {
                 r = std::max(
-                    r, hitbox{id(), layout().elevation, not delegate->empty(*this) ? hitbox_type::button : hitbox_type::_default});
+                    r, hitbox{id(), layout().elevation, not delegate->empty(this) ? hitbox_type::button : hitbox_type::_default});
             }
 
             return r;
@@ -340,7 +342,7 @@ public:
     {
         hi_axiom(loop::main().on_thread());
         return enabled() and to_bool(group & hi::keyboard_focus_group::normal) and
-            not delegate->empty(*this);
+            not delegate->empty(this);
     }
 
     /// @endprivatesection
@@ -387,7 +389,7 @@ private:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (auto focus_id = delegate->keyboard_focus_id(*this)) {
+        if (auto focus_id = delegate->keyboard_focus_id(this)) {
             _overlay_state = overlay_state_type::open;
             send_to_window(gui_event::window_set_keyboard_target(*focus_id, keyboard_focus_group::menu));
             request_redraw_window();
@@ -437,8 +439,8 @@ private:
     void update_options() noexcept
     {
         _grid_widget->clear();
-        for (auto i = 0_uz; i != delegate->size(*this); ++i) {
-            _grid_widget->push_bottom(delegate->make_option_widget(*_grid_widget, i));
+        for (auto i = 0_uz; i != delegate->size(this); ++i) {
+            _grid_widget->push_bottom(delegate->make_option_widget(_grid_widget, i));
         }
 
         ++global_counter<"selection_widget:update_options:constrain">;
@@ -447,7 +449,7 @@ private:
 
     void update_value() noexcept
     {
-        if (auto selected_label = delegate->selected_label(*this)) {
+        if (auto selected_label = delegate->selected_label(this)) {
             _has_current_label = true;
             _current_label_widget->label = *selected_label;
 

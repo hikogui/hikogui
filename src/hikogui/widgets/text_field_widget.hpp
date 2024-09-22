@@ -82,7 +82,7 @@ public:
     virtual ~text_field_widget()
     {
         hi_assert_not_null(delegate);
-        delegate->deinit(*this);
+        delegate->deinit(this);
     }
 
     template<std::derived_from<delegate_type> Delegate>
@@ -90,11 +90,11 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _delegate_cbt = this->delegate->subscribe([&] {
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
             ++global_counter<"text_field_widget:delegate:layout">;
             request_relayout();
         });
-        this->delegate->init(*this);
+        this->delegate->init(this);
 
         _scroll_widget = std::make_unique<scroll_widget<axis::none>>();
         _scroll_widget->set_parent(this);
@@ -149,7 +149,7 @@ public:
 
         if (_text_widget->focus()) {
             // Update the optional error value from the string conversion when the text-widget has keyboard focus.
-            _error_label = delegate->validate(*this, *_text);
+            _error_label = delegate->validate(this, *_text);
 
         } else {
             // When field is not focused, simply follow the observed_value.
@@ -306,7 +306,7 @@ private:
     void revert(bool force) noexcept
     {
         hi_assert_not_null(delegate);
-        _text = delegate->text(*this);
+        _text = delegate->text(this);
         _error_label = label{};
     }
     void commit(bool force) noexcept
@@ -317,13 +317,13 @@ private:
         if (*continues or force) {
             auto text = *_text;
 
-            if (delegate->validate(*this, text).empty()) {
+            if (delegate->validate(this, text).empty()) {
                 // text is valid.
-                delegate->set_text(*this, text);
+                delegate->set_text(this, text);
             }
 
             // After commit get the canonical text to display from the delegate.
-            _text = delegate->text(*this);
+            _text = delegate->text(this);
             _error_label = label{};
         }
     }

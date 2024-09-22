@@ -98,7 +98,7 @@ public:
 
     ~checkbox_widget()
     {
-        this->delegate->deinit(*this);
+        this->delegate->deinit(this);
     }
 
     /** Construct a checkbox widget.
@@ -111,9 +111,9 @@ public:
     {
         hi_axiom_not_null(this->delegate);
 
-        this->delegate->init(*this);
-        _delegate_cbt = this->delegate->subscribe([&] {
-            set_checked(this->delegate->state(*this) != widget_value::off);
+        this->delegate->init(this);
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
+            set_checked(this->delegate->state(this) != widget_value::off);
             this->notifier();
         });
         _delegate_cbt();
@@ -171,7 +171,7 @@ public:
                 border_side::inside,
                 style.border_radius_px);
 
-            switch (delegate->state(*this)) {
+            switch (delegate->state(this)) {
             case widget_value::on:
                 context.draw_glyph(layout(), translate_z(0.1f) * _check_glyph_rectangle, _check_glyph, style.accent_color);
                 break;
@@ -211,7 +211,7 @@ public:
         switch (event.type()) {
         case gui_event_type::gui_activate:
             if (enabled()) {
-                delegate->activate(*this);
+                delegate->activate(this);
                 request_redraw();
                 return true;
             }

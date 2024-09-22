@@ -43,7 +43,7 @@ public:
 
     ~button_widget()
     {
-        this->delegate->deinit(*this);
+        this->delegate->deinit(this);
     }
 
     button_widget(std::shared_ptr<delegate_type> delegate) noexcept :
@@ -54,9 +54,9 @@ public:
         _label_widget = std::make_unique<label_widget>(label);
         _label_widget->set_parent(this);
 
-        this->delegate->init(*this);
-        _delegate_cbt = this->delegate->subscribe([&] {
-            set_checked(this->delegate->state(*this) != widget_value::off);
+        this->delegate->init(this);
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
+            set_checked(this->delegate->state(this) != widget_value::off);
             this->notifier();
         });
         _delegate_cbt();
@@ -118,7 +118,7 @@ public:
         switch (event.type()) {
         case gui_event_type::gui_activate:
             if (enabled()) {
-                delegate->activate(*this);
+                delegate->activate(this);
                 request_redraw();
                 return true;
             }

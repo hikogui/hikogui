@@ -176,8 +176,10 @@ hi::task<> main_window(my_preferences& preferences)
 
     auto& vma_dump_button = top->content().emplace_bottom<button_widget>();
     vma_dump_button.label = txt("VMA\rcalculate stats");
-    auto& abort_button = top->content().emplace_bottom<button_widget>();
-    abort_button.label = txt("abort");
+
+    auto& abort_button = top->content().emplace_bottom<button_widget>(preferences_window, preferences);
+    abort_button.label = txt("preferences");
+
     auto& break_button = top->content().emplace_bottom<button_widget>([]{
         using namespace std::chrono_literals;
 
@@ -185,7 +187,7 @@ hi::task<> main_window(my_preferences& preferences)
         std::this_thread::sleep_for(1s);
         hi_log_info("Break finished.");
     });
-    break_button.label = txt("break");
+    break_button.label = txt("async call");
 
     auto window = gui_window{std::move(top)};
 
@@ -202,7 +204,7 @@ hi::task<> main_window(my_preferences& preferences)
             break;
         case 2:
             // target = 1 / (result.index() - 3);
-            hi_assert_abort("my abort");
+            //hi_assert_abort("my abort");
             break;
         case 3:
             hi_log_info("Break button co_awaited");

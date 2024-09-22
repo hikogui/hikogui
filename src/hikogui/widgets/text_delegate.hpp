@@ -34,21 +34,21 @@ class text_delegate {
 public:
     virtual ~text_delegate() = default;
 
-    virtual void init(widget_intf const& sender) noexcept {}
-    virtual void deinit(widget_intf const& sender) noexcept {}
+    virtual void init(widget_intf const* sender) {}
+    virtual void deinit(widget_intf const* sender) {}
 
     /** Read text as a string of graphemes.
      */
-    [[nodiscard]] virtual gstring read(widget_intf const& sender) noexcept = 0;
+    [[nodiscard]] virtual gstring read(widget_intf const* sender) = 0;
 
     /** Write text from a string of graphemes.
      */
-    virtual void write(widget_intf const& sender, gstring const& text) noexcept = 0;
+    virtual void write(widget_intf const* sender, gstring const& text) = 0;
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
     template<forward_of<void()> Func>
-    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] callback<void()> subscribe(widget_intf const* sender, Func&& func, callback_flags flags = callback_flags::synchronous)
     {
         return _notifier.subscribe(std::forward<Func>(func), flags);
     }
@@ -81,19 +81,19 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const* sender) override
     {
         return to_gstring(std::string{*value});
     }
 
-    void write(widget_intf const& sender, gstring const& text) noexcept override
+    void write(widget_intf const* sender, gstring const& text) override
     {
         hi_no_default();
     }
@@ -118,19 +118,19 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const* sender) override
     {
         return to_gstring(*value);
     }
 
-    void write(widget_intf const& sender, gstring const& text) noexcept override
+    void write(widget_intf const* sender, gstring const& text) override
     {
         value = to_string(text);
     }
@@ -155,19 +155,19 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const* sender) override
     {
         return *value;
     }
 
-    void write(widget_intf const& sender, gstring const& text) noexcept override
+    void write(widget_intf const* sender, gstring const& text) override
     {
         value = text;
     }
@@ -192,19 +192,19 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) noexcept : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const& sender) noexcept override
+    [[nodiscard]] gstring read(widget_intf const* sender) override
     {
         return value->translate();
     }
 
-    void write(widget_intf const& sender, gstring const& text) noexcept override
+    void write(widget_intf const* sender, gstring const& text) override
     {
         hi_no_default();
     }

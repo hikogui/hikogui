@@ -61,7 +61,7 @@ public:
     ~abstract_button_widget()
     {
         hi_assert_not_null(delegate);
-        delegate->deinit(*this);
+        delegate->deinit(this);
     }
 
     abstract_button_widget(std::shared_ptr<delegate_type> delegate) noexcept :
@@ -76,9 +76,9 @@ public:
         _other_label_widget = std::make_unique<label_widget>(other_label);
         _other_label_widget->set_parent(this);
 
-        this->delegate->init(*this);
-        _delegate_cbt = this->delegate->subscribe([&] {
-            set_checked(this->delegate->state(*this) != widget_value::off);
+        this->delegate->init(this);
+        _delegate_cbt = this->delegate->subscribe(this, [&] {
+            set_checked(this->delegate->state(this) != widget_value::off);
         });
         _delegate_cbt();
     }
@@ -137,7 +137,7 @@ public:
     void activate() noexcept
     {
         hi_assert_not_null(delegate);
-        delegate->activate(*this);
+        delegate->activate(this);
 
         notifier();
     }
@@ -228,9 +228,9 @@ protected:
 
     void draw_button(draw_context const& context) const noexcept
     {
-        if (delegate->state(*this) == widget_value::on) {
+        if (delegate->state(this) == widget_value::on) {
             _on_label_widget->draw(context);
-        } else if (delegate->state(*this) == widget_value::off) {
+        } else if (delegate->state(this) == widget_value::off) {
             _off_label_widget->draw(context);
         } else {
             _other_label_widget->draw(context);

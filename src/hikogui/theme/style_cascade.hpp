@@ -102,10 +102,10 @@ struct style_property_element {
     return r;
 }
 
-auto initial_style_properties = std::vector<style_property_element>{};
-auto user_style_properties = std::vector<style_property_element>{};
-auto theme_style_properties = std::vector<style_property_element>{};
-auto author_style_properties = std::vector<style_property_element>{};
+inline auto initial_style_properties = std::vector<style_property_element>{};
+inline auto user_style_properties = std::vector<style_property_element>{};
+inline auto theme_style_properties = std::vector<style_property_element>{};
+inline auto author_style_properties = std::vector<style_property_element>{};
 
 
 constexpr void generate_pseudo_classes_from_nesting_depth(size_t depth, std::vector<std::string>& r)

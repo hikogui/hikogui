@@ -29,19 +29,19 @@ class button_delegate {
 public:
     virtual ~button_delegate() = default;
 
-    virtual void init(widget_intf const& sender) noexcept {}
+    virtual void init(widget_intf const* sender) {}
 
-    virtual void deinit(widget_intf const& sender) noexcept {}
+    virtual void deinit(widget_intf const* sender) {}
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(widget_intf const& sender) noexcept {}
+    virtual void activate(widget_intf const* sender) {}
 
-    virtual void set_state(widget_intf const& sender, widget_value value) noexcept {}
+    virtual void set_state(widget_intf const* sender, widget_value value) {}
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual widget_value state(widget_intf const& sender) const noexcept
+    [[nodiscard]] virtual widget_value state(widget_intf const* sender) const
     {
         return widget_value::off;
     }
@@ -49,7 +49,8 @@ public:
     /** Subscribe a callback for notifying the widget of a data change.
      */
     template<forward_of<void()> Func>
-    [[nodiscard]] callback<void()> subscribe(Func&& func, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] callback<void()>
+    subscribe(widget_intf const* sender, Func&& func, callback_flags flags = callback_flags::synchronous)
     {
         return _notifier.subscribe(std::forward<Func>(func), flags);
     }
@@ -68,10 +69,76 @@ public:
 
     /** Called when the button is pressed by the user.
      */
-    void activate(widget_intf const& sender) noexcept override
+    void activate(widget_intf const* sender) noexcept override
     {
         _notifier();
     }
+};
+
+/** Button delegate handling a task with a stop_token.
+ */
+template<typename F, typename... Args>
+requires invocable_task<F, std::stop_token, Args...>
+class default_button_delegate<F, std::stop_token, Args...> : public button_delegate {
+public:
+    default_button_delegate(F&& function, Args&&... args) :
+        button_delegate(),
+        _function(std::forward<F>(function)),
+        _args(std::forward<Args>(args)...)
+    {
+    }
+
+    /** Used by the widget to check the state of the button.
+     */
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    {
+        if (_task.running()) {
+            if (_stop_source.stop_possible() and _stop_source.stop_requested()) {
+                return widget_value::other;
+            } else {
+                return widget_value::on;
+            }
+        } else {
+            return widget_value::off;
+        }
+    }
+
+    /** Called when the button is pressed by the user.
+     *
+     * Calls the function with the arguments.
+     */
+    void activate(widget_intf const* sender) override
+    {
+        assert(loop::main().on_thread());
+
+        if (_task.running()) {
+            assert(_stop_source.stop_possible());
+            _stop_source.request_stop();
+
+        } else {
+            _stop_source = std::stop_source();
+
+            _task = std::apply(_function, std::tuple_cat(std::tuple{_stop_source.get_token()}, _args));
+
+            _task_cbt = _task.subscribe([this] {
+                assert(_task.done());
+
+                _task_cbt = {};
+                _task = {};
+                _notifier();
+            });
+
+            // Call the notifier to update the state of the button.
+            _notifier();
+        }
+    }
+
+private:
+    F _function;
+    std::tuple<Args...> _args;
+    std::stop_source _stop_source;
+    task<void> _task;
+    callback<void()> _task_cbt;
 };
 
 /** Button delegate handling a task.
@@ -80,14 +147,14 @@ template<typename F, typename... Args>
 requires invocable_task<F, Args...>
 class default_button_delegate<F, Args...> : public button_delegate {
 public:
-    default_button_delegate(F&& function, Args&&... args) noexcept :
+    default_button_delegate(F&& function, Args&&... args) :
         button_delegate(), _function(std::forward<F>(function)), _args(std::forward<Args>(args)...)
     {
     }
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
     {
         return _task.running() ? widget_value::on : widget_value::off;
     }
@@ -96,11 +163,11 @@ public:
      *
      * Calls the function with the arguments.
      */
-    void activate(widget_intf const& sender) noexcept override
+    void activate(widget_intf const* sender) override
     {
         assert(loop::main().on_thread());
 
-        if (_running) {
+        if (_task.running()) {
             return;
         }
 
@@ -108,9 +175,11 @@ public:
 
         _task_cbt = _task.subscribe([this] {
             assert(_task.done());
-            _task.value();
+
+            _task_cbt = {};
+            _task = {};
             _notifier();
-            });
+        });
 
         // Call the notifier to update the state of the button.
         _notifier();
@@ -129,14 +198,14 @@ template<typename F, typename... Args>
 requires std::invocable<F, Args...>
 class default_button_delegate<F, Args...> : public button_delegate {
 public:
-    default_button_delegate(F&& function, Args&&... args) noexcept :
+    default_button_delegate(F&& function, Args&&... args) :
         button_delegate(), _function(std::forward<F>(function)), _args(std::forward<Args>(args)...)
     {
     }
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] widget_value state(widget_intf const& sender) const noexcept override
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
     {
         return _running ? widget_value::on : widget_value::off;
     }
@@ -145,7 +214,7 @@ public:
      *
      * Calls the function with the arguments.
      */
-    void activate(widget_intf const& sender) noexcept override
+    void activate(widget_intf const* sender) override
     {
         assert(loop::main().on_thread());
 
@@ -182,12 +251,16 @@ private:
     callback<void()> _future_cbt;
 };
 
-
 default_button_delegate() -> default_button_delegate<>;
 
 template<typename F, typename... Args>
-    requires std::invocable<F, Args...>
+requires std::invocable<F, Args...>
 default_button_delegate(F&&, Args&&...) -> default_button_delegate<F, Args...>;
+
+template<typename F, typename... Args>
+requires std::invocable<F, std::stop_token, Args...>
+default_button_delegate(F&&, Args&&...) -> default_button_delegate<F, std::stop_token, Args...>;
+
 
 } // namespace v1
 } // namespace hi::v1

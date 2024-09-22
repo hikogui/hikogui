@@ -140,6 +140,7 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/generator_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/reflection_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/utility/type_traits_tests.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/button_delegate_tests.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/widgets/text_widget_tests.cpp
 )
 

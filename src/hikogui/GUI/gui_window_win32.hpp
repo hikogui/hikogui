@@ -13,6 +13,7 @@
 #include "theme_book.hpp"
 #include "widget_intf.hpp"
 #include "mouse_cursor.hpp"
+#include "../l10n/l10n.hpp"
 #include "../GFX/GFX.hpp"
 #include "../crt/crt.hpp"
 #include "../macros.hpp"
