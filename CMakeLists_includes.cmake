@@ -200,7 +200,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/crt/crt_utils_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
     src/hikogui/crt/crt_utils_win32_impl.hpp
-    src/hikogui/dispatch/async_task.hpp
     src/hikogui/dispatch/awaitable.hpp
     src/hikogui/dispatch/awaitable_future_impl.hpp
     src/hikogui/dispatch/awaitable_future_intf.hpp
@@ -214,7 +213,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     src/hikogui/dispatch/loop_win32_intf.hpp
     src/hikogui/dispatch/notifier.hpp
-    src/hikogui/dispatch/progress.hpp
     src/hikogui/dispatch/socket_event.hpp
     src/hikogui/dispatch/socket_event_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
@@ -223,7 +221,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/dispatch/stop_and_progress_source.hpp
     src/hikogui/dispatch/stop_and_progress_token.hpp
     src/hikogui/dispatch/task.hpp
-    src/hikogui/dispatch/task_controller.hpp
     src/hikogui/dispatch/when_any.hpp
     src/hikogui/file/access_mode.hpp
     src/hikogui/file/file.hpp
@@ -553,7 +550,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/text_widget.hpp
     src/hikogui/widgets/toggle_delegate.hpp
     src/hikogui/widgets/toggle_widget.hpp
-    src/hikogui/widgets/toolbar_button_widget.hpp
     src/hikogui/widgets/toolbar_tab_button_widget.hpp
     src/hikogui/widgets/toolbar_widget.hpp
     src/hikogui/widgets/utility.hpp

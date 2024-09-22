@@ -160,7 +160,7 @@ hi::task<> preferences_window(std::stop_token stop_token, my_preferences& prefer
     co_await when_any(window.closing, stop_token);
 }
 
-inline size_t target = 0;
+inline std::shared_ptr<hi::button_delegate> preferences_window_button_delegate;
 
 hi::task<> main_window(my_preferences& preferences)
 {
@@ -169,15 +169,15 @@ hi::task<> main_window(my_preferences& preferences)
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), txt("HikoGUI demo")};
     auto top = std::make_unique<window_widget>(window_label);
 
-    auto preferences_label = label{elusive_icon::Wrench, txt("Preferences")};
-    auto& preferences_button = top->toolbar().emplace<hi::toolbar_button_widget>(preferences_label);
+    auto& preferences_button = top->toolbar().emplace<button_widget>(preferences_window_button_delegate);
+    preferences_button.label = label{elusive_icon::Wrench, txt("Preferences")};
 
     top->content().emplace_bottom<toggle_with_label_widget>(preferences.toggle_value);
 
     auto& vma_dump_button = top->content().emplace_bottom<button_widget>();
     vma_dump_button.label = txt("VMA\rcalculate stats");
 
-    auto& abort_button = top->content().emplace_bottom<button_widget>(preferences_window, preferences);
+    auto& abort_button = top->content().emplace_bottom<button_widget>(preferences_window_button_delegate);
     abort_button.label = txt("preferences");
 
     auto& break_button = top->content().emplace_bottom<button_widget>([]{
@@ -197,17 +197,13 @@ hi::task<> main_window(my_preferences& preferences)
 
         switch (result.index()) {
         case 0:
-            preferences_button.wait_for(preferences_window(preferences_button.get_stop_token(), preferences));
             break;
         case 1:
             gfx_system::global().log_memory_usage();
             break;
         case 2:
-            // target = 1 / (result.index() - 3);
-            //hi_assert_abort("my abort");
             break;
         case 3:
-            hi_log_info("Break button co_awaited");
             break;
         case 4:
             hi_log_info("Toggle value {}", std::get<4>(result));
@@ -233,6 +229,7 @@ int hi_main(int argc, char* argv[])
     start_render_doc();
 
     auto preferences = my_preferences(get_path(data_dir(), "preferences.json"));
+    preferences_window_button_delegate = make_shared_ctad<default_button_delegate>(preferences_window, preferences);
 
     theme_book::global().selected_theme = preferences.selected_theme;
 

@@ -28,7 +28,6 @@
 #include "text_widget.hpp" // export
 #include "toggle_delegate.hpp" // export
 #include "toggle_widget.hpp" // export
-#include "toolbar_button_widget.hpp" // export
 #include "toolbar_tab_button_widget.hpp" // export
 #include "toolbar_widget.hpp" // export
 #include "widget.hpp" // export

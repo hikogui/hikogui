@@ -114,7 +114,9 @@ public:
                 _grid.add_cell(0, 0, _text_widget.get(), true);
                 _grid.add_cell(0, 1, _icon_widget.get());
             } else {
-                hi_no_default("alignment is not allowed to be middle-center.");
+                // icon text (buttons want to be middle-center aligned).
+                _grid.add_cell(0, 0, _icon_widget.get());
+                _grid.add_cell(1, 0, _text_widget.get(), true);
             }
         } else if (to_bool(label->icon)) {
             // Only the icon-widget is used.
