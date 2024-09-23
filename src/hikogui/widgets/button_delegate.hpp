@@ -192,6 +192,79 @@ private:
     callback<void()> _task_cbt;
 };
 
+/** Button delegate handling a long-running function with std::stop_token argument..
+ */
+template<typename F, typename... Args>
+requires std::invocable<F, std::stop_token, Args...>
+class default_button_delegate<F, std::stop_token, Args...> : public button_delegate {
+public:
+    default_button_delegate(F&& function, Args&&... args) :
+        button_delegate(), _function(std::forward<F>(function)), _args(std::forward<Args>(args)...)
+    {
+    }
+
+    /** Used by the widget to check the state of the button.
+     */
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    {
+        if (_running) {
+            if (_stop_source.stop_requested()) {
+                return widget_value::other;
+            } else {
+                return widget_value::on;
+            }
+        } else {
+            return widget_value::off;
+        }
+    }
+
+    /** Called when the button is pressed by the user.
+     *
+     * Calls the function with the arguments.
+     */
+    void activate(widget_intf const* sender) override
+    {
+        assert(loop::main().on_thread());
+
+        if (_running) {
+            assert(_stop_source.is_stoppable());
+            _stop_source.request_stop();
+
+        } else {
+            _stop_source = {};
+            _running = true;
+            _future = std::async(std::launch::async, [this] {
+                std::apply(_function, std::cat_tupple(std::tuple{_stop_source.get_token()}, _args));
+            });
+            _future_cbt = loop::local().delay_function_until(
+                [this] {
+                    assert(_future.valid());
+                    return _future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+                },
+                [this] {
+                    assert(_future.valid());
+                    _future.get();
+                    _future = {};
+                    _future_cbt = {};
+                    _running = false;
+
+                    _notifier();
+                });
+
+            // Call the notifier to update the state of the button.
+            _notifier();
+        }
+    }
+
+private:
+    bool _running = false;
+    F _function;
+    std::tuple<Args...> _args;
+    std::future<void> _future;
+    callback<void()> _future_cbt;
+    std::stop_source _stop_source;
+};
+
 /** Button delegate handling a long-running function.
  */
 template<typename F, typename... Args>
