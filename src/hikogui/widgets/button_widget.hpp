@@ -100,7 +100,14 @@ public:
     void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
-            draw_box(context);
+            context.draw_box(
+                layout(),
+                layout().rectangle(),
+                style.background_color,
+                style.border_color,
+                style.border_width_px,
+                border_side::inside,
+                style.border_radius_px);
         }
 
         return super::draw(context);
@@ -153,19 +160,6 @@ private:
     std::unique_ptr<label_widget> _label_widget;
 
     callback<void()> _delegate_cbt;
-
-    void draw_box(draw_context const& context) const noexcept
-    {
-        // Move the border of the button in the middle of a pixel.
-        context.draw_box(
-            layout(),
-            layout().rectangle(),
-            style.background_color,
-            style.border_color,
-            style.border_width_px,
-            border_side::inside,
-            style.border_radius_px);
-    }
 };
 
 } // namespace v1

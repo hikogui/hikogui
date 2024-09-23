@@ -179,7 +179,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        if (not overlay_closed() or include_invisible) {
+        if (_overlay_state != overlay_state_type::closed or include_invisible) {
             co_yield *_overlay_widget;
         }
         if (_has_current_label or include_invisible) {
@@ -301,10 +301,19 @@ public:
             // Handle gui_active_next so that the next widget will NOT get keyboard focus.
             // The previously selected item needs the get keyboard focus instead.
         case gui_event_type::gui_activate:
-            if (enabled() and not delegate->empty(this) and overlay_closed()) {
-                open_overlay();
-            } else {
-                close_overlay();
+            if (enabled() and not delegate->empty(this)) {
+                switch (_overlay_state) {
+                case overlay_state_type::closed:
+                    open_overlay();
+                    break;
+                case overlay_state_type::open:
+                    close_overlay();
+                    break;
+                case overlay_state_type::closing:
+                    break;
+                default:
+                    std::unreachable();
+                }
             }
             ++global_counter<"selection_widget:gui_activate:relayout">;
             request_relayout();
@@ -324,18 +333,22 @@ public:
     {
         hi_axiom(loop::main().on_thread());
 
-        if (enabled()) {
-            auto r = _overlay_widget->hitbox_test_from_parent(position);
-
-            if (layout().contains(position)) {
-                r = std::max(
-                    r, hitbox{id(), layout().elevation, not delegate->empty(this) ? hitbox_type::button : hitbox_type::_default});
-            }
-
-            return r;
-        } else {
+        if (not enabled()) {
             return {};
         }
+
+        auto r = hitbox{};
+        
+        if (_overlay_state == overlay_state_type::open) {
+            r = _overlay_widget->hitbox_test_from_parent(position);
+        }
+
+        if (layout().contains(position)) {
+            r = std::max(
+                r, hitbox{id(), layout().elevation, not delegate->empty(this) ? hitbox_type::button : hitbox_type::_default});
+        }
+
+        return r;
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
@@ -379,11 +392,6 @@ private:
     callback<void()> _delegate_options_cbt;
     callback<void()> _delegate_value_cbt;
     callback<void(label)> _off_label_cbt;
-
-    [[nodiscard]] bool overlay_closed() const noexcept
-    {
-        return _overlay_state == overlay_state_type::closed;
-    }
 
     void open_overlay() noexcept
     {

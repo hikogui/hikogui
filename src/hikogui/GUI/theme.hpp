@@ -340,14 +340,46 @@ public:
             add_style_properties(style_importance::theme, selector, properties);
         }
 
-        // toolbar-button - is aligned left and middle.
+        // system-menu - has no margins.
         {
-            auto const selector = style_selector{style_selector_segment::from_element("toolbar-button")};
+            auto const selector = style_selector{style_selector_segment::from_element("system-menu")};
             auto const priority = style_priority{importance, selector.specificity()};
 
             auto properties = style_properties{};
-            properties.set_horizontal_alignment(horizontal_alignment::left, priority);
-            properties.set_vertical_alignment(vertical_alignment::middle, priority);
+            properties.set_margin_left(0.0f * scalar_to_dips, priority);
+            properties.set_margin_right(0.0f * scalar_to_dips, priority);
+            properties.set_margin_bottom(0.0f * scalar_to_dips, priority);
+            properties.set_margin_top(0.0f * scalar_to_dips, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // toolbar - only has a bottom margin.
+        {
+            auto const selector = style_selector{style_selector_segment::from_element("toolbar")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_margin_left(0.0f * scalar_to_dips, priority);
+            properties.set_margin_right(0.0f * scalar_to_dips, priority);
+            properties.set_margin_top(0.0f * scalar_to_dips, priority);
+            add_style_properties(style_importance::theme, selector, properties);
+        }
+
+        // toolbar > button - has no top or bottom margins, and it has no
+        // visible border.
+        {
+            auto selector = style_selector{
+                style_selector_segment::from_element("toolbar"), style_selector_segment::from_element("button")};
+            auto const priority = style_priority{importance, selector.specificity()};
+
+            auto properties = style_properties{};
+            properties.set_margin_bottom(0.0f * scalar_to_dips, priority);
+            properties.set_margin_top(0.0f * scalar_to_dips, priority);
+            properties.set_border_width(0.0f * scalar_to_dips, priority);
+            properties.set_border_bottom_left_radius(0.0f * scalar_to_dips, priority);
+            properties.set_border_bottom_right_radius(0.0f * scalar_to_dips, priority);
+            properties.set_border_top_left_radius(0.0f * scalar_to_dips, priority);
+            properties.set_border_top_right_radius(0.0f * scalar_to_dips, priority);
             add_style_properties(style_importance::theme, selector, properties);
         }
 

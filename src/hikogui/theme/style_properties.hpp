@@ -52,7 +52,15 @@ public:
         HIX_MUL(border_top_right_radius, unit::pixels, round_as);
 #undef HIX_MUL
 
-        r.border_width = std::max(floor_as(unit::pixels, lhs._border_width * rhs), unit::pixels(1.0f));
+        // If there is a border, the border width should be at least 1 pixel.
+        // This is done so that borders are visible on low resolution screens.
+        // If there is no border, then the border width should be 0 pixels.
+        auto const border_width_in_pixels = lhs._border_width * rhs;
+        if (border_width_in_pixels == unit::pixels(0.0f)) {
+            r.border_width = unit::pixels(0.0f);
+        } else {
+            r.border_width = std::max(floor_as(unit::pixels, border_width_in_pixels), unit::pixels(1.0f));
+        }
         r._border_width_inherit = lhs._border_width_inherit;
 
 #define HIX_COPY(NAME) \
