@@ -17,13 +17,36 @@
 #include <type_traits>
 #include <memory>
 
-hi_export_module(hikogui.widgets.button_delegate);
+hi_export_module(hikogui.widgets : button_delegate);
 
 hi_export namespace hi {
 inline namespace v1 {
 
-/** A button delegate controls the state of a button widget.
- * @ingroup widget_delegates
+/**
+ * @brief The button delegate facilitates the interaction between the button
+ *        widget and the application.
+ * 
+ * The button delegate is a class that is used to handle the interaction between
+ * the button widget and the application.
+ * 
+ * The button delegate can be used to handle long-running tasks, such as
+ * downloading a file or processing data. The button delegate can also be used
+ * to handle tasks that can be stopped, such as a task that is running in a loop.
+ *
+ * The button widget will subscribe to the button delegate to be notified when
+ * the state of the button changes. The button widget will then use the state()
+ * method to check the state of the button.
+ * 
+ * There are three different states that the delegate can be in:
+ * - off: The task is not running.
+ * - on: The task is running.
+ * - other: The task was requested to stop, but is still running.
+ *
+ * The button widget will call the activate() method of the button delegate when
+ * the user presses the button. The activate() method will then start the task.
+ * If the task is running and can be stopped (i.e. the task has a stop_token
+ * argument), the activate() method will request the task to stop.
+ * 
  */
 class button_delegate {
 public:
@@ -35,16 +58,13 @@ public:
 
     /** Called when the button is pressed by the user.
      */
-    virtual void activate(widget_intf const* sender) {}
+    virtual void activate(widget_intf const* sender) = 0;
 
-    virtual void set_state(widget_intf const* sender, widget_value value) {}
+    [[nodiscard]] virtual bool stop_possible(widget_intf const* sender) = 0;
 
     /** Used by the widget to check the state of the button.
      */
-    [[nodiscard]] virtual widget_value state(widget_intf const* sender) const
-    {
-        return widget_value::off;
-    }
+    [[nodiscard]] virtual widget_value state(widget_intf const* sender) const = 0;
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
@@ -62,20 +82,36 @@ protected:
 template<typename...>
 class default_button_delegate;
 
+/** A default button delegate that does nothing.
+ */
 template<>
 class default_button_delegate<> : public button_delegate {
 public:
     default_button_delegate() noexcept : button_delegate() {}
 
-    /** Called when the button is pressed by the user.
-     */
     void activate(widget_intf const* sender) noexcept override
     {
         _notifier();
     }
+
+    [[nodiscard]] bool stop_possible(widget_intf const* sender) noexcept override
+    {
+        return false;
+    }
+
+    [[nodiscard]] widget_value state(widget_intf const* sender) const noexcept override
+    {
+        return widget_value::off;
+    }
 };
 
-/** Button delegate handling a task with a stop_token.
+/**
+ * @brief A default button delegate which handles the execution of a coroutine
+ *        function returning a task<void> and taking a std::stop_token as the
+ *        first argument.
+ * 
+ * @tparam F The type of the function to execute.
+ * @tparam Args The types of the arguments to pass to the function.
  */
 template<typename F, typename... Args>
 requires invocable_task<F, std::stop_token, Args...>
@@ -88,25 +124,11 @@ public:
     {
     }
 
-    /** Used by the widget to check the state of the button.
-     */
-    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    [[nodiscard]] bool stop_possible(widget_intf const* sender) noexcept override
     {
-        if (_task.running()) {
-            if (_stop_source.stop_possible() and _stop_source.stop_requested()) {
-                return widget_value::other;
-            } else {
-                return widget_value::on;
-            }
-        } else {
-            return widget_value::off;
-        }
+        return _stop_source.stop_possible();
     }
 
-    /** Called when the button is pressed by the user.
-     *
-     * Calls the function with the arguments.
-     */
     void activate(widget_intf const* sender) override
     {
         assert(loop::main().on_thread());
@@ -133,6 +155,19 @@ public:
         }
     }
 
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    {
+        if (_task.running()) {
+            if (_stop_source.stop_possible() and _stop_source.stop_requested()) {
+                return widget_value::other;
+            } else {
+                return widget_value::on;
+            }
+        } else {
+            return widget_value::off;
+        }
+    }
+
 private:
     F _function;
     std::tuple<Args...> _args;
@@ -141,7 +176,12 @@ private:
     callback<void()> _task_cbt;
 };
 
-/** Button delegate handling a task.
+/**
+ * @brief A default button delegate which handles the execution of a coroutine
+ *       function returning a task<void>.
+ * 
+ * @tparam F The type of the function to execute.
+ * @tparam Args The types of the arguments to pass to the function.
  */
 template<typename F, typename... Args>
 requires invocable_task<F, Args...>
@@ -152,11 +192,9 @@ public:
     {
     }
 
-    /** Used by the widget to check the state of the button.
-     */
-    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    [[nodiscard]] bool stop_possible(widget_intf const* sender) noexcept override
     {
-        return _task.running() ? widget_value::on : widget_value::off;
+        return false;
     }
 
     /** Called when the button is pressed by the user.
@@ -185,6 +223,13 @@ public:
         _notifier();
     }
 
+    /** Used by the widget to check the state of the button.
+     */
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    {
+        return _task.running() ? widget_value::on : widget_value::off;
+    }
+
 private:
     F _function;
     std::tuple<Args...> _args;
@@ -192,7 +237,15 @@ private:
     callback<void()> _task_cbt;
 };
 
-/** Button delegate handling a long-running function with std::stop_token argument..
+/**
+ * @brief A default button delegate which handles the execution of a function
+ *        taking a std::stop_token as the first argument.
+ *
+ * The function will be called asynchronously using std::async() in a separate
+ * thread.
+ *
+ * @tparam F The type of the function to execute.
+ * @tparam Args The types of the arguments to pass to the function.
  */
 template<typename F, typename... Args>
 requires std::invocable<F, std::stop_token, Args...>
@@ -203,38 +256,24 @@ public:
     {
     }
 
-    /** Used by the widget to check the state of the button.
-     */
-    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    [[nodiscard]] bool stop_possible(widget_intf const* sender) noexcept override
     {
-        if (_running) {
-            if (_stop_source.stop_requested()) {
-                return widget_value::other;
-            } else {
-                return widget_value::on;
-            }
-        } else {
-            return widget_value::off;
-        }
+        return _stop_source.stop_possible();
     }
 
-    /** Called when the button is pressed by the user.
-     *
-     * Calls the function with the arguments.
-     */
     void activate(widget_intf const* sender) override
     {
         assert(loop::main().on_thread());
 
         if (_running) {
-            assert(_stop_source.is_stoppable());
+            assert(_stop_source.stop_possible());
             _stop_source.request_stop();
 
         } else {
             _stop_source = {};
             _running = true;
             _future = std::async(std::launch::async, [this] {
-                std::apply(_function, std::cat_tupple(std::tuple{_stop_source.get_token()}, _args));
+                std::apply(_function, std::tuple_cat(std::tuple{_stop_source.get_token()}, _args));
             });
             _future_cbt = loop::local().delay_function_until(
                 [this] {
@@ -256,6 +295,19 @@ public:
         }
     }
 
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    {
+        if (_running) {
+            if (_stop_source.stop_requested()) {
+                return widget_value::other;
+            } else {
+                return widget_value::on;
+            }
+        } else {
+            return widget_value::off;
+        }
+    }
+
 private:
     bool _running = false;
     F _function;
@@ -265,7 +317,14 @@ private:
     std::stop_source _stop_source;
 };
 
-/** Button delegate handling a long-running function.
+/**
+ * @brief A default button delegate which handles the execution of a function.
+ *
+ * The function will be called asynchronously using std::async() in a separate
+ * thread.
+ *
+ * @tparam F The type of the function to execute.
+ * @tparam Args The types of the arguments to pass to the function.
  */
 template<typename F, typename... Args>
 requires std::invocable<F, Args...>
@@ -276,17 +335,11 @@ public:
     {
     }
 
-    /** Used by the widget to check the state of the button.
-     */
-    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    [[nodiscard]] bool stop_possible(widget_intf const* sender) noexcept override
     {
-        return _running ? widget_value::on : widget_value::off;
+        return false;
     }
-
-    /** Called when the button is pressed by the user.
-     *
-     * Calls the function with the arguments.
-     */
+    
     void activate(widget_intf const* sender) override
     {
         assert(loop::main().on_thread());
@@ -314,6 +367,11 @@ public:
 
         // Call the notifier to update the state of the button.
         _notifier();
+    }
+
+    [[nodiscard]] widget_value state(widget_intf const* sender) const override
+    {
+        return _running ? widget_value::on : widget_value::off;
     }
 
 private:
