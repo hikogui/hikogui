@@ -17,9 +17,6 @@ hi_export_module(hikogui.widgets.toolbar_tab_button_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-concept toolbar_tab_button_widget_attribute = label_widget_attribute<Context>;
-
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive views of a `tab_widget`.
  *
@@ -56,69 +53,23 @@ public:
     using super = widget;
     using delegate_type = radio_delegate;
 
-    struct attributes_type {
-        /** The label to show when the button is in the 'on' state.
-         */
-        observer<label> on_label = txt("on");
+    /** The label to show when the button is in the 'on' state.
+     */
+    observer<label> on_label = txt("on");
 
-        /** The label to show when the button is in the 'off' state.
-         */
-        observer<label> off_label = txt("off");
-
-        observer<alignment> alignment = alignment::top_center();
-
-        attributes_type(attributes_type const&) noexcept = default;
-        attributes_type(attributes_type&&) noexcept = default;
-        attributes_type& operator=(attributes_type const&) noexcept = default;
-        attributes_type& operator=(attributes_type&&) noexcept = default;
-
-        template<toolbar_tab_button_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&... attributes) noexcept
-        {
-            set_attributes<0>(std::forward<Attributes>(attributes)...);
-        }
-
-        template<size_t NumLabels>
-        void set_attributes() noexcept
-        {
-        }
-
-        template<size_t NumLabels, toolbar_tab_button_widget_attribute First, toolbar_tab_button_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&... rest) noexcept
-        {
-            if constexpr (forward_of<First, observer<hi::label>>) {
-                if constexpr (NumLabels == 0) {
-                    on_label = first;
-                    off_label = std::forward<First>(first);
-
-                } else if constexpr (NumLabels == 1) {
-                    off_label.reset();
-                    off_label = std::forward<First>(first);
-
-                } else {
-                    hi_static_no_default("Maximum two label attributes (on/off) are allowed on a toolbar-tab-button");
-                }
-                return set_attributes<NumLabels + 1>(std::forward<Rest>(rest)...);
-
-            } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-                alignment = std::forward<First>(first);
-                return set_attributes<NumLabels>(std::forward<Rest>(rest)...);
-
-            } else {
-                hi_static_no_default();
-            }
-        }
-    };
-
-    attributes_type attributes;
+    /** The label to show when the button is in the 'off' state.
+     */
+    observer<label> off_label = txt("off");
 
     /** The delegate that controls the button widget.
      */
     std::shared_ptr<delegate_type> delegate;
 
-    hi_num_valid_arguments(consteval static, num_default_delegate_arguments, default_radio_delegate);
-    hi_call_left_arguments(static, make_default_delegate, make_shared_ctad<default_radio_delegate>);
-    hi_call_right_arguments(static, make_attributes, attributes_type);
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args) noexcept
+    {
+        return make_shared_ctad<default_radio_delegate>(std::forward<Args>(args)...);
+    }
 
     ~toolbar_tab_button_widget()
     {
@@ -129,18 +80,16 @@ public:
      *
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the tab button widget.
-     * @param attributes Different attributes used to configure the label's on the toolbar tab button:
-     *                   a `label`, `alignment`. If one label is
-     *                   passed it will be shown in all states. If two labels are passed
-     *                   the first label is shown in on-state and the second for off-state.
      */
-    toolbar_tab_button_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
+    toolbar_tab_button_widget(std::shared_ptr<delegate_type> delegate) noexcept :
+        super(), delegate(std::move(delegate))
     {
-        _on_label_widget = std::make_unique<label_widget>(this->attributes.on_label);
+        _on_label_widget = std::make_unique<label_widget>();
+        _on_label_widget->label = this->on_label;
         _on_label_widget->set_parent(this);
 
-        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label);
+        _off_label_widget = std::make_unique<label_widget>();
+        _off_label_widget->label = this->off_label;
         _off_label_widget->set_parent(this);
 
         hi_axiom_not_null(this->delegate);
@@ -157,14 +106,11 @@ public:
      *
      * @param parent The parent widget that owns this toggle widget.
      * @param args The arguments to the `default_radio_delegate`
-     *                followed by arguments to `attributes_type`
      */
     template<typename... Args>
-    toolbar_tab_button_widget(Args&&... args) requires(num_default_delegate_arguments<Args...>() != 0)
+    toolbar_tab_button_widget(Args&&... args) requires(make_default_delegate(std::forward<Args>(args)...))
         :
-        toolbar_tab_button_widget(
-            make_attributes<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...),
-            make_default_delegate<num_default_delegate_arguments<Args...>()>(std::forward<Args>(args)...))
+        toolbar_tab_button_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
 

@@ -365,6 +365,34 @@ public:
         return r;
     }
 
+    /**
+     * @brief Fit an extent into another extent while maintaining the aspect ratio.
+     *
+     * This function returns a new extent that fits the @a needle extent into
+     * the @a haystack extent without distorting the aspect ratio.
+     *
+     * @param needle The extent to fit into the @a haystack extent.
+     * @param haystack The extent to fit the @a needle extent into.
+     * @return The new extent that fits the @a needle extent into the @a haystack extent.
+     */
+    [[nodiscard]] constexpr friend extent2 aspect_fit(extent2 const& needle, extent2 const &haystack) noexcept
+    {
+        auto const needle_aspect = needle.width() / needle.height();
+        auto const haystack_aspect = haystack.width() / haystack.height();
+
+        auto r = needle;
+
+        if (needle_aspect > haystack_aspect) {
+            r.width() = haystack.width();
+            r.height() = r.width() / needle_aspect;
+        } else {
+            r.height() = haystack.height();
+            r.width() = r.height() * needle_aspect;
+        }
+
+        return r;
+    }
+
     /** Check if the extent is valid.
      * Extends must be positive.
      * This function will check if w is zero, and with 2D extent is z is zero.

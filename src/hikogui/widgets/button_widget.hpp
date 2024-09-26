@@ -51,7 +51,8 @@ public:
     {
         assert(this->delegate != nullptr);
 
-        _label_widget = std::make_unique<label_widget>(label);
+        _label_widget = std::make_unique<label_widget>();
+        _label_widget->label = label;
         _label_widget->set_parent(this);
 
         this->delegate->init(this);

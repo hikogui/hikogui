@@ -26,9 +26,6 @@ hi_export_module(hikogui.widgets.abstract_button_widget);
 
 hi_export namespace hi { inline namespace v1 {
 
-template<typename Context>
-concept button_widget_attribute = label_widget_attribute<Context>;
-
 /** Base class for implementing button widgets.
  *
  * @ingroup widgets
@@ -69,11 +66,14 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _on_label_widget = std::make_unique<label_widget>(on_label);
+        _on_label_widget = std::make_unique<label_widget>();
+        _on_label_widget->label = on_label;
         _on_label_widget->set_parent(this);
-        _off_label_widget = std::make_unique<label_widget>(off_label);
+        _off_label_widget = std::make_unique<label_widget>();
+        _off_label_widget->label = off_label;
         _off_label_widget->set_parent(this);
-        _other_label_widget = std::make_unique<label_widget>(other_label);
+        _other_label_widget = std::make_unique<label_widget>();
+        _other_label_widget->label = other_label;
         _other_label_widget->set_parent(this);
 
         this->delegate->init(this);
@@ -192,39 +192,6 @@ protected:
     box_shape _other_label_shape;
 
     callback<void()> _delegate_cbt;
-
-    template<size_t I>
-    void set_attributes() noexcept
-    {
-    }
-
-    template<size_t I, button_widget_attribute First, button_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
-    {
-        if constexpr (forward_of<First, observer<hi::label>>) {
-            if constexpr (I == 0) {
-                on_label = first;
-                off_label = first;
-                other_label = std::forward<First>(first);
-            } else if constexpr (I == 1) {
-                other_label.reset();
-                off_label.reset();
-                off_label = std::forward<First>(first);
-            } else if constexpr (I == 2) {
-                other_label = std::forward<First>(first);
-            } else {
-                hi_static_no_default();
-            }
-            set_attributes<I + 1>(std::forward<Rest>(rest)...);
-
-        } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-            alignment = std::forward<First>(first);
-            set_attributes<I>(std::forward<Rest>(rest)...);
-
-        } else {
-            hi_static_no_default();
-        }
-    }
 
     void draw_button(draw_context const& context) const noexcept
     {

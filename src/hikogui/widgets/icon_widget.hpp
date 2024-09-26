@@ -24,9 +24,6 @@ hi_export_module(hikogui.widgets.icon_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::color>>;
-
 /** An simple GUI widget that displays an icon.
  * @ingroup widgets
  *
@@ -37,6 +34,12 @@ class icon_widget : public widget {
 public:
     using super = widget;
 
+    enum class scale_type {
+        none,
+        aspect_fit,
+        font_size,
+    };
+
     /** The icon to be displayed.
      */
     observer<icon> icon = hi::icon{};
@@ -45,25 +48,17 @@ public:
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
-    template<icon_widget_attribute... Attributes>
-    icon_widget(Attributes&&... attributes) noexcept : icon_widget()
-    {
-        set_attributes(std::forward<Attributes>(attributes)...);
-    }
+    scale_type scale = scale_type::none;
 
-    void set_attributes() noexcept {}
-
-    template<icon_widget_attribute First, icon_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&... rest) noexcept
+    icon_widget() noexcept : super()
     {
-        if constexpr (forward_of<First, observer<hi::icon>>) {
-            icon = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
-            phrasing = std::forward<First>(first);
-        } else {
-            hi_static_no_default();
-        }
-        set_attributes(std::forward<Rest>(rest)...);
+        _icon_cbt = icon.subscribe([this](auto...) {
+            _icon_has_modified = true;
+            ++global_counter<"icon_widget:icon:constrain">;
+            request_reconstrain();
+        });
+
+        style.set_name("icon");
     }
 
     /// @privatesection
@@ -137,11 +132,36 @@ public:
             _icon_rectangle = {};
         } else {
             auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
-            _icon_rectangle = align_to_middle(
-                context.rectangle() + style.vertical_margins_px,
-                _icon_size,
-                os_settings::alignment(style.horizontal_alignment),
-                middle);
+            auto const aspect_fit_size = aspect_fit(_icon_size, context.size());
+            auto const font_fit_size = _icon_size * style.font_size_px;
+
+            switch (scale) {
+            case scale_type::none:
+                _icon_rectangle = align_to_middle(
+                    context.rectangle() + style.vertical_margins_px,
+                    _icon_size,
+                    os_settings::alignment(style.horizontal_alignment),
+                    middle);
+                break;
+
+            case scale_type::aspect_fit:
+                _icon_rectangle = align_to_middle(
+                    context.rectangle(),
+                    aspect_fit_size,
+                    os_settings::alignment(style.horizontal_alignment),
+                    context.rectangle().middle());
+                break;
+
+            case scale_type::font_size:
+                _icon_rectangle = align_to_middle(
+                    context.rectangle(),
+                    font_fit_size,
+                    os_settings::alignment(style.horizontal_alignment),
+                    middle);
+                break;
+            default:
+                std::unreachable();
+            }
         }
     }
 
@@ -190,17 +210,6 @@ private:
     aarectangle _icon_rectangle;
 
     callback<void(hi::icon)> _icon_cbt;
-
-    icon_widget() noexcept : super()
-    {
-        _icon_cbt = icon.subscribe([this](auto...) {
-            _icon_has_modified = true;
-            ++global_counter<"icon_widget:icon:constrain">;
-            request_reconstrain();
-        });
-
-        style.set_name("icon");
-    }
 };
 
 } // namespace v1
