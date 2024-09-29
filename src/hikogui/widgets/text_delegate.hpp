@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "widget_delegate.hpp"
 #include "../observer/observer.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/concurrency.hpp"
@@ -24,26 +25,30 @@
 hi_export_module(hikogui.widgets.text_delegate);
 
 hi_export namespace hi { inline namespace v1 {
-class text_widget;
 
 /** A delegate that controls the state of a text_widget.
  *
  * @ingroup widget_delegates
  */
-class text_delegate {
+class text_delegate : public virtual widget_delegate {
 public:
-    virtual ~text_delegate() = default;
-
-    virtual void init(widget_intf const* sender) {}
-    virtual void deinit(widget_intf const* sender) {}
+    [[nodiscard]] virtual bool empty_text(widget_intf const* sender) const = 0;
 
     /** Read text as a string of graphemes.
      */
-    [[nodiscard]] virtual gstring read(widget_intf const* sender) = 0;
+    [[nodiscard]] virtual gstring get_text(widget_intf const* sender) const = 0;
+
+    [[nodiscard]] virtual bool mutable_text() const noexcept
+    {
+        return false;
+    }
 
     /** Write text from a string of graphemes.
      */
-    virtual void write(widget_intf const* sender, gstring const& text) = 0;
+    virtual void set_text(widget_intf const* sender, gstring const& text)
+    {
+        std::unreachable();
+    }
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
@@ -81,21 +86,21 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const* sender) override
+    [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return to_gstring(std::string{*value});
+        return value->empty();
     }
 
-    void write(widget_intf const* sender, gstring const& text) override
+    [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        hi_no_default();
+        return to_gstring(std::string{*value});
     }
 
 private:
@@ -118,19 +123,29 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const* sender) override
+    [[nodiscard]] bool empty_text(widget_intf const* sender) const override
+    {
+        return value->empty();
+    }
+
+    [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
         return to_gstring(*value);
     }
 
-    void write(widget_intf const* sender, gstring const& text) override
+    [[nodiscard]] bool mutable_text(widget_intf const* sender) const override
+    {
+        return true;
+    }
+
+    void set_text(widget_intf const* sender, gstring const& text) override
     {
         value = to_string(text);
     }
@@ -155,19 +170,29 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const* sender) override
+    [[nodiscard]] bool empty_text(widget_intf const* sender) const override
+    {
+        return value->empty();
+    }
+
+    [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
         return *value;
     }
 
-    void write(widget_intf const* sender, gstring const& text) override
+    [[nodiscard]] bool mutable_text(widget_intf const* sender) const override
+    {
+        return true;
+    }
+
+    void set_text(widget_intf const* sender, gstring const& text) override
     {
         value = text;
     }
@@ -192,21 +217,21 @@ public:
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) : value(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] gstring read(widget_intf const* sender) override
+    [[nodiscard]] bool empty_text(widget_intf const* sender) override
     {
-        return value->translate();
+        return value->empty();
     }
 
-    void write(widget_intf const* sender, gstring const& text) override
+    [[nodiscard]] gstring get_text(widget_intf const* sender) override
     {
-        hi_no_default();
+        return value->translate();
     }
 
 private:

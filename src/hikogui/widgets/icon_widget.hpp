@@ -36,6 +36,7 @@ concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer
 class icon_widget : public widget {
 public:
     using super = widget;
+    using delegate_type = icon_delegate;
 
     /** The icon to be displayed.
      */
@@ -44,6 +45,13 @@ public:
     /** The color a non-color icon will be displayed with.
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
+
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
+        requires requires { default_icon_delegate(std::forward<Args>(args)...); }
+    {
+        return make_shared_ctad<default_icon_delegate>(std::forward<Args>(args)...);
+    }
 
     template<icon_widget_attribute... Attributes>
     icon_widget(Attributes&&... attributes) noexcept : icon_widget()
