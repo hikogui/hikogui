@@ -29,9 +29,6 @@ hi_export_module(hikogui.widgets.selection_widget);
 hi_export namespace hi {
 inline namespace v1 {
 
-template<typename Context>
-concept selection_widget_attribute = label_widget_attribute<Context>;
-
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.
  *
@@ -51,44 +48,9 @@ public:
     using super = widget;
     using delegate_type = selection_delegate;
 
-    struct attributes_type {
-        /** The label to show when nothing is selected.
-         */
-        observer<label> off_label;
-
-        observer<alignment> alignment = hi::alignment::middle_left();
-
-        attributes_type(attributes_type const&) noexcept = default;
-        attributes_type(attributes_type&&) noexcept = default;
-        attributes_type& operator=(attributes_type const&) noexcept = default;
-        attributes_type& operator=(attributes_type&&) noexcept = default;
-
-        template<selection_widget_attribute... Attributes>
-        explicit attributes_type(Attributes&&... attributes) noexcept
-        {
-            set_attributes(std::forward<Attributes>(attributes)...);
-        }
-
-        void set_attributes() noexcept {}
-
-        template<selection_widget_attribute First, selection_widget_attribute... Rest>
-        void set_attributes(First&& first, Rest&&... rest) noexcept
-        {
-            if constexpr (forward_of<First, observer<hi::label>>) {
-                off_label = std::forward<First>(first);
-            } else if constexpr (forward_of<First, observer<hi::alignment>>) {
-                alignment = std::forward<First>(first);
-            } else {
-                hi_static_no_default();
-            }
-
-            set_attributes(std::forward<Rest>(rest)...);
-        }
-    };
-
-    attributes_type attributes;
-
     std::shared_ptr<delegate_type> delegate;
+
+    observer<label> off_label = txt("N/A");
 
     template<typename... Args>
     [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
@@ -107,13 +69,14 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(attributes_type attributes, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), attributes(std::move(attributes)), delegate(std::move(delegate))
+    selection_widget(std::shared_ptr<delegate_type> delegate) noexcept :
+        super(), delegate(std::move(delegate))
     {
         _current_label_widget = std::make_unique<label_widget>();
         _current_label_widget->set_parent(this);
 
-        _off_label_widget = std::make_unique<label_widget>(this->attributes.off_label);
+        _off_label_widget = std::make_unique<label_widget>();
+        _off_label_widget->label = this->off_label;
         _off_label_widget->set_parent(this);
 
         _overlay_widget = std::make_unique<overlay_widget>();
@@ -122,7 +85,7 @@ public:
         _scroll_widget = &_overlay_widget->emplace<vertical_scroll_widget>();
         _grid_widget = &_scroll_widget->emplace<grid_widget>();
 
-        _off_label_cbt = this->attributes.off_label.subscribe([&](auto...) {
+        _off_label_cbt = this->off_label.subscribe([&](auto...) {
             ++global_counter<"selection_widget:off_label:constrain">;
             request_reconstrain();
         });
@@ -157,22 +120,13 @@ public:
      * @param option_list An vector or an observer vector of pairs of keys and
      *                    labels. The keys are of the same type as the @a value.
      *                    The labels are of type `label`.
-     * @param attributes Different attributes used to configure the label's on the selection box:
-     *                   a `label`, `alignment`. If an label is passed
-     *                   it is used as the label to show in the off-state.
      */
-    template<
-        incompatible_with<attributes_type> Value,
-        forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList,
-        selection_widget_attribute... Attributes>
-    selection_widget(Value&& value, OptionList&& option_list, Attributes&&... attributes) noexcept requires requires {
+    template<typename Value, forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList>
+    selection_widget(Value&& value, OptionList&& option_list) noexcept requires requires {
         make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list));
-        attributes_type{std::forward<Attributes>(attributes)...};
     }
         :
-        selection_widget(
-            attributes_type{std::forward<Attributes>(attributes)...},
-            make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
+        selection_widget(make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
     {
     }
 

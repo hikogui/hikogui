@@ -26,9 +26,6 @@ hi_export_module(hikogui.widgets.label_widget);
 
 hi_export namespace hi { inline namespace v1 {
 
-template<typename Context>
-concept label_widget_attribute = forward_of<Context, observer<hi::label>>;
-
 /** The GUI widget displays and lays out text together with an icon.
  * @ingroup widgets
  *
@@ -56,7 +53,9 @@ public:
 
     label_widget() noexcept : super()
     {
-        _icon_widget = std::make_unique<icon_widget>(label.sub<"icon">());
+        _icon_widget = std::make_unique<icon_widget>();
+        _icon_widget->icon = label.sub<"icon">();
+        _icon_widget->scale = icon_widget::scale_type::font_size;
         _icon_widget->set_parent(this);
         _icon_widget->phrasing = phrasing;
 
@@ -67,24 +66,15 @@ public:
         style.set_name("label");
     }
 
-    /** Construct a label widget.
-     *
-     * @see `label_widget::alignment`
-     * @param parent The parent widget that owns this radio button widget.
-     * @param attributes Different attributes used to configure the label widget:
-     *                   a `label`, `alignment` or `text_style`
-     */
-    template<label_widget_attribute... Attributes>
-    label_widget(Attributes&&...attributes) noexcept : label_widget()
-    {
-        set_attributes(std::forward<Attributes>(attributes)...);
-    }
-
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) const noexcept override
     {
-        co_yield *_icon_widget;
-        co_yield *_text_widget;
+        if (to_bool(label->icon)) {
+            co_yield *_icon_widget;
+        }
+        if (to_bool(label->text)) {
+            co_yield *_text_widget;
+        }
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
@@ -126,10 +116,6 @@ public:
             _grid.add_cell(0, 0, _text_widget.get());
         }
 
-        auto const icon_size = style.font_size_px;
-        _icon_widget->minimum = extent2{icon_size, icon_size};
-        _icon_widget->maximum = extent2{icon_size, icon_size};
-
         for (auto& cell : _grid) {
             cell.set_constraints(cell.value->update_constraints());
         }
@@ -150,35 +136,20 @@ public:
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return _text_widget->hitbox_test_from_parent(position);
+        auto r = hitbox{};
+        for (auto const &child : visible_children()) {
+            r = child.hitbox_test_from_parent(position, r);
+        }
+        return r;
     }
     /// @endprivatesection
 private:
-    float _icon_size;
-    float _inner_margin;
-
     std::unique_ptr<icon_widget> _icon_widget;
     std::unique_ptr<text_widget> _text_widget;
     grid_layout<widget *> _grid;
 
     callback<void(hi::label)> _label_cbt;
     callback<void(hi::alignment)> _alignment_cbt;
-
-    void set_attributes() noexcept {}
-
-    template<label_widget_attribute First, label_widget_attribute... Rest>
-    void set_attributes(First&& first, Rest&&...rest) noexcept
-    {
-        if constexpr (forward_of<First, observer<hi::label>>) {
-            label = std::forward<First>(first);
-        } else if constexpr (forward_of<First, observer<hi::phrasing>>) {
-            phrasing = std::forward<First>(first);
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes(std::forward<Rest>(rest)...);
-    }
 };
 
 }} // namespace hi::v1

@@ -51,7 +51,7 @@ public:
         auto spacer = std::make_unique<spacer_widget>();
         spacer->set_parent(this);
 
-        _children.push_back(std::move(spacer));
+        _row.push_back(std::move(spacer));
 
         style.set_name("toolbar");
     }
@@ -83,24 +83,20 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        for (auto const& child : _children) {
+        for (auto const& child : _row) {
             co_yield *child.value;
         }
     }
 
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        for (auto& child : _children) {
-            child.set_constraints(child.value->update_constraints());
+        for (auto& cell : _row) {
+            cell.set_constraints(cell.value->update_constraints());
         }
 
-        auto r = _children.constraints(os_settings::left_to_right(), style.vertical_alignment);
-        _child_height_adjustment = -r.margins.top();
-
-        r.minimum.height() += r.margins.top();
-        r.preferred.height() += r.margins.top();
-        r.maximum.height() += r.margins.top();
-        r.margins.top() = 0;
+        // The margins (off the children) on the outside of the toolbar are ignored.
+        auto r = _row.constraints(os_settings::left_to_right(), style.vertical_alignment);
+        r.margins = style.margins_px;
 
         return r;
     }
@@ -109,31 +105,26 @@ public:
     {
         super::set_layout(context);
 
-        // Clip directly around the toolbar, so that tab buttons looks proper.
-        auto shape = context.shape;
-        shape.rectangle = aarectangle{shape.x(), shape.y(), shape.width(), shape.height() + _child_height_adjustment};
-        _children.set_layout(shape);
+        _row.set_layout(context.shape);
 
-        auto const overhang = context.redraw_overhang;
-
-        for (auto const& child : _children) {
-            auto const child_clipping_rectangle =
-                aarectangle{child.shape.x() - overhang, 0, child.shape.width() + overhang * 2, context.height() + overhang * 2};
-
-            child.value->set_layout(context.transform(child.shape, transform_command::menu_item, child_clipping_rectangle));
+        for (auto const& child : _row) {
+            // Use the shape of the child also as the clipping rectangle for
+            // that child, so that drawing outside the child's shape is clipped.
+            child.value->set_layout(context.transform(child.shape, transform_command::menu_item, child.shape.rectangle));
         }
     }
 
     void draw(draw_context const& context) const noexcept override
     {
         if (overlaps(context, layout())) {
-            context.draw_box(layout(), layout().rectangle(), theme().fill_color(layout().layer));
+            context.draw_box(layout(), layout().rectangle(), style.background_color);
 
             if (tab_button_has_focus()) {
-                // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
-                // line depending if that specific button is in focus or not.
+                // Draw the line at a higher elevation (1.5), so that the tab
+                // buttons can draw above or below the focus line depending if
+                // that specific button is in focus or not.
                 auto const focus_rectangle = aarectangle{0.0f, 0.0f, layout().rectangle().width(), theme().border_width()};
-                context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
+                context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, style.accent_color);
             }
         }
 
@@ -148,7 +139,7 @@ public:
         if (enabled()) {
             auto r = layout().contains(position) ? hitbox{id(), layout().elevation, hitbox_type::move_area} : hitbox{};
 
-            for (auto const& child : _children) {
+            for (auto const& child : _row) {
                 hi_assert_not_null(child.value);
                 r = child.value->hitbox_test_from_parent(position, r);
             }
@@ -169,8 +160,7 @@ public:
     }
     /// @endprivatesection
 private:
-    mutable row_layout<std::unique_ptr<widget>> _children;
-    mutable float _child_height_adjustment = 0.0f;
+    mutable row_layout<std::unique_ptr<widget>> _row;
     size_t _spacer_index = 0;
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept;
@@ -184,12 +174,12 @@ private:
             using enum horizontal_alignment;
         case left:
             widget->set_parent(this);
-            _children.insert(_children.cbegin() + _spacer_index, std::move(widget));
+            _row.insert(_row.cbegin() + _spacer_index, std::move(widget));
             ++_spacer_index;
             break;
         case right:
             widget->set_parent(this);
-            _children.insert(_children.cbegin() + _spacer_index + 1, std::move(widget));
+            _row.insert(_row.cbegin() + _spacer_index + 1, std::move(widget));
             break;
         default:
             hi_no_default();
@@ -204,9 +194,9 @@ private:
      */
     bool tab_button_has_focus() const noexcept
     {
-        for (auto const& cell : _children) {
-            if (auto const* const c = dynamic_cast<toolbar_tab_button_widget*>(cell.value.get())) {
-                if (c->focus() and c->checked()) {
+        for (auto const& child : visible_children()) {
+            if (auto tab_child = dynamic_cast<toolbar_tab_button_widget const*>(std::addressof(child))) {
+                if (tab_child->focus() and tab_child->checked()) {
                     return true;
                 }
             }
