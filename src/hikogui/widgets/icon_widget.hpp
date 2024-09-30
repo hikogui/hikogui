@@ -41,19 +41,24 @@ public:
         font_size,
     };
 
-    /** The icon to be displayed.
-     */
-    observer<icon> icon = hi::icon{};
-
     /** The color a non-color icon will be displayed with.
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
     scale_type scale = scale_type::none;
 
-    icon_widget() noexcept : super()
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
     {
-        _icon_cbt = icon.subscribe([this](auto...) {
+        return make_shared_ctad<default_icon_delegate>(std::forward<Args>(args)...);
+    }
+
+    template<std::derived_from<delegate_type> Delegate>
+    icon_widget(std::shared_ptr<Delegate> delegate) : super(), _delegate(std::move(delegate))
+    {
+        assert(_delegate != nullptr);
+
+        _delegate_cbt = _delegate.subscribe([this](auto...) {
             _icon_has_modified = true;
             ++global_counter<"icon_widget:icon:constrain">;
             request_reconstrain();
@@ -62,11 +67,19 @@ public:
         style.set_name("icon");
     }
 
+    template<typename... Args>
+    icon_widget(Args&&... args) : icon_widget(make_default_delegate(std::forward<Args>(args)...))
+    {
+    }
+
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
         if (_icon_has_modified.exchange(false)) {
-            if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
+            assert(_delegate != nullptr);
+            auto const icon = _delegate->get_icon(this);
+
+            if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(icon)) {
                 auto const bounding_rectangle = [&] {
                     assert(pixmap->height() != 0);
                     assert(pixmap->width() != 0);
@@ -93,21 +106,21 @@ public:
                     request_reconstrain();
                 }
 
-            } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
+            } else if (auto const g1 = std::get_if<font_glyph_ids>(icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size =
                     aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
-            } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
+            } else if (auto const g2 = std::get_if<elusive_icon>(icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size =
                     aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
-            } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
+            } else if (auto const g3 = std::get_if<hikogui_icon>(icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size =
@@ -210,7 +223,8 @@ private:
     extent2 _icon_size;
     aarectangle _icon_rectangle;
 
-    callback<void(hi::icon)> _icon_cbt;
+    std::shared_ptr<delegate_type> _delegate;
+    callback<void()> _delegate_cbt;
 };
 
 } // namespace v1
