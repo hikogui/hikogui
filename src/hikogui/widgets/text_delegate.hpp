@@ -38,7 +38,7 @@ public:
      */
     [[nodiscard]] virtual gstring get_text(widget_intf const* sender) const = 0;
 
-    [[nodiscard]] virtual bool mutable_text() const noexcept
+    [[nodiscard]] virtual bool mutable_text(widget_intf const* sender) const
     {
         return false;
     }
@@ -67,8 +67,28 @@ protected:
  * @ingroup widget_delegates
  * @tparam T The type of the observer value.
  */
-template<typename T>
+template<typename...>
 class default_text_delegate;
+
+template<>
+class default_text_delegate<> : public text_delegate {
+public:
+    /** Construct a delegate.
+     */
+    default_text_delegate() = default;
+
+    /// @privatesection
+    [[nodiscard]] bool empty_text(widget_intf const* sender) const override
+    {
+        return true;
+    }
+
+    [[nodiscard]] gstring get_text(widget_intf const* sender) const override
+    {
+        return {};
+    }
+    /// @endprivatesection
+};
 
 /** A default text delegate specialization for `std::string`.
  *
@@ -79,8 +99,6 @@ class default_text_delegate<char const *> : public text_delegate {
 public:
     using value_type = char const *;
 
-    observer<value_type> value;
-
     /** Construct a delegate.
      *
      * @param value A value or observer-value used as a representation of the state.
@@ -88,22 +106,24 @@ public:
     template<forward_of<observer<value_type>> Value>
     explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...) {
+        _value_cbt = _value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
+    /// @privatesection
     [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return value->empty();
+        return _value == nullptr or _value[0] == '\0';
     }
 
     [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        return to_gstring(std::string{*value});
+        return to_gstring(std::string{*_value});
     }
-
+    /// @endprivatesection
 private:
+    observer<value_type> _value;
     callback<void(value_type)> _value_cbt;
 };
 
@@ -116,8 +136,6 @@ class default_text_delegate<std::string> : public text_delegate {
 public:
     using value_type = std::string;
 
-    observer<value_type> value;
-
     /** Construct a delegate.
      *
      * @param value A value or observer-value used as a representation of the state.
@@ -125,19 +143,20 @@ public:
     template<forward_of<observer<value_type>> Value>
     explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...) {
+        _value_cbt = _value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
+    /// @privatesection
     [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return value->empty();
+        return _value->empty();
     }
 
     [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        return to_gstring(*value);
+        return to_gstring(*_value);
     }
 
     [[nodiscard]] bool mutable_text(widget_intf const* sender) const override
@@ -147,10 +166,11 @@ public:
 
     void set_text(widget_intf const* sender, gstring const& text) override
     {
-        value = to_string(text);
+        _value = to_string(text);
     }
-
+    /// @endprivatesection
 private:
+    observer<value_type> _value;
     callback<void(value_type)> _value_cbt;
 };
 
@@ -163,28 +183,27 @@ class default_text_delegate<gstring> : public text_delegate {
 public:
     using value_type = gstring;
 
-    observer<value_type> value;
-
     /** Construct a delegate.
      *
      * @param value A value or observer-value used as a representation of the state.
      */
     template<forward_of<observer<value_type>> Value>
-    explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
+    explicit default_text_delegate(Value&& value) : _value(std::forward<Value>(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...) {
+        _value_cbt = _value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
+    /// @privatesection
     [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return value->empty();
+        return _value->empty();
     }
 
     [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        return *value;
+        return *_value;
     }
 
     [[nodiscard]] bool mutable_text(widget_intf const* sender) const override
@@ -194,10 +213,11 @@ public:
 
     void set_text(widget_intf const* sender, gstring const& text) override
     {
-        value = text;
+        _value = text;
     }
-
+    /// @endprivatesection
 private:
+    observer<value_type> _value;
     callback<void(value_type)> _value_cbt;
 };
 
@@ -210,8 +230,6 @@ class default_text_delegate<txt> : public text_delegate {
 public:
     using value_type = txt;
 
-    observer<value_type> value;
-
     /** Construct a delegate.
      *
      * @param value A value or observer-value used as a representation of the state.
@@ -219,26 +237,42 @@ public:
     template<forward_of<observer<value_type>> Value>
     explicit default_text_delegate(Value&& value) : get_text(std::forward<Value>(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...) {
+        _value_cbt = _value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    [[nodiscard]] bool empty_text(widget_intf const* sender) override
+    /// @privatesection
+    [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return value->empty();
+        return _value->empty();
     }
 
-    [[nodiscard]] gstring get_text(widget_intf const* sender) override
+    [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        return value->translate();
+        return _value->translate();
     }
-
+    /// @endprivatesection
 private:
+    observer<value_type> _value;
     callback<void(value_type)> _value_cbt;
 };
 
-template<typename Value>
-default_text_delegate(Value&&) -> default_text_delegate<observer_decay_t<Value>>;
+default_text_delegate() -> default_text_delegate<>;
+default_text_delegate(char const*) -> default_text_delegate<char const*>;
+default_text_delegate(std::string const&) -> default_text_delegate<std::string>;
+default_text_delegate(std::string&&) -> default_text_delegate<std::string>;
+default_text_delegate(gstring const&) -> default_text_delegate<gstring>;
+default_text_delegate(gstring&&) -> default_text_delegate<gstring>;
+default_text_delegate(txt const&) -> default_text_delegate<txt>;
+default_text_delegate(txt&&) -> default_text_delegate<txt>;
+default_text_delegate(hi::observer<char const*> const&) -> default_text_delegate<char const*>;
+default_text_delegate(hi::observer<char const*>&&) -> default_text_delegate<char const*>;
+default_text_delegate(hi::observer<std::string> const&) -> default_text_delegate<std::string>;
+default_text_delegate(hi::observer<std::string>&&) -> default_text_delegate<std::string>;
+default_text_delegate(hi::observer<hi::gstring> const&) -> default_text_delegate<gstring>;
+default_text_delegate(hi::observer<hi::gstring>&&) -> default_text_delegate<gstring>;
+default_text_delegate(hi::observer<hi::txt> const&) -> default_text_delegate<txt>;
+default_text_delegate(hi::observer<hi::txt>&&) -> default_text_delegate<txt>;
 
 }} // namespace hi::v1

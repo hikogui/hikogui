@@ -142,9 +142,12 @@ hi::task<> preferences_window(std::stop_token stop_token, my_preferences& prefer
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), txt("Preferences")};
     auto top = std::make_unique<window_widget>(window_label);
 
-    top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, txt("Audio")});
-    top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, txt("License")});
-    top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, txt("Theme")});
+    auto &tab1 = top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 0);
+    tab1.on_label = tab1.off_label = label{elusive_icon::Speaker, txt("Audio")};
+    auto &tab2 = top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 1);
+    tab2.on_label = tab2.off_label = label{elusive_icon::Key, txt("License")};
+    auto &tab3 = top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 2);
+    tab3.on_label = tab3.off_label = label{elusive_icon::Brush, txt("Theme")};
 
     auto& tabs = top->content().emplace<tab_widget>("A1", preferences.tab_index);
     auto& audio_tab_grid = tabs.emplace<grid_widget>(0);

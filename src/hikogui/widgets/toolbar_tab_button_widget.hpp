@@ -61,10 +61,6 @@ public:
      */
     observer<label> off_label = txt("off");
 
-    /** The delegate that controls the button widget.
-     */
-    std::shared_ptr<delegate_type> delegate;
-
     template<typename... Args>
     [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args) noexcept
     {
@@ -73,7 +69,7 @@ public:
 
     ~toolbar_tab_button_widget()
     {
-        delegate->deinit(this);
+        _delegate->deinit(this);
     }
 
     /** Construct a toolbar tab button widget.
@@ -81,21 +77,20 @@ public:
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      */
-    toolbar_tab_button_widget(std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), delegate(std::move(delegate))
+    template<std::derived_from<delegate_type> Delegate>
+    toolbar_tab_button_widget(std::shared_ptr<Delegate> delegate) noexcept :
+        super(), _delegate(std::move(delegate))
     {
-        _on_label_widget = std::make_unique<label_widget>();
-        _on_label_widget->label = this->on_label;
+        _on_label_widget = std::make_unique<label_widget>(on_label);
         _on_label_widget->set_parent(this);
 
-        _off_label_widget = std::make_unique<label_widget>();
-        _off_label_widget->label = this->off_label;
+        _off_label_widget = std::make_unique<label_widget>(off_label);
         _off_label_widget->set_parent(this);
 
-        hi_axiom_not_null(this->delegate);
-        this->delegate->init(this);
-        _delegate_cbt = this->delegate->subscribe(this, [&] {
-            set_checked(this->delegate->state(this) != widget_value::off);
+        hi_axiom_not_null(_delegate);
+        _delegate->init(this);
+        _delegate_cbt = _delegate->subscribe(this, [this] {
+            set_checked(this->_delegate->state(this) != widget_value::off);
         });
         _delegate_cbt();
 
@@ -108,8 +103,7 @@ public:
      * @param args The arguments to the `default_radio_delegate`
      */
     template<typename... Args>
-    toolbar_tab_button_widget(Args&&... args) requires(make_default_delegate(std::forward<Args>(args)...))
-        :
+    toolbar_tab_button_widget(Args&&... args) :
         toolbar_tab_button_widget(make_default_delegate(std::forward<Args>(args)...))
     {
     }
@@ -159,10 +153,10 @@ public:
 
     [[nodiscard]] generator<widget_intf&> children(bool include_invisible) const noexcept override
     {
-        if (delegate->state(this) != widget_value::off or include_invisible) {
+        if (_delegate->state(this) != widget_value::off or include_invisible) {
             co_yield *_on_label_widget;
         }
-        if (delegate->state(this) == widget_value::off or include_invisible) {
+        if (_delegate->state(this) == widget_value::off or include_invisible) {
             co_yield *_off_label_widget;
         }
     }
@@ -190,7 +184,7 @@ public:
 
     void activate() noexcept
     {
-        delegate->activate(this);
+        _delegate->activate(this);
 
         notifier();
     }
@@ -228,7 +222,7 @@ public:
         return super::handle_event(event);
     }
     // @endprivatesection
-protected:
+private:
     std::unique_ptr<label_widget> _on_label_widget;
     box_constraints _on_label_constraints;
     box_shape _on_label_shape;
@@ -237,9 +231,11 @@ protected:
     box_constraints _off_label_constraints;
     box_shape _off_label_shape;
 
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> _delegate;
     callback<void()> _delegate_cbt;
 
-private:
     box_constraints _label_constraints;
 
     void draw_toolbar_tab_button(draw_context const& context) const noexcept

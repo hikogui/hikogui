@@ -51,12 +51,11 @@ public:
     {
         assert(this->delegate != nullptr);
 
-        _label_widget = std::make_unique<label_widget>();
-        _label_widget->label = label;
+        _label_widget = std::make_unique<label_widget>(label);
         _label_widget->set_parent(this);
 
         this->delegate->init(this);
-        _delegate_cbt = this->delegate->subscribe(this, [&] {
+        _delegate_cbt = this->delegate->subscribe(this, [this] {
             set_checked(this->delegate->state(this) != widget_value::off);
             this->notifier();
         });

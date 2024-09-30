@@ -90,7 +90,7 @@ public:
     {
         hi_assert_not_null(this->delegate);
 
-        _delegate_cbt = this->delegate->subscribe(this, [&] {
+        _delegate_cbt = this->delegate->subscribe(this, [this] {
             ++global_counter<"text_field_widget:delegate:layout">;
             request_relayout();
         });

@@ -107,7 +107,7 @@ public:
         hi_axiom_not_null(this->delegate);
 
         this->delegate->init(this);
-        _delegate_cbt = this->delegate->subscribe(this, [&] {
+        _delegate_cbt = this->delegate->subscribe(this, [this] {
             set_checked(this->delegate->state(this) != widget_value::off);
             this->notifier();
         });

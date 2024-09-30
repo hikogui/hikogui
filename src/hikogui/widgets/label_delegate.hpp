@@ -14,7 +14,28 @@ template<typename... Args>
 class default_label_delegate;
 
 template<>
-class default_label_delegate<> : public label_delegate {
+class default_label_delegate<> : public virtual label_delegate {
+public:
+    [[nodiscard]] bool empty_text(widget_intf const* sender) const override
+    {
+        return true;
+    }
+
+    [[nodiscard]] bool empty_icon(widget_intf const* sender) const override
+    {
+        return true;
+    }
+
+    [[nodiscard]] gstring get_text(widget_intf const* sender) const override
+    {
+        return {};
+    }
+
+    [[nodiscard]] hi::icon get_icon(widget_intf const* sender) const override
+    {
+        return {};
+    }
+};
 
 template<>
 class default_label_delegate<hi::label> : public label_delegate {
@@ -31,31 +52,34 @@ public:
         });
     }
 
+    /// @privatesection
     [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return value->text.empty();
+        return _value->text.empty();
     }
 
     [[nodiscard]] bool empty_icon(widget_intf const* sender) const override
     {
-        return value->icon.empty();
+        return _value->icon.empty();
     }
 
     [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        return to_gstring(value->text.translate());
+        return _value->text.translate();
     }
 
     [[nodiscard]] hi::icon get_icon(widget_intf const* sender) const override
     {
-        return value->icon;
+        return _value->icon;
     }
+    /// @endprivatesection
 
 private:
     observer<hi::label> _value;
     callback<void(hi::label)> _value_cbt;
 };
 
+template<>
 class default_label_delegate<hi::icon> : public label_delegate {
 public:
     /** Construct a delegate.
@@ -70,6 +94,7 @@ public:
         });
     }
 
+    /// @privatesection
     [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
         return true;
@@ -77,7 +102,7 @@ public:
 
     [[nodiscard]] bool empty_icon(widget_intf const* sender) const override
     {
-        return value->icon.empty();
+        return _value->empty();
     }
 
     [[nodiscard]] gstring get_text(widget_intf const* sender) const override
@@ -87,14 +112,15 @@ public:
 
     [[nodiscard]] hi::icon get_icon(widget_intf const* sender) const override
     {
-        return value->icon;
+        return *_value;
     }
-
+    /// @endprivatesection
 private:
     observer<hi::icon> _value;
     callback<void(hi::icon)> _value_cbt;
 };
 
+template<>
 class default_label_delegate<hi::txt> : public label_delegate {
 public:
     /** Construct a delegate.
@@ -109,25 +135,27 @@ public:
         });
     }
 
+    /// @privatesection
     [[nodiscard]] bool empty_text(widget_intf const* sender) const override
     {
-        return value->text.empty();
+        return _value->empty();
     }
 
     [[nodiscard]] bool empty_icon(widget_intf const* sender) const override
     {
-        return true
+        return true;
     }
 
     [[nodiscard]] gstring get_text(widget_intf const* sender) const override
     {
-        return to_gstring(value->text.translate());
+        return _value->translate();
     }
 
     [[nodiscard]] hi::icon get_icon(widget_intf const* sender) const override
     {
         return {};
     }
+    /// @endprivatesection
 
 private:
     observer<hi::txt> _value;
@@ -135,13 +163,18 @@ private:
 };
 
 
-template<forward_of<observer<hi::txt>> Value>
-default_text_delegate(Value&&) -> default_text_delegate<observer_decay_t<Value>>;
-
-template<forward_of<observer<hi::icon>> Value>
-default_text_delegate(Value&&) -> default_text_delegate<observer_decay_t<Value>>;
-
-template<forward_of<observer<hi::label>> Value>
-default_text_delegate(Value&&) -> default_text_delegate<observer_decay_t<Value>>;
+default_label_delegate() -> default_label_delegate<>;
+default_label_delegate(hi::label const&) -> default_label_delegate<hi::label>;
+default_label_delegate(hi::label&&) -> default_label_delegate<hi::label>;
+default_label_delegate(hi::icon const&) -> default_label_delegate<hi::icon>;
+default_label_delegate(hi::icon&&) -> default_label_delegate<hi::icon>;
+default_label_delegate(hi::txt const&) -> default_label_delegate<hi::txt>;
+default_label_delegate(hi::txt&&) -> default_label_delegate<hi::txt>;
+default_label_delegate(hi::observer<hi::label> const&) -> default_label_delegate<hi::label>;
+default_label_delegate(hi::observer<hi::label>&&) -> default_label_delegate<hi::label>;
+default_label_delegate(hi::observer<hi::icon> const&) -> default_label_delegate<hi::icon>;
+default_label_delegate(hi::observer<hi::icon>&&) -> default_label_delegate<hi::icon>;
+default_label_delegate(hi::observer<hi::txt> const&) -> default_label_delegate<hi::txt>;
+default_label_delegate(hi::observer<hi::txt>&&) -> default_label_delegate<hi::txt>;
 
 }

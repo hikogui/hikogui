@@ -1,14 +1,21 @@
 
 
-#pragam once
+#pragma once
 
-namespace hi::inline v1 {
+#include "../utility/utility.hpp"
+#include "../dispatch/dispatch.hpp"
+#include "../GUI/GUI.hpp"
+#include "../macros.hpp"
+
+hi_export_module(hikogui.widgets : widget_delegate);
+
+hi_export namespace hi::inline v1 {
 
 /** A delegate which bridges widgets with data.
  *
- * Delegates for compound widgets may require multiple inherintance
- * with a diamond pattern. Please always use "virtual inherintance"
- * when inherinting from any delegate class.
+ * Delegates for compound widgets may require multiple inheritance
+ * with a diamond pattern. Please always use "virtual inheritance"
+ * when inheriting from any delegate class.
  *
  * All member functions must accept a `widget_intf const *` as the
  * first arguments. The widget calling these functions should
@@ -24,10 +31,10 @@ namespace hi::inline v1 {
  *  - `virtual void toggle_<name>(widget_intf const* sender)`
  *
  * The name of the delegate is included in each member function, so
- * that it is possible to do multiple inherintance of different types
+ * that it is possible to do multiple inheritance of different types
  * of delegates. Useful for compound widgets.
  *
- * @note Always use virtual inherintance with delegates.
+ * @note Always use virtual inheritance with delegates.
  */
 class widget_delegate {
 public:

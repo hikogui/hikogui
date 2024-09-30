@@ -58,15 +58,13 @@ public:
         _button_widget->focus_group = keyboard_focus_group::menu;
         _button_widget->set_parent(this);
 
-        _label_widget = std::make_unique<label_widget>();
-        _label_widget->label = label;
+        _label_widget = std::make_unique<label_widget>(label);
         _label_widget->set_parent(this);
 
-        _shortcut_widget = std::make_unique<label_widget>();
-        _shortcut_widget->label = shortcut;
+        _shortcut_widget = std::make_unique<label_widget>(shortcut);
         _shortcut_widget->set_parent(this);
 
-        _button_widget_cbt = _button_widget->subscribe([&] {
+        _button_widget_cbt = _button_widget->subscribe([this] {
             this->set_checked(_button_widget->checked());
             this->notifier();
         });

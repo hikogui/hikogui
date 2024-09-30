@@ -73,7 +73,7 @@ public:
         _other_label_widget = std::make_unique<label_widget>(other_label);
         _other_label_widget->set_parent(this);
 
-        _button_widget_cbt = _button_widget->subscribe([&] {
+        _button_widget_cbt = _button_widget->subscribe([this] {
             this->set_checked(_button_widget->checked());
             this->notifier();
         });

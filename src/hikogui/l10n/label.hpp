@@ -36,11 +36,10 @@ class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, fon
 {
     using std::variant<std::monostate, elusive_icon, hikogui_icon, font_glyph_ids, pixmap<sfloat_rgba16>>::variant;
 
-    /** Check if icon contains an image.
-     */
-    [[nodiscard]] constexpr friend bool to_bool(icon const& rhs) noexcept
+public:
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return not std::holds_alternative<std::monostate>(rhs);
+        return std::holds_alternative<std::monostate>(*this);
     }
 };
 
@@ -98,7 +97,7 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return not(to_bool(icon) or to_bool(text));
+        return icon.empty() and text.empty();
     }
 
     constexpr explicit operator bool() const noexcept

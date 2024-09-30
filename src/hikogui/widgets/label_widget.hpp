@@ -11,6 +11,7 @@
 #include "widget.hpp"
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
+#include "label_delegate.hpp"
 #include "../geometry/geometry.hpp"
 #include "../layout/layout.hpp"
 #include "../l10n/l10n.hpp"
@@ -22,7 +23,7 @@
 #include <future>
 #include <coroutine>
 
-hi_export_module(hikogui.widgets.label_widget);
+hi_export_module(hikogui.widgets : label_widget);
 
 hi_export namespace hi { inline namespace v1 {
 
@@ -42,37 +43,54 @@ hi_export namespace hi { inline namespace v1 {
 class label_widget : public widget {
 public:
     using super = widget;
-
-    /** The label to display.
-     */
-    observer<label> label;
+    using delegate_type = label_delegate;
 
     /** The color of the label's (non-color) icon.
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
 
-    label_widget() noexcept : super()
+    template<typename... Args>
+    [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
     {
-        _icon_widget = std::make_unique<icon_widget>();
-        _icon_widget->icon = label.sub<"icon">();
+        return make_shared_ctad<default_label_delegate>(std::forward<Args>(args)...);
+    }
+
+    ~label_widget()
+    {
+        assert(_delegate != nullptr);
+        _delegate->deinit(this);
+    }
+
+    template<std::derived_from<delegate_type> Delegate>
+    label_widget(std::shared_ptr<Delegate> delegate) noexcept : super(), _delegate(std::move(delegate))
+    {
+        assert(_delegate != nullptr);
+
+        _icon_widget = std::make_unique<icon_widget>(_delegate);
         _icon_widget->scale = icon_widget::scale_type::font_size;
         _icon_widget->set_parent(this);
         _icon_widget->phrasing = phrasing;
 
-        _text_widget = std::make_unique<text_widget>(label.sub<"text">());
+        _text_widget = std::make_unique<text_widget>(_delegate);
         _text_widget->set_parent(this);
         _text_widget->set_edit_mode(text_widget_edit_mode::selectable);
 
         style.set_name("label");
+        _delegate->init(this);
+    }
+
+    template<typename... Args>
+    label_widget(Args&&... args) : label_widget(make_default_delegate(std::forward<Args>(args)...))
+    {
     }
 
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) const noexcept override
     {
-        if (to_bool(label->icon)) {
+        if (not _delegate->empty_icon(this)) {
             co_yield *_icon_widget;
         }
-        if (to_bool(label->text)) {
+        if (not _delegate->empty_text(this)) {
             co_yield *_text_widget;
         }
     }
@@ -83,7 +101,7 @@ public:
         auto const resolved_alignment = resolve(style.alignment, true);
 
         _grid.clear();
-        if (to_bool(label->icon) and to_bool(label->text)) {
+        if (not _delegate->empty_icon(this) and not _delegate->empty_text(this)) {
             // Both of the icon and text are set, so configure the grid to hold both.
             if (resolved_alignment == horizontal_alignment::left) {
                 // icon text
@@ -108,10 +126,10 @@ public:
                 _grid.add_cell(0, 0, _icon_widget.get());
                 _grid.add_cell(1, 0, _text_widget.get(), true);
             }
-        } else if (to_bool(label->icon)) {
+        } else if (not _delegate->empty_icon(this)) {
             // Only the icon-widget is used.
             _grid.add_cell(0, 0, _icon_widget.get());
-        } else if (to_bool(label->text)) {
+        } else if (not _delegate->empty_text(this)) {
             // Only the text-widget is used.
             _grid.add_cell(0, 0, _text_widget.get());
         }
@@ -148,8 +166,7 @@ private:
     std::unique_ptr<text_widget> _text_widget;
     grid_layout<widget *> _grid;
 
-    callback<void(hi::label)> _label_cbt;
-    callback<void(hi::alignment)> _alignment_cbt;
+    std::shared_ptr<delegate_type> _delegate;
 };
 
 }} // namespace hi::v1

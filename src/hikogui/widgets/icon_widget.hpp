@@ -9,6 +9,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include "icon_delegate.hpp"
 #include "../GFX/GFX.hpp"
 #include "../geometry/geometry.hpp"
 #include "../l10n/l10n.hpp"
@@ -58,7 +59,7 @@ public:
     {
         assert(_delegate != nullptr);
 
-        _delegate_cbt = _delegate.subscribe([this](auto...) {
+        _delegate_cbt = _delegate->subscribe(this, [this] {
             _icon_has_modified = true;
             ++global_counter<"icon_widget:icon:constrain">;
             request_reconstrain();
@@ -79,7 +80,7 @@ public:
             assert(_delegate != nullptr);
             auto const icon = _delegate->get_icon(this);
 
-            if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(icon)) {
+            if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
                 auto const bounding_rectangle = [&] {
                     assert(pixmap->height() != 0);
                     assert(pixmap->width() != 0);
@@ -106,21 +107,21 @@ public:
                     request_reconstrain();
                 }
 
-            } else if (auto const g1 = std::get_if<font_glyph_ids>(icon)) {
+            } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
                 _icon_size =
                     aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
-            } else if (auto const g2 = std::get_if<elusive_icon>(icon)) {
+            } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
                 _icon_size =
                     aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
                 _pixmap_backing = {};
 
-            } else if (auto const g3 = std::get_if<hikogui_icon>(icon)) {
+            } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
                 _icon_size =

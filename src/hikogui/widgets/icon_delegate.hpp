@@ -3,8 +3,16 @@
 #pragma once
 
 #include "widget_delegate.hpp"
+#include "../utility/utility.hpp"
+#include "../GUI/GUI.hpp"
+#include "../observer/observer.hpp"
+#include "../l10n/l10n.hpp"
+#include "../macros.hpp"
+#include <utility>
 
-namespace hi::inline v1 {
+hi_export_module(hikogui.widgets : icon_delegate);
+
+hi_export namespace hi::inline v1 {
 
 class icon_delegate : public virtual widget_delegate {
 public:
@@ -40,7 +48,7 @@ public:
     default_icon_delegate() = default;
 
     /// @privatesection
-    [[nodiscard]] virtual bool empty_icon(widget_intf const* sender) const = 0;
+    [[nodiscard]] virtual bool empty_icon(widget_intf const* sender) const
     {
         return true;
     }
@@ -58,15 +66,15 @@ public:
     template<forward_of<observer<hi::icon>> Value>
     default_icon_delegate(Value&& value) : _value(std::forward<Value>(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...){
+        _value_cbt = this->_value.subscribe([this](auto...) {
             this->_notifier();
         });
     }
 
     /// @privatesection
-    [[nodiscard]] virtual bool empty_icon(widget_intf const* sender) const = 0;
+    [[nodiscard]] virtual bool empty_icon(widget_intf const* sender) const override
     {
-        return _value->empty();;
+        return _value->empty();
     }
 
     [[nodiscard]] hi::icon get_icon(widget_intf const* sender) const override

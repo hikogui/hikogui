@@ -51,6 +51,7 @@ public:
     std::shared_ptr<delegate_type> delegate;
 
     observer<label> off_label = txt("N/A");
+    observer<label> current_label = label{};
 
     template<typename... Args>
     [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
@@ -72,11 +73,10 @@ public:
     selection_widget(std::shared_ptr<delegate_type> delegate) noexcept :
         super(), delegate(std::move(delegate))
     {
-        _current_label_widget = std::make_unique<label_widget>();
+        _current_label_widget = std::make_unique<label_widget>(current_label);
         _current_label_widget->set_parent(this);
 
-        _off_label_widget = std::make_unique<label_widget>();
-        _off_label_widget->label = this->off_label;
+        _off_label_widget = std::make_unique<label_widget>(off_label);
         _off_label_widget->set_parent(this);
 
         _overlay_widget = std::make_unique<overlay_widget>();
@@ -413,7 +413,7 @@ private:
     {
         if (auto selected_label = delegate->selected_label(this)) {
             _has_current_label = true;
-            _current_label_widget->label = *selected_label;
+            current_label = *selected_label;
 
         } else {
             _has_current_label = false;

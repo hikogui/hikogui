@@ -529,7 +529,9 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/button_widget.hpp
     src/hikogui/widgets/checkbox_widget.hpp
     src/hikogui/widgets/grid_widget.hpp
+    src/hikogui/widgets/icon_delegate.hpp
     src/hikogui/widgets/icon_widget.hpp
+    src/hikogui/widgets/label_delegate.hpp
     src/hikogui/widgets/label_widget.hpp
     src/hikogui/widgets/menu_button_widget.hpp
     src/hikogui/widgets/overlay_widget.hpp
@@ -554,6 +556,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/toolbar_widget.hpp
     src/hikogui/widgets/utility.hpp
     src/hikogui/widgets/widget.hpp
+    src/hikogui/widgets/widget_delegate.hpp
     src/hikogui/widgets/widgets.hpp
     src/hikogui/widgets/window_controls_macos_widget.hpp
     src/hikogui/widgets/window_controls_win32_widget.hpp

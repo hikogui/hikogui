@@ -60,7 +60,7 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(this->delegate);
 
-        _delegate_cbt = this->delegate->subscribe(this, [&] {
+        _delegate_cbt = this->delegate->subscribe(this, [this] {
             ++global_counter<"tab_widget:delegate:constrain">;
             request_resize();
         });
