@@ -317,6 +317,10 @@ elseif (MSVC)
     target_compile_options(hikogui ${HI_SCOPE} "-external:IC:\\Program Files (x86)\\Windows Kits")
     target_compile_options(hikogui ${HI_SCOPE} "-external:I${Vulkan_INCLUDE_DIRS}")
 
+    # C4061: enumerator '...' in a switch of enum '...' is not explicitly handled by a case label.
+    # This warning happens even if you added a default label.
+    target_compile_options(hikogui ${HI_SCOPE} -wd4061)
+
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
     target_compile_options(hikogui ${HI_SCOPE} -wd4068)

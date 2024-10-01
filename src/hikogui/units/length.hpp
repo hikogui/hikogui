@@ -5,7 +5,6 @@
 #pragma once
 
 #include "em_squares.hpp"
-#include "img_squares.hpp"
 #include "pixels.hpp"
 #include "points.hpp"
 #include "dips.hpp"
@@ -25,17 +24,18 @@ using length_variant = std::variant<
     au::Quantity<Pixels, T>,
     au::Quantity<Dips, T>,
     au::Quantity<EmSquares, T>,
-    au::Quantity<ImageSquares, T>;
+    T>;
 
-/** A length in different kinds of quantaties.
+/** A length in different kinds of quantities.
  *
- * This length is a variant of the following quantaties:
+ * This length is a variant of the following quantities:
  *  - Points: A SI length 1/72 inch. Often used for a font-size.
  *  - Pixels: The width/height of a square pixel on the screen.
  *  - Dips: The width/height of a square device-independent pixel,
- *          this may non-linearily converted to Pixels.
- *  - EmSquares: A lemgth defined in comparison to the current-font size.
- *  - ImageSquares: A length defined in comparison to an image.
+ *          this may non-linear converted to Pixels.
+ *  - EmSquares: A length defined in comparison to the current-font size.
+ *  - scaler: A length relative to its base size. Or if there is no base size,
+ *            the base size is defined as 1 em.
  */
 template<typename T>
 class length_quantity : public length_variant<T> {

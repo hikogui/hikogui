@@ -35,9 +35,32 @@ public:
     r.NAME = ROUND(UNIT, lhs._##NAME * rhs); \
     r._##NAME##_inherit = lhs._##NAME##_inherit;
 
-        HIX_MUL(width, unit::pixels, ceil_as);
-        HIX_MUL(height, unit::pixels, ceil_as);
         HIX_MUL(font_size, unit::pixels_per_em, round_as);
+
+        if (auto const scalar_width = std::get_if<float>(&lhs._width)) {
+            // If there is no natural width, then the width is defined by the font size.
+            r.width = ceil_as(unit::pixels, r.font_size * unit::em_squares(*scalar_width));
+            // Don't scale this value by the pixel density, it is up to an image loader
+            // to return a scale value with the image.
+            r.width_scale = *scalar_width;
+        } else {
+            r.width = ceil_as(unit::pixels, lhs._width * rhs);
+            r.width_scale = 1.0f;
+        }
+        r._width_inherit = lhs._width_inherit;
+
+        if (auto const scalar_height = std::get_if<float>(&lhs._height)) {
+            // If there is no natural height, then the height is defined by the font size.
+            r.height = ceil_as(unit::pixels, r.font_size * unit::em_squares(*scalar_height));
+            // Don't scale this value by the pixel density, it is up to an image loader
+            // to return a scale value with the image.
+            r.height_scale = *scalar_height;
+        } else {
+            r.height = ceil_as(unit::pixels, lhs._height * rhs);
+            r.height_scale = 1.0f;
+        }
+        r._height_inherit = lhs._height_inherit;
+
         HIX_MUL(margin_left, unit::pixels, round_as);
         HIX_MUL(margin_bottom, unit::pixels, round_as);
         HIX_MUL(margin_right, unit::pixels, round_as);
@@ -73,6 +96,7 @@ public:
         HIX_COPY(accent_color);
         HIX_COPY(horizontal_alignment);
         HIX_COPY(vertical_alignment);
+        HIX_COPY(object_fit);
         HIX_COPY(text_style);
         HIX_COPY(baseline_priority);
 #undef HIX_COPY
@@ -94,7 +118,7 @@ public:
     { \
         if (priority >= _##NAME##_priority) { \
             _##NAME##_priority = priority; \
-            _##NAME##_inherit = 0; \
+            _##NAME##_inherit = false; \
             _##NAME = NAME; \
         } \
     } \
@@ -102,14 +126,14 @@ public:
     { \
         if (priority >= _##NAME##_priority) { \
             _##NAME##_priority = priority; \
-            _##NAME##_inherit = 1; \
+            _##NAME##_inherit = true; \
             _##NAME = {}; \
         } \
     } \
     void reset_##NAME() noexcept \
     { \
         _##NAME##_priority = style_priority{}; \
-        _##NAME##_inherit = 1; \
+        _##NAME##_inherit = true; \
         _##NAME = {}; \
     }
 
@@ -135,6 +159,7 @@ public:
     HIX_GETSET(hi::color, accent_color)
     HIX_GETSET(hi::horizontal_alignment, horizontal_alignment)
     HIX_GETSET(hi::vertical_alignment, vertical_alignment)
+    HIX_GETSET(hi::object_fit, object_fit)
     HIX_GETSET(hi::text_style_set, text_style)
     HIX_GETSET(hi::baseline_priority, baseline_priority)
 #undef HIX_GETSET
@@ -187,6 +212,7 @@ public:
         reset_accent_color();
         reset_horizontal_alignment();
         reset_vertical_alignment();
+        reset_object_fit();
         reset_text_style();
         reset_baseline_priority();
     }
@@ -227,6 +253,7 @@ public:
         HIX_APPLY(accent_color)
         HIX_APPLY(horizontal_alignment)
         HIX_APPLY(vertical_alignment)
+        HIX_APPLY(object_fit)
         HIX_APPLY(text_style)
         HIX_APPLY(baseline_priority)
 #undef HIX_APPLY
@@ -255,33 +282,35 @@ private:
     hi::color _accent_color = {};
     hi::horizontal_alignment _horizontal_alignment = hi::horizontal_alignment::left;
     hi::vertical_alignment _vertical_alignment = hi::vertical_alignment::top;
+    hi::object_fit _object_fit = hi::object_fit::none;
     hi::text_style_set _text_style = {};
     hi::baseline_priority _baseline_priority = hi::baseline_priority::none;
 
-    size_t _width_inherit : 1 = 1;
-    size_t _height_inherit : 1 = 1;
-    size_t _font_size_inherit : 1 = 1;
-    size_t _margin_left_inherit : 1 = 1;
-    size_t _margin_bottom_inherit : 1 = 1;
-    size_t _margin_right_inherit : 1 = 1;
-    size_t _margin_top_inherit : 1 = 1;
-    size_t _padding_left_inherit : 1 = 1;
-    size_t _padding_bottom_inherit : 1 = 1;
-    size_t _padding_right_inherit : 1 = 1;
-    size_t _padding_top_inherit : 1 = 1;
-    size_t _border_width_inherit : 1 = 1;
-    size_t _border_bottom_left_radius_inherit : 1 = 1;
-    size_t _border_bottom_right_radius_inherit : 1 = 1;
-    size_t _border_top_left_radius_inherit : 1 = 1;
-    size_t _border_top_right_radius_inherit : 1 = 1;
-    size_t _color_inherit : 1 = 1;
-    size_t _background_color_inherit : 1 = 1;
-    size_t _border_color_inherit : 1 = 1;
-    size_t _accent_color_inherit : 1 = 1;
-    size_t _horizontal_alignment_inherit : 1 = 1;
-    size_t _vertical_alignment_inherit : 1 = 1;
-    size_t _text_style_inherit : 1 = 1;
-    size_t _baseline_priority_inherit : 1 = 1;
+    bool _width_inherit : 1 = true;
+    bool _height_inherit : 1 = true;
+    bool _font_size_inherit : 1 = true;
+    bool _margin_left_inherit : 1 = true;
+    bool _margin_bottom_inherit : 1 = true;
+    bool _margin_right_inherit : 1 = true;
+    bool _margin_top_inherit : 1 = true;
+    bool _padding_left_inherit : 1 = true;
+    bool _padding_bottom_inherit : 1 = true;
+    bool _padding_right_inherit : 1 = true;
+    bool _padding_top_inherit : 1 = true;
+    bool _border_width_inherit : 1 = true;
+    bool _border_bottom_left_radius_inherit : 1 = true;
+    bool _border_bottom_right_radius_inherit : 1 = true;
+    bool _border_top_left_radius_inherit : 1 = true;
+    bool _border_top_right_radius_inherit : 1 = true;
+    bool _color_inherit : 1 = true;
+    bool _background_color_inherit : 1 = true;
+    bool _border_color_inherit : 1 = true;
+    bool _accent_color_inherit : 1 = true;
+    bool _horizontal_alignment_inherit : 1 = true;
+    bool _vertical_alignment_inherit : 1 = true;
+    bool _object_fit_inherit : 1 = true;
+    bool _text_style_inherit : 1 = true;
+    bool _baseline_priority_inherit : 1 = true;
 
     style_priority _width_priority;
     style_priority _height_priority;
@@ -305,6 +334,7 @@ private:
     style_priority _accent_color_priority;
     style_priority _horizontal_alignment_priority;
     style_priority _vertical_alignment_priority;
+    style_priority _object_fit_priority;
     style_priority _text_style_priority;
     style_priority _baseline_priority_priority;
 };

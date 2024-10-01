@@ -19,6 +19,8 @@ hi_export namespace hi::inline v1 {
 struct style_computed_properties {
     unit::pixels_f width = {};
     unit::pixels_f height = {};
+    float width_scale = 0.0f;
+    float height_scale = 0.0f;
     unit::pixels_per_em_f font_size = {};
     unit::pixels_f margin_left = {};
     unit::pixels_f margin_bottom = {};
@@ -35,6 +37,7 @@ struct style_computed_properties {
     unit::pixels_f border_top_right_radius = {};
     hi::horizontal_alignment horizontal_alignment = {};
     hi::vertical_alignment vertical_alignment = {};
+    hi::object_fit object_fit = {};
     hi::color color = {};
     hi::color background_color = {};
     hi::color border_color = {};
@@ -42,38 +45,39 @@ struct style_computed_properties {
     text_style_set text_style = {};
     hi::baseline_priority baseline_priority = {};
 
-    size_t _width_inherit : 1 = 0;
-    size_t _height_inherit : 1 = 0;
-    size_t _font_size_inherit : 1 = 0;
-    size_t _margin_left_inherit : 1 = 0;
-    size_t _margin_bottom_inherit : 1 = 0;
-    size_t _margin_right_inherit : 1 = 0;
-    size_t _margin_top_inherit : 1 = 0;
-    size_t _padding_left_inherit : 1 = 0;
-    size_t _padding_bottom_inherit : 1 = 0;
-    size_t _padding_right_inherit : 1 = 0;
-    size_t _padding_top_inherit : 1 = 0;
-    size_t _border_width_inherit : 1 = 0;
-    size_t _border_bottom_left_radius_inherit : 1 = 0;
-    size_t _border_bottom_right_radius_inherit : 1 = 0;
-    size_t _border_top_left_radius_inherit : 1 = 0;
-    size_t _border_top_right_radius_inherit : 1 = 0;
-    size_t _horizontal_alignment_inherit : 1 = 0;
-    size_t _vertical_alignment_inherit : 1 = 0;
-    size_t _color_inherit : 1 = 0;
-    size_t _background_color_inherit : 1 = 0;
-    size_t _border_color_inherit : 1 = 0;
-    size_t _accent_color_inherit : 1 = 0;
-    size_t _text_style_inherit : 1 = 0;
-    size_t _baseline_priority_inherit : 1 = 0;
+    bool _width_inherit : 1 = false;
+    bool _height_inherit : 1 = false;
+    bool _font_size_inherit : 1 = false;
+    bool _margin_left_inherit : 1 = false;
+    bool _margin_bottom_inherit : 1 = false;
+    bool _margin_right_inherit : 1 = false;
+    bool _margin_top_inherit : 1 = false;
+    bool _padding_left_inherit : 1 = false;
+    bool _padding_bottom_inherit : 1 = false;
+    bool _padding_right_inherit : 1 = false;
+    bool _padding_top_inherit : 1 = false;
+    bool _border_width_inherit : 1 = false;
+    bool _border_bottom_left_radius_inherit : 1 = false;
+    bool _border_bottom_right_radius_inherit : 1 = false;
+    bool _border_top_left_radius_inherit : 1 = false;
+    bool _border_top_right_radius_inherit : 1 = false;
+    bool _horizontal_alignment_inherit : 1 = false;
+    bool _vertical_alignment_inherit : 1 = false;
+    bool _object_fit_inherit : 1 = false;
+    bool _color_inherit : 1 = false;
+    bool _background_color_inherit : 1 = false;
+    bool _border_color_inherit : 1 = false;
+    bool _accent_color_inherit : 1 = false;
+    bool _text_style_inherit : 1 = false;
+    bool _baseline_priority_inherit : 1 = false;
 
     void inherit(style_computed_properties const& rhs) noexcept
     {
 #define HIX_INHERIT(NAME) \
     if (_##NAME##_inherit) { \
         NAME = rhs.NAME; \
-        assert(rhs._##NAME##_inherit == 0); \
-        _##NAME##_inherit = 0; \
+        assert(not rhs._##NAME##_inherit); \
+        _##NAME##_inherit = false; \
     }
 
         HIX_INHERIT(width);
@@ -94,6 +98,7 @@ struct style_computed_properties {
         HIX_INHERIT(border_top_right_radius);
         HIX_INHERIT(horizontal_alignment);
         HIX_INHERIT(vertical_alignment);
+        HIX_INHERIT(object_fit);
         HIX_INHERIT(color);
         HIX_INHERIT(background_color);
         HIX_INHERIT(border_color);
@@ -118,6 +123,7 @@ struct style_computed_properties {
             height = rhs.height;
             font_size = rhs.font_size;
             text_style = rhs.text_style;
+            object_fit = rhs.object_fit;
         }
 
         if (to_bool(mask & style_modify_mask::margin)) {
@@ -179,6 +185,7 @@ struct style_computed_properties {
         HIX_COMPARE(accent_color, style_modify_mask::color)
         HIX_COMPARE(horizontal_alignment, style_modify_mask::alignment)
         HIX_COMPARE(vertical_alignment, style_modify_mask::alignment)
+        HIX_COMPARE(object_fit, style_modify_mask::size)
         HIX_COMPARE(text_style, style_modify_mask::size)
         HIX_COMPARE(baseline_priority, style_modify_mask::alignment)
 #undef HIX_COMPARE

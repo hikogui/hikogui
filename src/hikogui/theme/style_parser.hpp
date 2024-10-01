@@ -110,6 +110,36 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
         return std::unexpected{std::format("{}: Unknown vertical alignment {}.", token_location(it, last), static_cast<std::string>(*it))};
     }
 }
+
+template<std::input_iterator It, std::sentinel_for<It> ItEnd>
+[[nodiscard]] constexpr expected_optional<object_fit, std::string> parse_style_object_fit(It& it, ItEnd last)
+{
+    hi_assert(it != last);
+
+    if (*it != token::id) {
+        return std::nullopt;
+    }
+
+    if (*it == "none") {
+        ++it;
+        return object_fit::none;
+    } else if (*it == "contain") {
+        ++it;
+        return object_fit::contain;
+    } else if (*it == "cover") {
+        ++it;
+        return object_fit::cover;
+    } else if (*it == "fill") {
+        ++it;
+        return object_fit::fill;
+    } else if (*it == "scale-down") {
+        ++it;
+        return object_fit::scale_down;
+    } else {
+        return std::unexpected{std::format("{}: Unknown object-fit {}.", token_location(it, last), static_cast<std::string>(*it))};
+    }
+}
+
 template<std::input_iterator It, std::sentinel_for<It> ItEnd>
 [[nodiscard]] constexpr expected_optional<unit::length_f, std::string> parse_style_length(It& it, ItEnd last)
 {
@@ -125,6 +155,9 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     if (it == last or *it != token::id) {
         // A numeric value without a suffix is in device independet pixels.
         return unit::dips(value);
+    } else if (*it == '%') {
+        ++it;
+        return value * 0.01f;
     } else if (*it == "px") {
         ++it;
         return unit::pixels(value);
@@ -339,6 +372,7 @@ template<std::input_iterator It, std::sentinel_for<It> ItEnd>
     HIX_VALUE(parse_style_color, "border-color", border_color)
     HIX_VALUE(parse_style_horizontal_alignment, "horizontal-alignment", horizontal_alignment)
     HIX_VALUE(parse_style_vertical_alignment, "vertical-alignment", vertical_alignment)
+    HIX_VALUE(parse_style_object_fit, "object-fit", object_fit)
     {
         return std::unexpected(std::format("{}: Unknown attribute '{}'.", token_location(it, last), name));
     }

@@ -81,6 +81,43 @@ public:
 
     hi::alignment alignment;
 
+    /** Calculate the concrete object size of an image.
+     *
+     * This function takes into account:
+     * - The natural size of the image.
+     * - The width and height specified in the style.
+     * - The scale of the image from the image-loader.
+     * 
+     * @param natural_size The natural size of the image.
+     * @param scale When the image loader did not found an image matching the
+     *              pixel density of the display, the scale is greater than 1.0
+     *              when the image was for a lower resolution display, and less
+     *              than 1.0 when the image was for a higher resolution display.
+     */
+    [[nodiscard]] extent2 concrete_object_size(extent2 natural_size, float scale) const noexcept
+    {
+    }
+
+    /** Calculate the concrete object size of an image to fit inside a box.
+     * 
+     * This function takes into account:
+     * - The natural size of the image.
+     * - The width and height specified in the style.
+     * - The scale of the image from the image-loader.
+     * - The layout size of the box.
+     * - The object-fit property of the style.
+     *
+     * @param natural_size The natural size of the image.
+     * @param scale When the image loader did not found an image matching the
+     *              pixel density of the display, the scale is greater than 1.0
+     *              when the image was for a lower resolution display, and less
+     *              than 1.0 when the image was for a higher resolution display.
+     * @param layout_size The size of the box to fit the image in.
+     */
+    [[nodiscard]] extent2 concrete_object_size(extent2 natural_size, float scale, extent2 layout_size) const noexcept
+    {
+    }
+
     style(style const&) noexcept = delete;
     style(style&&) noexcept = delete;
     style& operator=(style const&) noexcept = delete;

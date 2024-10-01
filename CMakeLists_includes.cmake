@@ -282,6 +282,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/geometry/margins.hpp
     src/hikogui/geometry/matrix2.hpp
     src/hikogui/geometry/matrix3.hpp
+    src/hikogui/geometry/object_fit.hpp
     src/hikogui/geometry/perspective.hpp
     src/hikogui/geometry/point2.hpp
     src/hikogui/geometry/point3.hpp
