@@ -5,6 +5,7 @@
 #pragma once
 
 #include "em_squares.hpp"
+#include "img_squares.hpp"
 #include "pixels.hpp"
 #include "points.hpp"
 #include "dips.hpp"
@@ -19,9 +20,23 @@ hi_export namespace hi {
 inline namespace v1 { namespace unit {
 
 template<typename T>
-using length_variant =
-    std::variant<au::Quantity<Points, T>, au::Quantity<Pixels, T>, au::Quantity<Dips, T>, au::Quantity<EmSquares, T>>;
+using length_variant = std::variant<
+    au::Quantity<Points, T>,
+    au::Quantity<Pixels, T>,
+    au::Quantity<Dips, T>,
+    au::Quantity<EmSquares, T>,
+    au::Quantity<ImageSquares, T>;
 
+/** A length in different kinds of quantaties.
+ *
+ * This length is a variant of the following quantaties:
+ *  - Points: A SI length 1/72 inch. Often used for a font-size.
+ *  - Pixels: The width/height of a square pixel on the screen.
+ *  - Dips: The width/height of a square device-independent pixel,
+ *          this may non-linearily converted to Pixels.
+ *  - EmSquares: A lemgth defined in comparison to the current-font size.
+ *  - ImageSquares: A length defined in comparison to an image.
+ */
 template<typename T>
 class length_quantity : public length_variant<T> {
     using super = length_variant<T>;
