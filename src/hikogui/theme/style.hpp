@@ -94,8 +94,23 @@ public:
      *              when the image was for a lower resolution display, and less
      *              than 1.0 when the image was for a higher resolution display.
      */
-    [[nodiscard]] extent2 concrete_object_size(extent2 natural_size, float scale) const noexcept
+    [[nodiscard]] extent2 concrete_box_size_px(extent2 natural_size, float scale) const noexcept
     {
+        if (width_scale == 0.0f and height_scale == 0.0f) {
+            // Both width and height are specified.
+            return size_px;
+        }
+
+        if (natural_size.width() == 0.0f or natural_size.height() == 0.0f) {
+            // If we have a scaler in width and height, but there is not
+            // aspect ratio, then fallback to use the size. The width or
+            // height scaler will be set to 1 Em.
+            return size_px;
+        }
+
+        return {
+            width_scale == 0.0f ? width_px : natural.width() * width_scale * scale,
+            height_scale == 0.0f ? height_px : natural.height() * height_scale * scale};
     }
 
     /** Calculate the concrete object size of an image to fit inside a box.
@@ -114,8 +129,46 @@ public:
      *              than 1.0 when the image was for a higher resolution display.
      * @param layout_size The size of the box to fit the image in.
      */
-    [[nodiscard]] extent2 concrete_object_size(extent2 natural_size, float scale, extent2 layout_size) const noexcept
+    [[nodiscard]] extent2 concrete_object_size_px(extent2 natural_size, float scale, extent2 layout_size) const noexcept
     {
+        if (natural_size.width() == 0.0f or
+            natural_size.height() == 0.0f or
+            layout_size.width() == 0.0f or
+            layout_size.height() == 0.0f) {
+            // if the apect ratios can not be determined it is as-if object_fit::fill.
+            return layout_size;
+        }
+
+        auto const natural_aspect_ratio = natural_size.width() / natural_size.height();
+        auto const layout_aspect_ratio = layout_size.width() / layout_size.height();
+
+        auto const none_size = natural_size * scale;
+
+        auto const fill_size = layout_size;
+
+        auto const contain_size = natural_aspect_ratio < layout_aspect_ratio ?
+                extent2{layout_size.height() * natural_aspect_ratio, layout_size.height()} :
+                extent2{layout_size.width(), layout_size.width() / natural_aspect_ratio};
+
+        auto const cover_size = natural_aspect_ratio < layout_aspect_ratio ?
+                extent2{layout_size.width(), layout_size.width() / natural_aspect_ratio} :
+                extent2{layout_size.height() * natural_aspect_ratio, layout_size.height()};
+
+        auto const scale_down_size = none_size.width() < contain_size.width() ? none_size : contain_size;
+
+        switch (object_fit) {
+        case object_fit::none:
+            return none_size;
+        case object_fit::fill:
+            return fill_size;
+        case object_fit::contain:
+            return contain_size;
+        case object_fit::cover:
+            return cover_size;
+        case object_fit::scale_down:
+            return scale_down_size;
+        }
+        std::unreachable();
     }
 
     style(style const&) noexcept = delete;
