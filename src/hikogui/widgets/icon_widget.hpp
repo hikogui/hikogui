@@ -14,6 +14,7 @@
 #include "../geometry/geometry.hpp"
 #include "../l10n/l10n.hpp"
 #include "../macros.hpp"
+#include <gsl/gsl>
 #include <memory>
 #include <string>
 #include <array>
@@ -36,17 +37,9 @@ public:
     using super = widget;
     using delegate_type = icon_delegate;
 
-    enum class scale_type {
-        none,
-        aspect_fit,
-        font_size,
-    };
-
     /** The color a non-color icon will be displayed with.
      */
     observer<hi::phrasing> phrasing = hi::phrasing::regular;
-
-    scale_type scale = scale_type::none;
 
     template<typename... Args>
     [[nodiscard]] static std::shared_ptr<delegate_type> make_default_delegate(Args&&... args)
@@ -81,24 +74,9 @@ public:
             auto const icon = _delegate->get_icon(this);
 
             if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
-                auto const bounding_rectangle = [&] {
-                    assert(pixmap->height() != 0);
-                    assert(pixmap->width() != 0);
-
-                    auto const width = narrow_cast<float>(pixmap->width());
-                    auto const height = narrow_cast<float>(pixmap->height());
-                    if (pixmap->height() > pixmap->width()) {
-                        // Portrait.
-                        return extent2{width / height, 1.0f};
-                    } else {
-                        // Landscape.
-                        return extent2{1.0f, height / width};
-                    }
-                }();
-
                 _glyph = {};
                 _icon_type = icon_type::pixmap;
-                _icon_size = aspect_clamp(bounding_rectangle * style.font_size_px, style.size_px);
+                _icon_size = style.concrete_box_size_px(extent2{gsl::narrow<float>(pixmap->width()), gsl::narrow<float>(pixmap->height())}, 1.0f); 
                 _pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap};
                 if (not _pixmap_backing) {
                     // Could not get an image, retry.
@@ -110,22 +88,19 @@ public:
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size =
-                    aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
+                _icon_size = style.concrete_box_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size =
-                    aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
+                _icon_size = style.concrete_box_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size =
-                    aspect_clamp(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, style.size_px);
+                _icon_size = style.concrete_box_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else {
@@ -136,7 +111,7 @@ public:
             }
         }
 
-        return super::update_constraints();
+        return {_icon_size, _icon_size, _icon_size, style.margins_px};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -145,38 +120,19 @@ public:
 
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
+
         } else {
+            auto const scaled_icon_size = style.concrete_object_size_px(_icon_size, 1.0f, context.size());
+
             auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
             auto const aspect_fit_size = aspect_fit(_icon_size, context.size());
             auto const font_fit_size = _icon_size * style.font_size_px;
 
-            switch (scale) {
-            case scale_type::none:
-                _icon_rectangle = align_to_middle(
-                    context.rectangle() + style.vertical_margins_px,
-                    _icon_size,
-                    os_settings::alignment(style.horizontal_alignment),
-                    middle);
-                break;
-
-            case scale_type::aspect_fit:
-                _icon_rectangle = align_to_middle(
-                    context.rectangle(),
-                    aspect_fit_size,
-                    os_settings::alignment(style.horizontal_alignment),
-                    context.rectangle().middle());
-                break;
-
-            case scale_type::font_size:
-                _icon_rectangle = align_to_middle(
-                    context.rectangle(),
-                    font_fit_size,
-                    os_settings::alignment(style.horizontal_alignment),
-                    middle);
-                break;
-            default:
-                std::unreachable();
-            }
+            _icon_rectangle = align_to_middle(
+                context.rectangle() + style.vertical_margins_px,
+                scaled_icon_size,
+                os_settings::alignment(style.horizontal_alignment),
+                middle);
         }
     }
 

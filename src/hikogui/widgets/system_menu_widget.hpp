@@ -39,7 +39,6 @@ public:
     system_menu_widget() noexcept : super()
     {
         _icon_widget = std::make_unique<icon_widget>(icon);
-        _icon_widget->scale = icon_widget::scale_type::aspect_fit;
         _icon_widget->set_parent(this);
 
         style.set_name("system-menu");

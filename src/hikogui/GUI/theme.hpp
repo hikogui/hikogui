@@ -346,8 +346,8 @@ public:
             auto const priority = style_priority{importance, selector.specificity()};
 
             auto properties = style_properties{};
-            properties.set_width(30.0f * scalar_to_dips, priority);
-            properties.set_height(30.0f * scalar_to_dips, priority);
+            properties.set_width(1.0f, priority);
+            properties.set_height(1.0f, priority);
             properties.set_margin_left(0.0f * scalar_to_dips, priority);
             properties.set_margin_right(0.0f * scalar_to_dips, priority);
             properties.set_margin_bottom(0.0f * scalar_to_dips, priority);

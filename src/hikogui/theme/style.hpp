@@ -109,8 +109,8 @@ public:
         }
 
         return {
-            width_scale == 0.0f ? width_px : natural.width() * width_scale * scale,
-            height_scale == 0.0f ? height_px : natural.height() * height_scale * scale};
+            width_scale == 0.0f ? width_px : natural_size.width() * width_scale * scale,
+            height_scale == 0.0f ? height_px : natural_size.height() * height_scale * scale};
     }
 
     /** Calculate the concrete object size of an image to fit inside a box.
@@ -135,7 +135,7 @@ public:
             natural_size.height() == 0.0f or
             layout_size.width() == 0.0f or
             layout_size.height() == 0.0f) {
-            // if the apect ratios can not be determined it is as-if object_fit::fill.
+            // if the aspect-ratios can not be determined it is as-if object_fit::fill.
             return layout_size;
         }
 

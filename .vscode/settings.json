@@ -136,7 +136,10 @@
         "string_span": "cpp",
         "pointers": "cpp",
         "span_ext": "cpp",
-        "util": "cpp"
+        "util": "cpp",
+        "assert": "cpp",
+        "byte": "cpp",
+        "narrow": "cpp"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"

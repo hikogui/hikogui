@@ -67,7 +67,6 @@ public:
         assert(_delegate != nullptr);
 
         _icon_widget = std::make_unique<icon_widget>(_delegate);
-        _icon_widget->scale = icon_widget::scale_type::font_size;
         _icon_widget->set_parent(this);
         _icon_widget->phrasing = phrasing;
 
@@ -87,10 +86,10 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget_intf &> children(bool include_invisible) const noexcept override
     {
-        if (not _delegate->empty_icon(this)) {
+        if (not _delegate->empty_icon(this) or include_invisible) {
             co_yield *_icon_widget;
         }
-        if (not _delegate->empty_text(this)) {
+        if (not _delegate->empty_text(this) or include_invisible) {
             co_yield *_text_widget;
         }
     }
