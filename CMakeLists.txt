@@ -80,8 +80,30 @@ endif()
 if(VCPKG_TOOLCHAIN)
     find_package(ms-gsl)
 else()
-    FetchContent_Declare(GSL GIT_REPOSITORY https://github.com/microsoft/GSL GIT_TAG v4.0.0)
+    FetchContent_Declare(GSL
+        GIT_REPOSITORY https://github.com/microsoft/GSL
+        GIT_TAG v4.0.0)
     FetchContent_MakeAvailable(GSL)
+endif()
+
+if(VCPKG_TOOLCHAIN)
+    find_package(zlib)
+else()
+    FetchContent_Declare(ZLIB
+        GIT_REPOSITORY https://github.com/madler/zlib
+        GIT_TAG v1.3.1
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(ZLIB)
+endif()
+
+if(VCPKG_TOOLCHAIN)
+    find_package(png)
+else()
+    FetchContent_Declare(PNG
+        URL https://sourceforge.net/projects/libpng/files/libpng-1.6.44.tar.gz
+        URL_HASH SHA256=8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(PNG)
 endif()
 
 #
