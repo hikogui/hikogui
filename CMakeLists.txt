@@ -89,12 +89,10 @@ endif()
 if(VCPKG_TOOLCHAIN)
     find_package(zlib)
 else()
-    FetchContent_Declare(ZLIB
+    FetchContent_Declare(zlib
         GIT_REPOSITORY https://github.com/madler/zlib
-        GIT_TAG v1.3.1
-        EXCLUDE_FROM_ALL
-        FIND_PACKAGE_ARGS NAMES ZLIB)
-    FetchContent_MakeAvailable(ZLIB)
+        GIT_TAG v1.3.1)
+    FetchContent_MakeAvailable(zlib)
 endif()
 
 #if(VCPKG_TOOLCHAIN)
