@@ -91,7 +91,8 @@ if(VCPKG_TOOLCHAIN)
 else()
     FetchContent_Declare(zlib
         GIT_REPOSITORY https://github.com/madler/zlib
-        GIT_TAG v1.3.1)
+        GIT_TAG v1.3.1
+        EXCLUDE_FROM_ALL)
     FetchContent_MakeAvailable(zlib)
     set(ZLIB_ROOT "${zlib_SOURCE_DIR}")
     set(ZLIB_LIBRARY "zlib")
