@@ -76,7 +76,7 @@ public:
             if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
                 _glyph = {};
                 _icon_type = icon_type::pixmap;
-                _icon_size = style.concrete_box_size_px(extent2{gsl::narrow<float>(pixmap->width()), gsl::narrow<float>(pixmap->height())}, 1.0f); 
+                _icon_size = style.concrete_size_px(extent2{gsl::narrow<float>(pixmap->width()), gsl::narrow<float>(pixmap->height())}, 1.0f); 
                 _pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap};
                 if (not _pixmap_backing) {
                     // Could not get an image, retry.
@@ -88,19 +88,19 @@ public:
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
-                _icon_size = style.concrete_box_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
+                _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
-                _icon_size = style.concrete_box_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
+                _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
-                _icon_size = style.concrete_box_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
+                _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else {
@@ -122,7 +122,7 @@ public:
             _icon_rectangle = {};
 
         } else {
-            auto const scaled_icon_size = style.concrete_object_size_px(_icon_size, 1.0f, context.size());
+            auto const scaled_icon_size = style.concrete_size_px(_icon_size, 1.0f, context.size());
 
             auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
             auto const aspect_fit_size = aspect_fit(_icon_size, context.size());

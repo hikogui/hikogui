@@ -93,31 +93,33 @@ public:
      *              pixel density of the display, the scale is greater than 1.0
      *              when the image was for a lower resolution display, and less
      *              than 1.0 when the image was for a higher resolution display.
+     * @return The natural size of the image after scaling to the specified size.
      */
-    [[nodiscard]] extent2 concrete_box_size_px(extent2 natural_size, float scale) const noexcept
+    [[nodiscard]] extent2 concrete_size_px(extent2 natural_size, float scale) const noexcept
     {
-        if (width_scale == 0.0f and height_scale == 0.0f) {
-            // Both width and height are specified.
-            return size_px;
-        }
+        auto const concrete_width = [&] {
+            if (auto const *scalar_width = std::get_if<float>(&width)) {
+                return natural_size.width() * *scalar_width * scale;
+            } else {
+                return width_px;
+            }
+        }();
 
-        if (natural_size.width() == 0.0f or natural_size.height() == 0.0f) {
-            // If we have a scaler in width and height, but there is not
-            // aspect ratio, then fallback to use the size. The width or
-            // height scaler will be set to 1 Em.
-            return size_px;
-        }
+        auto const concrete_height = [&] {
+            if (auto const *scalar_height = std::get_if<float>(&height)) {
+                return natural_size.height() * *scalar_height * scale;
+            } else {
+                return height_px;
+            }
+        }(); 
 
-        return {
-            width_scale == 0.0f ? width_px : natural_size.width() * width_scale * scale,
-            height_scale == 0.0f ? height_px : natural_size.height() * height_scale * scale};
+        return {concrete_width, concrete_height};
     }
 
     /** Calculate the concrete object size of an image to fit inside a box.
      * 
      * This function takes into account:
      * - The natural size of the image.
-     * - The width and height specified in the style.
      * - The scale of the image from the image-loader.
      * - The layout size of the box.
      * - The object-fit property of the style.
@@ -129,7 +131,7 @@ public:
      *              than 1.0 when the image was for a higher resolution display.
      * @param layout_size The size of the box to fit the image in.
      */
-    [[nodiscard]] extent2 concrete_object_size_px(extent2 natural_size, float scale, extent2 layout_size) const noexcept
+    [[nodiscard]] extent2 concrete_size_px(extent2 natural_size, float scale, extent2 layout_size) const noexcept
     {
         if (natural_size.width() == 0.0f or
             natural_size.height() == 0.0f or
@@ -356,8 +358,20 @@ private:
         this->set_properties(_loaded_properties[std::to_underlying(_pseudo_class)], mask);
 
         if (to_bool(mask & style_modify_mask::size)) {
-            width_px = width.in(unit::pixels);
-            height_px = height.in(unit::pixels);
+            if (auto const *pixel_width = std::get_if<unit::pixels_f>(&width)) {
+                width_px = pixel_width->in(unit::pixels);
+            } else {
+                assert(std::holds_alternative<float>(width));
+                width_px = 0.0f;
+            }
+            
+            if (auto const *pixel_height = std::get_if<unit::pixels_f>(&height)) {
+                height_px = pixel_height->in(unit::pixels);
+            } else {
+                assert(std::holds_alternative<float>(height));
+                height_px = 0.0f;
+            }
+
             size_px = extent2{width_px, height_px};
             font_size_px = font_size.in(unit::pixels_per_em);
 

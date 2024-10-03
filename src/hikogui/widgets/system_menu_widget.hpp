@@ -61,25 +61,25 @@ public:
         hi_assert_not_null(_icon_widget);
 
         _icon_constraints = _icon_widget->update_constraints();
+        _icon_padding = max(_icon_constraints.margins, style.padding_px);
 
         return {
-            style.size_px,
-            style.size_px,
-            style.size_px,
+            _icon_constraints.minimum + _icon_padding,
+            _icon_constraints.preferred + _icon_padding,
+            _icon_constraints.maximum + _icon_padding,
             style.margins_px,
-            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
+            embed(_icon_constraints.baseline, _icon_padding.bottom(), _icon_padding.top())
+        };
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
 
-        // Leave space for window resize handles on the left and top.
-        _system_menu_rectangle = aarectangle{
-            point2{context.left() + style.margin_left_px, context.bottom()},
-            point2{context.right(), context.top() - style.margin_top_px}};
+        auto const icon_rectangle = context.rectangle() - _icon_padding;
+        auto const icon_shape = box_shape{icon_rectangle, lift(context.baseline(), _icon_padding.bottom(), _icon_padding.top())};
 
-        _icon_widget->set_layout(context.transform(context.shape));
+        _icon_widget->set_layout(context.transform(icon_shape));
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
@@ -99,8 +99,7 @@ public:
 private:
     std::unique_ptr<icon_widget> _icon_widget;
     box_constraints _icon_constraints;
-
-    aarectangle _system_menu_rectangle;
+    margins _icon_padding;
 };
 
 } // namespace v1

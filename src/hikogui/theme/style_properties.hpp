@@ -38,26 +38,20 @@ public:
         HIX_MUL(font_size, unit::pixels_per_em, round_as);
 
         if (auto const scalar_width = std::get_if<float>(&lhs._width)) {
-            // If there is no natural width, then the width is defined by the font size.
-            r.width = ceil_as(unit::pixels, r.font_size * unit::em_squares(*scalar_width));
-            // Don't scale this value by the pixel density, it is up to an image loader
-            // to return a scale value with the image.
-            r.width_scale = *scalar_width;
+            // Scalar width remain scalar.
+            r.width = *scalar_width;
         } else {
+            // Non-scalar width are scaled and converted to pixels.
             r.width = ceil_as(unit::pixels, lhs._width * rhs);
-            r.width_scale = 1.0f;
         }
         r._width_inherit = lhs._width_inherit;
 
         if (auto const scalar_height = std::get_if<float>(&lhs._height)) {
-            // If there is no natural height, then the height is defined by the font size.
-            r.height = ceil_as(unit::pixels, r.font_size * unit::em_squares(*scalar_height));
-            // Don't scale this value by the pixel density, it is up to an image loader
-            // to return a scale value with the image.
-            r.height_scale = *scalar_height;
+            // Scalar height remain scalar.
+            r.height = *scalar_height;
         } else {
+            // Non-scalar height are scaled and converted to pixels.
             r.height = ceil_as(unit::pixels, lhs._height * rhs);
-            r.height_scale = 1.0f;
         }
         r._height_inherit = lhs._height_inherit;
 

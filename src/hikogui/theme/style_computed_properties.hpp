@@ -17,8 +17,8 @@ hi_export_module(hikogui.theme : style_computed_properties);
 
 hi_export namespace hi::inline v1 {
 struct style_computed_properties {
-    unit::pixels_f width = {};
-    unit::pixels_f height = {};
+    unit::length_f width = {};
+    unit::length_f height = {};
     float width_scale = 0.0f;
     float height_scale = 0.0f;
     unit::pixels_per_em_f font_size = {};
