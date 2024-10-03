@@ -93,6 +93,7 @@ else()
         GIT_REPOSITORY https://github.com/madler/zlib
         GIT_TAG v1.3.1)
     FetchContent_MakeAvailable(zlib)
+    set(ZLIB_ROOT "${zlib_SOURCE_DIR}")
 endif()
 
 if(VCPKG_TOOLCHAIN)
