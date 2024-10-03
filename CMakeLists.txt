@@ -218,6 +218,8 @@ target_link_libraries(hikogui ${HI_SCOPE} ${Vulkan_LIBRARIES})
 target_include_directories(hikogui ${HI_SCOPE} ${Vulkan_INCLUDE_DIRS})
 
 target_link_libraries(hikogui ${HI_SCOPE} Microsoft.GSL::GSL)
+target_link_libraries(hikogui ${HI_SCOPE} ZLIB::ZLIB)
+target_link_libraries(hikogui ${HI_SCOPE} PNG::PNG)
 
 # HikoGUI only uses Vulkan-1.2; we can limit VMA to that version as well.
 # This solves a common issue with: "Cant find entrypoint for vkGetDeviceBufferMemoryRequirements procedure"
