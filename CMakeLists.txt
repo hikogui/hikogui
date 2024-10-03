@@ -96,6 +96,7 @@ else()
     FetchContent_MakeAvailable(zlib)
     set(ZLIB_ROOT "${zlib_SOURCE_DIR}")
     set(ZLIB_LIBRARY "zlib")
+    add_library(ZLIB::ZLIB ALIAS zlib)
 endif()
 
 if(VCPKG_TOOLCHAIN)
