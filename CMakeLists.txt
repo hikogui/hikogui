@@ -94,6 +94,7 @@ else()
         GIT_TAG v1.3.1)
     FetchContent_MakeAvailable(zlib)
     set(ZLIB_ROOT "${zlib_SOURCE_DIR}")
+    set(ZLIB_LIBRARY "zlib")
 endif()
 
 if(VCPKG_TOOLCHAIN)
