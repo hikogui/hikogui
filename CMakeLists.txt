@@ -99,9 +99,7 @@ endif()
 if(VCPKG_TOOLCHAIN)
     find_package(png)
 else()
-    set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-    set(ZLIB_LIBRARY zlib)
-    set(PNG_BUILD_ZLIB ON CACHE BOOL "Custom zlib Location, else find_package is used")
+    set(ZLIB_ROOT "${zlib_SOURCE_DIR}" CACHE FILE)
     FetchContent_Declare(PNG
         URL https://sourceforge.net/projects/libpng/files/libpng-1.6.44.tar.gz
         URL_HASH SHA256=8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732
