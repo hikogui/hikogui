@@ -87,26 +87,31 @@ else()
 endif()
 
 if(VCPKG_TOOLCHAIN)
-    find_package(zlib)
+    find_package(ZLIB)
 else()
-    FetchContent_Declare(zlib
+    FetchContent_Declare(ZLIB
         GIT_REPOSITORY https://github.com/madler/zlib
         GIT_TAG v1.3.1
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/patches/CMakeLists_zlib.cmake" "CMakeLists.txt"
         EXCLUDE_FROM_ALL)
-    FetchContent_MakeAvailable(zlib)
+    FetchContent_MakeAvailable(ZLIB)
+
+    # The ZLIB_ROOT and ZLIB_LIBRARY are set by find_package(zlib) when using
+    # vcpkg.
     set(ZLIB_ROOT "${zlib_SOURCE_DIR}")
     set(ZLIB_LIBRARY "zlib")
-    add_library(ZLIB::ZLIB ALIAS zlib)
 endif()
 
 if(VCPKG_TOOLCHAIN)
-    find_package(png)
+    find_package(PNG)
 else()
-    FetchContent_Declare(png
+    FetchContent_Declare(PNG
         URL https://sourceforge.net/projects/libpng/files/libpng-1.6.44.tar.gz
         URL_HASH SHA256=8c25a7792099a0089fa1cc76c94260d0bb3f1ec52b93671b572f8bb61577b732
+#        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/patches/CMakeLists_png.cmake" "CMakeLists.txt"
         EXCLUDE_FROM_ALL)
-    FetchContent_MakeAvailable(png)
+    FetchContent_MakeAvailable(PNG)
+    add_library(PNG::PNG ALIAS png_static)
 endif()
 
 #
@@ -532,7 +537,10 @@ set(INSTALL_RESOURCEDIR "${CMAKE_INSTALL_DATADIR}/hikogui/resources")
 set(INSTALL_CMAKEDIR "${CMAKE_INSTALL_DATADIR}/hikogui/CMake")
 set(INSTALL_MODULEDIR "module")
 
-install(TARGETS hikogui GSL EXPORT hikogui
+
+install(TARGETS hikogui GSL ZLIB png_static EXPORT hikogui
+    FILE_SET zlib_public_include_files
+    FILE_SET zlib_generated_public_include_files
     FILE_SET hikogui_include_files
     FILE_SET hikogui_generated_include_files
     FILE_SET CXX_MODULES DESTINATION "${INSTALL_MODULEDIR}"

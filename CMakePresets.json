@@ -56,10 +56,12 @@
       "inherits": "x64-windows",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-	      "CMAKE_CXX_COMPILER": "cl"
+	      "CMAKE_CXX_COMPILER": "cl",
+	      "CMAKE_C_COMPILER": "cl"
       },
       "environment": {
-        "CXXFLAGS": "/arch:AVX2"
+        "CXXFLAGS": "/arch:AVX2",
+        "CFLAGS": "/arch:AVX2"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -82,10 +84,12 @@
       "generator": "Ninja",
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "cl",
+	      "CMAKE_C_COMPILER": "cl",
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "environment": {
-        "CXXFLAGS": "/arch:AVX2 /analyze"
+        "CXXFLAGS": "/arch:AVX2 /analyze",
+        "CFLAGS": "/arch:AVX2 /analyze"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -100,10 +104,12 @@
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
 	      "CMAKE_CXX_COMPILER": "clang++",
+	      "CMAKE_C_COMPILER": "clang",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "1"
       },
       "environment": {
-        "CXXFLAGS": "-march=x86-64-v3"
+        "CXXFLAGS": "-march=x86-64-v3",
+        "CFLAGS": "-march=x86-64-v3"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
@@ -125,7 +131,8 @@
       "inherits": "x64-linux",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
-        "CMAKE_CXX_COMPILER": "g++-12"
+        "CMAKE_CXX_COMPILER": "g++-12",
+        "CMAKE_C_COMPILER": "gcc-12"
       }
     }
   ],
