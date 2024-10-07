@@ -317,6 +317,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/image/pixmap.hpp
     src/hikogui/image/pixmap_span.hpp
     src/hikogui/image/png_loader.hpp
+    src/hikogui/image/png_types.hpp
     src/hikogui/image/sdf_r8.hpp
     src/hikogui/image/sfloat_rg32.hpp
     src/hikogui/image/sfloat_rgb32.hpp
