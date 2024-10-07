@@ -39,10 +39,32 @@ enum class png_color_type {
     rgb_alpha
 };
 
+enum class png_iccp_profile {
+    unknown,
+    ITUR_2100_PQ_FULL
+};
+
 class png_loader;
 
 class png_loader_delegate {
 public:
+    static void adam7_sparkle(
+        std::span<sfloat_rgba16> src,
+        unsigned int pass,
+        size_t width,
+        std::span<sfloat_rgba16> dst,
+        std::span<sfloat_rgba16> d1,
+        std::span<sfloat_rgba16> d2,
+        std::span<sfloat_rgba16> d3,
+        std::span<sfloat_rgba16> d4,
+        std::span<sfloat_rgba16> d5,
+        std::span<sfloat_rgba16> d6,
+        std::span<sfloat_rgba16> d7)
+    {
+
+    }
+
+
     virtual std::error_code info(png_loader *sender) noexcept = 0;
 
     virtual std::error_code row(png_loader *sender, std::span<sfloat_rgba16> row, size_t row_nr, unsigned int pass) noexcept = 0;
@@ -61,10 +83,8 @@ public:
         _cleanup();
     }
 
-    png_loader(png_loader_delegate *delegate) : _delegate(delegate)
+    png_loader(png_loader_delegate &delegate) : _delegate(std::addressof(delegate))
     {
-        assert(_delegate != nullptr);
-
         _png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, this, _user_error_fn, _user_warning_fn);
         if (_png_ptr == nullptr) {
             _cleanup();
@@ -157,6 +177,31 @@ public:
         return _interlace_method;
     }
 
+    struct interlace_info_type {
+        uint8_t x_stride;
+        uint8_t y_stride;
+        uint8_t x_offset;
+        uint8_t y_offset;
+    };
+
+    [[nodiscard]] interlace_info_type interlace_info(unsigned int pass) const
+    {
+        switch (interlace_method()) {
+        case png_interlace_method::none:
+            assert(pass == 0);
+            return {1, 1, 0, 0};
+
+        case png_interlace_method::adam7:
+            return {
+                uint8_t{1} << PNG_PASS_COL_SHIFT(pass),
+                uint8_t{1} << PNG_PASS_ROW_SHIFT(pass),
+                PNG_PASS_START_COL(pass),
+                PNG_PASS_START_ROW(pass)
+            };
+        }
+        std::unreachable();
+    }
+
 private:
     png_loader_delegate *_delegate = nullptr;
     png_structp _png_ptr = nullptr;
@@ -169,50 +214,100 @@ private:
     png_interlace_method _interlace_method = png_interlace_method::none;
     int _compression_method = 0;
     int _filter_method = 0;
-    std::vector<color> _row;
+    std::optional<color_primaries> _color_primaries = {}
+    png_iccp_profile _iccp_profile = png_iccp_profile::unknown;
+    std::vector<sfloat_rgba16> _row;
+
+    [[nodiscard]] static png_interlace_method _png_get_interlace_type(png_structp png_ptr, png_infop info) noexcept
+    {
+        switch (png_get_interlace_type(png_ptr, info)) {
+        case PNG_INTERLACE_NONE:
+            return png_interlace_method::none;
+        case PNG_INTERLACE_ADAM7:
+            return png_interlace_method::adam7;
+        default:
+            png_error(png_ptr, "PNG: unknown interlace method");
+        }
+        std::unreachable();
+    }
+
+    [[nodiscard]] static png_color_type _png_get_color_type(png_structp png_ptr, png_infop info) noexcept
+    {
+        switch (png_get_color_type(png_ptr, info)) {
+        case PNG_COLOR_TYPE_GRAY:
+            return png_color_type::gray;
+        case PNG_COLOR_TYPE_GRAY_ALPHA:
+            return png_color_type::gray_alpha;
+        case PNG_COLOR_TYPE_PALETTE:
+            return png_color_type::palette;
+        case PNG_COLOR_TYPE_RGB:
+            return png_color_type::rgb;
+        case PNG_COLOR_TYPE_RGB_ALPHA:
+            return png_color_type::rgb_alpha;
+        default:
+            png_error(png_ptr, "PNG: unknown color type");
+        }
+        std::unreachalbe();
+    }
+
+    [[nodiscard]] static std::optional<color_primaries> _png_get_cHRM(png_structp png_ptr, png_infop info) noexcept
+    {
+        double wx = 0.0;
+        double wy = 0.0;
+        double rx = 0.0;
+        double ry = 0.0;
+        double gx = 0.0;
+        double gy = 0.0;
+        double bx = 0.0;
+        double by = 0.0;
+
+        if (png_get_cHRM(png_ptr, info, &wx, &wy, &rx, &ry, &gx, &gy, &bx, &by)) {
+            return color_primaries{
+                gsl::narrow<float>(wx), 
+                gsl::narrow<float>(wy), 
+                gsl::narrow<float>(rx), 
+                gsl::narrow<float>(ry), 
+                gsl::narrow<float>(gx), 
+                gsl::narrow<float>(gy), 
+                gsl::narrow<float>(bx), 
+                gsl::narrow<float>(by)};
+        }
+        
+        return std::nullopt;
+    }
+
+    [[nodiscard]] static png_iccp_profile _png_get_iCCP(png_structp png_ptr, png_infop info) noexcept
+    {
+        png_charp name = nullptr;
+        int compression_type = 0;;
+        png_charp profile = nullptr;
+        png_uint_32 profle_size = 0;
+
+        if (png_get_iCCP(png_ptr, info, &name, &compression_type, &profile, &profile_size)) {
+            auto const _name = std::string_view{name};
+
+            if (_name == "ITUR_2100_PQ_FULL") {
+                return png_iccp_profile::ITUR_2100_PQ_FULL;
+            }
+        }
+
+        return png_iccp_profile::unknown;
+    }
 
     static void _info_callback(png_structp png_ptr, png_infop info) noexcept
     {
-        // setjmp has already been setup, as this a callback.
-
-        auto const _self = png_get_progressive_ptr(png_ptr);
-        assert(_self != nullptr);
-        auto const self = std::launder(static_cast<png_loader *>(_self));
+        auto const self = std::launder(static_cast<png_loader *>(png_get_progressive_ptr(png_ptr)));
+        if (self == nullptr or self->delegate == nullptr) {
+            png_error(png_ptr, "_info_callback failed preconditions");
+        }
 
         self->_width = png_get_image_width(png_ptr, info);
         self->_height = png_get_image_height(png_ptr, info);
         self->_bit_depth = png_get_bit_depth(png_ptr, info);
-
-        switch (png_get_interlace_type(png_ptr, info)) {
-        case PNG_INTERLACE_NONE:
-            self->_interlace_method = png_interlace_method::none;
-            break;
-        case PNG_INTERLACE_ADAM7:
-            self->_interlace_method = png_interlace_method::adam7;
-            break;
-        default:
-            png_error(png_ptr, "PNG: unknown interlace method");
-        }
-
-        switch (png_get_color_type(png_ptr, info)) {
-        case PNG_COLOR_TYPE_GRAY:
-            self->_color_type = png_color_type::gray;
-            break;
-        case PNG_COLOR_TYPE_GRAY_ALPHA:
-            self->_color_type = png_color_type::gray_alpha;
-            break;
-        case PNG_COLOR_TYPE_PALETTE:
-            self->_color_type = png_color_type::palette;
-            break;
-        case PNG_COLOR_TYPE_RGB:
-            self->_color_type = png_color_type::rgb;
-            break;
-        case PNG_COLOR_TYPE_RGB_ALPHA:
-            self->_color_type = png_color_type::rgb_alpha;
-            break;
-        default:
-            png_error(png_ptr, "PNG: unknown color type");
-        }
+        self->_interlace_method = _png_get_interlace_type(png_ptr, info);
+        self->_color_type = _png_get_color_type(png_ptr, info);
+        self->_color_primaries = _png_get_cHRM(png_ptr, info);
+        self->_iccp_profile = _png_get_iCCP(png_ptr, info);
 
         // First convert palette and gray images to RGB (with optional alpha)
         if (self->_color_type == png_color_type::palette) {
@@ -226,9 +321,8 @@ private:
         }
 
         // Expand the image to 16-bit per channel.
+        // This is needed to have enough precision for conversion to linear space.
         if (self->_bit_depth < 16) {
-            // Expand the image to 16-bit per channel.
-            // This is needed to have enough precision for conversion to linear space.
             png_set_expand_16(png_ptr);
         }
 
@@ -247,45 +341,92 @@ private:
         // PNG_GAMMA_LINEAR: Convert RGB values to linear space.
         png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_GAMMA_LINEAR);
 
+        // Calculate the optional color conversion matrix.
+        if (self->_color_primaries) {
+            auto const image_to_XYZ = color_primaries_to_RGBtoXYZ(*self->_color_primaries);
+            self->_color_matrix = XYZ_to_sRGB * image_to_XYZ;
+        } else {
+            self->_color_matrix = std::nullopt;
+        }
 
-        assert(self->_delegate != nullptr);
+        // Calculate how to convert 16-bit color components to float.
+        switch (self->_iccp_profile) {
+        case png_iccp_profile::unknown:
+            self->_component_scale = 1.0f / 65535.0f;
+            break;
+        case png_iccp_profile::ITUR_2100_PQ_FULL:
+            // HDR full scale luminosity is 1000 cd/m2.
+            self->_component_scale = 12.5f / 65535.0f;
+            break;
+        }
+
         self->_delegate->info(self);
 
-        png_read_update_info(png_ptr, info);
-
         // Check if the rowbytes is correct: RRGGBBAA, 8 bytes.
+        png_read_update_info(png_ptr, info);
         if (png_get_rowbytes(png_ptr, info) != self->_width * 8) {
             png_error(png_ptr, "PNG: rowbytes != width * 8");
         }
 
-        png_start_read_image(png_ptr);
+        // Reserve the row to pass to the delegate later on.
+        _row.resize(self->_width);
     }
 
     static void _row_callback(png_structp png_ptr, png_bytep row, png_uint_32 row_nr, int pass)
     {
-        auto const _self = png_get_progressive_ptr(png_ptr);
-        assert(_self != nullptr);
-        auto const self = std::launder(static_cast<png_loader *>(_self));
+        auto const self = std::launder(static_cast<png_loader *>(png_get_progressive_ptr(png_ptr)));
+        if (self == nullptr or self->delegate == nullptr) {
+            png_error(png_ptr, "_row_callback failed preconditions");
+        }
 
-        assert(self->_delegate != nullptr);
-        //self->_delegate->row(self, , row_nr, pass);
+        auto const ii = self->interlace_info(pass);
+        auto const num_columns = self->width() / ii.x_stride;
+        auto const out = std::span{self->_row.data(), num_columns};
+
+        auto const c_scale = self->_component_scale;
+        constexpr auto a_scale = 1.0f / 65535.0f;
+
+        if (self->_color_matrix) {
+            auto const M = *self->_color_matrix;
+            auto off = size_t{0};
+            for (auto x = size_t{0}; x != num_columns; ++x, off += 8) {
+                auto const RR = (static_cast<uint16_t>(row[off + 0]) << 8) | static_cast<uint16_t>(row[off + 1]);
+                auto const GG = (static_cast<uint16_t>(row[off + 2]) << 8) | static_cast<uint16_t>(row[off + 3]);
+                auto const BB = (static_cast<uint16_t>(row[off + 4]) << 8) | static_cast<uint16_t>(row[off + 5]);
+                auto const AA = (static_cast<uint16_t>(row[off + 6]) << 8) | static_cast<uint16_t>(row[off + 7]);
+
+                out[x] = M * color{RR * c_scale, GG * c_scale, BB * c_scale, AA * a_scale};
+            }
+
+        } else {
+            auto off = size_t{0};
+            for (auto x = size_t{0}; x != num_columns; ++x, off += 8) {
+                auto const RR = (static_cast<uint16_t>(row[off + 0]) << 8) | static_cast<uint16_t>(row[off + 1]);
+                auto const GG = (static_cast<uint16_t>(row[off + 2]) << 8) | static_cast<uint16_t>(row[off + 3]);
+                auto const BB = (static_cast<uint16_t>(row[off + 4]) << 8) | static_cast<uint16_t>(row[off + 5]);
+                auto const AA = (static_cast<uint16_t>(row[off + 6]) << 8) | static_cast<uint16_t>(row[off + 7]);
+
+                out[x] = color{RR * c_scale, GG * c_scale, BB * c_scale, AA * a_scale};
+            }
+        }
+
+        self->_delegate->row(self, out, row_nr, pass);
     }
 
     static void _end_callback(png_structp png_ptr, png_infop info) noexcept
     {
-        auto const _self = png_get_progressive_ptr(png_ptr);
-        assert(_self != nullptr);
-        auto const self = std::launder(static_cast<png_loader *>(_self));
+        auto const self = std::launder(static_cast<png_loader *>(png_get_progressive_ptr(png_ptr)));
+        if (self == nullptr or self->delegate == nullptr) {
+            png_error(png_ptr, "_end_callback failed preconditions");
+        }
 
-        assert(self->_delegate != nullptr);
         self->_delegate->end(self);
     }
 
     [[noreturn]] static void _user_error_fn(png_structp png_ptr, png_const_charp msg) noexcept
     {
-        auto const _self = png_get_error_ptr(png_ptr);
-        assert(_self != nullptr);
-        auto const self = std::launder(static_cast<png_loader *>(_self));
+        auto const self = std::launder(static_cast<png_loader *>(png_get_error_ptr(png_ptr)));
+        assert(self != nullptr);
 
         self->_last_error_message = msg;
         if (self->_delegate) {
@@ -296,9 +437,8 @@ private:
 
     static void _user_warning_fn(png_structp png_ptr, png_const_charp msg) noexcept
     {
-        auto const _self = png_get_error_ptr(png_ptr);
-        assert(_self != nullptr);
-        auto const self = std::launder(static_cast<png_loader *>(_self));
+        auto const self = std::launder(static_cast<png_loader *>(png_get_error_ptr(png_ptr)));
+        assert(self != nullptr);
 
         if (self->_delegate) {
             self->_delegate->user_warning(self, msg);
