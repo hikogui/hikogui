@@ -20,10 +20,17 @@
 #include <system_error>
 
 hi_warning_push();
-// interaction between '_setjmp' and C++ object destruction is non-portable.
+// warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable.
 // This warning is caused by using setjmp/longjmp in C++ code, even when it is
 // used correctly.
 hi_warning_ignore_msvc(4611);
+// warning C4702: unreachable code.
+// This warning is caused by using std::unreachable() in a place where the
+// compiler determines that it is unreachable. I am using std::unreachable()
+// here because png_error() is not marked as [[noreturn]]. Therfore a different
+// compiler may think that the code is reachable; and fall of the end of the
+// function.
+hi_warning_ignore_msvc(4702); 
 
 hi_export_module(hikogui.image : png_loader);
 
@@ -402,13 +409,30 @@ private:
             png_set_add_alpha(png_ptr, 0xffff, PNG_FILLER_AFTER);
         }
 
-        // PNG_ALPHA_PNG: The RGB values are not premultiplied with the alpha value.
-        //                But the RGB values are gamma encoded.
-        // PNG_DEFAULT_sRGB: First set the default "gamma" value to sRGB in case
-        //                   the file does not have a gAMA chunk.
-        png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
-        // PNG_GAMMA_LINEAR: Convert RGB values to linear space.
-        png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_GAMMA_LINEAR);
+        constexpr auto use_premultiplied_alpha = true;
+        if constexpr (use_premultiplied_alpha) {
+            // PNG_ALPHA_STANDARD: The RGB values are premultiplied with the
+            //                     alpha value. The RGB values are always
+            //                     linearly encoded, even if the specified gamma
+            //                     is not PNG_GAMMA_LINEAR. Instead the gamma
+            //                     value specified is the default gamma value
+            //                     for the file when the file does not include
+            //                     a gAMA chunk.
+            //
+            // PNG_DEFAULT_sRGB: The default sRGB-like gama value to use when
+            //                   the file does not have a gAMA chunk.
+            png_set_alpha_mode(png_ptr, PNG_ALPHA_STANDARD, PNG_DEFAULT_sRGB);
+
+        } else {
+            // PNG_ALPHA_PNG: The RGB values are not premultiplied with the alpha value.
+            //                But the RGB values are gamma encoded.
+            //
+            // PNG_DEFAULT_sRGB: First set the default "gamma" value to sRGB in case
+            //                   the file does not have a gAMA chunk.
+            png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
+            // PNG_GAMMA_LINEAR: Convert RGB values to linear space.
+            png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_GAMMA_LINEAR);
+        }
 
         // Calculate the optional color conversion matrix.
         if (_color_primaries) {
@@ -586,7 +610,7 @@ public:
         std::span<sfloat_rgba16> dst_row = {};
         auto dst_nr = fill_start(src, src_nr, pass, width, height);
         for (unsigned int step = 0; dst_nr < height; ++step) {
-            dst_nr = fill(src, src_nr, pass, step, width, height, image[dst_nr]);
+            dst_nr = fill(src, src_nr, pass, step, width, height, image[height - dst_nr - 1]);
         }
     }
 };
