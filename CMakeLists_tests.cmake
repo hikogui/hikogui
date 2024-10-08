@@ -68,7 +68,6 @@ target_sources(hikogui_htests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/SHA2_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/base_n_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/datum_tests.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/gzip_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/codec/jsonpath_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/color/color_space_tests.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/concurrency/callback_tests.cpp

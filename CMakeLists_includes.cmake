@@ -149,14 +149,10 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/codec/base_n.hpp
     src/hikogui/codec/codec.hpp
     src/hikogui/codec/datum.hpp
-    src/hikogui/codec/gzip.hpp
-    src/hikogui/codec/huffman.hpp
     src/hikogui/codec/indent.hpp
     src/hikogui/codec/inflate.hpp
     src/hikogui/codec/jsonpath.hpp
     src/hikogui/codec/pickle.hpp
-    src/hikogui/codec/png.hpp
-    src/hikogui/codec/zlib.hpp
     src/hikogui/color/Rec2020.hpp
     src/hikogui/color/Rec2100.hpp
     src/hikogui/color/color.hpp
@@ -317,6 +313,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/image/pixmap.hpp
     src/hikogui/image/pixmap_span.hpp
     src/hikogui/image/png_loader.hpp
+    src/hikogui/image/png_types.hpp
     src/hikogui/image/sdf_r8.hpp
     src/hikogui/image/sfloat_rg32.hpp
     src/hikogui/image/sfloat_rgb32.hpp
