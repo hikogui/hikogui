@@ -33,6 +33,17 @@ hi_export_module(hikogui.path.path_location : intf);
 hi_export namespace hi {
 inline namespace v1 {
 
+enum class path_location {
+    none,
+    executable,
+    data,
+    log,
+    resource,
+    system_font,
+    font,
+    theme
+};
+
 template<typename Context>
 concept path_range = std::ranges::input_range<Context> and
     std::convertible_to<std::ranges::range_value_t<std::remove_cvref_t<Context>>, std::filesystem::path> and
@@ -252,6 +263,64 @@ template<path_range Locations>
 [[nodiscard]] inline std::filesystem::path library_test_data_dir() noexcept
 {
     return hi::library_source_dir() / "tests" / "data";
+}
+
+[[nodiscard]] inline generator<std::filesystem::path> location_dirs(path_location location)
+{
+    switch (location) {
+    case path_location::none:
+        co_yield std::filesystem::path{"/"};
+        co_return;
+        
+    case path_location::executable:
+        if (auto path = executable_dir()) {
+            co_yield *path;
+        } else {
+            throw io_error(path.error().message());
+        }
+        co_return;
+
+    case path_location::data:
+        if (auto path = data_dir()) {
+            co_yield *path;
+        } else {
+            throw io_error(path.error().message());
+        }
+        co_return;
+
+    case path_location::log:
+        if (auto path = log_dir()) {
+            co_yield *path;
+        } else {
+            throw io_error(path.error().message());
+        }
+        co_return;
+
+    case path_location::resource:
+        for (auto const& path : resource_dirs()) {
+            co_yield path;
+        }
+        co_return;
+
+    case path_location::system_font:
+        for (auto const& path : system_font_dirs()) {
+            co_yield path;
+        }
+        co_return;
+
+    case path_location::font:
+        for (auto const& path : font_files()) {
+            co_yield path;
+        }
+        co_return;
+
+    case path_location::theme:
+        for (auto const& path : theme_files()) {
+            co_yield path;
+        }
+        co_return;
+    }
+    std::unreachable();
 }
 
 } // namespace v1
