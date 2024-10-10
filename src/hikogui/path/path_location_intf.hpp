@@ -107,13 +107,49 @@ find_path(std::filesystem::path const& location, std::filesystem::path const& re
  * @throws io_error When a path is not found.
  */
 template<path_range Locations>
-[[nodiscard]] inline std::filesystem::path get_path(Locations&& locations, std::filesystem::path const& ref)
+[[nodiscard]] inline std::expected<std::filesystem::path, std::error_code>
+get_path(Locations&& locations, std::filesystem::path const& ref)
 {
     for (auto const& path : find_path(locations, ref)) {
         return path;
     }
 
-    throw io_error(std::format("Could not find '{}' in search-path: {}", ref.string(), to_string(locations)));
+    throw io_error(std::format("Could not find '{}'", ref.string()));
+}
+
+template<path_range Locations, typename Suffixes>
+[[nodiscard]] inline std::expected<std::filesystem::path, std::error_code>
+get_path(Locations&& locations, std::filesystem::path const& ref, Suffixes&& suffixes)
+{
+    auto const path = get_path(std::forward<Locations>(locations), ref);
+    auto const filename = path.filename().string();
+    auto const directory = path.parent_path();
+    if (filename.empty() or filename == "." or filename == "..") {
+        return {resolved_path, _location};
+    }
+
+    // Split the filename into stem and all extensions.
+    // This is different from std::filesystem::path::stem() and
+    // std::filesystem::path::extension() because these will split
+    // on only the last extension.
+    auto const [stem, ext] = [&]() -> std::pair<std::string, std::string> {
+        auto const dot_i = filename.find('.');
+        if (dot_i == std::string::npos) {
+            return {filename, {}};
+        } else {
+            // Include the dot with the extensions.
+            return {filename.substr(0, dot_i), filename.substr(dot_i)};
+        }
+    }();          
+
+    for (auto &suffix : suffixes) {
+        auto const path_with_suffix = directory / std::format("{}{}{}", stem, suffix, ext);
+        if (std::filesystem::exist(path_with_suffix)) {
+            return path_with_suffix;
+        }
+    }
+
+    return path;
 }
 
 /** Get a path.
