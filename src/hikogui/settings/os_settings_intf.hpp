@@ -50,7 +50,9 @@ public:
 
     /** Get the language tags for the configured languages.
      *
-     * @return A list of language tags in order of priority.
+     * @return A list of language tags in order of priority. The tags included
+     *         are for all variants of the languages configured in the operating
+     *         system, in order of specificity.
      */
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {

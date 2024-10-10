@@ -231,7 +231,8 @@ int hi_main(int argc, char* argv[])
     log::start_subsystem(global_state_type::log_level_info);
     start_render_doc();
 
-    auto preferences = my_preferences(get_path(data_dir(), "preferences.json"));
+    // XXX #707 If preferences.json file does not exist, this will fail.
+    auto preferences = my_preferences(get_path(data_dirs(), "preferences.json"));
     preferences_window_button_delegate = make_shared_ctad<default_button_delegate>(preferences_window, preferences);
 
     theme_book::global().selected_theme = preferences.selected_theme;

@@ -8,10 +8,9 @@
 #include <string_view>
 #include <filesystem>
 
-hi_export_module(hikogui.path : bookmark)
+hi_export_module(hikogui.path : bookmark);
 
 hi_export namespace hi::inline v1 {
-
 class bookmark {
 public:
     ~bookmark();
@@ -75,7 +74,6 @@ public:
      */
     [[nodiscard]] void stop_access_through_sandbox() const;
 
-
     /** The bookmark is empty.
      */
     [[nodiscard]] bool empty() const noexcept
@@ -107,22 +105,8 @@ public:
         }
     }
 
-    [[nodiscard]] generator<std::string> localization_suffixes(std::vector<std::string> const &tags = {}, int scale = 0)
-    {
-        for (auto const &tag : tags) {
-            for (auto s = scale; s != 0; s /= 2) {
-                co_yield std::format("-{}@{}x", tag, s);
-            }
-            co_yield std::format("-{}", tag);
-        }
-
-        for (auto s = scale; s != 0; s /= 2) {
-            co_yield std::format("@{}x", s);
-        }
-    }
-
-    template<std::forward_iterator It, std::sentinel_for<It> ItEnd>
-    [[nodiscard]] std::exception<bookmark, std::error_code> resolve(It suffixes, ItEnd suffixes_end) const
+    template<suffix_range Suffixes>
+    [[nodiscard]] std::expected<bookmark, std::error_code> resolve(Suffixes&& suffixes) const
     {
         if (_path.empty()) {
             return std::unexpected{std::make_error_code(std::errc::invalid_argument)};
@@ -139,61 +123,13 @@ public:
             }
         }
 
-        // Find a file without a suffix, in the location specified by the bookmark.
-        auto const resolved_path = [&]() -> std::filesystem::path {
-            for (auto const directory : location_dirs(_location)) {
-                auto const tmp = directory / _path;
-                if (std::filesystem::exists(tmp)) {
-                    return tmp;
-                }
-            }
-
-            return {};
-        }();
-
-        if (resolved_path.empty()) {
-            return std::unexpected{std::make_error_code(std::errc::no_such_file_or_directory)};
+        try {
+            return {get_path(_location, _path, std::forward<Suffixes>(suffixes)), _location};
+        } catch (std::system_error const& e) {
+            return std::unexpected{e.code()};
+        } catch (...) {
+            throw;
         }
-
-        // We now have a viable candidate for the file. Now look for a more
-        // specific file with the given language and scale.
-        auto const filename = resolved_path.filename().string();
-        auto const directory = resolved_path.parent_path();
-        if (filename.empty() or filename == "." or filename == "..") {
-            return {resolved_path, _location};
-        }
-
-        // Split the filename into stem and all extensions.
-        // This is different from std::filesystem::path::stem() and
-        // std::filesystem::path::extension() because these will split
-        // on only the last extension.
-        auto const [stem, ext] = [&]() -> std::pair<std::string, std::string> {
-            auto const dot_i = filename.find('.');
-            if (dot_i == std::string::npos) {
-                return {filename, {}};
-            } else {
-                return {filename.substr(0, dot_i), filename.substr(dot_i)};
-            }
-        }();          
-
-        // Search for the file with the given language and scale.
-        // Language has priority over scale.
-        for (auto it = suffixes; it != suffixes_end; ++it) {
-            auto const filename_with_suffix = directory / (stem + *it + ext);
-            if (std::filesystem::exists(filename_with_suffix)) {
-                return {filename_with_suffix, _location};
-            }
-        }
-
-        // No file with the given language and scale was found.
-        // Use the default file that was initially found.
-        return {resolved_path, _location};
-    }
-
-    template<typename Range>
-    [[nodiscard]] std::exception<bookmark, std::error_code> resolve(Range &&suffixes) const
-    {
-        return resolve(suffixes.begin(), suffixes.end());
     }
 
     /** Resolve the bookmark to an actual path on the disk.
@@ -201,25 +137,25 @@ public:
      * When resolving a bookmark with a given language and scale, a file
      * without a language and scale needs to exist. This will help with
      * searching quickly.
-     * 
+     *
      * Files should have the following naming convention:
      *  - <path>/<name>(-<language>)(@<scale>x).<ext>
-     * 
+     *
      * @param tags When searching for a file, try to find a file
      *             matching the earliest of the languages-tags in the list.
      * @param scale When searching for a file, try to find a file matching
      *              the given scale.
      * @return A bookmark that points to an actual file. or an error.
      */
-    [[nodiscard]] generator<std::string> resolve(std::vector<std::string> const &tags = {}, int scale = 0)
-        return resolve(localization_suffixes(tags, scale));
+    template<typename First, typename... Args>
+    [[nodiscard]] std::exception<bookmark, std::error_code> resolve(First&& first, Args&&... args) const
+        requires requires { resolve(file_suffixes(std::forward<First>(first), std::forward<Args>(args)...)); }
+    {
+        return resolve(file_suffixes(std::forward<First>(first), std::forward<Args>(args)...));
     }
-
 
 private:
     std::filesystem::path _path;
     path_location _location;
 };
-
 }
-
