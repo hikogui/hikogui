@@ -206,7 +206,7 @@ public:
     constexpr friend void fill(pixmap_span dst, value_type value = value_type{}) noexcept
     {
         if (dst._width == dst._stride) {
-            std::fill_n(dst._data, dst._width, dst._height, value);
+            std::fill_n(dst._data, dst._width * dst._height, value);
         } else {
             for (auto line: dst.rows()) {
                 std::fill(line.begin(), line.end(), value);

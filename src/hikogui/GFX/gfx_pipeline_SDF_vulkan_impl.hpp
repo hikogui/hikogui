@@ -110,7 +110,7 @@ inline std::vector<vk::DescriptorSetLayoutBinding> gfx_pipeline_SDF::createDescr
          vk::ShaderStageFlagBits::eFragment},
         {1, // binding
          vk::DescriptorType::eSampledImage,
-         narrow_cast<uint32_t>(device_shared::atlasMaximumNrImages), // descriptorCount
+         gsl::narrow<uint32_t>(device_shared::atlasMaximumNrImages), // descriptorCount
          vk::ShaderStageFlagBits::eFragment}};
 }
 
@@ -166,21 +166,22 @@ inline std::vector<vk::VertexInputAttributeDescription> gfx_pipeline_SDF::create
 
 inline void gfx_pipeline_SDF::build_vertex_buffers()
 {
-    using vertexIndexType = uint16_t;
-    constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
+    using vertex_index_type = uint16_t;
+    constexpr auto number_of_vertices = size_t{1} << (sizeof(vertex_index_type) * CHAR_BIT);
 
-    vk::BufferCreateInfo const bufferCreateInfo = {
+    vk::BufferCreateInfo const buffer_create_info = {
         vk::BufferCreateFlags(),
-        sizeof(vertex) * numberOfVertices,
+        sizeof(vertex) * number_of_vertices,
         vk::BufferUsageFlagBits::eVertexBuffer,
         vk::SharingMode::eExclusive};
-    VmaAllocationCreateInfo allocationCreateInfo = {};
-    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-    allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline vertex buffer");
-    allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+    VmaAllocationCreateInfo allocation_create_info = {};
+    allocation_create_info.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocation_create_info.pUserData = const_cast<char *>("sdf-pipeline vertex buffer");
+    allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
     hi_axiom_not_null(device());
-    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    std::tie(vertexBuffer, vertexBufferAllocation) = device()->createBuffer(buffer_create_info, allocation_create_info);
     device()->setDebugUtilsObjectNameEXT(vertexBuffer, "sdf-pipeline vertex buffer");
     vertexBufferData = device()->mapMemory<vertex>(vertexBufferAllocation);
 }
@@ -257,34 +258,24 @@ inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDev
 inline void gfx_pipeline_SDF::device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const& location)
 {
     // Flush the given image, included the border.
-    device.flushAllocation(
-        stagingTexture.allocation, 0, (stagingTexture.pixmap.height() * stagingTexture.pixmap.stride()) * sizeof(sdf_r8));
+    device.flushAllocation(staging_buffer.allocation, 0, staging_buffer.mapping.size());
 
-    stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
-
-    std::array<std::vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture;
-
-    auto regionsToCopy = std::vector{vk::ImageCopy{
-        {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-        {0, 0, 0},
-        {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+    auto regionsToCopy = std::vector{vk::BufferImageCopy{
+        0, // bufferOffset
+        stagingImageWidth, // bufferRowLength (in texels)
+        stagingImageHeight, // bufferImageHeight (in texels)
+        {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, // imageSubresource
         {floor_cast<int32_t>(location.position.x()), floor_cast<int32_t>(location.position.y()), 0},
         {ceil_cast<uint32_t>(location.size.width()), ceil_cast<uint32_t>(location.size.height()), 1}}};
 
     auto& atlasTexture = atlasTextures.at(floor_cast<std::size_t>(location.position.z()));
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
-    device.copyImage(
-        stagingTexture.image,
-        vk::ImageLayout::eTransferSrcOptimal,
+    device.copyBufferToImage(
+        staging_buffer.buffer,
         atlasTexture.image,
         vk::ImageLayout::eTransferDstOptimal,
         std::move(regionsToCopy));
-}
-
-inline void gfx_pipeline_SDF::device_shared::prepareStagingPixmapForDrawing()
-{
-    stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eGeneral);
 }
 
 inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
@@ -334,11 +325,12 @@ inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font_id font
 
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     auto const lock = std::scoped_lock(gfx_system_mutex);
-    prepareStagingPixmapForDrawing();
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
-    auto pixmap =
-        stagingTexture.pixmap.subimage(0, 0, ceil_cast<size_t>(info.size.width()), ceil_cast<size_t>(info.size.height()));
-    fill(pixmap, draw_path);
+
+    auto staging_image = pixmap_span<sdf_r8>{staging_buffer.mapping.data(), stagingImageWidth, stagingImageHeight};
+    auto staging_glyph_image = staging_image.subimage(0, 0, ceil_cast<size_t>(info.size.width()), ceil_cast<size_t>(info.size.height()));
+
+    fill(staging_glyph_image, draw_path);
     uploadStagingPixmapToAtlas(info);
 }
 
@@ -464,33 +456,22 @@ inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
 inline void gfx_pipeline_SDF::device_shared::buildAtlas()
 {
     // Create staging image
-    vk::ImageCreateInfo const imageCreateInfo = {
-        vk::ImageCreateFlags(),
-        vk::ImageType::e2D,
-        vk::Format::eR8Snorm,
-        vk::Extent3D(stagingImageWidth, stagingImageHeight, 1),
-        1, // mipLevels
-        1, // arrayLayers
-        vk::SampleCountFlagBits::e1,
-        vk::ImageTiling::eLinear,
-        vk::ImageUsageFlagBits::eTransferSrc,
+    auto const buffer_create_info = vk::BufferCreateInfo{
+        vk::BufferCreateFlags(),
+        stagingImageWidth * stagingImageHeight * sizeof(sdf_r8),
+        vk::BufferUsageFlagBits::eTransferSrc,
         vk::SharingMode::eExclusive,
-        0,
-        nullptr,
-        vk::ImageLayout::ePreinitialized};
-    VmaAllocationCreateInfo allocationCreateInfo = {};
-    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-    allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline staging image");
-    allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    auto const[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    device.setDebugUtilsObjectNameEXT(image, "sdf-pipeline staging image");
-    auto const data = device.mapMemory<sdf_r8>(allocation);
+        gsl::narrow<uint32_t>(device.queue_family_indices.size()),
+        device.queue_family_indices.data()};
 
-    stagingTexture = {
-        image,
-        allocation,
-        vk::ImageView(),
-        hi::pixmap_span<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
+    VmaAllocationCreateInfo allocation_create_info = {};
+    allocation_create_info.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocation_create_info.pUserData = const_cast<char *>("sdf-pipeline staging buffer");
+    allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    auto const[buffer, allocation] = device.createBuffer(buffer_create_info, allocation_create_info);
+    device.setDebugUtilsObjectNameEXT(buffer, "sdf-pipeline staging buffer");
+
+    staging_buffer = {buffer, allocation, device.mapMemory<sdf_r8>(allocation)};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),
@@ -532,8 +513,8 @@ inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const *vul
     }
     atlasTextures.clear();
 
-    vulkanDevice->unmapMemory(stagingTexture.allocation);
-    vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
+    vulkanDevice->unmapMemory(staging_buffer.allocation);
+    vulkanDevice->destroyBuffer(staging_buffer.buffer, staging_buffer.allocation);
 }
 
 }} // namespace hi::inline v1::gfx_pipeline_SDF

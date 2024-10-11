@@ -91,6 +91,12 @@ public:
         }
     };
 
+    struct transfer_buffer {
+        vk::Buffer buffer;
+        VmaAllocation allocation = {};
+        std::span<sdf_r8> mapping = {};
+    };
+
     struct texture_map {
         vk::Image image;
         VmaAllocation allocation = {};
@@ -131,7 +137,7 @@ public:
         vk::SpecializationInfo fragmentShaderSpecializationInfo;
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-        texture_map stagingTexture;
+        transfer_buffer staging_buffer;
         std::vector<texture_map> atlasTextures;
 
         std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;

@@ -204,6 +204,8 @@ inline void gfx_device::initialize_device()
     }
 
     initialize_queues(device_queue_create_infos);
+    queue_family_indices.clear();
+    queue_family_indices.push_back(get_graphics_queue().family_queue_index);
     initialize_quad_index_buffer();
 
     box_pipeline = std::make_unique<gfx_pipeline_box::device_shared>(*this);
