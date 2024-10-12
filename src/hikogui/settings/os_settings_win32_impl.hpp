@@ -436,4 +436,10 @@ hi_export namespace hi { inline namespace v1 {
     }
 }
 
+[[nodiscard]] inline size_t os_settings::gather_num_logical_processors()
+{
+    auto info = win32_GetSystemInfo();
+    return info.dwNumberOfProcessors;
+}
+
 }} // namespace hi::v1
