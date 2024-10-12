@@ -13,7 +13,8 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_SDF_impl);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
@@ -177,7 +178,7 @@ inline void gfx_pipeline_SDF::build_vertex_buffers()
 
     VmaAllocationCreateInfo allocation_create_info = {};
     allocation_create_info.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-    allocation_create_info.pUserData = const_cast<char *>("sdf-pipeline vertex buffer");
+    allocation_create_info.pUserData = const_cast<char*>("sdf-pipeline vertex buffer");
     allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
     hi_axiom_not_null(device());
@@ -193,7 +194,8 @@ inline void gfx_pipeline_SDF::teardown_vertex_buffers()
     device()->destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-inline void gfx_pipeline_SDF::texture_map::transitionLayout(const gfx_device &device, vk::Format format, vk::ImageLayout nextLayout)
+inline void
+gfx_pipeline_SDF::texture_map::transitionLayout(const gfx_device& device, vk::Format format, vk::ImageLayout nextLayout)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -211,7 +213,7 @@ inline gfx_pipeline_SDF::device_shared::device_shared(gfx_device const& device) 
 
 inline gfx_pipeline_SDF::device_shared::~device_shared() {}
 
-inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDevice)
+inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const* vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -219,7 +221,8 @@ inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDev
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] inline glyph_atlas_info gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
+[[nodiscard]] inline glyph_atlas_info
+gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
 {
     auto image_width = ceil_cast<int>(draw_extent.width());
     auto image_height = ceil_cast<int>(draw_extent.height());
@@ -255,27 +258,30 @@ inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const *vulkanDev
     return r;
 }
 
-inline void gfx_pipeline_SDF::device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const& location)
+inline void
+gfx_pipeline_SDF::device_shared::upload_staging_pixmap_to_atlas(glyph_atlas_info const& location, size_t staging_image_nr)
 {
-    // Flush the given image, included the border.
-    device.flushAllocation(staging_buffer.allocation, 0, staging_buffer.mapping.size());
+    auto const lock = std::scoped_lock(gfx_system_mutex);
 
-    auto regionsToCopy = std::vector{vk::BufferImageCopy{
-        0, // bufferOffset
-        stagingImageWidth, // bufferRowLength (in texels)
-        stagingImageHeight, // bufferImageHeight (in texels)
+    assert(staging_image_nr < num_staging_images);
+
+    auto const offset = staging_image_nr * staging_image_size;
+
+    device.flushAllocation(staging_buffer.allocation, offset, staging_image_size);
+
+    auto regions_to_copy = std::vector{vk::BufferImageCopy{
+        offset, // bufferOffset
+        staging_image_width, // bufferRowLength (in texels)
+        staging_image_height, // bufferImageHeight (in texels)
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, // imageSubresource
         {floor_cast<int32_t>(location.position.x()), floor_cast<int32_t>(location.position.y()), 0},
         {ceil_cast<uint32_t>(location.size.width()), ceil_cast<uint32_t>(location.size.height()), 1}}};
 
-    auto& atlasTexture = atlasTextures.at(floor_cast<std::size_t>(location.position.z()));
-    atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
+    auto& atlas_texture = atlasTextures.at(floor_cast<std::size_t>(location.position.z()));
+    atlas_texture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyBufferToImage(
-        staging_buffer.buffer,
-        atlasTexture.image,
-        vk::ImageLayout::eTransferDstOptimal,
-        std::move(regionsToCopy));
+        staging_buffer.buffer, atlas_texture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regions_to_copy));
 }
 
 inline void gfx_pipeline_SDF::device_shared::prepare_atlas_for_rendering()
@@ -325,23 +331,34 @@ inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font_id font
 
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     auto const lock = std::scoped_lock(gfx_system_mutex);
+
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
 
-    auto staging_image = pixmap_span<sdf_r8>{staging_buffer.mapping.data(), stagingImageWidth, stagingImageHeight};
-    auto staging_glyph_image = staging_image.subimage(0, 0, ceil_cast<size_t>(info.size.width()), ceil_cast<size_t>(info.size.height()));
+    auto f = std::async(std::launch::async, [info, image_size, draw_path, this] {
+        auto const staging_image_nr = this->staging_pool.pop();
 
-    fill(staging_glyph_image, draw_path);
-    uploadStagingPixmapToAtlas(info);
+        auto staging_glyph_image = this->staging_buffer.pixmap(
+            staging_image_nr, gsl::narrow<size_t>(image_size.width()), gsl::narrow<size_t>(image_size.height()));
+        fill(staging_glyph_image, draw_path);
+
+        this->upload_staging_pixmap_to_atlas(info, staging_image_nr);
+
+        this->staging_pool.push(staging_image_nr);
+        loop::main().request_redraw();
+    });
+
+    add_glyph_to_atlas_futures.push_back(std::move(f));
 }
 
 inline bool gfx_pipeline_SDF::device_shared::place_vertices(
     vector_span<vertex>& vertices,
     aarectangle const& clipping_rectangle,
     quad const& box,
-    hi::font_id font, glyph_id glyph,
+    hi::font_id font,
+    glyph_id glyph,
     quad_color colors) noexcept
 {
-    auto const[atlas_rect, glyph_was_added] = this->get_glyph_from_atlas(font, glyph);
+    auto const [atlas_rect, glyph_was_added] = this->get_glyph_from_atlas(font, glyph);
 
     auto const box_with_border = scale_from_center(box, atlas_rect->border_scale);
 
@@ -383,7 +400,7 @@ inline void gfx_pipeline_SDF::device_shared::buildShaders()
          &fragmentShaderSpecializationInfo}};
 }
 
-inline void gfx_pipeline_SDF::device_shared::teardownShaders(gfx_device const *vulkanDevice)
+inline void gfx_pipeline_SDF::device_shared::teardownShaders(gfx_device const* vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
 
@@ -413,10 +430,10 @@ inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     auto allocation_name = std::format("sdf-pipeline atlas image {}", current_image_index);
     allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-    allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
+    allocationCreateInfo.pUserData = const_cast<char*>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    auto const[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    auto const [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
     auto const clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
@@ -458,7 +475,7 @@ inline void gfx_pipeline_SDF::device_shared::buildAtlas()
     // Create staging image
     auto const buffer_create_info = vk::BufferCreateInfo{
         vk::BufferCreateFlags(),
-        stagingImageWidth * stagingImageHeight * sizeof(sdf_r8),
+        staging_image_width * staging_image_height * num_staging_images * sizeof(sdf_r8),
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::SharingMode::eExclusive,
         gsl::narrow<uint32_t>(device.queue_family_indices.size()),
@@ -466,12 +483,15 @@ inline void gfx_pipeline_SDF::device_shared::buildAtlas()
 
     VmaAllocationCreateInfo allocation_create_info = {};
     allocation_create_info.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-    allocation_create_info.pUserData = const_cast<char *>("sdf-pipeline staging buffer");
+    allocation_create_info.pUserData = const_cast<char*>("sdf-pipeline staging buffer");
     allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    auto const[buffer, allocation] = device.createBuffer(buffer_create_info, allocation_create_info);
+    auto const [buffer, allocation] = device.createBuffer(buffer_create_info, allocation_create_info);
     device.setDebugUtilsObjectNameEXT(buffer, "sdf-pipeline staging buffer");
 
-    staging_buffer = {buffer, allocation, device.mapMemory<sdf_r8>(allocation)};
+    staging_buffer = {buffer, allocation, device.mapMemory<std::byte>(allocation)};
+    for (auto i = size_t{0}; i != num_staging_images; ++i) {
+        staging_pool.push(i);
+    }
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),
@@ -501,9 +521,22 @@ inline void gfx_pipeline_SDF::device_shared::buildAtlas()
     addAtlasImage();
 }
 
-inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const *vulkanDevice)
+inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const* vulkanDevice)
 {
     hi_assert_not_null(vulkanDevice);
+
+    // Wait until all glyphs are drawn.
+    for (auto &f : add_glyph_to_atlas_futures) {
+        f.wait();
+    }
+    add_glyph_to_atlas_futures.clear();
+
+    // Pop all staging images from the pool.
+    // This will also cause this function to block until all images are returned.
+    for (auto i = size_t{0}; i != num_staging_images; ++i) {
+        auto const staging_image_nr = staging_pool.pop();
+        assert(staging_image_nr < num_staging_images);
+    }
 
     vulkanDevice->destroy(atlasSampler);
 
@@ -517,4 +550,5 @@ inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const *vul
     vulkanDevice->destroyBuffer(staging_buffer.buffer, staging_buffer.allocation);
 }
 
-}} // namespace hi::inline v1::gfx_pipeline_SDF
+} // namespace v1
+} // namespace hi::inline v1::gfx_pipeline_SDF

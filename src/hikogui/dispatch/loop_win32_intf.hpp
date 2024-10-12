@@ -132,6 +132,14 @@ public:
         return *start_subsystem_or_terminate(_timer, nullptr, timer_init, timer_deinit);
     }
 
+    /** Request all windows to be redrawn on the next frame.
+     * 
+     */
+    void request_redraw() noexcept
+    {
+        _request_redraw.store(true, std::memory_order::relaxed);
+    }
+
     /** Set maximum frame rate.
      *
      * A frame rate above 30.0 may will cause the vsync thread to block on
@@ -257,14 +265,16 @@ public:
 
     /** Subscribe a render function to be called on vsync.
      *
-     * @param f A function to be called when vsync occurs.
+     * @param f A function to be called when vsync occurs. The function will be
+     *          called with the time of the vsync and a boolean indicating if
+     *          the window must be fully redrawn.
      */
-    template<forward_of<void(utc_nanoseconds)> Func>
-    callback<void(utc_nanoseconds)> subscribe_render(Func &&func) noexcept
+    template<forward_of<void(utc_nanoseconds, bool)> Func>
+    callback<void(utc_nanoseconds, bool)> subscribe_render(Func &&func) noexcept
     {
         hi_axiom(on_thread());
 
-        auto cb = callback<void(utc_nanoseconds)>{std::forward<Func>(func)};
+        auto cb = callback<void(utc_nanoseconds, bool)>{std::forward<Func>(func)};
 
         _render_functions.push_back(cb);
 
@@ -512,7 +522,8 @@ private:
     double _maximum_frame_rate = 30.0;
     std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
     thread_id _thread_id;
-    std::vector<weak_callback<void(utc_nanoseconds)>> _render_functions;
+    std::vector<weak_callback<void(utc_nanoseconds, bool)>> _render_functions;
+    std::atomic<bool> _request_redraw = false;
 
     struct socket_type {
         int fd;
@@ -660,9 +671,10 @@ private:
 
         auto const display_time = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
 
+        auto request_redraw = _request_redraw.exchange(false);
         for (auto& render_function : _render_functions) {
             if (auto rf = render_function.lock()) {
-                rf(display_time);
+                rf(display_time, request_redraw);
             }
         }
 

@@ -16,7 +16,8 @@
 
 hi_export_module(hikogui.GFX : gfx_pipeline_SDF_intf);
 
-hi_export namespace hi { inline namespace v1 {
+hi_export namespace hi {
+inline namespace v1 {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.
@@ -94,7 +95,22 @@ public:
     struct transfer_buffer {
         vk::Buffer buffer;
         VmaAllocation allocation = {};
-        std::span<sdf_r8> mapping = {};
+        std::span<std::byte> mapping = {};
+
+        [[nodiscard]] pixmap_span<sdf_r8> pixmap(size_t staging_image_nr) noexcept
+        {
+            auto const offset = staging_image_nr * device_shared::staging_image_size;
+
+            return {
+                reinterpret_cast<sdf_r8*>(mapping.data() + offset),
+                device_shared::staging_image_width,
+                device_shared::staging_image_height};
+        }
+
+        [[nodiscard]] pixmap_span<sdf_r8> pixmap(size_t staging_image_nr, size_t width, size_t height) noexcept
+        {
+            return pixmap(staging_image_nr).subimage(0, 0, width, height);
+        }
     };
 
     struct texture_map {
@@ -114,13 +130,15 @@ public:
         // For latin characters we can store about 7 * 12 == 84 characters in a single image, which is enough
         // for the full alpha numeric range that an application will use.
 
-        constexpr static int atlasImageWidth = 256; // 7-12 characters, of 34 pixels wide.
-        constexpr static int atlasImageHeight = 256; // 7 characters, of 34 pixels height.
+        constexpr static size_t atlasImageWidth = 256; // 7-12 characters, of 34 pixels wide.
+        constexpr static size_t atlasImageHeight = 256; // 7 characters, of 34 pixels height.
         static_assert(atlasImageWidth == atlasImageHeight, "needed for fwidth(textureCoord)");
+        constexpr static size_t atlasMaximumNrImages = 128; // 128 * 49 characters.
 
-        constexpr static int atlasMaximumNrImages = 128; // 128 * 49 characters.
-        constexpr static int stagingImageWidth = 64; // One 'em' is 28 pixels, with edges 34 pixels.
-        constexpr static int stagingImageHeight = 64;
+        constexpr static size_t staging_image_width = 64; // One 'em' is 28 pixels, with edges 34 pixels.
+        constexpr static size_t staging_image_height = 64;
+        constexpr static size_t staging_image_size = staging_image_width * staging_image_height * sizeof(sdf_r8);
+        constexpr static size_t num_staging_images = 8;
 
         constexpr static float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
         constexpr static float drawfontSize = 28.0f;
@@ -138,6 +156,9 @@ public:
         std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
         transfer_buffer staging_buffer;
+        resource_pool<size_t> staging_pool;
+        std::vector<std::future<void>> add_glyph_to_atlas_futures;
+        
         std::vector<texture_map> atlasTextures;
 
         std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;
@@ -159,7 +180,7 @@ public:
         /*! Deallocate vulkan resources.
          * This is called in the destructor of gfx_device, therefor we can not use our gfx_device from this point on.
          */
-        void destroy(gfx_device const *vulkanDevice);
+        void destroy(gfx_device const* vulkanDevice);
 
         /** Allocate an glyph in the atlas.
          * This may allocate an atlas texture, up to atlasMaximumNrImages.
@@ -170,8 +191,11 @@ public:
 
         /** Once drawing in the staging pixmap is completed, you can upload it to the atlas.
          * This will transition the stating texture to 'source' and the atlas to 'destination'.
+         *
+         * @param location The location in the atlas to upload the pixmap to.
+         * @param staging_image_nr The index of the staging image to upload.
          */
-        void uploadStagingPixmapToAtlas(glyph_atlas_info const& location);
+        void upload_staging_pixmap_to_atlas(glyph_atlas_info const& location, size_t staging_image_nr);
 
         /** This will transition the staging texture to 'general' for writing by the CPU.
          */
@@ -201,17 +225,16 @@ public:
 
     private:
         void buildShaders();
-        void teardownShaders(gfx_device const *vulkanDevice);
+        void teardownShaders(gfx_device const* vulkanDevice);
         void addAtlasImage();
         void buildAtlas();
-        void teardownAtlas(gfx_device const *vulkanDevice);
+        void teardownAtlas(gfx_device const* vulkanDevice);
         void add_glyph_to_atlas(hi::font_id font, glyph_id glyph, glyph_atlas_info& info) noexcept;
 
         /**
          * @return The Atlas rectangle and true if a new glyph was added to the atlas.
          */
-        hi_force_inline std::pair<glyph_atlas_info const *, bool>
-        get_glyph_from_atlas(hi::font_id font, glyph_id glyph) noexcept
+        hi_force_inline std::pair<glyph_atlas_info const*, bool> get_glyph_from_atlas(hi::font_id font, glyph_id glyph) noexcept
         {
             auto& info = font->atlas_info(glyph);
 
@@ -233,7 +256,7 @@ public:
     gfx_pipeline_SDF(gfx_pipeline_SDF&&) = delete;
     gfx_pipeline_SDF& operator=(gfx_pipeline_SDF&&) = delete;
 
-    gfx_pipeline_SDF(gfx_surface *surface) : gfx_pipeline(surface) {}
+    gfx_pipeline_SDF(gfx_surface* surface) : gfx_pipeline(surface) {}
 
     void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context) override;
 
@@ -258,4 +281,5 @@ private:
     void teardown_vertex_buffers() override;
 };
 
-}} // namespace hi
+} // namespace v1
+} // namespace hi

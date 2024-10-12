@@ -546,8 +546,8 @@ public:
             hi_log_error("Failed to get the GPU policy: {}", e.what());
         }
 
-        if (compare_store(_num_logical_processors, gather_num_logical_processor())) {
-            setting_has_changes = true;
+        if (compare_store(_num_logical_processors, gather_num_logical_processors())) {
+            setting_has_changed = true;
             hi_log_info("Number of logical processors have changed: {}", _num_logical_processors.load());
         }
 
@@ -630,7 +630,7 @@ private:
     [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
     [[nodiscard]] static aarectangle gather_desktop_rectangle();
     [[nodiscard]] static hi::policy gather_gpu_policy();
-    [[nodiscard]] static size_t gather_num_logical_processor();
+    [[nodiscard]] static size_t gather_num_logical_processors();
 };
 
 } // namespace hi::inline v1

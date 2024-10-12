@@ -126,8 +126,8 @@ public:
             },
             callback_flags::main);
 
-        _render_cbt = loop::main().subscribe_render([this](utc_nanoseconds display_time) {
-            this->render(display_time);
+        _render_cbt = loop::main().subscribe_render([this](utc_nanoseconds display_time, bool redraw_window) {
+            this->render(display_time, redraw_window);
         });
 
         // Delegate has been called, layout of widgets has been calculated for the
@@ -220,7 +220,7 @@ public:
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    void render(utc_nanoseconds display_time_point)
+    void render(utc_nanoseconds display_time_point, bool redraw_window)
     {
         if (surface->device() == nullptr) {
             // If there is no device configured for the surface don't try to render.
@@ -306,6 +306,11 @@ public:
             _widget->set_layout(widget_layout{widget_layout_size, _size_state, subpixel_orientation(), display_time_point});
 
             // After layout do a complete redraw.
+            request_redraw_window();
+        }
+
+        // If the window redraw is requested by the loop, redraw the entire window.
+        if (redraw_window) {
             request_redraw_window();
         }
 
@@ -991,7 +996,7 @@ private:
 
     callback<void()> _setting_change_cbt;
     callback<void(std::string)> _selected_theme_cbt;
-    callback<void(utc_nanoseconds)> _render_cbt;
+    callback<void(utc_nanoseconds, bool)> _render_cbt;
 
     /** Send event to a target widget.
      *
