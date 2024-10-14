@@ -26,6 +26,14 @@ public:
     resource_pool(resource_pool const&) = delete;
     resource_pool& operator=(resource_pool const&) = delete;
 
+    /** Emplace a resource into the pool.
+     * 
+     * This function is also used to initially add resources to the pool.
+     * 
+     * @tparam Args The types of the arguments to pass to the constructor of the resource.
+     * @param args The arguments to pass to the constructor of the resource.
+     * @return A reference to the resource object in the pool.
+     */
     template<typename... Args>
     value_type& emplace(Args&&... args)
     {

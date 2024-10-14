@@ -97,16 +97,36 @@ public:
         VmaAllocation allocation = {};
         std::span<std::byte> mapping = {};
 
+        /** Get the offset in bytes to a staging image in the buffer.
+         * 
+         * @param staging_image_nr The index of the staging image.
+         * @return The offset in bytes.
+         */
+        [[nodiscard]] size_t offset(size_t staging_image_nr) const noexcept
+        {
+            return staging_image_nr * device_shared::staging_image_size;
+        }
+
+        /** Get a pixmap to a staging image in the buffer.
+         * 
+         * @param staging_image_nr The index of the staging image.
+         * @return A pixmap to the staging image.
+         */
         [[nodiscard]] pixmap_span<sdf_r8> pixmap(size_t staging_image_nr) noexcept
         {
-            auto const offset = staging_image_nr * device_shared::staging_image_size;
-
             return {
-                reinterpret_cast<sdf_r8*>(mapping.data() + offset),
+                reinterpret_cast<sdf_r8*>(mapping.data() + offset(staging_image_nr)),
                 device_shared::staging_image_width,
                 device_shared::staging_image_height};
         }
 
+        /** Get a subimage of a staging image in the buffer.
+         * 
+         * @param staging_image_nr The index of the staging image.
+         * @param width The width of the subimage.
+         * @param height The height of the subimage.
+         * @return A pixmap to the subimage.
+         */
         [[nodiscard]] pixmap_span<sdf_r8> pixmap(size_t staging_image_nr, size_t width, size_t height) noexcept
         {
             return pixmap(staging_image_nr).subimage(0, 0, width, height);
@@ -157,7 +177,7 @@ public:
 
         transfer_buffer staging_buffer;
         resource_pool<size_t> staging_pool;
-        std::vector<std::future<void>> add_glyph_to_atlas_futures;
+        future_pool<void> staging_futures;
         
         std::vector<texture_map> atlasTextures;
 

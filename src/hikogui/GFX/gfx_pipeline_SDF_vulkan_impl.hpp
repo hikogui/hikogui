@@ -22,6 +22,7 @@ inline void gfx_pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBu
 
     hi_axiom_not_null(device());
     device()->flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
+    device()->SDF_pipeline->prepare_atlas_for_rendering();
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
@@ -224,12 +225,17 @@ inline void gfx_pipeline_SDF::device_shared::destroy(gfx_device const* vulkanDev
 [[nodiscard]] inline glyph_atlas_info
 gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
 {
-    auto image_width = ceil_cast<int>(draw_extent.width());
-    auto image_height = ceil_cast<int>(draw_extent.height());
+    auto const image_width = ceil_cast<int>(draw_extent.width());
+    auto const image_height = ceil_cast<int>(draw_extent.height());
+
+    // Add a border around the glyph to remove possible artifacts from
+    // sampling outside the glyph.
+    auto const texture_width = image_width + 2;
+    auto const texture_height = image_height + 2;
 
     // Check if the glyph still fits in the same line of glyphs.
     // Otherwise go to the next line.
-    if (atlas_allocation_position.x() + image_width > atlasImageWidth) {
+    if (atlas_allocation_position.x() + texture_width > atlasImageWidth) {
         atlas_allocation_position.x() = 0;
         atlas_allocation_position.y() = atlas_allocation_position.y() + atlasAllocationMaxHeight;
         atlasAllocationMaxHeight = 0;
@@ -237,7 +243,7 @@ gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_
 
     // Check if the glyph still fits in the image.
     // Otherwise allocate a new image.
-    if (atlas_allocation_position.y() + image_height > atlasImageHeight) {
+    if (atlas_allocation_position.y() + texture_height > atlasImageHeight) {
         atlas_allocation_position.x() = 0;
         atlas_allocation_position.y() = 0;
         atlas_allocation_position.z() = atlas_allocation_position.z() + 1;
@@ -252,9 +258,10 @@ gfx_pipeline_SDF::device_shared::allocate_rect(extent2 draw_extent, scale2 draw_
         }
     }
 
-    auto r = glyph_atlas_info{atlas_allocation_position, draw_extent, draw_scale, scale2{atlasTextureCoordinateMultiplier}};
-    atlas_allocation_position.x() = atlas_allocation_position.x() + image_width;
-    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, image_height);
+    auto image_position = atlas_allocation_position + vector3{1.0f, 1.0f, 0.0f};
+    auto r = glyph_atlas_info{image_position, draw_extent, draw_scale, scale2{atlasTextureCoordinateMultiplier}};
+    atlas_allocation_position.x() = atlas_allocation_position.x() + texture_width;
+    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, texture_height);
     return r;
 }
 
@@ -265,19 +272,21 @@ gfx_pipeline_SDF::device_shared::upload_staging_pixmap_to_atlas(glyph_atlas_info
 
     assert(staging_image_nr < num_staging_images);
 
-    auto const offset = staging_image_nr * staging_image_size;
-
-    device.flushAllocation(staging_buffer.allocation, offset, staging_image_size);
+    auto const dst_x = floor_cast<int32_t>(location.position.x()) - 1;
+    auto const dst_y = floor_cast<int32_t>(location.position.y()) - 1;
+    auto const dst_z = floor_cast<std::size_t>(location.position.z());
+    auto const dst_width = ceil_cast<uint32_t>(location.size.width()) + 2;
+    auto const dst_height = ceil_cast<uint32_t>(location.size.height()) + 2;
 
     auto regions_to_copy = std::vector{vk::BufferImageCopy{
-        offset, // bufferOffset
+        staging_image_nr * staging_image_size, // bufferOffset
         staging_image_width, // bufferRowLength (in texels)
         staging_image_height, // bufferImageHeight (in texels)
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1}, // imageSubresource
-        {floor_cast<int32_t>(location.position.x()), floor_cast<int32_t>(location.position.y()), 0},
-        {ceil_cast<uint32_t>(location.size.width()), ceil_cast<uint32_t>(location.size.height()), 1}}};
+        {dst_x, dst_y, 0},
+        {dst_width, dst_height, 1}}};
 
-    auto& atlas_texture = atlasTextures.at(floor_cast<std::size_t>(location.position.z()));
+    auto& atlas_texture = atlasTextures.at(dst_z);
     atlas_texture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyBufferToImage(
@@ -334,20 +343,36 @@ inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font_id font
 
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
 
-    auto f = std::async(std::launch::async, [info, image_size, draw_path, this] {
+    auto f = async_on_pool([info, image_size, draw_path, this] {
         auto const staging_image_nr = this->staging_pool.pop();
 
+        auto const staging_glyph_offset = this->staging_buffer.offset(staging_image_nr);
+        // Add a 1 pixel border around the image.
+        // The draw_path is translated by 1.0f in x and y. 
         auto staging_glyph_image = this->staging_buffer.pixmap(
-            staging_image_nr, gsl::narrow<size_t>(image_size.width()), gsl::narrow<size_t>(image_size.height()));
-        fill(staging_glyph_image, draw_path);
+            staging_image_nr, gsl::narrow<size_t>(image_size.width()) + 2, gsl::narrow<size_t>(image_size.height()) + 2);
 
-        this->upload_staging_pixmap_to_atlas(info, staging_image_nr);
+        // Draw the glyph into the staging buffer. Then flush the buffer to the
+        // GPU. The actual uploading to the atlas will be done on the main thread.
+        fill(staging_glyph_image, translate2{1.0f, 1.0f} * draw_path);
+        {
+            auto const _ = std::scoped_lock(gfx_system_mutex);
+            device.flushAllocation(staging_buffer.allocation, staging_glyph_offset, device_shared::staging_image_size);
+        }
 
-        this->staging_pool.push(staging_image_nr);
-        loop::main().request_redraw();
+        loop::main().post_function([this, info, staging_image_nr] {
+            // The atlas is a shared resource, which requires the vk::Image to
+            // be in the correct transfer layout for uploading and drawing.
+            // By running this part on the main thread, the layout transitions
+            // should be handled in the correct order.
+            this->upload_staging_pixmap_to_atlas(info, staging_image_nr);
+
+            this->staging_pool.push(staging_image_nr);
+            loop::main().request_redraw();
+        });
     });
 
-    add_glyph_to_atlas_futures.push_back(std::move(f));
+    staging_futures.add(std::move(f));
 }
 
 inline bool gfx_pipeline_SDF::device_shared::place_vertices(
@@ -436,7 +461,8 @@ inline void gfx_pipeline_SDF::device_shared::addAtlasImage()
     auto const [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
-    auto const clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
+    // The 0.0f clear color displays non-loaded glyphs as a gray block.
+    auto const clearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
     auto const clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
 
     device.transition_layout(
@@ -526,10 +552,7 @@ inline void gfx_pipeline_SDF::device_shared::teardownAtlas(gfx_device const* vul
     hi_assert_not_null(vulkanDevice);
 
     // Wait until all glyphs are drawn.
-    for (auto &f : add_glyph_to_atlas_futures) {
-        f.wait();
-    }
-    add_glyph_to_atlas_futures.clear();
+    staging_futures.wait();
 
     // Pop all staging images from the pool.
     // This will also cause this function to block until all images are returned.

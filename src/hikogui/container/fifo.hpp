@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../macros.hpp"
-#include <vector>
+#include <memory_resource>
 
 hi_export_module(hikogui.container : fifo)
 
@@ -12,6 +12,7 @@ hi_export namespace hi::inline v1 {
 template<typename T, typename Allocator = std::allocator<T>>
 class fifo {
 public:
+    static_assert(std::is_same_v<T, std::remove_cv_t<T>>, "T must be a non-const, non-volatile type");
     using value_type = T;
     using allocator_type = Allocator;
     using size_type = std::size_t;
@@ -25,21 +26,17 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _head == _tail;
+        return _size == 0;
     }
 
     [[nodiscard]] constexpr size_type size() const noexcept
     {
-        if (_head => _tail) {
-            return std::distance(_tail, _head);
-        } else {
-            return std::distance(_begin, _head) + std::distance(_tail, _end);
-        }
+        return _size;
     }
 
     [[nodiscard]] constexpr size_type max_size() const noexcept
     {
-        return std::allocator_traits<allocator_type>::max_size();
+        return std::allocator_traits<allocator_type>::max_size(_allocator);
     }
 
     [[nodiscard]] constexpr size_type capacity() const noexcept
@@ -47,10 +44,10 @@ public:
         return std::distance(_begin, _end);
     }
 
-    constexpr reserve(size_t new_size)
+    constexpr void reserve(size_t new_size)
     {
         if (new_size > max_size()) {
-            return std::length_error("Reservation too large");
+            throw std::length_error("Reservation too large");
         }
 
         auto const old_size = capacity();
@@ -60,7 +57,7 @@ public:
 
         // Use the growth factor of 1.5 which is preferred as it
         // is more likely to reuse previous allocations.
-        auto grow_size = old_size;
+        auto grow_size = std::max(old_size, size_t(2));
         while (grow_size < new_size) {
             grow_size += grow_size >> 1;
         }
@@ -68,103 +65,109 @@ public:
         reallocate(grow_size);
     }
 
-    constexpr shrink_to_fit()
+    constexpr void shrink_to_fit()
     {
         reallocate(size());
     }
 
-    constexpr clear()
+    constexpr void clear()
     {
-        if (_head >= _tail) {
-            std::destroy(_tail, _head);
-        } else {
-            std::destroy(_tail, _end);
-            std::destroy(_begin, _head);
-        } 
-        _head = _tail = _begin;
+        std::destroy_n(_tail, std::min(wrap_size(), _size));
+        if (wrap_size() < _size) {
+            std::destroy_n(_begin, _size - wrap_size());
+        }
+        _tail = _begin;
+        _size = 0;
     }
 
     [[nodiscard]] constexpr const_reference front() const
     {
-        assert(_head != _tail);
+        assert(_size != 0);
         return *_tail;
     }
 
     [[nodiscard]] constexpr reference front()
     {
-        assert(_head != _tail);
+        assert(_size != 0);
         return *_tail;
     }
 
     [[nodiscard]] constexpr const_reference back() const
     {
-        assert(_head != _tail);
-        return *(_head - 1);
+        assert(_size != 0);
+
+        if (_size - 1 < wrap_size()) {
+            return _tail[_size - 1];
+        } else {
+            return _begin[_size - wrap_size() - 1];
+        }
     }
 
     [[nodiscard]] constexpr reference back()
     {
-        assert(_head != _tail);
-        return *(_head - 1);
+        assert(_size != 0);
+
+        if (_size - 1 < wrap_size()) {
+            return _tail[_size - 1];
+        } else {
+            return _begin[_size - wrap_size() - 1];
+        }
     }
 
     [[nodiscard]] constexpr const_reference operator[](size_t i) const
     {
-        assert(i < size());
+        assert(i < _size);
 
-        auto const wrap_size = std::distance(_tail, _end);
-        if (i < wrap_size) {
+        if (i < wrap_size()) {
             return _tail[i];
+        } else {
+            return _begin[i - wrap_size()];
         }
-
-        i -= wrap_size;
-        return _begin[i];
     }
 
     [[nodiscard]] constexpr reference operator[](size_t i)
     {
         assert(i < size());
 
-        auto const wrap_size = std::distance(_tail, _end);
-        if (i < wrap_size) {
+        if (i < wrap_size()) {
             return _tail[i];
+        } else {
+            return _begin[i - wrap_size()];
         }
-
-        i -= wrap_size;
-        return _begin[i];
     }
 
     constexpr void pop_front()
     {
-        assert(_head != _tail);
+        assert(_size != 0);
 
-        std::destroy_at(_tail);
+        std::destroy_at(std::addressof(front()));
         if (++_tail == _end) {
             _tail = _begin;
         }
+        --_size;
     }
 
     constexpr void pop_back()
     {
-        assert(_head != _tail);
+        assert(_size != 0);
 
-        if (_head-- == _begin) {
-            _head = _end - 1;
-        }
-        std::destroy_at(_head);
+        std::destroy_at(std::addressof(back()));
+        --_size;
     }
 
     template<typename... Args>
     constexpr reference emplace_front(Args&&... args)
     {
         reserve(size() + 1);
-        assert(_tail != _end);
 
+        assert(_tail != _end);
         if (_tail-- == _begin) {
             _tail = _end - 1;
         }
 
-        return *std::construct_at(_tail, std::forward<Args>(args)...);
+        ++_size;
+        assert(_size <= capacity());
+        return *std::construct_at(std::addressof(front()), std::forward<Args>(args)...);
     }
 
     constexpr void push_front(value_type const& value)
@@ -181,13 +184,10 @@ public:
     constexpr value_type& emplace_back(Args&&... args)
     {
         reserve(size() + 1);
-        assert(_head != _end);
 
-        auto *ptr = std::construct_at(_head, std::forward<Args>(value)...);
-        if (++_head == _end) {
-            _head = _begin;
-        }
-        return *ptr;
+        ++_size;
+        assert(_size <= capacity());
+        return *std::construct_at(std::addressof(back()), std::forward<Args>(args)...);
     }
 
     constexpr void push_back(value_type const& value)
@@ -201,11 +201,17 @@ public:
     }
 
 private:
-    allocator_type _allocator;
+    [[no_unique_address]] allocator_type _allocator;
     pointer _begin = nullptr;
     pointer _end = nullptr;
-    pointer _head = nullptr;
     pointer _tail = nullptr;
+    size_t _size = 0;
+
+    [[nodiscard]] constexpr size_t wrap_size() const noexcept
+    {
+        auto const wrap_size = std::distance(_tail, _end);
+        return gsl::narrow<size_t>(wrap_size);
+    }
 
     /** Reallocate the data in the fifo.
      *
@@ -214,57 +220,47 @@ private:
      *  - If the move of objects fails, then the objects in the fifo
      *    may be in a valid but unspecified state.
      */
-    void reallocate(size_t new_size)
+    void reallocate(size_t new_capacity)
     {
-        assert(new_size <= size());
+        assert(new_capacity >= _size);
 
-        auto const *new_begin = std::allocator_traits<allocator_type>::allocate(_allocator, new_size);
-        auto const *new_end = new_begin + new_size;
-        auto const *new_tail = new_begin;
-        auto const *new_head = new_tail + size();
+        auto const new_begin = std::allocator_traits<allocator_type>::allocate(_allocator, new_capacity);
+        auto const new_end = new_begin + new_capacity;
+        auto const new_tail = new_begin;
+        auto const new_size = _size;
 
         try {
-            if (_head >= _tail) {
-                std::uninitialized_move(_tail, _head, new_begin);
-
-            } else {
-                std::uninitialized_move(_tail, _end, new_begin);
-
-                auto const partial_size = std::distance(_tail, _end);
+            std::uninitialized_move_n(_tail, std::min(wrap_size(), _size), new_tail);
+            if (wrap_size() < _size) {
                 try {
-                    std::uninitialized_move(_begin, _head, new_begin + partial_size);
+                    std::uninitialized_move_n(_begin, _size - wrap_size(), new_tail + wrap_size());
                 } catch (...) {
-                    std::destroy_n(_begin, partial_size);
+                    // Destroy objects from the previous move, so that the
+                    // next exception handler can deallocate the memory, without
+                    // calling destructors.
+                    std::destroy_n(new_tail, wrap_size());
                     throw;
                 }
             }
+
         } catch (...) {
             std::allocator_traits<allocator_type>::deallocate(_allocator, new_begin, std::distance(new_begin, new_end));
             throw;
         }
 
         // Destroy the moved from objects.
-        if (_head >= _tail) {
-            std::destroy(_tail, _head);
-        } else {
-            std::destroy(_tail, _end);
-            std::destroy(_begin, _head);
-        } 
+        std::destroy_n(_tail, std::min(wrap_size(), _size));
+        if (wrap_size() < _size) {
+            std::destroy_n(_begin, _size - wrap_size());
+        }
 
-        auto const *old_begin = std::exchange(_begin, new_begin);
-        auto const *old_end = std::exchange(_end, new_end);
+        auto const old_begin = std::exchange(_begin, new_begin);
+        auto const old_end = std::exchange(_end, new_end);
         _tail = new_tail;
-        _head = new_head;
+        _size = new_size;
         std::allocator_traits<allocator_type>::deallocate(_allocator, old_begin, std::distance(old_begin, old_end));
     }
 };
-
-namespace mpr {
-
-template<typename T>
-using fifo = ::hi::fifo<T, std::pmr_polymorpic_allocator<T>>;
-
-}
 
 }
 

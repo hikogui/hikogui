@@ -113,12 +113,7 @@ inline void draw_context::_draw_glyph(
         return;
     }
 
-    auto const atlas_was_updated =
-        device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
-
-    if (atlas_was_updated) {
-        device->SDF_pipeline->prepare_atlas_for_rendering();
-    }
+    device->SDF_pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, font, glyph, attributes.fill_color);
 }
 
 inline void draw_context::_draw_text(
@@ -147,10 +142,6 @@ inline void draw_context::_draw_text(
 
         atlas_was_updated |= device->SDF_pipeline->place_vertices(
             *_sdf_vertices, clipping_rectangle, transform * box, *c.glyphs.font, c.glyphs.front(), color);
-    }
-
-    if (atlas_was_updated) {
-        device->SDF_pipeline->prepare_atlas_for_rendering();
     }
 }
 
