@@ -7,22 +7,55 @@
 #include <string>
 #include <string_view>
 #include <filesystem>
+#include <expected>
+#include <system_error>
 
 hi_export_module(hikogui.path : bookmark);
 
 hi_export namespace hi::inline v1 {
 class bookmark {
 public:
-    ~bookmark();
+    ~bookmark() = default;
 
     /** Create an empty bookmark.
      */
-    bookmark();
+    bookmark() = default;
 
-    bookmark(bookmark const& other);
-    bookmark(bookmark&& other);
-    bookmark& operator=(bookmark const& other);
-    bookmark& operator=(bookmark&& other);
+    /** Create a bookmark from a path.
+     *
+     * @param path The path to the file.
+     */
+    bookmark(std::filesystem::path path)
+        : _path(std::move(path)), _location(path_location::none)
+    {
+    }
+
+    /** Create a bookmark from a path and location.
+     *
+     * @param path The path to the file.
+     * @param location The location of the file.
+     */
+    bookmark(std::filesystem::path path, path_location location)
+        : _path(std::move(path)), _location(location)
+    {
+    }
+
+    [[nodiscard]] static bookmark resource(std::filesystem::path path)
+    {
+        return bookmark{std::move(path), path_location::resource};
+    }
+
+    [[nodiscard]] static bookmark data(std::filesystem::path path)
+    {
+        return bookmark{std::move(path), path_location::data};
+    }
+
+    bookmark(bookmark const& other) = default;
+    bookmark(bookmark&& other) = default;
+    bookmark& operator=(bookmark const& other) = default;
+    bookmark& operator=(bookmark&& other) = default;
+
+    [[nodiscard]] friend bool operator==(bookmark const& lhs, bookmark const& rhs) = default;
 
     /** Deserialize a bookmark including sandbox-tokens.
      *
@@ -43,6 +76,15 @@ public:
      * @return A string which can be stored in preferences file.
      */
     [[nodiscard]] std::string serialize() const;
+
+    /** Get the path from the bookmark.
+     * 
+     * @return The path.
+     */
+    [[nodiscard]] std::filesystem::path path() const noexcept
+    {
+        return _path;
+    }
 
     /** This file is located outside the sandbox.
      *
@@ -124,7 +166,7 @@ public:
         }
 
         try {
-            return {get_path(_location, _path, std::forward<Suffixes>(suffixes)), _location};
+            return bookmark{get_path(_location, _path, std::forward<Suffixes>(suffixes)), _location};
         } catch (std::system_error const& e) {
             return std::unexpected{e.code()};
         } catch (...) {
@@ -148,7 +190,7 @@ public:
      * @return A bookmark that points to an actual file. or an error.
      */
     template<typename First, typename... Args>
-    [[nodiscard]] std::exception<bookmark, std::error_code> resolve(First&& first, Args&&... args) const
+    [[nodiscard]] std::expected<bookmark, std::error_code> resolve(First&& first, Args&&... args) const
         requires requires { resolve(file_suffixes(std::forward<First>(first), std::forward<Args>(args)...)); }
     {
         return resolve(file_suffixes(std::forward<First>(first), std::forward<Args>(args)...));

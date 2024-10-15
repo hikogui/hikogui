@@ -108,12 +108,12 @@ template<path_range Locations>
 /** The directories to search for font files of both the application and system.
  * @ingroup path
  */
-[[nodiscard]] inline generator<std::filesystem::path> font_files();
+[[nodiscard]] inline generator<std::filesystem::path> font_dirs();
 
 /** The directories to search for theme files of the application.
  * @ingroup path
  */
-[[nodiscard]] inline generator<std::filesystem::path> theme_files();
+[[nodiscard]] inline generator<std::filesystem::path> theme_dirs();
 
 /** Get the full path to source code of this executable.
  *
@@ -166,9 +166,9 @@ template<path_range Locations>
         case path_location::system_font:
             return system_font_dirs();
         case path_location::font:
-            return font_files();
+            return font_dirs();
         case path_location::theme:
-            return theme_files();
+            return theme_dirs();
         case path_location::none:
             return root_dirs();
         }
@@ -280,6 +280,28 @@ find_path(Locations&& locations, std::filesystem::path const& ref, Suffixes&& su
 {
     for (auto const& language : languages) {
         co_yield std::format("-{}", language);
+    }
+}
+
+[[nodiscard]] inline size_t file_suffix_get_scale(std::filesystem::path const &path)
+{
+    auto const filename = path.filename().string();
+    auto const at_i = filename.find('@');
+    if (at_i == std::string::npos) {
+        return 1;
+    }
+    auto const at_num = at_i + 1;
+    auto const x_i = filename.find('x', at_num);
+    if (x_i == std::string::npos) {
+        return 1;
+    }
+
+    auto const scale_string = filename.substr(at_num, x_i - at_num);
+
+    if (auto const scale = hi::from_string<size_t>(scale_string, 10)) {
+        return *scale;
+    } else {
+        return 1;
     }
 }
 

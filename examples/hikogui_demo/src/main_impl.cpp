@@ -139,7 +139,7 @@ hi::task<> preferences_window(std::stop_token stop_token, my_preferences& prefer
 {
     using namespace hi;
 
-    auto window_label = label{load_png(URL{"resource:hikogui_demo.png"}), txt("Preferences")};
+    auto window_label = label{hi::bookmark::resource("hikogui_demo.png"), txt("Preferences")};
     auto top = std::make_unique<window_widget>(window_label);
 
     auto &tab1 = top->toolbar().emplace<toolbar_tab_button_widget>(preferences.tab_index, 0);
@@ -169,7 +169,7 @@ hi::task<> main_window(my_preferences& preferences)
 {
     using namespace hi;
 
-    auto window_label = label{load_png(URL{"resource:hikogui_demo.png"}), txt("HikoGUI demo")};
+    auto window_label = label{hi::bookmark::resource("hikogui_demo.png"), txt("HikoGUI demo")};
     auto top = std::make_unique<window_widget>(window_label);
 
     auto& preferences_button = top->toolbar().emplace<button_widget>(preferences_window_button_delegate);

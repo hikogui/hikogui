@@ -158,7 +158,7 @@ public:
         constexpr static size_t staging_image_width = 64; // One 'em' is 28 pixels, with edges 34 pixels.
         constexpr static size_t staging_image_height = 64;
         constexpr static size_t staging_image_size = staging_image_width * staging_image_height * sizeof(sdf_r8);
-        constexpr static size_t num_staging_images = 8;
+        constexpr static size_t num_staging_images = 16;
 
         constexpr static float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
         constexpr static float drawfontSize = 28.0f;

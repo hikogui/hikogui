@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "image_loader.hpp" // export
 #include "pixmap_span.hpp" // export
 #include "pixmap.hpp" // export
 #include "png_loader.hpp" // export

@@ -73,39 +73,57 @@ public:
             assert(_delegate != nullptr);
             auto const icon = _delegate->get_icon(this);
 
-            if (auto const pixmap = std::get_if<hi::pixmap<sfloat_rgba16>>(&icon)) {
-                _glyph = {};
-                _icon_type = icon_type::pixmap;
-                _icon_size = style.concrete_size_px(extent2{gsl::narrow<float>(pixmap->width()), gsl::narrow<float>(pixmap->height())}, 1.0f); 
-                _pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap};
-                if (not _pixmap_backing) {
-                    // Could not get an image, retry.
-                    _icon_has_modified = true;
-                    ++global_counter<"icon_widget:no-backing-image:constrain">;
-                    request_reconstrain();
+            if (auto const optional_bookmark = std::get_if<hi::bookmark>(&icon)) {
+                if (auto const pixmap = load_image(*optional_bookmark, os_settings::language_tags(), style.pixel_density)) {
+                    auto const width = gsl::narrow<float>(pixmap->width());
+                    auto const height = gsl::narrow<float>(pixmap->height());
+                    auto const scale = 1.0f / gsl::narrow<float>(pixmap->scale());
+ 
+                    _glyph = {};
+                    _icon_type = icon_type::pixmap;
+                    _icon_scale = scale;
+                    _icon_size = style.concrete_size_px(extent2{width, height}, scale); 
+                    _pixmap_backing = gfx_pipeline_image::paged_image{surface(), *pixmap};
+                    if (not _pixmap_backing) {
+                        // Could not get an image, retry.
+                        _icon_has_modified = true;
+                        ++global_counter<"icon_widget:no-backing-image:constrain">;
+                        request_reconstrain();
+                    }
+
+                } else {
+                    _glyph = find_glyph(elusive_icon::ExclamationSign);
+                    _icon_type = icon_type::glyph;
+                    _icon_scale = 1.0f;
+                    _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
+                    _pixmap_backing = {};
                 }
 
             } else if (auto const g1 = std::get_if<font_glyph_ids>(&icon)) {
                 _glyph = *g1;
                 _icon_type = icon_type::glyph;
+                _icon_scale = 1.0f;
                 _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else if (auto const g2 = std::get_if<elusive_icon>(&icon)) {
                 _glyph = find_glyph(*g2);
                 _icon_type = icon_type::glyph;
+                _icon_scale = 1.0f;
                 _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else if (auto const g3 = std::get_if<hikogui_icon>(&icon)) {
                 _glyph = find_glyph(*g3);
                 _icon_type = icon_type::glyph;
+                _icon_scale = 1.0f;
                 _icon_size = style.concrete_size_px(_glyph.front_glyph_metrics().bounding_rectangle.size() * style.font_size_px, 1.0f);
                 _pixmap_backing = {};
 
             } else {
                 _glyph = {};
                 _icon_type = icon_type::no;
+                _icon_scale = 1.0f;
                 _icon_size = {};
                 _pixmap_backing = {};
             }
@@ -178,6 +196,7 @@ private:
     std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;
+    float _icon_scale;
     aarectangle _icon_rectangle;
 
     std::shared_ptr<delegate_type> _delegate;

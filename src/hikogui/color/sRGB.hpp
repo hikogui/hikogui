@@ -183,13 +183,15 @@ template<unsigned int BitDepth>
         tmp += "ff";
     }
 
-    auto packed = from_string<uint32_t>(tmp, 16);
-
-    uint8_t const r = truncate<uint8_t>(packed >> 24);
-    uint8_t const g = truncate<uint8_t>(packed >> 16);
-    uint8_t const b = truncate<uint8_t>(packed >> 8);
-    uint8_t const a = truncate<uint8_t>(packed);
-    return color_from_sRGB<8>(r, g, b, a);
+    if (auto packed = from_string<uint32_t>(tmp, 16)) {
+        uint8_t const r = truncate<uint8_t>(*packed >> 24);
+        uint8_t const g = truncate<uint8_t>(*packed >> 16);
+        uint8_t const b = truncate<uint8_t>(*packed >> 8);
+        uint8_t const a = truncate<uint8_t>(*packed);
+        return color_from_sRGB<8>(r, g, b, a);
+    } else {
+        throw parse_error(std::format("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str));
+    }
 }
 
 }} // namespace hi::v1

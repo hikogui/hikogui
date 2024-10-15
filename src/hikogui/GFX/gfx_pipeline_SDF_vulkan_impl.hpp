@@ -272,6 +272,7 @@ gfx_pipeline_SDF::device_shared::upload_staging_pixmap_to_atlas(glyph_atlas_info
 
     assert(staging_image_nr < num_staging_images);
 
+    // Copy the image with a 1 pixel border around it.
     auto const dst_x = floor_cast<int32_t>(location.position.x()) - 1;
     auto const dst_y = floor_cast<int32_t>(location.position.y()) - 1;
     auto const dst_z = floor_cast<std::size_t>(location.position.z());
@@ -348,12 +349,13 @@ inline void gfx_pipeline_SDF::device_shared::add_glyph_to_atlas(hi::font_id font
 
         auto const staging_glyph_offset = this->staging_buffer.offset(staging_image_nr);
         // Add a 1 pixel border around the image.
-        // The draw_path is translated by 1.0f in x and y. 
         auto staging_glyph_image = this->staging_buffer.pixmap(
             staging_image_nr, gsl::narrow<size_t>(image_size.width()) + 2, gsl::narrow<size_t>(image_size.height()) + 2);
 
         // Draw the glyph into the staging buffer. Then flush the buffer to the
-        // GPU. The actual uploading to the atlas will be done on the main thread.
+        // GPU. The actual uploading to the atlas will be done on the main
+        // thread. The draw_path is translated by 1.0f in x and y since we are
+        // adding a border. 
         fill(staging_glyph_image, translate2{1.0f, 1.0f} * draw_path);
         {
             auto const _ = std::scoped_lock(gfx_system_mutex);
