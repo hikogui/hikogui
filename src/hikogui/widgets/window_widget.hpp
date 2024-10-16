@@ -182,7 +182,8 @@ public:
     }
     void draw(draw_context const& context) const noexcept override
     {
-        context.draw_box(layout(), layout().rectangle(), background_color(), background_color());
+        //context.draw_box(layout(), layout().rectangle(), background_color(), background_color());
+        context.draw_box(layout(), layout().rectangle(), color::red(), color::green());
 
         return super::draw(context);
     }
