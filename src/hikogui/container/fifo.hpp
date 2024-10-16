@@ -57,12 +57,14 @@ public:
 
         // Use the growth factor of 1.5 which is preferred as it
         // is more likely to reuse previous allocations.
-        auto grow_size = std::max(old_size, size_t(2));
-        while (grow_size < new_size) {
-            grow_size += grow_size >> 1;
-        }
+        auto const grow_size = old_size + old_size >> 1;
 
-        reallocate(grow_size);
+        // If the requested size is larger, use that, since
+        // we could not reuse a previous allocation.
+        //
+        // reallocate() may request more capacity based on the allocator's
+        // ability to return a larger size.
+        reallocate(grow_size > new_size ? grow_size : new_size);
     }
 
     constexpr void shrink_to_fit()
@@ -224,8 +226,9 @@ private:
     {
         assert(new_capacity >= _size);
 
-        auto const new_begin = std::allocator_traits<allocator_type>::allocate(_allocator, new_capacity);
-        auto const new_end = new_begin + new_capacity;
+        auto const new_allocation = std::allocate_at_least(_allocator, new_capacity);
+        auto const new_begin = allocation.ptr;
+        auto const new_end = new_begin + allocation.count;
         auto const new_tail = new_begin;
         auto const new_size = _size;
 
