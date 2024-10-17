@@ -407,4 +407,38 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
     return ptr;
 }
 
+/** Remove elements from a container when the predicate matches and transform
+ * those elements to another container.
+ *
+ * @param first An iterator to the first element of a range.
+ * @param last An iterator beyond the last element of a range.
+ * @param d_first An output iterator to place elements that match the predicate.
+ * @param predicate The predicate to match. The predicate should return an
+ *                  std::optional<T> where T is an element of the in the output
+ *                  range. If the predicate returns std::nullopt the element is
+ *                  removed from the range, otherwise the element is transformed
+ *                  to the value of the std::optional.
+ * @return Past-the-end iterator for the new range of elements that didn't match
+ *         the predicate.
+ */
+template<
+    std::forward_iterator InputIt,
+    std::sentinel_for<InputIt> InputLast,
+    typename OutputIt,
+    std::invocable<typename std::iterator_traits<InputIt>::value_type&> Predicate>
+InputIt remove_transform_if(InputIt first, InputLast last, OutputIt d_first, Predicate const& predicate)
+{
+    auto result = first;
+    for (; first != last; ++first) {
+        if (auto transformed_item = predicate(*first)) {
+            *d_first++ = std::move(*transformed_item);
+        } else if (result == first) {
+            ++result;
+        } else {
+            *result++ = std::move(*first);
+        }
+    }
+    return result;
+}
+
 } // namespace hi::inline v1

@@ -149,17 +149,14 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/codec/base_n.hpp
     src/hikogui/codec/codec.hpp
     src/hikogui/codec/datum.hpp
-    src/hikogui/codec/gzip.hpp
-    src/hikogui/codec/huffman.hpp
     src/hikogui/codec/indent.hpp
     src/hikogui/codec/inflate.hpp
     src/hikogui/codec/jsonpath.hpp
     src/hikogui/codec/pickle.hpp
-    src/hikogui/codec/png.hpp
-    src/hikogui/codec/zlib.hpp
     src/hikogui/color/Rec2020.hpp
     src/hikogui/color/Rec2100.hpp
     src/hikogui/color/color.hpp
+    src/hikogui/color/color_impl.hpp
     src/hikogui/color/color_intf.hpp
     src/hikogui/color/color_space.hpp
     src/hikogui/color/quad_color.hpp
@@ -199,24 +196,27 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/crt/crt_utils_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/crt/crt_utils_win32_impl.hpp>
     src/hikogui/crt/crt_utils_win32_impl.hpp
-    src/hikogui/dispatch/async_task.hpp
     src/hikogui/dispatch/awaitable.hpp
+    src/hikogui/dispatch/awaitable_future_impl.hpp
+    src/hikogui/dispatch/awaitable_future_intf.hpp
     src/hikogui/dispatch/awaitable_stop_token_impl.hpp
     src/hikogui/dispatch/awaitable_stop_token_intf.hpp
     src/hikogui/dispatch/awaitable_timer_impl.hpp
     src/hikogui/dispatch/awaitable_timer_intf.hpp
     src/hikogui/dispatch/dispatch.hpp
+    src/hikogui/dispatch/function_predicate.hpp
     src/hikogui/dispatch/function_timer.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/loop_win32_intf.hpp>
     src/hikogui/dispatch/loop_win32_intf.hpp
     src/hikogui/dispatch/notifier.hpp
-    src/hikogui/dispatch/progress.hpp
     src/hikogui/dispatch/socket_event.hpp
     src/hikogui/dispatch/socket_event_intf.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/src/hikogui/dispatch/socket_event_win32_impl.hpp>
     src/hikogui/dispatch/socket_event_win32_impl.hpp
+    src/hikogui/dispatch/stop_and_progress.hpp
+    src/hikogui/dispatch/stop_and_progress_source.hpp
+    src/hikogui/dispatch/stop_and_progress_token.hpp
     src/hikogui/dispatch/task.hpp
-    src/hikogui/dispatch/task_controller.hpp
     src/hikogui/dispatch/when_any.hpp
     src/hikogui/file/access_mode.hpp
     src/hikogui/file/file.hpp
@@ -278,6 +278,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/geometry/margins.hpp
     src/hikogui/geometry/matrix2.hpp
     src/hikogui/geometry/matrix3.hpp
+    src/hikogui/geometry/object_fit.hpp
     src/hikogui/geometry/perspective.hpp
     src/hikogui/geometry/point2.hpp
     src/hikogui/geometry/point3.hpp
@@ -311,6 +312,8 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/image/image.hpp
     src/hikogui/image/pixmap.hpp
     src/hikogui/image/pixmap_span.hpp
+    src/hikogui/image/png_loader.hpp
+    src/hikogui/image/png_types.hpp
     src/hikogui/image/sdf_r8.hpp
     src/hikogui/image/sfloat_rg32.hpp
     src/hikogui/image/sfloat_rgb32.hpp
@@ -328,6 +331,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/l10n/po_translations.hpp
     src/hikogui/l10n/translation.hpp
     src/hikogui/l10n/txt.hpp
+    src/hikogui/layout/baseline.hpp
     src/hikogui/layout/box_constraints.hpp
     src/hikogui/layout/box_shape.hpp
     src/hikogui/layout/grid_layout.hpp
@@ -414,11 +418,17 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text_style.hpp
     src/hikogui/text/text_style_set.hpp
     src/hikogui/theme/style.hpp
-    src/hikogui/theme/style_attributes.hpp
+    src/hikogui/theme/style_cascade.hpp
+    src/hikogui/theme/style_computed_properties.hpp
+    src/hikogui/theme/style_importance.hpp
     src/hikogui/theme/style_modify_mask.hpp
     src/hikogui/theme/style_parser.hpp
     src/hikogui/theme/style_path.hpp
+    src/hikogui/theme/style_priority.hpp
+    src/hikogui/theme/style_properties.hpp
     src/hikogui/theme/style_pseudo_class.hpp
+    src/hikogui/theme/style_selector.hpp
+    src/hikogui/theme/style_specificity.hpp
     src/hikogui/theme/theme.hpp
     src/hikogui/time/chrono.hpp
     src/hikogui/time/time.hpp
@@ -513,16 +523,16 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/utility/utility.hpp
     src/hikogui/utility/value_traits.hpp
     src/hikogui/widgets/abstract_button_widget.hpp
-    src/hikogui/widgets/async_delegate.hpp
-    src/hikogui/widgets/async_widget.hpp
     src/hikogui/widgets/audio_device_widget.hpp
     src/hikogui/widgets/button_delegate.hpp
+    src/hikogui/widgets/button_widget.hpp
     src/hikogui/widgets/checkbox_widget.hpp
     src/hikogui/widgets/grid_widget.hpp
+    src/hikogui/widgets/icon_delegate.hpp
     src/hikogui/widgets/icon_widget.hpp
+    src/hikogui/widgets/label_delegate.hpp
     src/hikogui/widgets/label_widget.hpp
     src/hikogui/widgets/menu_button_widget.hpp
-    src/hikogui/widgets/momentary_button_widget.hpp
     src/hikogui/widgets/overlay_widget.hpp
     src/hikogui/widgets/radio_delegate.hpp
     src/hikogui/widgets/radio_widget.hpp
@@ -541,10 +551,11 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/widgets/text_widget.hpp
     src/hikogui/widgets/toggle_delegate.hpp
     src/hikogui/widgets/toggle_widget.hpp
-    src/hikogui/widgets/toolbar_button_widget.hpp
     src/hikogui/widgets/toolbar_tab_button_widget.hpp
     src/hikogui/widgets/toolbar_widget.hpp
+    src/hikogui/widgets/utility.hpp
     src/hikogui/widgets/widget.hpp
+    src/hikogui/widgets/widget_delegate.hpp
     src/hikogui/widgets/widgets.hpp
     src/hikogui/widgets/window_controls_macos_widget.hpp
     src/hikogui/widgets/window_controls_win32_widget.hpp
