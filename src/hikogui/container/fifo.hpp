@@ -57,7 +57,7 @@ public:
 
         // Use the growth factor of 1.5 which is preferred as it
         // is more likely to reuse previous allocations.
-        auto const grow_size = old_size + old_size >> 1;
+        auto const grow_size = old_size + (old_size >> 1);
 
         // If the requested size is larger, use that, since
         // we could not reuse a previous allocation.
@@ -226,9 +226,9 @@ private:
     {
         assert(new_capacity >= _size);
 
-        auto const new_allocation = std::allocate_at_least(_allocator, new_capacity);
-        auto const new_begin = allocation.ptr;
-        auto const new_end = new_begin + allocation.count;
+        auto const new_allocation = std::allocator_traits<allocator_type>::allocate_at_least(_allocator, new_capacity);
+        auto const new_begin = new_allocation.ptr;
+        auto const new_end = new_begin + new_allocation.count;
         auto const new_tail = new_begin;
         auto const new_size = _size;
 
