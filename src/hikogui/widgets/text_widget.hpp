@@ -29,12 +29,11 @@
 hi_export_module(hikogui.widgets.text_widget);
 
 hi_export namespace hi {
-
 inline namespace v1 {
 
 /**
  * Enumeration representing the edit mode of a text widget.
- * 
+ *
  * The edit mode determines the behavior and capabilities of the text widget when it comes to editing and selecting text.
  */
 enum class text_widget_edit_mode {
@@ -184,19 +183,20 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
+        assert(window() != nullptr);
+
         // Read the latest text from the delegate.
         _text_cache = delegate->get_text(this);
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text_cache.size());
 
-        assert(window());
         _shaped_text = text_shaper{
             _text_cache,
             style.font_size,
             style.text_style,
             window()->pixel_density,
-            os_settings::alignment(style.alignment),
+            os_settings::alignment(style.horizontal_alignment),
             os_settings::left_to_right()};
 
         auto const max_width = [&] {
@@ -210,28 +210,21 @@ public:
             }
         }();
 
-        auto const [bounds, bottom_baseline, middle_baseline, top_baseline, top_cap_height] = _shaped_text.bounds(max_width);
-
-        // The size of the widget is based on the size of the text from baseline
-        // to cap-height. This excludes the descenders and ascenders.
-        auto const text_height = top_cap_height - bottom_baseline;
-        auto const bottom_baseline_ = 0.0f;
-        auto const middle_baseline_ = middle_baseline - bottom_baseline;
-        auto const top_baseline_ = top_baseline - bottom_baseline;
+        auto const br = _shaped_text.bounds(max_width);
 
         auto const top_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
-            auto const bottom_padding = height - text_height;
-            return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
+            auto const bottom_padding = height - br.bounds.height();
+            return {get<0>(br.bounds).y() + bottom_padding, br.middle_baseline + bottom_padding, 0.0f + bottom_padding};
         };
 
         auto const middle_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
-            auto const bottom_padding = std::round((height - text_height) / 2.0f);
-            return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
+            auto const bottom_padding = std::round((height - br.bounds.height()) / 2.0f);
+            return {get<0>(br.bounds).y() + bottom_padding, br.middle_baseline + bottom_padding, 0.0f + bottom_padding};
         };
 
         auto const bottom_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
             auto const bottom_padding = 0.0f;
-            return {bottom_baseline_ + bottom_padding, middle_baseline_ + bottom_padding, top_baseline_ + bottom_padding};
+            return {get<0>(br.bounds).y() + bottom_padding, br.middle_baseline + bottom_padding, 0.0f + bottom_padding};
         };
 
         auto baseline_function = [&]() -> baseline::baseline_function_type {
@@ -247,9 +240,15 @@ public:
             }
         }();
 
-        auto const size = extent2{bounds.width(), text_height};
+        auto minimum_spacing = br.bottom_descender + br.top_ascender - get<3>(br.bounds).y();
+        _margins = max(style.margins_px, hi::margins(0.0f, minimum_spacing, 0.0f, minimum_spacing));
+
         return _constraints_cache = {
-                   size, size, size, style.margins_px, baseline{style.baseline_priority, std::move(baseline_function)}};
+                   br.bounds.size(),
+                   br.bounds.size(),
+                   br.bounds.size(),
+                   _margins,
+                   baseline{style.baseline_priority, std::move(baseline_function)}};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -265,7 +264,7 @@ public:
         using namespace std::literals::chrono_literals;
 
         // After potential reconstrain and relayout, updating the shaped-text, ask the parent window to scroll if needed.
-        auto *mutable_this = const_cast<text_widget*>(this);
+        auto* mutable_this = const_cast<text_widget*>(this);
 
         if (std::exchange(mutable_this->_request_scroll, false)) {
             mutable_this->scroll_to_show_selection();
@@ -273,10 +272,12 @@ public:
 
         if (_last_drag_mouse_event) {
             if (_last_drag_mouse_event_next_repeat == utc_nanoseconds{}) {
-                mutable_this->_last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_delay();
+                mutable_this->_last_drag_mouse_event_next_repeat =
+                    context.display_time_point + os_settings::keyboard_repeat_delay();
 
             } else if (context.display_time_point >= _last_drag_mouse_event_next_repeat) {
-                mutable_this->_last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_interval();
+                mutable_this->_last_drag_mouse_event_next_repeat =
+                    context.display_time_point + os_settings::keyboard_repeat_interval();
 
                 // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
                 // back to local coordinates before handling the mouse event again.
@@ -828,6 +829,7 @@ private:
     text_shaper _shaped_text;
 
     mutable box_constraints _constraints_cache;
+    hi::margins _margins;
 
     text_selection _selection;
 

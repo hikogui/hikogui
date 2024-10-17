@@ -84,7 +84,7 @@ public:
         unit::font_size_f const& font_size,
         text_style_set const& style,
         unit::pixel_density pixel_density,
-        hi::alignment alignment,
+        hi::horizontal_alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
         _bidi_context(left_to_right ? unicode_bidi_class::L : unicode_bidi_class::R),
@@ -136,7 +136,7 @@ public:
         unit::font_size_f const& font_size,
         text_style_set const& style,
         unit::pixel_density pixel_density,
-        hi::alignment alignment,
+        hi::horizontal_alignment alignment,
         bool left_to_right,
         iso_15924 script = iso_15924{"Zyyy"}) noexcept :
         text_shaper(to_gstring(text), font_size, style, pixel_density, alignment, left_to_right, script)
@@ -188,6 +188,30 @@ public:
         return _lines;
     }
 
+    
+
+    struct bounds_result {
+        // p0: x=position of the left most glyph x = 0.0
+        // p0: y=position of the baseline of the bottom-line of text. y <= 0
+        // p3: x=position of right most glyphs + advance
+        // p3: y=position of the cap-height of the top-line of text. y > 0
+        // y=0.0 is the baseline of the top-line of text.
+        aarectangle bounds;
+
+        // Position of the baseline of the middle-line of text.
+        // Or the average baseline of the two middle lines.
+        float middle_baseline;
+
+        // Cap-height of the middle-line of text.
+        float middle_cap_height;
+
+        // Length of the ascender of the top-line of text.
+        float top_ascender;
+
+        // Length of the descender of the bottom-line of text, positive number.
+        float bottom_descender;
+    };
+
     /** Get bounding rectangle.
      *
      * It will estimate the width and height based on the glyphs before
@@ -196,25 +220,14 @@ public:
      *
      * The returned values from this function are used to determine the
      * locations of features of the shaped text:
-     *  - size.width: The with of the text.
-     *  - size.height: The position of the ascender of the top-line of text.
-     *  - top-cap-height: The position of the cap-height of the top-line of
-     *                    text.
-     *  - top-baseline: The position of the baseline of the top-line of text.
-     *  - middle-baseline: The position of the baseline of the middle-line of
-     *                     text. or the average baseline of the two middle
-     *                     lines.
-     *  - bottom-baseline: The position of the baseline of the bottom-line of
-     *                     text.
-     *  - 0.0: The position of the descender of the bottom-line of text.
      *
      * @param maximum_line_width The maximum line width allowed, this may be
      *                           infinite to determine the natural text size
      *                           without folding.
-     * @return size, bottom-baseline, middle-baseline, top-baseline,
-     *         top-cap-height.
+     * @return bounding box, middle-baseline, middle-capheight, top-ascender,
+     * bottom-descender.
      */
-    [[nodiscard]] std::tuple<extent2, float, float, float, float> bounds(float maximum_line_width) noexcept
+    [[nodiscard]] bounds_result bounds(float maximum_line_width) noexcept
     {
         auto const rectangle = aarectangle{
             point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
@@ -228,23 +241,23 @@ public:
         }
         max_width = std::ceil(max_width);
 
-        auto const top = lines.front().y + ceil_in(unit::pixels, lines.front().metrics.ascender);
-        auto const bottom = lines.back().y - ceil_in(unit::pixels, lines.back().metrics.descender);
-        auto const size = extent2{max_width, top - bottom};
+        auto r = bounds_result{};
+        r.bounds =
+            aarectangle{point2{0.0f, lines.back().y}, point2{max_width, ceil_in(unit::pixels, lines.front().metrics.cap_height)}};
 
-        auto const bottom_baseline = lines.back().y - bottom;
-        auto const middle_baseline = [&] {
-            if (lines.size() % 2 == 1) {
-                return lines[lines.size() / 2].y - bottom;
-            } else {
-                assert(lines.size() >= 2);
-                return std::round((lines[lines.size() / 2].y + lines[lines.size() / 2 - 1].y) / 2.0f - bottom);
-            }
-        }();
-        auto const top_baseline = lines.front().y - bottom;
-        auto const top_cap_height = round_in(unit::pixels, lines.front().metrics.cap_height) - bottom;
+        if (lines.size() % 2 == 1) {
+            auto const& line = lines[lines.size() / 2];
+            r.middle_baseline = line.y;
+            r.middle_cap_height = ceil_in(unit::pixels, line.metrics.cap_height);
+        } else {
+            assert(lines.size() >= 2);
+            r.middle_baseline = std::round((lines[lines.size() / 2].y + lines[lines.size() / 2 - 1].y) / 2.0f);
+            r.middle_cap_height = ceil_in(unit::pixels, (lines[lines.size() / 2].metrics.cap_height + lines[lines.size() / 2 - 1].metrics.cap_height) / 2.0f);
+        }
 
-        return {size, bottom_baseline, middle_baseline, top_baseline, top_cap_height};
+        r.top_ascender = ceil_in(unit::pixels, lines.front().metrics.ascender);
+        r.bottom_descender = ceil_in(unit::pixels, lines.back().metrics.descender);
+        return r;
     }
 
     /** Layout the lines of the text.
@@ -857,7 +870,7 @@ private:
      */
     char_vector _text;
 
-    hi::alignment _alignment;
+    hi::horizontal_alignment _alignment;
 
     /** A list of word break opportunities.
      */
@@ -901,9 +914,11 @@ private:
      */
     aarectangle _rectangle;
 
-    static void layout_lines_vertical_spacing(text_shaper::line_vector& lines) noexcept
+    static void layout_lines_vertical_spacing(text_shaper::line_vector& lines, float sub_pixel_height) noexcept
     {
         hi_assert(not lines.empty());
+
+        auto const rcp_sub_pixel_height = 1.0f / sub_pixel_height;
 
         auto prev = lines.begin();
         prev->y = 0.0f;
@@ -911,60 +926,11 @@ private:
             auto const height =
                 prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
 
-            auto const line_spacing = std::max(prev->line_spacing, it->line_spacing);
-            auto const paragraph_spacing = std::max(prev->paragraph_spacing, it->paragraph_spacing);
-            auto const spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
+            auto const spacing =
+                prev->last_category == unicode_general_category::Zp ? prev->paragraph_spacing : prev->line_spacing;
             // Lines advance downward on the y-axis.
-            it->y = prev->y - spacing * height.in(unit::pixels);
+            it->y = std::round((prev->y - spacing * height.in(unit::pixels)) * rcp_sub_pixel_height) * sub_pixel_height;
             prev = it;
-        }
-    }
-
-    static void layout_lines_vertical_alignment(
-        text_shaper::line_vector& lines,
-        vertical_alignment alignment,
-        float baseline,
-        float min_y,
-        float max_y,
-        float sub_pixel_height) noexcept
-    {
-        hi_assert(not lines.empty());
-
-        // Calculate the y-adjustment needed to position the base-line of the text to y=0
-        auto adjustment = [&]() {
-            if (alignment == vertical_alignment::top) {
-                return -lines.front().y;
-
-            } else if (alignment == vertical_alignment::bottom) {
-                return -lines.back().y;
-
-            } else {
-                auto const mp_index = lines.size() / 2;
-                if (lines.size() % 2 == 1) {
-                    return -lines[mp_index].y;
-
-                } else {
-                    return -std::midpoint(lines[mp_index - 1].y, lines[mp_index].y);
-                }
-            }
-        }();
-
-        // Add the base-line to the adjustment.
-        adjustment += baseline;
-
-        // Clamp the adjustment between min_y and max_y.
-        // The text may not fit, prioritize to show the top lines.
-        if (lines.back().y + adjustment < min_y) {
-            adjustment = min_y - lines.back().y;
-        }
-        if (lines.front().y + adjustment > max_y) {
-            adjustment = max_y - lines.front().y;
-        }
-
-        // Reposition the lines, and round to sub-pixel boundary.
-        auto const rcp_sub_pixel_height = 1.0f / sub_pixel_height;
-        for (auto& line : lines) {
-            line.y = std::round((line.y + adjustment) * rcp_sub_pixel_height) * sub_pixel_height;
         }
     }
 
@@ -1174,10 +1140,7 @@ private:
             r.back().paragraph_direction = _text_direction;
         }
 
-        layout_lines_vertical_spacing(r);
-        layout_lines_vertical_alignment(
-            r, _alignment.vertical(), baseline, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
-
+        layout_lines_vertical_spacing(r, sub_pixel_size.height());
         return r;
     }
 
@@ -1195,7 +1158,7 @@ private:
         bidi_algorithm(_lines, _text, _bidi_context);
         for (auto& line : _lines) {
             // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
-            line.layout(_alignment.horizontal(), rectangle.left(), rectangle.right(), sub_pixel_size.width());
+            line.layout(_alignment, rectangle.left(), rectangle.right(), sub_pixel_size.width());
         }
     }
 
