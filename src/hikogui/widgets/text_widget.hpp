@@ -186,13 +186,18 @@ public:
         assert(window() != nullptr);
 
         // Read the latest text from the delegate.
-        _text_cache = delegate->get_text(this);
+        _text = delegate->get_text(this);
+
+        _text_widths = shaper_grapheme_widths(_text, style.font_size, style.text_style);
+        _line_break_opportunities = unicode_line_break(_text);
+        auto const line_lengths = unicode_fold_lines(_line_break_opportunities, _text_widths, style.width_px);
+        //auto const line_heights = shaper_line_heights(_text, line_lengths, style.font_size, style.text_style);
 
         // Make sure that the current selection fits the new text.
-        _selection.resize(_text_cache.size());
+        _selection.resize(_text.size());
 
         _shaped_text = text_shaper{
-            _text_cache,
+            _text,
             style.font_size,
             style.text_style,
             window()->pixel_density,
@@ -825,7 +830,10 @@ private:
 
     enum class cursor_state_type { off, on, busy, none };
 
-    gstring _text_cache;
+    gstring _text;
+    std::vector<float> _text_widths;
+    unicode_break_vector _line_break_opportunities;
+
     text_shaper _shaped_text;
 
     mutable box_constraints _constraints_cache;
@@ -936,18 +944,18 @@ private:
     {
         auto const [first, last] = _selection.selection_indices();
 
-        return gstring_view{_text_cache}.substr(first, last - first);
+        return gstring_view{_text}.substr(first, last - first);
     }
 
     void undo_push() noexcept
     {
-        _undo_stack.emplace(_text_cache, _selection);
+        _undo_stack.emplace(_text, _selection);
     }
 
     void undo() noexcept
     {
         if (_undo_stack.can_undo()) {
-            auto const& [text, selection] = _undo_stack.undo(_text_cache, _selection);
+            auto const& [text, selection] = _undo_stack.undo(_text, _selection);
 
             delegate->set_text(this, text);
             _selection = selection;
@@ -999,7 +1007,7 @@ private:
      */
     void fix_cursor_position() noexcept
     {
-        auto const size = _text_cache.size();
+        auto const size = _text.size();
         if (_overwrite_mode and _selection.empty() and _selection.cursor().after()) {
             _selection = _selection.cursor().before_neighbor(size);
         }
@@ -1014,7 +1022,7 @@ private:
 
         auto const [first, last] = _selection.selection_indices();
 
-        auto text = _text_cache;
+        auto text = _text;
         text.replace(first, last - first, replacement);
         delegate->set_text(this, text);
 
@@ -1029,11 +1037,11 @@ private:
      */
     void add_character(grapheme c, add_type keyboard_mode) noexcept
     {
-        auto const [start_selection, end_selection] = _selection.selection(_text_cache.size());
+        auto const [start_selection, end_selection] = _selection.selection(_text.size());
         auto original_grapheme = grapheme{char32_t{0xffff}};
 
         if (_selection.empty() and _overwrite_mode and start_selection.before()) {
-            original_grapheme = _text_cache[start_selection.index()];
+            original_grapheme = _text[start_selection.index()];
 
             auto const [first, last] = _shaped_text.select_char(start_selection);
             _selection.drag_selection(last);
@@ -1045,7 +1053,7 @@ private:
             _selection = start_selection;
 
         } else if (keyboard_mode == add_type::dead) {
-            _selection = start_selection.before_neighbor(_text_cache.size());
+            _selection = start_selection.before_neighbor(_text.size());
             _has_dead_character = original_grapheme;
         }
     }
@@ -1054,14 +1062,14 @@ private:
     {
         if (_has_dead_character) {
             hi_assert(_selection.cursor().before());
-            hi_assert_bounds(_selection.cursor().index(), _text_cache);
+            hi_assert_bounds(_selection.cursor().index(), _text);
 
             if (_has_dead_character != U'\uffff') {
-                auto text = _text_cache;
+                auto text = _text;
                 text[_selection.cursor().index()] = *_has_dead_character;
                 delegate->set_text(this, text);
             } else {
-                auto text = _text_cache;
+                auto text = _text;
                 text.erase(_selection.cursor().index(), 1);
                 delegate->set_text(this, text);
             }

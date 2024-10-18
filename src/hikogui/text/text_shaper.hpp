@@ -94,6 +94,8 @@ public:
     {
         auto const font = style.front().font_chain()[0];
         _initial_line_metrics = font_size * style.front().scale() * _pixel_density * font->metrics;
+        _line_spacing = style.front().line_spacing();
+        _paragraph_spacing = style.front().paragraph_spacing();
 
         _text.reserve(text.size());
         for (auto const& c : text) {
@@ -870,6 +872,9 @@ private:
      */
     char_vector _text;
 
+    float _line_spacing = 1.0;
+    float _paragraph_spacing = 1.5;
+
     hi::horizontal_alignment _alignment;
 
     /** A list of word break opportunities.
@@ -1115,7 +1120,7 @@ private:
      */
     [[nodiscard]] line_vector make_lines(aarectangle rectangle, float baseline, extent2 sub_pixel_size) noexcept
     {
-        auto const line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
+        auto const line_sizes = unicode_fold_lines(_line_break_opportunities, _line_break_widths, rectangle.width());
 
         auto r = text_shaper::line_vector{};
         r.reserve(line_sizes.size());
@@ -1290,8 +1295,8 @@ private:
             auto const line_height = previous_metrics.descender + std::max(previous_metrics.line_gap, current_metrics.line_gap) +
                 current_metrics.ascender;
 
-            auto const spacing = previous_category == unicode_general_category::Zp ? previous_metrics.paragraph_spacing :
-                                                                                     previous_metrics.line_spacing;
+            auto const spacing = previous_category == unicode_general_category::Zp ? _paragraph_spacing :
+                                                                                     _line_spacing;
             total_height = total_height + spacing * line_height;
 
             previous_metrics = std::move(current_metrics);

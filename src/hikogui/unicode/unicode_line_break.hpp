@@ -644,15 +644,25 @@ unicode_line_break(It first, ItEnd last, CodePointFunc const& code_point_func) n
     return r;
 }
 
+[[nodiscard]] inline unicode_break_vector
+unicode_line_break(gstring_view text) noexcept
+{
+    return unicode_line_break(text.begin(), text.end(), [](auto c) { return c.starter(); });
+}
+
 /** Unicode break lines.
  *
+ * It may be possible that the lines is still longer than the maximum width.
+ * For example when a line has no break opportunities, such as a single word
+ * and the word is too long.
+ *
  * @param opportunities The list of break opportunities.
- * @param widths The list of character widths
+ * @param widths The list of character widths, negative for invisible characters.
  * @param maximum_line_width The maximum line width.
  * @return A list of line lengths.
  */
 [[nodiscard]] constexpr std::vector<size_t>
-unicode_line_break(unicode_break_vector const& opportunities, std::vector<float> const& widths, float maximum_line_width)
+unicode_fold_lines(unicode_break_vector const& opportunities, std::vector<float> const& widths, float maximum_line_width)
 {
     // See if the lines after mandatory breaks will fit the width and return.
     auto r = detail::unicode_LB_mandatory_lines(opportunities);
@@ -661,7 +671,6 @@ unicode_line_break(unicode_break_vector const& opportunities, std::vector<float>
     }
 
     r = detail::unicode_LB_fit_lines(opportunities, widths, maximum_line_width);
-    hi_axiom(detail::unicode_LB_width_check(widths, r, maximum_line_width));
     return r;
 }
 

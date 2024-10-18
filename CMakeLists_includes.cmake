@@ -150,7 +150,6 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/codec/codec.hpp
     src/hikogui/codec/datum.hpp
     src/hikogui/codec/indent.hpp
-    src/hikogui/codec/inflate.hpp
     src/hikogui/codec/jsonpath.hpp
     src/hikogui/codec/pickle.hpp
     src/hikogui/color/Rec2020.hpp
@@ -161,10 +160,12 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/color/color_space.hpp
     src/hikogui/color/quad_color.hpp
     src/hikogui/color/sRGB.hpp
+    src/hikogui/concurrency/async_pool.hpp
     src/hikogui/concurrency/atomic.hpp
     src/hikogui/concurrency/callback.hpp
     src/hikogui/concurrency/callback_flags.hpp
     src/hikogui/concurrency/concurrency.hpp
+    src/hikogui/concurrency/future_pool.hpp
     src/hikogui/concurrency/global_state.hpp
     src/hikogui/concurrency/id_factory.hpp
     src/hikogui/concurrency/subsystem.hpp
@@ -179,16 +180,19 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/container/byte_string.hpp
     src/hikogui/container/container.hpp
     src/hikogui/container/expected_optional.hpp
+    src/hikogui/container/fifo.hpp
     src/hikogui/container/function_fifo.hpp
     src/hikogui/container/functional.hpp
     src/hikogui/container/lean_vector.hpp
     src/hikogui/container/polymorphic_optional.hpp
+    src/hikogui/container/resource_pool.hpp
     src/hikogui/container/secure_vector.hpp
     src/hikogui/container/stable_set.hpp
     src/hikogui/container/stack.hpp
     src/hikogui/container/undo_stack.hpp
     src/hikogui/container/vector_span.hpp
     src/hikogui/container/void_span.hpp
+    src/hikogui/container/wait_fifo.hpp
     src/hikogui/container/wfree_fifo.hpp
     src/hikogui/crt.hpp
     src/hikogui/crt/crt.hpp
@@ -203,6 +207,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/dispatch/awaitable_stop_token_intf.hpp
     src/hikogui/dispatch/awaitable_timer_impl.hpp
     src/hikogui/dispatch/awaitable_timer_intf.hpp
+    src/hikogui/dispatch/delegate.hpp
     src/hikogui/dispatch/dispatch.hpp
     src/hikogui/dispatch/function_predicate.hpp
     src/hikogui/dispatch/function_timer.hpp
@@ -310,6 +315,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/i18n/language_tag_impl.hpp
     src/hikogui/i18n/language_tag_intf.hpp
     src/hikogui/image/image.hpp
+    src/hikogui/image/image_loader.hpp
     src/hikogui/image/pixmap.hpp
     src/hikogui/image/pixmap_span.hpp
     src/hikogui/image/png_loader.hpp
@@ -325,6 +331,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/image/srgb_abgr8_pack.hpp
     src/hikogui/image/uint_abgr8_pack.hpp
     src/hikogui/image/unorm_a2bgr10_pack.hpp
+    src/hikogui/l10n/icon.hpp
     src/hikogui/l10n/l10n.hpp
     src/hikogui/l10n/label.hpp
     src/hikogui/l10n/po_parser.hpp
@@ -370,6 +377,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/parser/token.hpp
     src/hikogui/path/URI.hpp
     src/hikogui/path/URL.hpp
+    src/hikogui/path/bookmark.hpp
     src/hikogui/path/cmake_install.hpp
     src/hikogui/path/glob.hpp
     src/hikogui/path/path.hpp
@@ -411,6 +419,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/text/text.hpp
     src/hikogui/text/text_cursor.hpp
     src/hikogui/text/text_decoration.hpp
+    src/hikogui/text/text_guess_size.hpp
     src/hikogui/text/text_selection.hpp
     src/hikogui/text/text_shaper.hpp
     src/hikogui/text/text_shaper_char.hpp
@@ -568,6 +577,7 @@ target_sources(hikogui INTERFACE FILE_SET hikogui_include_files TYPE HEADERS BAS
     src/hikogui/win32/shlobj_core.hpp
     src/hikogui/win32/stringapiset.hpp
     src/hikogui/win32/synchapi.hpp
+    src/hikogui/win32/sysinfoapi.hpp
     src/hikogui/win32/utility.hpp
     src/hikogui/win32/win32.hpp
     src/hikogui/win32/win32_error_impl.hpp
