@@ -45,53 +45,120 @@ hi_export namespace hi::inline v1 {
 //     std::vector<size_t> line_sizes = {};
 // };
 
-/** Get the width of each grapheme.
- *
- * @param text The text to get the width of each grapheme.
- * @param font_size The size of the font.
- * @param style_set The style of the text.
- * @return The width of each grapheme.
+/** Information gathered from a grapheme in preparation for shaping.
  */
-[[nodiscard]] std::vector<float>
-shaper_grapheme_widths(gstring const& text, unit::pixels_per_em_f font_size, text_style_set const& style_set)
+struct shaper_grapheme_info {
+    font_glyph_ids glyphs = {};
+    unit::pixels_f advance = unit::pixels_f(0.0f);
+    unit::pixels_f cap_height = unit::pixels_f(0.0f);
+    unit::pixels_f ascender = unit::pixels_f(0.0f);
+    unit::pixels_f descender = unit::pixels_f(0.0f);
+    unit::pixels_f line_gap = unit::pixels_f(0.0f);
+    unicode_general_category general_category = unicode_general_category::Cn;
+    unicode_bidi_paired_bracket_type bracket_type = unicode_bidi_paired_bracket_type::n;
+};
+
+static inline std::vector < lean_vector shaper_collect_grapheme_info_of_a_word(gstring_view word, text_style const& style_set) {}
+
+
+/** Get runs of text.
+ * 
+ * A run is a sequence of graphemes that are not separated by a word break and
+ * have the same grapheme attributes. Which means that the graphemes of a run
+ * can be shaped together. A sequence of whitespace is considered a run.
+ * 
+ * @param text The text to get the runs of.
+ * @param word_breaks The word breaks in the text.
+ * @return A vector of pairs of the start and one-past-the-end index of each run.
+ */
+[[nodiscard]]] inline std::vector<std::pair<size_t, size_t>> shaper_make_runs(gstring_view text, unicode_break_vector word_breaks)
 {
-    auto r = std::vector<float>{};
+    auto r = std::vector<std::pair<size_t, size_t>>{};
+
     if (text.empty()) {
         return r;
     }
 
+    assert(text.size() + 1 == word_breaks.size());
+    // The last character is always a word break. Therfore we do not need to
+    // bound check the next grapheme access inside the loop.
+    assert(word_breaks.back() == unicode_break_opportunity::yes);
+
+    auto run_start = size_t{0};
+    for (auto i = size_t{0}; i != text.size(); ++i) {
+        // Is this is the last character of the run.
+        if (word_breaks[i + 1] == unicode_break_property::yes) {
+            r.emplace_back(run_start, i);
+            run_start = i + 1;
+
+        } else if (text[i + 1].attributes() != text[i].attributes()) { // No bound check, see assert above.
+            r.emplace_back(run_start, i);
+            run_start = i + 1;
+        }
+    }
+
+    r.emplace_back(run_start, i);
+    return r;
+}
+
+/** Get information of each grapheme in preparation for shaping.
+ *
+ * @param text The text to get the width of each grapheme.
+ * @param word_breaks The word breaks in the text.
+ * @param font_size The size of the font.
+ * @param style_set The style of the text.
+ * @return Sizing information about each grapheme.
+ */
+[[nodiscard]] inline std::vector<shaper_grapheme_info> shaper_collect_grapheme_info(
+    gstring_view text,
+    std::vector<std::pair<size_t, size_t>> run_indices,
+    unit::pixels_per_em_f font_size,
+    text_style_set const& style_set)
+{
+    auto r = std::vector<shaper_grapheme_info>{};
     r.reserve(text.size());
 
-    auto attributes = text.front().attributes();
-    auto style = style_set[attributes];
-    auto style_font_size = font_size * style.scale();
-    auto font_id = style.font_chain().front();
-    auto font = std::addressof(get_font(font_id));
+    if (text.empty()) {
+        return r;
+    }
 
-    for (auto const& c : text) {
-        if (auto const a = c.attributes(); a != attributes) {
-            attributes = a;
-            style = style_set[a];
-            font_id = style.font_chain().front();
-            font = std::addressof(get_font(font_id));
+    assert(text.size() + 1 == word_breaks.size());
+
+    auto find_glyphs_scratch = std::vector<lean_vector<glyph_id>>{};
+
+    auto attributes = text.front().attributes();
+    auto style = std::addressof(style_set[attributes]);
+    auto style_font_size = font_size * style->scale();
+
+    for (auto [first, last] : run_indices) {
+        assert(first < last);
+        auto const run = text.substr(first, last - first);
+        if (run.front().attributes() != attributes) {
+            attributes = run.front().attributes();
+            style = std::addressof(style_set[attributes]);
+            style_font_size = font_size * style->scale();
         }
 
-        auto const starter_cp = c.starter();
+        auto run_info = shaper_grapheme_info{};
+        run_info.glyphs = find_glyphs(run, style->font_chain(), find_glyphs_scratch);
 
-        auto const width = [&]() -> unit::pixels_f {
-            for (auto f_id : style.font_chain()) {
-                auto const& f = f_id == font_id ? *font : get_font(f_id);
-                if (auto const glyph_id = f.find_glyph(starter_cp); glyph_id) {
-                    return unit::em_squares(f.get_advance(glyph_id)) * style_font_size;
-                }
-            }
+        for (auto const& g : run) {
+            auto const& metrics = font->metrics * style_font_size;
+            auto const advance = font->get_advance(g, style_font_size);
+            auto const general_category = ucd_get_general_category(g.starter());
+            auto const bracket_type = ucd_get_bidi_paired_bracket_type(g.starter());
 
-            // Unknown character, tofu.
-            return unit::em_squares(font->get_advance(glyph_id{0})) * style_font_size;
-        }();
+            run_info.glyphs = find_glyphs(run, font_chain, find_glyphs_scratch);
 
-        auto const general_category = ucd_get_general_category(starter_cp);
-        r.push_back(is_visible(general_category) ? width.in(unit::pixels) : -width.in(unit::pixels));
+            run_info.glyphs.push_back(font->get_glyph_id(g, style_font_size));
+            run_info.advance += advance;
+            run_info.cap_height = std::max(run_info.cap_height, metrics.cap_height);
+            run_info.ascender = std::max(run_info.ascender, metrics.ascender);
+            run_info.descender = std::max(run_info.descender, metrics.descender);
+            run_info.line_gap = std::max(run_info.line_gap, metrics.line_gap);
+            run_info.general_category = general_category;
+            run_info.bracket_type = bracket_type;
+        }
     }
 
     return r;
@@ -120,7 +187,7 @@ shaper_grapheme_widths(gstring const& text, unit::pixels_per_em_f font_size, tex
         assert(std::distance(text_it, text.end()) >= line_length);
 
         // Calculate the length of the line, excluding any trailing whitespace.
-        auto const line_length_wtw = [&]() -> size_t{
+        auto const line_length_wtw = [&]() -> size_t {
             for (auto i = line_length; i != 0; --i) {
                 if (*(widths_it + i - 1) >= 0.0f) {
                     return i;
@@ -138,10 +205,9 @@ shaper_grapheme_widths(gstring const& text, unit::pixels_per_em_f font_size, tex
         // whole line. If there is no grapheme in the line, the line metrics
         // are determined from the first grapheme in the text.
         auto const first_g = line_length > 0 ? *text_it : text.front();
-        auto const &style = style_set[first_g.attributes()];
-        auto const &font = get_font(style.font_chain().front());
-        auto const &metrics = font.metrics * (font_size * style.scale());
-        
+        auto const& style = style_set[first_g.attributes()];
+        auto const& font = get_font(style.font_chain().front());
+        auto const& metrics = font.metrics * (font_size * style.scale());
 
         // The last grapheme in the line determines if it is the end of a line
         // or a paragraph. And thus determines the distance to the next line.

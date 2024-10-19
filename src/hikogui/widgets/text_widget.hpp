@@ -188,10 +188,13 @@ public:
         // Read the latest text from the delegate.
         _text = delegate->get_text(this);
 
-        _text_widths = shaper_grapheme_widths(_text, style.font_size, style.text_style);
+        _grapheme_widths = shaper_grapheme_widths(_text, style.font_size, style.text_style);
         _line_break_opportunities = unicode_line_break(_text);
-        auto const line_lengths = unicode_fold_lines(_line_break_opportunities, _text_widths, style.width_px);
-        //auto const line_heights = shaper_line_heights(_text, line_lengths, style.font_size, style.text_style);
+
+        // The calculations here are ephemeral as the actual folding is done
+        // once the width of the widget is known.
+        auto const line_lengths = unicode_fold_lines(_line_break_opportunities, _grapheme_widths, style.width_px);
+        auto const size = shaper_text_size(_text, _grapheme_widths, line_lengths, style.font_size, style.text_style);
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text.size());
@@ -831,7 +834,7 @@ private:
     enum class cursor_state_type { off, on, busy, none };
 
     gstring _text;
-    std::vector<float> _text_widths;
+    std::vector<float> _grapheme_widths;
     unicode_break_vector _line_break_opportunities;
 
     text_shaper _shaped_text;
