@@ -224,14 +224,14 @@ public:
     [[nodiscard]] font_glyph_ids find_glyph(font_id font, hi::grapheme grapheme) const noexcept
     {
         // First try the selected font.
-        if (auto const glyph_ids = font->find_glyph(grapheme); not glyph_ids.empty()) {
+        if (auto const glyph_ids = font->find_glyphs(grapheme); not glyph_ids.empty()) {
             return {font, std::move(glyph_ids)};
         }
 
         // Scan fonts which are fallback to this.
         for (auto const fallback : font->fallback_chain) {
             hi_axiom(not fallback.empty());
-            if (auto const glyph_ids = fallback->find_glyph(grapheme); not glyph_ids.empty()) {
+            if (auto const glyph_ids = fallback->find_glyphs(grapheme); not glyph_ids.empty()) {
                 return {*fallback, std::move(glyph_ids)};
             }
         }
@@ -283,6 +283,16 @@ inline font_book& font_book::global() noexcept
         detail::font_book_global = std::make_unique<font_book>();
     }
     return *detail::font_book_global;
+}
+
+[[nodiscard]] inline font& get_font(font_id id)
+{
+    return font_book::global().get_font(id);
+}
+
+[[nodiscard]] inline font* font_id::operator->() const
+{
+    return std::addressof(get_font(*this));
 }
 
 /** Register a font.
@@ -388,7 +398,7 @@ inline void register_font_directories(Range&& range) noexcept
 {
     for (auto const& font_id : font_chain) {
         auto const& font = get_font(font_id);
-        if (auto glyph_ids = font.find_glyph(g); not glyph_ids.empty()) {
+        if (auto glyph_ids = font.find_glyphs(g); not glyph_ids.empty()) {
             return {font_id, std::move(glyph_ids)};
         }
     }
@@ -442,16 +452,6 @@ inline std::vector<font_glyph_ids> find_glyphs(
     }
 
     return r;
-}
-
-[[nodiscard]] inline font& get_font(font_id id)
-{
-    return font_book::global().get_font(id);
-}
-
-[[nodiscard]] inline font* font_id::operator->() const
-{
-    return std::addressof(get_font(*this));
 }
 
 } // namespace hi::inline v1

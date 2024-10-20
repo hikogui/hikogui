@@ -11,6 +11,7 @@
 #include "ucd_general_categories.hpp"
 #include "ucd_grapheme_cluster_breaks.hpp"
 #include "ucd_word_break_properties.hpp"
+#include "grapheme.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <algorithm>
@@ -256,6 +257,11 @@ template<typename It, typename ItEnd, typename CodePointFunc>
     detail::unicode_word_break_WB4(r, infos);
     detail::unicode_word_break_WB5_WB999(r, infos);
     return r;
+}
+
+[[nodiscard]] inline unicode_break_vector unicode_word_break(gstring_view text) noexcept
+{
+    return unicode_word_break(text.begin(), text.end(), [](auto const& g) { return g.starter(); });
 }
 
 /** Wrap lines in text that are too wide.

@@ -145,12 +145,13 @@ public:
 
         for (auto g : text) {
             if (auto glyph_ids = find_glyphs(g); not glyph_ids.empty()) {
-                r.push_back(std::move(glyph_ids));
+                out.push_back(std::move(glyph_ids));
             } else {
                 return false;
             }
         }
 
+        assert(text.size() == out.size());
         return true;
     }
 
@@ -170,7 +171,7 @@ public:
      * @return The advance for the glyph.
      * @throws std::exception If there was an error looking up the glyph.
      */
-    [[nodiscard]] virtual float get_advance(hi::glyph_id glyph_id) const = 0;
+    [[nodiscard]] virtual unit::em_squares_f get_advance(hi::glyph_id glyph_id) const = 0;
 
     /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.

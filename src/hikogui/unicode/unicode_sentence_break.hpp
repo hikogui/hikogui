@@ -9,6 +9,7 @@
 
 #include "ucd_sentence_break_properties.hpp"
 #include "unicode_break_opportunity.hpp"
+#include "grapheme.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <tuple>
@@ -273,5 +274,9 @@ unicode_sentence_break(It first, ItEnd last, CodePointFunc const& code_point_fun
     return r;
 }
 
+[[nodiscard]] inline unicode_break_vector unicode_sentence_break(gstring_view text) noexcept
+{
+    return unicode_sentence_break(text.begin(), text.end(), [](auto const& g) { return g.starter(); });
+}
 
 }

@@ -56,7 +56,7 @@ enum class text_widget_edit_mode {
  *  - Multiple paragraphs.
  *  - Uses the unicode line break algorithm to wrap lines when not enough horizontal space.
  *  - Used the unicode word break algorithm for selecting and moving through words.
- *  - Uses the unicode scentence break algorithm for selecting and moving through scentences.
+ *  - Uses the unicode sentence break algorithm for selecting and moving through sentences.
  *  - Uses the unicode bidi algorithm for displaying text in mixed left-to-right & right-to-left languages.
  *  - Displays secondary cursor where text in the other language-direction will be inserted.
  *  - Keeps track if the user has just worked in left-to-right or right-to-left language.
@@ -188,13 +188,16 @@ public:
         // Read the latest text from the delegate.
         _text = delegate->get_text(this);
 
-        _grapheme_widths = shaper_grapheme_widths(_text, style.font_size, style.text_style);
         _line_break_opportunities = unicode_line_break(_text);
+        _word_break_opportunities = unicode_word_break(_text);
+        _sentence_break_opportunities = unicode_sentence_break(_text);
+        _run_indices = shaper_make_run_indices(_text,  _word_break_opportunities);
+        _grapheme_infos = shaper_collect_grapheme_info(_text, _run_indices, style.font_size, style.text_style);
 
         // The calculations here are ephemeral as the actual folding is done
         // once the width of the widget is known.
-        auto const line_lengths = unicode_fold_lines(_line_break_opportunities, _grapheme_widths, style.width_px);
-        auto const size = shaper_text_size(_text, _grapheme_widths, line_lengths, style.font_size, style.text_style);
+        //auto const line_lengths = unicode_fold_lines(_line_break_opportunities, _grapheme_widths, style.width_px);
+        //auto const size = shaper_text_size(_text, _grapheme_widths, line_lengths, style.font_size, style.text_style);
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text.size());
@@ -834,8 +837,11 @@ private:
     enum class cursor_state_type { off, on, busy, none };
 
     gstring _text;
-    std::vector<float> _grapheme_widths;
     unicode_break_vector _line_break_opportunities;
+    unicode_break_vector _word_break_opportunities;
+    unicode_break_vector _sentence_break_opportunities;
+    std::vector<shaper_run_indices> _run_indices;
+    std::vector<shaper_grapheme_info> _grapheme_infos;
 
     text_shaper _shaped_text;
 

@@ -28,7 +28,6 @@
 hi_export_module(hikogui.font.true_type_font);
 
 hi_export namespace hi::inline v1 {
-
 hi_export class true_type_font final : public font {
 public:
     true_type_font(std::filesystem::path const& path) : _path(path), _view(file_view{path})
@@ -92,12 +91,13 @@ public:
         }
     }
 
-    [[nodiscard]] float get_advance(hi::glyph_id glyph_id) const override
+    [[nodiscard]] unit::em_squares_f get_advance(hi::glyph_id glyph_id) const override
     {
         load_view();
 
         hi_check(*glyph_id < num_glyphs, "glyph_id is not valid in this font.");
-        auto const[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
+        auto const [advance_width, left_side_bearing] =
+            otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
         return advance_width;
     }
 
@@ -119,11 +119,13 @@ public:
 
         auto r = glyph_metrics{};
         r.bounding_rectangle = otype_glyf_get_bounding_box(glyph_bytes, _em_scale);
-        auto const[advance_width, left_side_bearing] = otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
+        auto const [advance_width, left_side_bearing] =
+            otype_hmtx_get(_hmtx_table_bytes, glyph_id, _num_horizontal_metrics, _em_scale);
 
-        r.advance = advance_width;
-        r.left_side_bearing = left_side_bearing;
-        r.right_side_bearing = advance_width - (left_side_bearing + r.bounding_rectangle.width());
+        r.advance = advance_width.in(unit::em_squares);
+        r.left_side_bearing = left_side_bearing.in(unit::em_squares);
+        r.right_side_bearing =
+            (advance_width - (left_side_bearing + unit::em_squares(r.bounding_rectangle.width()))).in(unit::em_squares);
         return r;
     }
 
@@ -349,7 +351,7 @@ private:
         r.reserve(run.size());
 
         for (auto const grapheme : run) {
-            auto const glyphs = find_glyph(grapheme);
+            auto const glyphs = find_glyphs(grapheme);
 
             // At this point ligature substitution has not been done. So we should
             // have at least one glyph per grapheme.
