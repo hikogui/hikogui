@@ -169,6 +169,21 @@ struct shaper_grapheme_info {
     return r;
 }
 
+[[nodiscard]] std::vector<size_t> shaper_fold_lines(std::vector<grapheme_info> const& info, unicode_break_vector const& line_break_oppertunities, unit::pixels_f width)
+{
+    return unicode_fold_lines(
+        info,
+        line_break_oppertunities,
+        width.in(unit::pixels),
+        [](auto const& x) {
+            return x.advance.in(unit::pixels);
+        },
+        [](auto const& x) {
+            return is_visible(x.general_category);
+        });
+}
+
+
 //[[nodiscard]] extent2 shaper_text_size(
 //    gstring const& text,
 //    std::vector<float> const& widths,
