@@ -119,7 +119,7 @@ unicode_LB1(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
     return r;
 }
 
-constexpr void unicode_LB2_3(unicode_break_vector& opportunities) noexcept
+constexpr void unicode_LB2_3(unicode_line_break_vector& opportunities) noexcept
 {
     hi_axiom(not opportunities.empty());
     // LB2
@@ -130,7 +130,7 @@ constexpr void unicode_LB2_3(unicode_break_vector& opportunities) noexcept
 
 template<typename MatchFunc>
 constexpr void unicode_LB_walk(
-    unicode_break_vector& opportunities,
+    unicode_line_break_vector& opportunities,
     std::vector<unicode_line_break_info> const& infos,
     MatchFunc match_func) noexcept
 {
@@ -190,7 +190,7 @@ constexpr void unicode_LB_walk(
     }
 }
 
-constexpr void unicode_LB4_8a(unicode_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
+constexpr void unicode_LB4_8a(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
 {
     unicode_LB_walk(
         opportunities, infos, [](auto const prev, auto const cur, auto const next, auto const next2, auto const cur_sp, auto const cur_nu, auto const num_ri) {
@@ -216,7 +216,7 @@ constexpr void unicode_LB4_8a(unicode_break_vector& opportunities, std::vector<u
         });
 }
 
-constexpr void unicode_LB9(unicode_break_vector& opportunities, std::vector<unicode_line_break_info>& infos) noexcept
+constexpr void unicode_LB9(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info>& infos) noexcept
 {
     using enum unicode_line_break_class;
     using enum unicode_break_opportunity;
@@ -268,7 +268,7 @@ constexpr void unicode_LB10(std::vector<unicode_line_break_info>& infos) noexcep
     }
 }
 
-constexpr void unicode_LB11_31(unicode_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
+constexpr void unicode_LB11_31(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
 {
     unicode_LB_walk(
         opportunities, infos, [&](auto const prev, auto const cur, auto const next, auto const next2, auto const cur_sp, auto const cur_nu, auto const num_ri) {
@@ -424,7 +424,7 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
  *
  * @return A list of line lengths.
  */
-[[nodiscard]] constexpr std::vector<size_t> unicode_LB_mandatory_lines(unicode_break_vector const& opportunities) noexcept
+[[nodiscard]] constexpr std::vector<size_t> unicode_LB_mandatory_lines(unicode_line_break_vector const& opportunities) noexcept
 {
     auto r = std::vector<size_t>{};
 
@@ -444,7 +444,7 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
  *
  * @return A list of line lengths.
  */
-[[nodiscard]] constexpr std::vector<size_t> unicode_LB_optional_lines(unicode_break_vector const& opportunities) noexcept
+[[nodiscard]] constexpr std::vector<size_t> unicode_LB_optional_lines(unicode_line_break_vector const& opportunities) noexcept
 {
     auto r = std::vector<size_t>{};
 
@@ -460,8 +460,8 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     return r;
 }
 
-[[nodiscard]] constexpr unicode_break_const_iterator unicode_LB_fast_fit_line(
-    unicode_break_const_iterator opportunity_it,
+[[nodiscard]] constexpr unicode_line_break_vector::const_iterator unicode_LB_fast_fit_line(
+    unicode_line_break_vector::const_iterator opportunity_it,
     std::vector<float>::const_iterator width_it,
     float maximum_line_width) noexcept
 {
@@ -490,9 +490,9 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     std::unreachable();
 }
 
-[[nodiscard]] constexpr unicode_break_const_iterator unicode_LB_slow_fit_line(
-    unicode_break_const_iterator first,
-    unicode_break_const_iterator end_of_line,
+[[nodiscard]] constexpr unicode_line_break_vector::const_iterator unicode_LB_slow_fit_line(
+    unicode_line_break_vector::const_iterator first,
+    unicode_line_break_vector::const_iterator end_of_line,
     std::vector<float>::const_iterator first_width,
     float maximum_line_width) noexcept
 {
@@ -523,8 +523,8 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     std::unreachable();
 }
 
-[[nodiscard]] constexpr unicode_break_const_iterator
-unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_const_iterator end_of_line) noexcept
+[[nodiscard]] constexpr unicode_line_break_vector::const_iterator
+unicode_LB_finish_fit_line(unicode_line_break_vector::const_iterator first, unicode_line_break_vector::const_iterator end_of_line) noexcept
 {
     if (first == end_of_line) {
         // We couldn't break the line to fit the maximum line width.
@@ -542,12 +542,10 @@ unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_con
  * @return A list of line lengths.
  */
 [[nodiscard]] constexpr std::vector<size_t> unicode_LB_fit_lines(
-    unicode_break_vector const& opportunities,
+    unicode_line_break_vector const& opportunities,
     std::vector<float> const& widths,
     float maximum_line_width) noexcept
 {
-    using enum unicode_break_opportunity;
-
     auto r = std::vector<size_t>{};
     if (widths.empty()) {
         return r;
@@ -579,7 +577,7 @@ unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_con
  * @return The maximum line width of the text, number of lines.
  */
 [[nodiscard]] constexpr std::pair<float, std::vector<size_t>>
-unicode_LB_maximum_width(unicode_break_vector const& opportunities, std::vector<float> const& char_widths)
+unicode_LB_maximum_width(unicode_line_break_vector const& opportunities, std::vector<float> const& char_widths)
 {
     auto line_lengths = detail::unicode_LB_mandatory_lines(opportunities);
     auto const width = detail::unicode_LB_width(char_widths, line_lengths);
@@ -595,7 +593,7 @@ unicode_LB_maximum_width(unicode_break_vector const& opportunities, std::vector<
  * @return The minimum line width of the text, number of lines.
  */
 [[nodiscard]] constexpr std::pair<float, std::vector<size_t>>
-unicode_LB_minimum_width(unicode_break_vector const& opportunities, std::vector<float> const& char_widths)
+unicode_LB_minimum_width(unicode_line_break_vector const& opportunities, std::vector<float> const& char_widths)
 {
     auto line_lengths = detail::unicode_LB_optional_lines(opportunities);
     auto const width = detail::unicode_LB_width(char_widths, line_lengths);
@@ -612,7 +610,7 @@ unicode_LB_minimum_width(unicode_break_vector const& opportunities, std::vector<
  * @return The minimum line width of the folded text, number of lines.
  */
 [[nodiscard]] constexpr std::pair<float, std::vector<size_t>>
-unicode_LB_width(unicode_break_vector const& opportunities, std::vector<float> const& char_widths, float maximum_line_width)
+unicode_LB_width(unicode_line_break_vector const& opportunities, std::vector<float> const& char_widths, float maximum_line_width)
 {
     auto line_lengths = detail::unicode_LB_fit_lines(opportunities, char_widths, maximum_line_width);
     auto const width = detail::unicode_LB_width(char_widths, line_lengths);
@@ -629,11 +627,11 @@ unicode_LB_width(unicode_break_vector const& opportunities, std::vector<float> c
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename CodePointFunc>
-[[nodiscard]] inline unicode_break_vector
+[[nodiscard]] inline unicode_line_break_vector
 unicode_line_break(It first, ItEnd last, CodePointFunc const& code_point_func) noexcept
 {
     auto size = narrow_cast<size_t>(std::distance(first, last));
-    auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
+    auto r = unicode_line_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = detail::unicode_LB1(first, last, code_point_func);
     detail::unicode_LB2_3(r);
@@ -644,7 +642,7 @@ unicode_line_break(It first, ItEnd last, CodePointFunc const& code_point_func) n
     return r;
 }
 
-[[nodiscard]] inline unicode_break_vector
+[[nodiscard]] inline unicode_line_break_vector
 unicode_line_break(gstring_view text) noexcept
 {
     return unicode_line_break(text.begin(), text.end(), [](auto c) { return c.starter(); });
@@ -662,7 +660,7 @@ unicode_line_break(gstring_view text) noexcept
  * @return A list of line lengths.
  */
 [[nodiscard]] constexpr std::vector<size_t>
-unicode_fold_lines(unicode_break_vector const& opportunities, std::vector<float> const& widths, float maximum_line_width)
+unicode_fold_lines(unicode_line_break_vector const& opportunities, std::vector<float> const& widths, float maximum_line_width)
 {
     // See if the lines after mandatory breaks will fit the width and return.
     auto r = detail::unicode_LB_mandatory_lines(opportunities);

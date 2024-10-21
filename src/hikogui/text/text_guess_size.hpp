@@ -60,7 +60,7 @@ struct shaper_run_indices {
  * @param word_breaks The word breaks in the text.
  * @return A vector of pairs of the start and one-past-the-end index of each run.
  */
-[[nodiscard]] inline std::vector<shaper_run_indices> shaper_make_run_indices(gstring_view text, unicode_break_vector word_breaks)
+[[nodiscard]] inline std::vector<shaper_run_indices> shaper_make_run_indices(gstring_view text, unicode_word_break_vector word_breaks)
 {
     auto r = std::vector<shaper_run_indices>{};
 

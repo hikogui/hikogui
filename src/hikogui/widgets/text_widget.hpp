@@ -837,9 +837,9 @@ private:
     enum class cursor_state_type { off, on, busy, none };
 
     gstring _text;
-    unicode_break_vector _line_break_opportunities;
-    unicode_break_vector _word_break_opportunities;
-    unicode_break_vector _sentence_break_opportunities;
+    unicode_line_break_vector _line_break_opportunities;
+    unicode_word_break_vector _word_break_opportunities;
+    unicode_sentence_break_vector _sentence_break_opportunities;
     std::vector<shaper_run_indices> _run_indices;
     std::vector<shaper_grapheme_info> _grapheme_infos;
 

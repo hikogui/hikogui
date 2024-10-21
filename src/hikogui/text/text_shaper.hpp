@@ -879,7 +879,7 @@ private:
 
     /** A list of word break opportunities.
      */
-    unicode_break_vector _line_break_opportunities;
+    unicode_line_break_vector _line_break_opportunities;
 
     /** A list of widths, one for each character in _text.
      */
@@ -887,11 +887,11 @@ private:
 
     /** A list of word break opportunities.
      */
-    unicode_break_vector _word_break_opportunities;
+    unicode_word_break_vector _word_break_opportunities;
 
     /** A list of sentence break opportunities.
      */
-    unicode_break_vector _sentence_break_opportunities;
+    unicode_sentence_break_vector _sentence_break_opportunities;
 
     /** The unicode bidi algorithm context.
      */
@@ -1032,7 +1032,7 @@ private:
     }
 
     [[nodiscard]] static generator<std::pair<std::vector<size_t>, float>> get_widths(
-        unicode_break_vector const& opportunities,
+        unicode_line_break_vector const& opportunities,
         std::vector<float> const& widths,
         unit::pixel_density pixel_density) noexcept
     {
@@ -1224,7 +1224,7 @@ private:
     }
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
-    get_selection_from_break(text_cursor cursor, unicode_break_vector const& break_opportunities) const noexcept
+    get_selection_from_break(text_cursor cursor, std::vector<unicode_break_opportunity> const& break_opportunities) const noexcept
     {
         if (_text.empty()) {
             return {{}, {}};
