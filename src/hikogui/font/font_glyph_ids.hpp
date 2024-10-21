@@ -19,8 +19,8 @@ struct font_glyph_ids {
     using iterator = container_type::iterator;
     using const_iterator = container_type::const_iterator;
 
-    hi::font_id font = {};
     container_type glyphs = {};
+    hi::font_id font = {};
 
     font_glyph_ids(font_glyph_ids const&) noexcept = default;
     font_glyph_ids(font_glyph_ids &&) noexcept = default;
@@ -30,7 +30,7 @@ struct font_glyph_ids {
     [[nodiscard]] friend bool operator==(font_glyph_ids const&, font_glyph_ids const&) noexcept = default;
 
     font_glyph_ids(hi::font_id font, lean_vector<glyph_id> glyphs) :
-        font(font), glyphs(std::move(glyphs))
+        glyphs(std::move(glyphs)), font(font)
     {
         hi_axiom(not this->font.empty());
         hi_axiom(not this->glyphs.empty());
