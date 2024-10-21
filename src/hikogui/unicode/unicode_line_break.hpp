@@ -419,7 +419,7 @@ template<
     std::invocable<std::ranges::range_value_t<GraphemeInfoRange>> AdvanceOp,
     typename WhitespaceOp>
 [[nodiscard]] constexpr std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> unicode_LB_width(
-    GraphemeInfoRange const& grapheme_info_range,
+    GraphemeInfoRange const& grapheme_metrics_range,
     std::vector<size_t> const& lengths,
     AdvanceOp const& advance_op,
     WhitespaceOp const& whitespace_op) noexcept
@@ -428,7 +428,7 @@ template<
     using width_type = std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>>;
 
     auto max_width = width_type{};
-    auto it = std::ranges::begin(grapheme_info_range);
+    auto it = std::ranges::begin(grapheme_metrics_range);
     for (auto length : lengths) {
         inplace_max(max_width, unicode_LB_width(it, it + length, advance_op, whitespace_op));
         it += length;
@@ -599,7 +599,7 @@ template<std::random_access_iterator GraphemeInfoIt, typename Width, typename Ad
 template<std::ranges::random_access_range GraphemeInfoRange, typename Width, typename AdvanceOp, typename WhitespaceOp>
 [[nodiscard]] constexpr std::vector<size_t> unicode_LB_fit_lines(
     unicode_line_break_vector const& opportunities,
-    GraphemeInfoRange const& grapheme_info_range,
+    GraphemeInfoRange const& grapheme_metrics_range,
     Width maximum_line_width,
     AdvanceOp const& advance_op,
     WhitespaceOp const& whitespace_op)
@@ -607,13 +607,13 @@ template<std::ranges::random_access_range GraphemeInfoRange, typename Width, typ
     std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
     auto r = std::vector<size_t>{};
-    if (grapheme_info_range.empty()) {
+    if (grapheme_metrics_range.empty()) {
         return r;
     }
 
     auto opportunity_it = opportunities.begin() + 1;
-    auto grapheme_info_it = std::ranges::begin(grapheme_info_range);
-    while (grapheme_info_it != std::ranges::end(grapheme_info_range)) {
+    auto grapheme_info_it = std::ranges::begin(grapheme_metrics_range);
+    while (grapheme_info_it != std::ranges::end(grapheme_metrics_range)) {
         // First quickly find when the line is too long.
         auto opportunity_eol = unicode_LB_fast_fit_line(opportunity_it, grapheme_info_it, maximum_line_width, advance_op);
         opportunity_eol = unicode_LB_slow_fit_line(
@@ -645,14 +645,14 @@ template<
     pair<std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>>, std::vector<size_t>>
     unicode_LB_maximum_width(
         unicode_line_break_vector const& break_opportunities,
-        GraphemeInfoRange const& grapheme_info_range,
+        GraphemeInfoRange const& grapheme_metrics_range,
         AdvanceOp const& advance_op,
         WhitespaceOp const& whitespace_op)
         requires std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 
 {
     auto const line_lengths = detail::unicode_LB_mandatory_lines(break_opportunities);
-    auto width = detail::unicode_LB_width(grapheme_info_range, line_lengths, advance_op, whitespace_op);
+    auto width = detail::unicode_LB_width(grapheme_metrics_range, line_lengths, advance_op, whitespace_op);
     return {width, std::move(line_lengths)};
 }
 
@@ -672,13 +672,13 @@ template<
     pair<std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>>, std::vector<size_t>>
     unicode_LB_minimum_width(
         unicode_line_break_vector const& break_opportunities,
-        GraphemeInfoRange const& grapheme_info_range,
+        GraphemeInfoRange const& grapheme_metrics_range,
         AdvanceOp const& advance_op,
         WhitespaceOp const& whitespace_op)
         requires std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
     auto const line_lengths = detail::unicode_LB_optional_lines(break_opportunities);
-    auto width = detail::unicode_LB_width(grapheme_info_range, line_lengths, advance_op, whitespace_op);
+    auto width = detail::unicode_LB_width(grapheme_metrics_range, line_lengths, advance_op, whitespace_op);
     return {width, std::move(line_lengths)};
 }
 
@@ -697,12 +697,12 @@ template<
     typename AdvanceOp,
     typename WhitespaceOp>
 [[nodiscard]] constexpr std::pair<Width, std::vector<size_t>>
-unicode_LB_width(unicode_line_break_vector const& opportunities, GraphemeInfoRange const& grapheme_info_range, Width maximum_line_width, AdvanceOp const& advance_op, WhitespaceOp const& whitespace_op)
+unicode_LB_width(unicode_line_break_vector const& opportunities, GraphemeInfoRange const& grapheme_metrics_range, Width maximum_line_width, AdvanceOp const& advance_op, WhitespaceOp const& whitespace_op)
 requires std::is_invocable_r_v<Width, AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> and
     std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
-    auto const line_lengths = detail::unicode_LB_fit_lines(opportunities, grapheme_info_range, maximum_line_width, advance_op, whitespace_op);
-    auto width = detail::unicode_LB_width(grapheme_info_range, line_lengths, advance_op, whitespace_op);
+    auto const line_lengths = detail::unicode_LB_fit_lines(opportunities, grapheme_metrics_range, maximum_line_width, advance_op, whitespace_op);
+    auto width = detail::unicode_LB_width(grapheme_metrics_range, line_lengths, advance_op, whitespace_op);
     return {width, std::move(line_lengths)};
 }
 

@@ -192,7 +192,7 @@ public:
         _word_break_opportunities = unicode_word_break(_text);
         _sentence_break_opportunities = unicode_sentence_break(_text);
         _run_indices = shaper_make_run_indices(_text,  _word_break_opportunities);
-        _grapheme_infos = shaper_collect_grapheme_info(_text, _run_indices, style.font_size, style.text_style);
+        _grapheme_metrics = shaper_collect_grapheme_metrics(_text, _run_indices, style.font_size, style.text_style);
 
         auto const maximum_width = [&] {
             if (auto pixel_width = std::get_if<unit::pixels_f>(&style.width)) {
@@ -202,7 +202,8 @@ public:
             }
         }();
 
-        auto const lines_sizes = shaper_fold_lines(_line_break_opportunities, _grapheme_infos, maximum_width);
+        auto const line_sizes = shaper_fold_lines(_line_break_opportunities, _grapheme_metrics, maximum_width);
+        auto const line_metrics = shaper_collect_line_metrics(_grapheme_metrics, line_sizes);
 
         // The calculations here are ephemeral as the actual folding is done
         // once the width of the widget is known.
@@ -851,7 +852,7 @@ private:
     unicode_word_break_vector _word_break_opportunities;
     unicode_sentence_break_vector _sentence_break_opportunities;
     std::vector<shaper_run_indices> _run_indices;
-    std::vector<shaper_grapheme_info> _grapheme_infos;
+    std::vector<shaper_grapheme_metrics> _grapheme_metrics;
 
     text_shaper _shaped_text;
 
