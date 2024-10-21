@@ -193,7 +193,16 @@ public:
         _sentence_break_opportunities = unicode_sentence_break(_text);
         _run_indices = shaper_make_run_indices(_text,  _word_break_opportunities);
         _grapheme_infos = shaper_collect_grapheme_info(_text, _run_indices, style.font_size, style.text_style);
-        auto const lines_sizes = shaper_fold_lines(_line_break_oppertunities, _grapheme_infos, style.width);
+
+        auto const maximum_width = [&] {
+            if (auto pixel_width = std::get_if<unit::pixels_f>(&style.width)) {
+                return *pixel_width;
+            } else {
+                return style.pixel_density * au::milli(au::meters)(210.0f);
+            }
+        }();
+
+        auto const lines_sizes = shaper_fold_lines(_line_break_opportunities, _grapheme_infos, maximum_width);
 
         // The calculations here are ephemeral as the actual folding is done
         // once the width of the widget is known.

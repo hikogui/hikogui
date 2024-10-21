@@ -51,16 +51,17 @@ struct shaper_run_indices {
 };
 
 /** Get runs of text.
- * 
+ *
  * A run is a sequence of graphemes that are not separated by a word break and
  * have the same grapheme attributes. Which means that the graphemes of a run
  * can be shaped together. A sequence of whitespace is considered a run.
- * 
+ *
  * @param text The text to get the runs of.
  * @param word_breaks The word breaks in the text.
  * @return A vector of pairs of the start and one-past-the-end index of each run.
  */
-[[nodiscard]] inline std::vector<shaper_run_indices> shaper_make_run_indices(gstring_view text, unicode_word_break_vector word_breaks)
+[[nodiscard]] inline std::vector<shaper_run_indices>
+shaper_make_run_indices(gstring_view text, unicode_word_break_vector word_breaks)
 {
     auto r = std::vector<shaper_run_indices>{};
 
@@ -113,7 +114,7 @@ struct shaper_grapheme_info {
  */
 [[nodiscard]] inline std::vector<shaper_grapheme_info> shaper_collect_grapheme_info(
     gstring_view text,
-    std::vector<shaper_run_indices> &run_indices,
+    std::vector<shaper_run_indices>& run_indices,
     unit::pixels_per_em_f font_size,
     text_style_set const& style_set)
 {
@@ -141,7 +142,7 @@ struct shaper_grapheme_info {
 
         auto const run_glyphs = find_glyphs(run, style.font_chain(), find_glyphs_scratch);
         auto font_id = hi::font_id{};
-        hi::font *font = nullptr;
+        hi::font* font = nullptr;
         auto font_metrics = hi::font_metrics_px{};
         for (auto i = size_t{0}; i != run.size(); ++i) {
             auto const g = run[i];
@@ -169,20 +170,28 @@ struct shaper_grapheme_info {
     return r;
 }
 
-[[nodiscard]] std::vector<size_t> shaper_fold_lines(std::vector<grapheme_info> const& info, unicode_break_vector const& line_break_oppertunities, unit::pixels_f width)
+/** Fold lines of a text.
+ * 
+ * @param break_opportunities The line break opportunities in the text.
+ * @param grapheme_info_range The sizing information of each grapheme.
+ * @param maximum_line_width The maximum width of a line.
+ */
+[[nodiscard]] std::vector<size_t> shaper_fold_lines(
+    unicode_line_break_vector const& break_opportunities,
+    std::vector<shaper_grapheme_info> const& grapheme_info_range,
+    unit::pixels_f maximum_line_width)
 {
     return unicode_fold_lines(
-        info,
-        line_break_oppertunities,
-        width.in(unit::pixels),
+        break_opportunities,
+        grapheme_info_range,
+        maximum_line_width,
         [](auto const& x) {
-            return x.advance.in(unit::pixels);
+            return x.advance;
         },
         [](auto const& x) {
             return is_visible(x.general_category);
         });
 }
-
 
 //[[nodiscard]] extent2 shaper_text_size(
 //    gstring const& text,

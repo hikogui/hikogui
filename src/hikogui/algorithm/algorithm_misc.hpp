@@ -71,16 +71,29 @@ constexpr It unordered_remove(It first, It last, It element)
     return new_last;
 }
 
-template<typename It, typename UnaryPredicate>
-constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
+/** Find the first occurrence of an element from the end of the range.
+ * 
+ * @param first An iterator pointing to the first item of the range.
+ * @param last An iterator pointing one beyond the last item of the range.
+ * @param predicate A function returning true when the element is found.
+ * @return An iterator within the range for the first matching element, or last if not found.
+ */
+template<std::random_access_iterator It, typename UnaryPredicate>
+constexpr It rfind_if(It first, It last, UnaryPredicate predicate)
 {
+    if (first == last) {
+        return last;
+    }
+
     auto i = last;
     do {
-        i--;
+        --i;
         if (predicate(*i)) {
             return i;
         }
     } while (i != first);
+
+    // Not found.
     return last;
 }
 
@@ -88,7 +101,7 @@ template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
     return rfind_if(first, last, [&](auto const& x) {
-        return !predicate(x);
+        return not predicate(x);
     });
 }
 

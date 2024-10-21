@@ -1031,6 +1031,16 @@ private:
         }
     }
 
+    [[nodiscard]] static float advance_op(float width) noexcept
+    {
+        return std::abs(width);
+    }
+
+    [[nodiscard]] static float whitespace_op(float width) noexcept
+    {
+        return width < 0.0f;
+    }
+
     [[nodiscard]] static generator<std::pair<std::vector<size_t>, float>> get_widths(
         unicode_line_break_vector const& opportunities,
         std::vector<float> const& widths,
@@ -1049,27 +1059,27 @@ private:
         auto const a4_two_column = (au::milli(au::meters)(88.0f) * pixel_density.ppi).in(unit::pixels);
 
         // Max-width first.
-        auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths);
+        auto [max_width, max_lines] = detail::unicode_LB_maximum_width(opportunities, widths, advance_op, whitespace_op);
         auto height = max_lines.size();
         co_yield {std::move(max_lines), max_width};
 
         if (max_width >= a4_two_column) {
             // If this is wide text, then only try a few sizes.
             if (max_width > a4_one_column) {
-                auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column);
+                auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_one_column, advance_op, whitespace_op);
                 if (std::exchange(height, lines.size()) > lines.size()) {
                     co_yield {std::move(lines), width};
                 }
             }
 
-            auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_two_column);
+            auto [width, lines] = detail::unicode_LB_width(opportunities, widths, a4_two_column, advance_op, whitespace_op);
             if (std::exchange(height, lines.size()) > lines.size()) {
                 co_yield {std::move(lines), width};
             }
 
         } else {
             // With small text we try every size that changes the number of lines.
-            auto [min_width, min_lines] = detail::unicode_LB_minimum_width(opportunities, widths);
+            auto [min_width, min_lines] = detail::unicode_LB_minimum_width(opportunities, widths, advance_op, whitespace_op);
             if (min_lines.size() >= height) {
                 // There are no multiple sizes.
                 co_return;
@@ -1086,7 +1096,7 @@ private:
                     // There lines between the current two sizes; split in two.
                     auto const half_width = (entry.min_width + entry.max_width) * 0.5f;
 
-                    auto [split_width, split_lines] = detail::unicode_LB_width(opportunities, widths, half_width);
+                    auto [split_width, split_lines] = detail::unicode_LB_width(opportunities, widths, half_width, advance_op, whitespace_op);
                     auto const split_height = split_lines.size();
 
                     if (split_height == entry.min_height) {
@@ -1120,7 +1130,7 @@ private:
      */
     [[nodiscard]] line_vector make_lines(aarectangle rectangle, float baseline, extent2 sub_pixel_size) noexcept
     {
-        auto const line_sizes = unicode_fold_lines(_line_break_opportunities, _line_break_widths, rectangle.width());
+        auto const line_sizes = unicode_fold_lines(_line_break_opportunities, _line_break_widths, rectangle.width(), advance_op, whitespace_op);
 
         auto r = text_shaper::line_vector{};
         r.reserve(line_sizes.size());
@@ -1133,7 +1143,7 @@ private:
             auto const char_eol = char_it + line_size;
             auto const width_eol = width_it + line_size;
 
-            auto const line_width = detail::unicode_LB_width(width_it, width_eol);
+            auto const line_width = detail::unicode_LB_width(width_it, width_eol, advance_op, whitespace_op);
             r.emplace_back(line_nr++, _text.begin(), char_it, char_eol, line_width, _initial_line_metrics);
 
             char_it = char_eol;

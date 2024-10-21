@@ -19,8 +19,6 @@ hi_export namespace hi::inline v1 {
 struct style_computed_properties {
     unit::length_f width = {};
     unit::length_f height = {};
-    float width_scale = 0.0f;
-    float height_scale = 0.0f;
     unit::pixels_per_em_f font_size = {};
     unit::pixels_f margin_left = {};
     unit::pixels_f margin_bottom = {};

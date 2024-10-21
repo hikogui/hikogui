@@ -12,15 +12,16 @@
 #include "ucd_grapheme_cluster_breaks.hpp"
 #include "ucd_line_break_classes.hpp"
 #include "ucd_east_asian_widths.hpp"
+#include "../algorithm/algorithm.hpp"
 #include "../utility/utility.hpp"
 #include "../macros.hpp"
 #include <cstdint>
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <ranges>
 
 hi_export_module(hikogui.unicode.unicode_line_break);
-
 
 hi_export namespace hi::inline v1 {
 namespace detail {
@@ -190,10 +191,19 @@ constexpr void unicode_LB_walk(
     }
 }
 
-constexpr void unicode_LB4_8a(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
+constexpr void
+unicode_LB4_8a(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
 {
     unicode_LB_walk(
-        opportunities, infos, [](auto const prev, auto const cur, auto const next, auto const next2, auto const cur_sp, auto const cur_nu, auto const num_ri) {
+        opportunities,
+        infos,
+        [](auto const prev,
+           auto const cur,
+           auto const next,
+           auto const next2,
+           auto const cur_sp,
+           auto const cur_nu,
+           auto const num_ri) {
             using enum unicode_break_opportunity;
             using enum unicode_line_break_class;
             if (*cur == BK) {
@@ -268,10 +278,19 @@ constexpr void unicode_LB10(std::vector<unicode_line_break_info>& infos) noexcep
     }
 }
 
-constexpr void unicode_LB11_31(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
+constexpr void
+unicode_LB11_31(unicode_line_break_vector& opportunities, std::vector<unicode_line_break_info> const& infos) noexcept
 {
     unicode_LB_walk(
-        opportunities, infos, [&](auto const prev, auto const cur, auto const next, auto const next2, auto const cur_sp, auto const cur_nu, auto const num_ri) {
+        opportunities,
+        infos,
+        [&](auto const prev,
+            auto const cur,
+            auto const next,
+            auto const next2,
+            auto const cur_sp,
+            auto const cur_nu,
+            auto const num_ri) {
             using enum unicode_break_opportunity;
             using enum unicode_line_break_class;
             using enum unicode_east_asian_width;
@@ -365,21 +384,27 @@ constexpr void unicode_LB11_31(unicode_line_break_vector& opportunities, std::ve
  * @param last Iterator to one beyond the last character width.
  * @return The length of the line.
  */
-[[nodiscard]] constexpr float
-unicode_LB_width(std::vector<float>::const_iterator first, std::vector<float>::const_iterator last) noexcept
+template<
+    std::random_access_iterator It,
+    std::invocable<std::iter_value_t<It>> AdvanceOp,
+    typename WhitespaceOp>
+[[nodiscard]] constexpr std::invoke_result_t<AdvanceOp, std::iter_value_t<It>> unicode_LB_width(
+    It first,
+    It last,
+    AdvanceOp const& advance_op,
+    WhitespaceOp const& whitespace_op) noexcept requires std::is_invocable_r_v<bool, WhitespaceOp, std::iter_value_t<It>>
 {
-    if (first == last) {
-        return 0.0f;
+    using width_type = std::invoke_result_t<AdvanceOp, std::iter_value_t<It>>;
+
+    auto last_visible_it = rfind_if_not(first, last, whitespace_op);
+    if (last_visible_it == last) {
+        // All characters are whitespace.
+        return width_type{};
     }
 
-    auto rfirst = std::make_reverse_iterator(last);
-    auto rlast = std::make_reverse_iterator(first);
-
-    auto it = std::find_if(rfirst, rlast, [](auto const& width) {
-        return width >= 0.0;
-    });
-    return std::accumulate(it, rlast, 0.0f, [](float acc, auto const& width) {
-        return acc + abs(width);
+    last = last_visible_it + 1;
+    return std::accumulate(first, last, width_type{}, [&](auto acc, auto x) {
+        return acc + advance_op(x);
     });
 }
 
@@ -389,12 +414,23 @@ unicode_LB_width(std::vector<float>::const_iterator first, std::vector<float>::c
  * @param lengths Number of characters on each line.
  * @return The maximum line width.
  */
-[[nodiscard]] constexpr float unicode_LB_width(std::vector<float> const& widths, std::vector<size_t> const& lengths)
+template<
+    std::ranges::random_access_range GraphemeInfoRange,
+    std::invocable<std::ranges::range_value_t<GraphemeInfoRange>> AdvanceOp,
+    typename WhitespaceOp>
+[[nodiscard]] constexpr std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> unicode_LB_width(
+    GraphemeInfoRange const& grapheme_info_range,
+    std::vector<size_t> const& lengths,
+    AdvanceOp const& advance_op,
+    WhitespaceOp const& whitespace_op) noexcept
+    requires std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
-    auto max_width = 0.0f;
-    auto it = widths.begin();
+    using width_type = std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>>;
+
+    auto max_width = width_type{};
+    auto it = std::ranges::begin(grapheme_info_range);
     for (auto length : lengths) {
-        inplace_max(max_width, unicode_LB_width(it, it + length));
+        inplace_max(max_width, unicode_LB_width(it, it + length, advance_op, whitespace_op));
         it += length;
     }
     return max_width;
@@ -405,14 +441,24 @@ unicode_LB_width(std::vector<float>::const_iterator first, std::vector<float>::c
  * @param widths Width of each character in the text.
  * @param lengths Number of characters on each line.
  * @param maximum_line_width The maximum line width allowed.
+ * @param advance_op A function returning the advance of a grapheme.
+ * @param whitespace_op A function returning if the grapheme is a whitespace
+ *                      character.
  * @return True if all the lines fit the maximum width.
  */
-[[nodiscard]] constexpr bool
-unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> const& lengths, float maximum_line_width) noexcept
+template<std::ranges::random_access_range GraphemeInfoRange, typename MaximumLineWidth, typename AdvanceOp, typename WhitespaceOp>
+[[nodiscard]] constexpr bool unicode_LB_width_check(
+    GraphemeInfoRange const& grapheme_info,
+    std::vector<size_t> const& lengths,
+    MaximumLineWidth maximum_line_width,
+    AdvanceOp const& advance_op,
+    WhitespaceOp const& whitespace_op) noexcept
+    requires std::is_invocable_r_v<MaximumLineWidth, AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> and
+    std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
-    auto it = widths.begin();
+    auto it = grapheme_info.begin();
     for (auto length : lengths) {
-        if (unicode_LB_width(it, it + length) > maximum_line_width) {
+        if (unicode_LB_width(it, it + length, advance_op, whitespace_op) > maximum_line_width) {
             return false;
         }
         it += length;
@@ -460,17 +506,20 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     return r;
 }
 
+template<std::random_access_iterator GraphemeInfoIt, typename Width, typename AdvanceOp>
 [[nodiscard]] constexpr unicode_line_break_vector::const_iterator unicode_LB_fast_fit_line(
     unicode_line_break_vector::const_iterator opportunity_it,
-    std::vector<float>::const_iterator width_it,
-    float maximum_line_width) noexcept
+    GraphemeInfoIt grapheme_info_it,
+    Width maximum_line_width,
+    AdvanceOp const& advance_op) noexcept
+    requires std::is_invocable_r_v<Width, AdvanceOp, std::iter_value_t<GraphemeInfoIt>>
 {
     using enum unicode_break_opportunity;
 
-    auto width = 0.0f;
+    auto width = Width{};
     auto end_of_line = opportunity_it;
     while (true) {
-        width += abs(*width_it);
+        width += advance_op(*grapheme_info_it);
         if (width > maximum_line_width) {
             // This character makes the width too long.
             return end_of_line;
@@ -485,24 +534,29 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
         }
 
         ++opportunity_it;
-        ++width_it;
+        ++grapheme_info_it;
     }
     std::unreachable();
 }
 
+template<std::random_access_iterator GraphemeInfoIt, typename Width, typename AdvanceOp, typename WhitespaceOp>
 [[nodiscard]] constexpr unicode_line_break_vector::const_iterator unicode_LB_slow_fit_line(
     unicode_line_break_vector::const_iterator first,
     unicode_line_break_vector::const_iterator end_of_line,
-    std::vector<float>::const_iterator first_width,
-    float maximum_line_width) noexcept
+    GraphemeInfoIt grapheme_info_it,
+    Width maximum_line_width,
+    AdvanceOp const& advance_op,
+    WhitespaceOp const& whitespace_op) noexcept
+    requires std::is_invocable_r_v<Width, AdvanceOp, std::iter_value_t<GraphemeInfoIt>> and
+    std::is_invocable_r_v<bool, WhitespaceOp, std::iter_value_t<GraphemeInfoIt>>
 {
     using enum unicode_break_opportunity;
 
     // Carefully look forward for a break opportunity.
     auto it = end_of_line;
     while (true) {
-        auto const num_characters = std::distance(first, it + 1);
-        auto const line_width = unicode_LB_width(first_width, first_width + num_characters);
+        auto const num_graphemes = std::distance(first, it + 1);
+        auto const line_width = unicode_LB_width(grapheme_info_it, grapheme_info_it + num_graphemes, advance_op, whitespace_op);
 
         if (line_width <= maximum_line_width) {
             if (*it == mandatory) {
@@ -523,8 +577,9 @@ unicode_LB_width_check(std::vector<float> const& widths, std::vector<size_t> con
     std::unreachable();
 }
 
-[[nodiscard]] constexpr unicode_line_break_vector::const_iterator
-unicode_LB_finish_fit_line(unicode_line_break_vector::const_iterator first, unicode_line_break_vector::const_iterator end_of_line) noexcept
+[[nodiscard]] constexpr unicode_line_break_vector::const_iterator unicode_LB_finish_fit_line(
+    unicode_line_break_vector::const_iterator first,
+    unicode_line_break_vector::const_iterator end_of_line) noexcept
 {
     if (first == end_of_line) {
         // We couldn't break the line to fit the maximum line width.
@@ -541,28 +596,34 @@ unicode_LB_finish_fit_line(unicode_line_break_vector::const_iterator first, unic
  *
  * @return A list of line lengths.
  */
+template<std::ranges::random_access_range GraphemeInfoRange, typename Width, typename AdvanceOp, typename WhitespaceOp>
 [[nodiscard]] constexpr std::vector<size_t> unicode_LB_fit_lines(
     unicode_line_break_vector const& opportunities,
-    std::vector<float> const& widths,
-    float maximum_line_width) noexcept
+    GraphemeInfoRange const& grapheme_info_range,
+    Width maximum_line_width,
+    AdvanceOp const& advance_op,
+    WhitespaceOp const& whitespace_op)
+    requires std::is_invocable_r_v<Width, AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> and
+    std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
     auto r = std::vector<size_t>{};
-    if (widths.empty()) {
+    if (grapheme_info_range.empty()) {
         return r;
     }
 
     auto opportunity_it = opportunities.begin() + 1;
-    auto width_it = widths.begin();
-    while (width_it != widths.end()) {
+    auto grapheme_info_it = std::ranges::begin(grapheme_info_range);
+    while (grapheme_info_it != std::ranges::end(grapheme_info_range)) {
         // First quickly find when the line is too long.
-        auto opportunity_eol = unicode_LB_fast_fit_line(opportunity_it, width_it, maximum_line_width);
-        opportunity_eol = unicode_LB_slow_fit_line(opportunity_it, opportunity_eol, width_it, maximum_line_width);
+        auto opportunity_eol = unicode_LB_fast_fit_line(opportunity_it, grapheme_info_it, maximum_line_width, advance_op);
+        opportunity_eol = unicode_LB_slow_fit_line(
+            opportunity_it, opportunity_eol, grapheme_info_it, maximum_line_width, advance_op, whitespace_op);
         opportunity_eol = unicode_LB_finish_fit_line(opportunity_it, opportunity_eol);
 
-        auto const num_characters = std::distance(opportunity_it, opportunity_eol);
-        r.push_back(num_characters);
-        opportunity_it += num_characters;
-        width_it += num_characters;
+        auto const num_graphemes = std::distance(opportunity_it, opportunity_eol);
+        r.push_back(num_graphemes);
+        opportunity_it += num_graphemes;
+        grapheme_info_it += num_graphemes;
     }
 
     return r;
@@ -576,11 +637,22 @@ unicode_LB_finish_fit_line(unicode_line_break_vector::const_iterator first, unic
  * @param char_widths The width of each character.
  * @return The maximum line width of the text, number of lines.
  */
-[[nodiscard]] constexpr std::pair<float, std::vector<size_t>>
-unicode_LB_maximum_width(unicode_line_break_vector const& opportunities, std::vector<float> const& char_widths)
+template<
+    std::ranges::random_access_range GraphemeInfoRange,
+    std::invocable<std::ranges::range_value_t<GraphemeInfoRange>> AdvanceOp,
+    typename WhitespaceOp>
+[[nodiscard]] constexpr std::
+    pair<std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>>, std::vector<size_t>>
+    unicode_LB_maximum_width(
+        unicode_line_break_vector const& break_opportunities,
+        GraphemeInfoRange const& grapheme_info_range,
+        AdvanceOp const& advance_op,
+        WhitespaceOp const& whitespace_op)
+        requires std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
+
 {
-    auto line_lengths = detail::unicode_LB_mandatory_lines(opportunities);
-    auto const width = detail::unicode_LB_width(char_widths, line_lengths);
+    auto const line_lengths = detail::unicode_LB_mandatory_lines(break_opportunities);
+    auto width = detail::unicode_LB_width(grapheme_info_range, line_lengths, advance_op, whitespace_op);
     return {width, std::move(line_lengths)};
 }
 
@@ -592,11 +664,21 @@ unicode_LB_maximum_width(unicode_line_break_vector const& opportunities, std::ve
  * @param char_widths The width of each character.
  * @return The minimum line width of the text, number of lines.
  */
-[[nodiscard]] constexpr std::pair<float, std::vector<size_t>>
-unicode_LB_minimum_width(unicode_line_break_vector const& opportunities, std::vector<float> const& char_widths)
+template<
+    std::ranges::random_access_range GraphemeInfoRange,
+    std::invocable<std::ranges::range_value_t<GraphemeInfoRange>> AdvanceOp,
+    typename WhitespaceOp>
+[[nodiscard]] constexpr std::
+    pair<std::invoke_result_t<AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>>, std::vector<size_t>>
+    unicode_LB_minimum_width(
+        unicode_line_break_vector const& break_opportunities,
+        GraphemeInfoRange const& grapheme_info_range,
+        AdvanceOp const& advance_op,
+        WhitespaceOp const& whitespace_op)
+        requires std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
-    auto line_lengths = detail::unicode_LB_optional_lines(opportunities);
-    auto const width = detail::unicode_LB_width(char_widths, line_lengths);
+    auto const line_lengths = detail::unicode_LB_optional_lines(break_opportunities);
+    auto width = detail::unicode_LB_width(grapheme_info_range, line_lengths, advance_op, whitespace_op);
     return {width, std::move(line_lengths)};
 }
 
@@ -609,11 +691,18 @@ unicode_LB_minimum_width(unicode_line_break_vector const& opportunities, std::ve
  * @param maximum_line_width The maximum width of the text
  * @return The minimum line width of the folded text, number of lines.
  */
-[[nodiscard]] constexpr std::pair<float, std::vector<size_t>>
-unicode_LB_width(unicode_line_break_vector const& opportunities, std::vector<float> const& char_widths, float maximum_line_width)
+template<
+    std::ranges::random_access_range GraphemeInfoRange,
+    typename Width,
+    typename AdvanceOp,
+    typename WhitespaceOp>
+[[nodiscard]] constexpr std::pair<Width, std::vector<size_t>>
+unicode_LB_width(unicode_line_break_vector const& opportunities, GraphemeInfoRange const& grapheme_info_range, Width maximum_line_width, AdvanceOp const& advance_op, WhitespaceOp const& whitespace_op)
+requires std::is_invocable_r_v<Width, AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> and
+    std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
-    auto line_lengths = detail::unicode_LB_fit_lines(opportunities, char_widths, maximum_line_width);
-    auto const width = detail::unicode_LB_width(char_widths, line_lengths);
+    auto const line_lengths = detail::unicode_LB_fit_lines(opportunities, grapheme_info_range, maximum_line_width, advance_op, whitespace_op);
+    auto width = detail::unicode_LB_width(grapheme_info_range, line_lengths, advance_op, whitespace_op);
     return {width, std::move(line_lengths)};
 }
 
@@ -642,10 +731,11 @@ unicode_line_break(It first, ItEnd last, CodePointFunc const& code_point_func) n
     return r;
 }
 
-[[nodiscard]] inline unicode_line_break_vector
-unicode_line_break(gstring_view text) noexcept
+[[nodiscard]] inline unicode_line_break_vector unicode_line_break(gstring_view text) noexcept
 {
-    return unicode_line_break(text.begin(), text.end(), [](auto c) { return c.starter(); });
+    return unicode_line_break(text.begin(), text.end(), [](auto c) {
+        return c.starter();
+    });
 }
 
 /** Unicode break lines.
@@ -655,22 +745,33 @@ unicode_line_break(gstring_view text) noexcept
  * and the word is too long.
  *
  * @param opportunities The list of break opportunities.
- * @param widths The list of character widths, negative for invisible characters.
+ * @param graphemes_info The list of grapheme information, which includes the
+ *                       advance of each grapheme, and if the grapheme is a
+ *                       whitespace character.
  * @param maximum_line_width The maximum line width.
+ * @param advance_op A function returning the advance of a grapheme.
+ * @param whitespace_op A function returning if the grapheme is a whitespace
+ *                      character.
  * @return A list of line lengths.
  */
-[[nodiscard]] constexpr std::vector<size_t>
-unicode_fold_lines(unicode_line_break_vector const& opportunities, std::vector<float> const& widths, float maximum_line_width)
+template<std::ranges::input_range GraphemeInfoRange, typename MaximumLineWidth, typename AdvanceOp, typename WhitespaceOp>
+[[nodiscard]] constexpr std::vector<size_t> unicode_fold_lines(
+    unicode_line_break_vector const& opportunities,
+    GraphemeInfoRange const& graphemes_info,
+    MaximumLineWidth maximum_line_width,
+    AdvanceOp const& advance_op,
+    WhitespaceOp const& whitespace_op)
+    requires std::is_invocable_r_v<MaximumLineWidth, AdvanceOp, std::ranges::range_value_t<GraphemeInfoRange>> and
+    std::is_invocable_r_v<bool, WhitespaceOp, std::ranges::range_value_t<GraphemeInfoRange>>
 {
     // See if the lines after mandatory breaks will fit the width and return.
     auto r = detail::unicode_LB_mandatory_lines(opportunities);
-    if (detail::unicode_LB_width_check(widths, r, maximum_line_width)) {
+    if (detail::unicode_LB_width_check(graphemes_info, r, maximum_line_width, advance_op, whitespace_op)) {
         return r;
     }
 
-    r = detail::unicode_LB_fit_lines(opportunities, widths, maximum_line_width);
+    r = detail::unicode_LB_fit_lines(opportunities, graphemes_info, maximum_line_width, advance_op, whitespace_op);
     return r;
 }
-
 
 } // namespace hi::inline v1
