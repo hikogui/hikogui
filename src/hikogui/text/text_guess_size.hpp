@@ -149,7 +149,7 @@ struct shaper_grapheme_metrics {
  * @param grapheme_metrics_range The sizing information of each grapheme.
  * @param maximum_line_width The maximum width of a line.
  */
-[[nodiscard]] std::vector<size_t> shaper_fold_lines(
+[[nodiscard]] inline std::vector<size_t> shaper_fold_lines(
     unicode_line_break_vector const& break_opportunities,
     std::vector<shaper_grapheme_metrics> const& grapheme_metrics_range,
     unit::pixels_f maximum_line_width)
@@ -176,7 +176,7 @@ struct shaper_line_metrics {
     float spacing = 0.0f;
 };
 
-[[nodiscard]] std::vector<shaper_line_metrics> shaper_collect_line_metrics(
+[[nodiscard]] inline std::vector<shaper_line_metrics> shaper_collect_line_metrics(
     std::vector<shaper_grapheme_metrics> const& grapheme_metrics_range,
     std::vector<size_t> const& line_lengths)
 {
@@ -219,5 +219,85 @@ struct shaper_line_metrics {
     return r;
 }
 
+struct shaper_text_metrics {
+    /** The maximum width of the text.
+     */
+    unit::pixels_f width = unit::pixels(0.0f);
+
+    /** Heigth from top-line's cap-height, to bottom's base-line.
+     */
+    unit::pixels_f height = unit::pixels(0.0f);
+
+    /** The ascender minus cap-height of top line.
+     */
+    unit::pixels_f overhang = unit::pixels(0.0f);
+
+    /** The descender of the bottom line.
+     */
+    unit::pixels_f underhang = unit::pixels(0.0f);
+
+    /** The offset from the top to the top-baseline when vertical-aligned to top.
+     */
+    unit::pixels_f top_baseline_offset = unit::pixels(0.0f);
+
+    /** The offset from the middle to the middle-baseline when vertical-aligned to middle.
+     */
+    unit::pixels_f middle_baseline_offset = unit::pixels(0.0f);
+
+    /** The offset from the bottom to the bottom-baseline when vertical-aligned to bottom.
+     */
+    unit::pixels_f bottom_baseline_offset = unit::pixels(0.0f);
+};
+
+[[nodiscard]] inline shaper_text_metrics shaper_collect_text_metrics(std::vector<shaper_line_metrics> const &line_metrics)
+{
+    auto r = shaper_text_metrics{};
+
+    if (line_metrics.empty()) {
+        return r;
+    }
+
+    auto const ascender = line_metrics.front().ascender;
+    auto const cap_height = line_metrics.front().ascender;
+    auto const descender = line_metrics.back().descender;
+
+    r.height = cap_height;
+    for (auto const &m : line_metrics) {
+        r.width = std::max(width, m.width);
+        r.height += m.advance;
+    }
+
+    if (ascender > cap_height) {
+        r.overhang = ascender - cap_height;
+    }
+    r.underhang = descender;
+
+    r.top_baseline_offset = cap_height;
+    r.bottom_baseline_offset = unit::pixels(0.0f);
+    return r;
+}
+
+/** Get the base-line of the line which matches the given alignment.
+ */
+[[nodiscard]] inline std::function<float(float)> make_baseline_function(shaper_text_metrics const& metrics,  hi::vertical_alignment alignment)
+{
+    switch (style.vertical_alignment) {
+    case vertical_alignment::top:
+        return [offset=metrics.top_baseline_offset](float height) {
+            return height - offset.in(unit::pixels);
+        };
+
+    case vertical_alignment::middle:
+        return [offset=metrics.middle_baseline_offset](float height) {
+            return height * 0.5f - offset.in(unit::pixels);
+        };
+
+    case vertical_alignment::bottom:
+        return [offset=metrics.bottom_baseline_offset](float height) {
+            return 0.0f - offset.in(unit::pixels);
+        };
+    }
+    std::unreachable();
+}
 
 }

@@ -204,11 +204,9 @@ public:
 
         auto const line_sizes = shaper_fold_lines(_line_break_opportunities, _grapheme_metrics, maximum_width);
         auto const line_metrics = shaper_collect_line_metrics(_grapheme_metrics, line_sizes);
+        auto const text_metrics = shaper_collect_text_metrics(line_metrics);
 
-        // The calculations here are ephemeral as the actual folding is done
-        // once the width of the widget is known.
-        //auto const line_lengths = unicode_fold_lines(_line_break_opportunities, _grapheme_widths, style.width_px);
-        //auto const size = shaper_text_size(_text, _grapheme_widths, line_lengths, style.font_size, style.text_style);
+
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text.size());
