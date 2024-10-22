@@ -182,7 +182,7 @@ public:
             size,
             size,
             margins,
-            embed(_scroll_constraints.baseline, style.padding_bottom_px, style.padding_top_px)};
+            embed(_scroll_constraints.baseline, style.padding_bottom, style.padding_top)};
     }
 
     void set_layout(widget_layout const& context) noexcept override

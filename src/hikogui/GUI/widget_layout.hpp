@@ -268,9 +268,9 @@ public:
      * @return The position of the baseline from the bottom of the widget's
      * shape.
      */
-    [[nodiscard]] float get_baseline(vertical_alignment alignment) const noexcept
+    [[nodiscard]] unit::pixels_f get_baseline() const noexcept
     {
-        return std::round(shape.baseline.get_baseline(shape.height(), alignment));
+        return round_as(unit::pixels, shape.baseline.get_baseline(unit::pixels(shape.height())));
     }
 
     /**
@@ -280,9 +280,9 @@ public:
      * @param cap_height The cap height of the widget.
      * @return The position of the middle of aligned text widget.
      */
-    [[nodiscard]] float get_middle(vertical_alignment alignment, float cap_height) const noexcept
+    [[nodiscard]] unit::pixels_f get_middle(unit::pixels_f cap_height) const noexcept
     {
-        return std::round(shape.baseline.get_middle(shape.height(), alignment, cap_height));
+        return round_as(unit::pixels, shape.baseline.get_middle(unit::pixels(shape.height()), cap_height));
     }
 
     /** Create a new widget_layout for the child widget.

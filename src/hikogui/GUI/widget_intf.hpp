@@ -340,12 +340,13 @@ public:
      */
     [[nodiscard]] virtual box_constraints update_constraints() noexcept
     {
+        assert(std::holds_alternative<unit::pixels_f>(style.height));
         return {
             style.size_px,
             style.size_px,
             style.size_px,
             style.margins_px,
-            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height, std::get<unit::pixels_f>(style.height))};
     }
 
     /** Update the internal layout of the widget.

@@ -124,7 +124,7 @@ public:
             max(style.size_px, _content_constraints.preferred + _padding),
             max(style.size_px, _content_constraints.maximum + _padding),
             style.margins_px,
-            embed(_content_constraints.baseline, _padding.bottom(), _padding.top())};
+            embed(_content_constraints.baseline, unit::pixels(_padding.bottom()), unit::pixels(_padding.top()))};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -154,7 +154,7 @@ public:
                 -*offset_y + _padding.bottom(),
                 *content_width,
                 *content_height},
-            lift(context.baseline(), _padding.bottom(), _padding.top())};
+            lift(context.baseline(), unit::pixels(_padding.bottom()), unit::pixels(_padding.top()))};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.

@@ -191,7 +191,7 @@ public:
         _line_break_opportunities = unicode_line_break(_text);
         _word_break_opportunities = unicode_word_break(_text);
         _sentence_break_opportunities = unicode_sentence_break(_text);
-        _run_indices = shaper_make_run_indices(_text,  _word_break_opportunities);
+        _run_indices = shaper_make_run_indices(_text, _word_break_opportunities);
         _grapheme_metrics = shaper_collect_grapheme_metrics(_text, _run_indices, style.font_size, style.text_style);
 
         auto const maximum_width = [&] {
@@ -204,9 +204,7 @@ public:
 
         auto const line_sizes = shaper_fold_lines(_line_break_opportunities, _grapheme_metrics, maximum_width);
         auto const line_metrics = shaper_collect_line_metrics(_grapheme_metrics, line_sizes);
-        auto const text_metrics = shaper_collect_text_metrics(line_metrics);
-
-
+        auto const text_metrics = shaper_collect_text_metrics(line_metrics, style.vertical_alignment);
 
         // Make sure that the current selection fits the new text.
         _selection.resize(_text.size());
@@ -232,51 +230,24 @@ public:
 
         auto const br = _shaped_text.bounds(max_width);
 
-        auto const top_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
-            auto const bottom_padding = height - br.bounds.height();
-            return {get<0>(br.bounds).y() + bottom_padding, br.middle_baseline + bottom_padding, 0.0f + bottom_padding};
-        };
+        auto const text_size = extent2{text_metrics.width.in(unit::pixels), text_metrics.height.in(unit::pixels)};
 
-        auto const middle_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
-            auto const bottom_padding = std::round((height - br.bounds.height()) / 2.0f);
-            return {get<0>(br.bounds).y() + bottom_padding, br.middle_baseline + bottom_padding, 0.0f + bottom_padding};
-        };
-
-        auto const bottom_baseline_function = [=](float height) -> baseline::baseline_function_result_type {
-            auto const bottom_padding = 0.0f;
-            return {get<0>(br.bounds).y() + bottom_padding, br.middle_baseline + bottom_padding, 0.0f + bottom_padding};
-        };
-
-        auto baseline_function = [&]() -> baseline::baseline_function_type {
-            switch (style.vertical_alignment) {
-            case vertical_alignment::top:
-                return top_baseline_function;
-            case vertical_alignment::middle:
-                return middle_baseline_function;
-            case vertical_alignment::bottom:
-                return bottom_baseline_function;
-            default:
-                std::unreachable();
-            }
-        }();
-
-        auto minimum_spacing = br.bottom_descender + br.top_ascender - get<3>(br.bounds).y();
-        _margins = max(style.margins_px, hi::margins(0.0f, minimum_spacing, 0.0f, minimum_spacing));
+        auto const minimum_spacing = text_metrics.overhang + text_metrics.underhang;
+        _margins = max(style.margins_px, hi::margins(0.0f, minimum_spacing.in(unit::pixels), 0.0f, minimum_spacing.in(unit::pixels)));
 
         return _constraints_cache = {
-                   br.bounds.size(),
-                   br.bounds.size(),
-                   br.bounds.size(),
+                   text_size,
+                   text_size,
+                   text_size,
                    _margins,
-                   baseline{style.baseline_priority, std::move(baseline_function)}};
+                   baseline{style.baseline_priority, text_metrics.baseline_function}};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
 
-        auto const baseline = context.get_baseline(style.vertical_alignment);
-        _shaped_text.layout(context.rectangle(), baseline, context.sub_pixel_size);
+        _shaped_text.layout(context.rectangle(), context.get_baseline().in(unit::pixels), context.sub_pixel_size);
     }
 
     void draw(draw_context const& context) const noexcept override

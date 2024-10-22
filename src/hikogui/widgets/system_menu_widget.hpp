@@ -68,8 +68,7 @@ public:
             _icon_constraints.preferred + _icon_padding,
             _icon_constraints.maximum + _icon_padding,
             style.margins_px,
-            embed(_icon_constraints.baseline, _icon_padding.bottom(), _icon_padding.top())
-        };
+            embed(_icon_constraints.baseline, unit::pixels(_icon_padding.bottom()), unit::pixels(_icon_padding.top()))};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -77,7 +76,8 @@ public:
         super::set_layout(context);
 
         auto const icon_rectangle = context.rectangle() - _icon_padding;
-        auto const icon_shape = box_shape{icon_rectangle, lift(context.baseline(), _icon_padding.bottom(), _icon_padding.top())};
+        auto const icon_shape = box_shape{
+            icon_rectangle, lift(context.baseline(), unit::pixels(_icon_padding.bottom()), unit::pixels(_icon_padding.top()))};
 
         _icon_widget->set_layout(context.transform(icon_shape));
     }

@@ -236,20 +236,14 @@ struct shaper_text_metrics {
      */
     unit::pixels_f underhang = unit::pixels(0.0f);
 
-    /** The offset from the top to the top-baseline when vertical-aligned to top.
+    /** Function to determine the baseline of the text.
      */
-    unit::pixels_f top_baseline_offset = unit::pixels(0.0f);
-
-    /** The offset from the middle to the middle-baseline when vertical-aligned to middle.
-     */
-    unit::pixels_f middle_baseline_offset = unit::pixels(0.0f);
-
-    /** The offset from the bottom to the bottom-baseline when vertical-aligned to bottom.
-     */
-    unit::pixels_f bottom_baseline_offset = unit::pixels(0.0f);
+    std::function<unit::pixels_f(unit::pixels_f)> baseline_function = [](unit::pixels_f height) {
+        return unit::pixels(0.0f);
+    };
 };
 
-[[nodiscard]] inline shaper_text_metrics shaper_collect_text_metrics(std::vector<shaper_line_metrics> const &line_metrics)
+[[nodiscard]] inline shaper_text_metrics shaper_collect_text_metrics(std::vector<shaper_line_metrics> const &line_metrics, hi::vertical_alignment alignment)
 {
     auto r = shaper_text_metrics{};
 
@@ -263,41 +257,58 @@ struct shaper_text_metrics {
 
     r.height = cap_height;
     for (auto const &m : line_metrics) {
-        r.width = std::max(width, m.width);
+        r.width = std::max(r.width, m.width);
         r.height += m.advance;
     }
 
+    // The overhang and underhang are used to determine the margins around the
+    // text.
     if (ascender > cap_height) {
         r.overhang = ascender - cap_height;
     }
     r.underhang = descender;
 
-    r.top_baseline_offset = cap_height;
-    r.bottom_baseline_offset = unit::pixels(0.0f);
+    // The baseline of the middle line, or the average of the two middle lines.
+    // The distance from the bottom of the text to the baseline.
+    auto const middle_baseline_from_bottom = r.height - [&]{
+        auto const i = line_metrics.size() % 2 == 0 ? (line_metrics.size() / 2 - 1) : line_metrics.size() / 2;
+
+        auto const y = std::accumulate(line_metrics.begin(), line_metrics.begin() + i + 1, unit::pixels(0.0f), [](auto sum, auto const& m) {
+            return sum + m.advance;
+        });
+
+        if (line_metrics.size() % 2 == 0) {
+            auto const y2 = y + line_metrics[i].advance;
+            return (y + y2) / 2.0f;
+        } else {
+            return y;
+        }
+    }();
+
+    // Calculate the offset to the middle baseline from the middle of the text.
+    auto const middle_baseline_from_middle = middle_baseline_from_bottom - r.height * 0.5f;
+
+    r.baseline_function = [&]() -> std::function<unit::pixels_f(unit::pixels_f)> {
+        switch (alignment) {
+        case vertical_alignment::top:
+            return [=](unit::pixels_f height) {
+                return height - cap_height;
+            };
+
+        case vertical_alignment::middle:
+            return [=](unit::pixels_f height) {
+                return height * 0.5f + middle_baseline_from_middle;
+            };
+
+        case vertical_alignment::bottom:
+            return [](unit::pixels_f height) {
+                return unit::pixels(0.0f);
+            };
+        }
+        std::unreachable();
+    }();
+
     return r;
-}
-
-/** Get the base-line of the line which matches the given alignment.
- */
-[[nodiscard]] inline std::function<float(float)> make_baseline_function(shaper_text_metrics const& metrics,  hi::vertical_alignment alignment)
-{
-    switch (style.vertical_alignment) {
-    case vertical_alignment::top:
-        return [offset=metrics.top_baseline_offset](float height) {
-            return height - offset.in(unit::pixels);
-        };
-
-    case vertical_alignment::middle:
-        return [offset=metrics.middle_baseline_offset](float height) {
-            return height * 0.5f - offset.in(unit::pixels);
-        };
-
-    case vertical_alignment::bottom:
-        return [offset=metrics.bottom_baseline_offset](float height) {
-            return 0.0f - offset.in(unit::pixels);
-        };
-    }
-    std::unreachable();
 }
 
 }

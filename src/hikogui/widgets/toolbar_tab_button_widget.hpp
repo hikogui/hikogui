@@ -119,7 +119,7 @@ public:
 
         auto r = _label_constraints + padding;
         r.margins = {};
-        r.baseline = embed(_label_constraints.baseline, padding.bottom(), padding.top());
+        r.baseline = embed(_label_constraints.baseline, unit::pixels(padding.bottom()), unit::pixels(padding.top()));
         return r;
     }
 
@@ -131,7 +131,7 @@ public:
         auto const label_rectangle = context.rectangle() + padding;
 
         _on_label_shape = _off_label_shape =
-            box_shape{label_rectangle, lift(context.baseline(), padding.bottom(), padding.top())};
+            box_shape{label_rectangle, lift(context.baseline(), unit::pixels(padding.bottom()), unit::pixels(padding.top()))};
 
         _on_label_widget->set_layout(context.transform(_on_label_shape));
         _off_label_widget->set_layout(context.transform(_off_label_shape));

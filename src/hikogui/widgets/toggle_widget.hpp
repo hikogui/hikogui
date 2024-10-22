@@ -113,22 +113,21 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return box_constraints{
-            style.size_px,
-            style.size_px,
+        assert(std::holds_alternative<unit::pixels_f>(style.height));
+        return {
             style.size_px,
             style.margins_px,
-            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height, std::get<unit::pixels_f>(style.height))};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
 
-        auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+        auto const middle = context.get_middle(style.cap_height);
         auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
-        _button_rectangle =
-            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle);
+        _button_rectangle = align_to_middle(
+            extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle.in(unit::pixels));
 
         auto const pip_square = aarectangle{get<0>(_button_rectangle), extent2{style.height_px, style.height_px}};
         _pip_circle = align(pip_square, circle{style.height_px * 0.5f - 3.0f}, alignment::middle_center());
@@ -149,7 +148,8 @@ public:
                 border_side::inside,
                 corner_radii{style.height_px * 0.5f});
 
-            switch (_animated_value.update(delegate->state(this) != widget_value::off ? 1.0f : 0.0f, context.display_time_point)) {
+            switch (
+                _animated_value.update(delegate->state(this) != widget_value::off ? 1.0f : 0.0f, context.display_time_point)) {
             case animator_state::uninitialized:
                 std::unreachable();
             case animator_state::idle:

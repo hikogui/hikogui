@@ -46,8 +46,7 @@ public:
         this->delegate->deinit(this);
     }
 
-    button_widget(std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), delegate(std::move(delegate))
+    button_widget(std::shared_ptr<delegate_type> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         assert(this->delegate != nullptr);
 
@@ -82,7 +81,7 @@ public:
 
         auto r = _label_constraints + padding;
         r.margins = style.margins_px;
-        r.baseline = embed(_label_constraints.baseline, padding.bottom(), padding.top());
+        r.baseline = embed(_label_constraints.baseline, unit::pixels(padding.bottom()), unit::pixels(padding.top()));
         return r;
     }
 
@@ -92,7 +91,8 @@ public:
 
         auto const label_padding = max(style.padding_px, _label_constraints.margins);
         auto const label_rectangle = context.rectangle() - label_padding;
-        auto const label_shape = box_shape{label_rectangle, lift(context.baseline(), label_padding.bottom(), label_padding.top())};
+        auto const label_shape = box_shape{
+            label_rectangle, lift(context.baseline(), unit::pixels(label_padding.bottom()), unit::pixels(label_padding.top()))};
 
         _label_widget->set_layout(context.transform(label_shape));
     }

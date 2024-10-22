@@ -142,15 +142,15 @@ public:
         } else {
             auto const scaled_icon_size = style.concrete_size_px(_icon_size, 1.0f, context.size());
 
-            auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
-            auto const aspect_fit_size = aspect_fit(_icon_size, context.size());
-            auto const font_fit_size = _icon_size * style.font_size_px;
+            auto const middle = context.get_middle(style.cap_height);
+            //auto const aspect_fit_size = aspect_fit(_icon_size, context.size());
+            //auto const font_fit_size = _icon_size * style.font_size_px;
 
             _icon_rectangle = align_to_middle(
                 context.rectangle() + style.vertical_margins_px,
                 scaled_icon_size,
                 os_settings::alignment(style.horizontal_alignment),
-                middle);
+                middle.in(unit::pixels));
         }
     }
 

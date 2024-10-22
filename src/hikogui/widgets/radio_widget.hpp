@@ -130,10 +130,11 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
+        assert(std::holds_alternative<unit::pixels_f>(style.height));
         return {
             style.size_px,
             style.margins_px,
-            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height, std::get<unit::pixels_f>(style.height))};
     }
 
     void set_layout(widget_layout const& context) noexcept override
@@ -144,10 +145,10 @@ public:
         auto const button_radius = std::round(button_diameter * 0.5f);
         auto const button_size = extent2{button_diameter, button_diameter};
 
-        auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+        auto const middle = context.get_middle(style.cap_height);
         auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
         _button_rectangle =
-            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle);
+            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle.in(unit::pixels));
 
         _button_circle = circle{_button_rectangle};
 

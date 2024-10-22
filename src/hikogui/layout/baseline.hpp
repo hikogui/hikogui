@@ -12,10 +12,7 @@
 
 hi_export_module(hikogui.text : baseline);
 
-
 hi_export namespace hi::inline v1 {
-
-    
 /**
  * @brief Enumeration representing the priority levels for baselines.
  *
@@ -47,12 +44,7 @@ enum class baseline_priority : unsigned int {
  */
 class baseline {
 public:
-    struct baseline_function_result_type {
-        float bottom;
-        float middle;
-        float top;
-    };
-    using baseline_function_type = std::function<baseline_function_result_type(float)>;
+    using baseline_function_type = std::function<unit::pixels_f(unit::pixels_f)>;
 
     baseline(baseline const&) noexcept = default;
     baseline(baseline&&) noexcept = default;
@@ -69,8 +61,8 @@ public:
      *       a baseline offset of half the height, and the given height.
      */
     baseline() noexcept :
-        _priority(baseline_priority::none), _function([](float height) {
-            return baseline_function_result_type{0.0f, height / 2.0f, height};
+        _priority(baseline_priority::none), _function([](unit::pixels_f height) {
+            return unit::pixels(0.0f);
         })
     {
     }
@@ -92,24 +84,6 @@ public:
     }
 
     /**
-     * @brief Creates a baseline object from the given cap height.
-     *
-     * This is for basic widgets where the text to be aligned is the only
-     * object that will be rendered in the widget.
-     *
-     * @param priority The priority of the baseline.
-     * @param cap_height The cap-height of the font in pixels.
-     * @return The baseline object.
-     */
-    [[nodiscard]] static baseline from_cap_height(baseline_priority priority, float cap_height) noexcept
-    {
-        return hi::baseline{
-            priority, [cap_height](float height) {
-                return baseline_function_result_type{0.0f, height / 2.0f - cap_height / 2.0f, height - cap_height};
-            }};
-    }
-
-    /**
      * Calculates the baseline from the middle of an object.
      *
      * @param priority The priority of the baseline.
@@ -118,37 +92,10 @@ public:
      * @return The baseline.
      */
     [[nodiscard]] static baseline
-    from_middle_of_object(baseline_priority priority, float cap_height, float object_height) noexcept
+    from_middle_of_object(baseline_priority priority, unit::pixels_f cap_height, unit::pixels_f object_height) noexcept
     {
-        return hi::baseline{priority, [cap_height, object_height](float height) {
-                                return baseline_function_result_type{
-                                    object_height / 2.0f - cap_height / 2.0f,
-                                    height / 2.0f - cap_height / 2.0f,
-                                    height - object_height / 2.0f - cap_height / 2.0f};
-                            }};
-    }
-
-    /**
-     * Creates a baseline object from the given cap height and padding values.
-     *
-     * @param priority The priority of the baseline.
-     * @param cap_height The cap-height of the font in pixels.
-     * @param bottom_padding The bottom padding of the box where the object is
-     *                       aligned.
-     * @param top_padding The top padding of the box where the object is
-     *                    aligned.
-     * @return The created baseline object.
-     */
-    [[nodiscard]] static baseline
-    from_cap_height_and_padding(baseline_priority priority, float cap_height, float bottom_padding, float top_padding) noexcept
-    {
-        return hi::baseline{priority, [cap_height, bottom_padding, top_padding](float height) {
-                                auto const padded_height = height - bottom_padding - top_padding;
-
-                                return baseline_function_result_type{
-                                    bottom_padding,
-                                    bottom_padding + padded_height / 2.0f - cap_height / 2.0f,
-                                    bottom_padding + padded_height - cap_height};
+        return hi::baseline{priority, [cap_height, object_height](unit::pixels_f height) {
+                                return height / 2.0f - cap_height / 2.0f;
                             }};
     }
 
@@ -163,15 +110,12 @@ public:
      * @param top_padding The amount of top padding to add.
      * @return The new embedded baseline function.
      */
-    [[nodiscard]] friend baseline embed(baseline const& other, float bottom_padding, float top_padding) noexcept
+    [[nodiscard]] friend baseline embed(baseline const& other, unit::pixels_f bottom_padding, unit::pixels_f top_padding) noexcept
     {
-        return hi::baseline{
-            other._priority, [embedded_function = other._function, bottom_padding, top_padding](float height) {
-                auto const unpadded_height = height - bottom_padding - top_padding;
-                auto const [bottom, middle, top] = embedded_function(unpadded_height);
-
-                return baseline_function_result_type{bottom + bottom_padding, middle + bottom_padding, top + bottom_padding};
-            }};
+        return hi::baseline{other._priority, [embedded_function = other._function, bottom_padding, top_padding](unit::pixels_f height) {
+                                auto const unpadded_height = height - bottom_padding - top_padding;
+                                return bottom_padding + embedded_function(unpadded_height);
+                            }};
     }
 
     /**
@@ -185,15 +129,12 @@ public:
      * @param top_padding The amount of top padding to apply.
      * @return The lifted baseline.
      */
-    [[nodiscard]] friend baseline lift(baseline const& other, float bottom_padding, float top_padding) noexcept
+    [[nodiscard]] friend baseline lift(baseline const& other, unit::pixels_f bottom_padding, unit::pixels_f top_padding) noexcept
     {
-        return hi::baseline{
-            other._priority, [lifted_function = other._function, bottom_padding, top_padding](float height) {
-                auto const padded_height = height + bottom_padding + top_padding;
-                auto const [bottom, middle, top] = lifted_function(padded_height);
-
-                return baseline_function_result_type{bottom - bottom_padding, middle - bottom_padding, top - bottom_padding};
-            }};
+        return hi::baseline{other._priority, [lifted_function = other._function, bottom_padding, top_padding](unit::pixels_f height) {
+                                auto const padded_height = height + bottom_padding + top_padding;
+                                return lifted_function(padded_height) - bottom_padding;
+                            }};
     }
 
     [[nodiscard]] constexpr baseline_priority priority() const noexcept
@@ -201,43 +142,27 @@ public:
         return _priority;
     }
 
-    /**
-     * Calculates the baseline position based on the given height and alignment.
+    /** Calculates the baseline position based on the given height.
      *
      * @param height The height of the box in which an object must be aligned to
      *               the baseline.
-     * @param alignment The vertical alignment of the object.
      * @return The baseline position from the bottom of the box.
      */
-    [[nodiscard]] float get_baseline(float height, vertical_alignment alignment) const
+    [[nodiscard]] unit::pixels_f get_baseline(unit::pixels_f height) const
     {
         assert(_function);
-
-        auto const [bottom, middle, top] = _function(height);
-        switch (alignment) {
-        case vertical_alignment::none:
-            std::unreachable();
-        case vertical_alignment::top:
-            return top;
-        case vertical_alignment::bottom:
-            return bottom;
-        case vertical_alignment::middle:
-            return middle;
-        }
-        std::unreachable();
+        return _function(height);
     }
 
-    /**
-     * Calculates the middle position of an element based on its height, vertical alignment, and cap height.
+    /** Calculates the middle position of an element based on its height and cap-height.
      *
      * @param height The height of the element.
-     * @param alignment The vertical alignment of the element.
      * @param cap_height The cap height of the font of the element.
      * @return The middle position of text aligned to the @a alignment.
      */
-    [[nodiscard]] float get_middle(float height, vertical_alignment alignment, float cap_height) const
+    [[nodiscard]] unit::pixels_f get_middle(unit::pixels_f height, unit::pixels_f cap_height) const
     {
-        return get_baseline(height, alignment) + cap_height / 2.0f;
+        return get_baseline(height) + cap_height / 2.0f;
     }
 
     /**

@@ -70,8 +70,7 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(std::shared_ptr<delegate_type> delegate) noexcept :
-        super(), delegate(std::move(delegate))
+    selection_widget(std::shared_ptr<delegate_type> delegate) noexcept : super(), delegate(std::move(delegate))
     {
         _current_label_widget = std::make_unique<label_widget>(current_label);
         _current_label_widget->set_parent(this);
@@ -122,11 +121,9 @@ public:
      *                    The labels are of type `label`.
      */
     template<typename Value, forward_of<observer<std::vector<std::pair<observer_decay_t<Value>, label>>>> OptionList>
-    selection_widget(Value&& value, OptionList&& option_list) noexcept requires requires {
-        make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list));
-    }
-        :
-        selection_widget(make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
+    selection_widget(Value&& value, OptionList&& option_list) noexcept
+        requires requires { make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)); }
+        : selection_widget(make_default_delegate(std::forward<Value>(value), std::forward<OptionList>(option_list)))
     {
     }
 
@@ -176,7 +173,7 @@ public:
         r.preferred = content_preferred + chevron_size + _content_padding;
         r.maximum = content_maximum + chevron_size + _content_padding;
         r.margins = style.margins_px;
-        r.baseline = embed(content_baseline, _content_padding.bottom(), _content_padding.top());
+        r.baseline = embed(content_baseline, unit::pixels(_content_padding.bottom()), unit::pixels(_content_padding.top()));
         hi_axiom(r.holds_invariant());
         return r;
     }
@@ -205,7 +202,9 @@ public:
             }
         }();
 
-        auto const content_shape = box_shape{content_rectangle, lift(context.baseline(), _content_padding.bottom(), _content_padding.top())};
+        auto const content_shape = box_shape{
+            content_rectangle,
+            lift(context.baseline(), unit::pixels(_content_padding.bottom()), unit::pixels(_content_padding.top()))};
 
         _chevron_glyph = find_glyph(elusive_icon::ChevronUp);
         auto const chevron_glyph_bbox = _chevron_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
@@ -230,7 +229,7 @@ public:
 
     void draw(draw_context const& context) const noexcept override
     {
-        const_cast<selection_widget *>(this)->animate_overlay(context.display_time_point);
+        const_cast<selection_widget*>(this)->animate_overlay(context.display_time_point);
 
         if (overlaps(context, layout())) {
             draw_outline(context);
@@ -245,8 +244,7 @@ public:
     {
         switch (event.type()) {
         case gui_event_type::mouse_up:
-            if (enabled() and not delegate->empty(this) and
-                layout().rectangle().contains(event.mouse().position)) {
+            if (enabled() and not delegate->empty(this) and layout().rectangle().contains(event.mouse().position)) {
                 return handle_event(gui_event_type::gui_activate);
             }
             return true;
@@ -292,7 +290,7 @@ public:
         }
 
         auto r = hitbox{};
-        
+
         if (_overlay_state == overlay_state_type::open) {
             r = _overlay_widget->hitbox_test_from_parent(position);
         }
@@ -308,8 +306,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         hi_axiom(loop::main().on_thread());
-        return enabled() and to_bool(group & hi::keyboard_focus_group::normal) and
-            not delegate->empty(this);
+        return enabled() and to_bool(group & hi::keyboard_focus_group::normal) and not delegate->empty(this);
     }
 
     /// @endprivatesection

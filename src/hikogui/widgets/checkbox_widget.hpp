@@ -133,22 +133,21 @@ public:
     /// @privatesection
     [[nodiscard]] box_constraints update_constraints() noexcept override
     {
-        return box_constraints{
-            style.size_px,
-            style.size_px,
+        assert(std::holds_alternative<unit::pixels_f>(style.height));
+        return {
             style.size_px,
             style.margins_px,
-            baseline::from_middle_of_object(style.baseline_priority, style.cap_height_px, style.height_px)};
+            baseline::from_middle_of_object(style.baseline_priority, style.cap_height, std::get<unit::pixels_f>(style.height))};
     }
 
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
 
-        auto const middle = context.get_middle(style.vertical_alignment, style.cap_height_px);
+        auto const middle = context.get_middle(style.cap_height);
         auto const extended_rectangle = context.rectangle() + style.vertical_margins_px;
         _button_rectangle =
-            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle);
+            align_to_middle(extended_rectangle, style.size_px, os_settings::alignment(style.horizontal_alignment), middle.in(unit::pixels));
 
         _check_glyph = find_glyph(elusive_icon::Ok);
         auto const check_glyph_bb = _check_glyph.front_glyph_metrics().bounding_rectangle * style.font_size_px;
