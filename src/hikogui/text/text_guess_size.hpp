@@ -156,10 +156,15 @@ struct shaper_grapheme_metrics {
     return r;
 }
 
-//[[nodiscard]] inline std::vector<uint8_t> shaper_collect_embedding_levels(gstring_view text)
-//{
-//
-//}
+[[nodiscard]] inline std::vector<int8_t> shaper_collect_embedding_levels(gstring_view text)
+{
+    return unicode_bidi_get_embedding_levels(
+        text.begin(),
+        text.end(),
+        [](auto const& g) {
+            return g.starter();
+        });
+}
 
 /** Fold lines of a text.
  * 

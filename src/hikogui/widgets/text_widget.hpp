@@ -193,7 +193,12 @@ public:
         _sentence_break_opportunities = unicode_sentence_break(_text);
         _run_indices = shaper_make_run_indices(_text, _word_break_opportunities);
         _grapheme_metrics = shaper_collect_grapheme_metrics(_text, _run_indices, style.font_size, style.text_style);
-        //_embedding_levels = shaper_collect_embedding_levels(_text);
+
+        // The embedding levels are used to determine the direction of the text.
+        // First are the embedding levels of text, followed by the embedding levels of paragraphs.
+        // The embedding levels are used to flip the text into display order, and also used
+        // to determine if the brackets are mirrored.
+        _embedding_levels = shaper_collect_embedding_levels(_text);
 
         auto const maximum_width = [&] {
             if (auto pixel_width = std::get_if<unit::pixels_f>(&style.width)) {
@@ -823,6 +828,7 @@ private:
     unicode_sentence_break_vector _sentence_break_opportunities;
     std::vector<shaper_run_indices> _run_indices;
     std::vector<shaper_grapheme_metrics> _grapheme_metrics;
+    std::vector<int8_t> _embedding_levels;
 
     text_shaper _shaped_text;
 
