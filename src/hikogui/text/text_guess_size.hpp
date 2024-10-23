@@ -71,6 +71,10 @@ struct shaper_grapheme_metrics {
     unit::pixels_f line_gap = unit::pixels(0.0f);
     float line_spacing = 0.0f;
     float paragraph_spacing = 0.0f;
+
+    /** The mirror-glyph replaces the base glyph when grapheme is displayed in RTL.
+     */
+    glyph_id mirrored_glyph = {};
     unicode_general_category general_category = unicode_general_category::Cn;
     unicode_bidi_paired_bracket_type bracket_type = unicode_bidi_paired_bracket_type::n;
 };
@@ -136,6 +140,12 @@ struct shaper_grapheme_metrics {
             metrics.paragraph_spacing = style.paragraph_spacing();
             metrics.general_category = ucd_get_general_category(g.starter());
             metrics.bracket_type = ucd_get_bidi_paired_bracket_type(g.starter());
+
+            if (metrics.bracket_type != unicode_bidi_paired_bracket_type::n) {
+                auto const mirror_cp = ucd_get_bidi_mirroring_glyph(g.starter());
+                metrics.mirrored_glyph = font->get_glyph(mirror_cp);
+            }
+
             r.push_back(std::move(metrics));
         }
     }
