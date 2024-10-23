@@ -151,6 +151,14 @@ template<path_range Locations>
     }
 }
 
+[[nodiscard]] inline std::filesystem::path library_test_data_dir()
+{
+    for (auto const& path: library_test_data_dirs()) {
+        return path;
+    }
+    throw std::system_error(std::make_error_code(std::errc::no_such_file_or_directory));
+}
+
 [[nodiscard]] inline generator<std::filesystem::path> location_dirs(path_location location)
 {
     auto const g = [&]() -> generator<std::filesystem::path> {

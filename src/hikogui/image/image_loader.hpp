@@ -15,7 +15,7 @@ hi_export_module(hikogui.image : image_loader);
 
 hi_export namespace hi::inline v1 {
 
-[[nodiscard]] std::expected<pixmap<sfloat_rgba16>, std::error_code>
+[[nodiscard]] inline std::expected<pixmap<sfloat_rgba16>, std::error_code>
 load_image(std::filesystem::path const& path)
 {
     if (path.empty()) {
@@ -46,7 +46,7 @@ load_image(std::filesystem::path const& path)
  * @param density The pixel density of the screen.
  * @return The image.
  */
-[[nodiscard]] std::expected<pixmap<sfloat_rgba16>, std::error_code>
+[[nodiscard]] inline std::expected<pixmap<sfloat_rgba16>, std::error_code>
 load_image(hi::bookmark const& bookmark, std::vector<language_tag> languages, hi::unit::pixel_density density)
 {
     if (auto const resolved_bookmark = bookmark.resolve(languages, density)) {

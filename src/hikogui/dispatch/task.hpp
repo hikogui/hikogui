@@ -6,6 +6,7 @@
 
 #include "notifier.hpp"
 #include "awaitable.hpp"
+#include "loop_win32_intf.hpp"
 #include "../utility/utility.hpp"
 #include "../concurrency/unfair_mutex.hpp" // XXX #616
 #include "../concurrency/thread.hpp" // XXX #616

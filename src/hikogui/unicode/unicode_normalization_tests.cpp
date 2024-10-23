@@ -57,7 +57,7 @@ static std::u32string parseNormalizationTest_column(std::string_view column)
 
     auto codePointStrings = hi::split_view(column);
     for (auto const codePointString : codePointStrings) {
-        r += hi::char_cast<char32_t>(hi::from_string<uint32_t>(codePointString, 16));
+        r += hi::char_cast<char32_t>(*hi::from_string<uint32_t>(codePointString, 16));
     }
     return r;
 }

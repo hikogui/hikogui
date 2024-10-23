@@ -32,6 +32,7 @@ struct unicode_bidi_context {
     mode_type direction_mode = mode_type::auto_LTR;
     bool enable_mirrored_brackets = true;
     bool enable_line_separator = true;
+    bool remove_explicit_embeddings = true;
 
     constexpr unicode_bidi_context() noexcept = default;
     constexpr unicode_bidi_context(unicode_bidi_context const&) noexcept = default;
@@ -1120,7 +1121,9 @@ constexpr void unicode_bidi_P1_line(
     auto const[paragraph_embedding_level, paragraph_direction] = unicode_bidi_P2_P3(first, last, context);
 
     unicode_bidi_X1(first, last, paragraph_embedding_level, context);
-    last = unicode_bidi_X9(first, last);
+    if (context.remove_explicit_embeddings) {
+        last = unicode_bidi_X9(first, last);
+    }
     unicode_bidi_X10(first, last, paragraph_embedding_level, context);
 
     auto line_begin = first;

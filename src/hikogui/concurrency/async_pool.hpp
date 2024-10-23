@@ -138,7 +138,7 @@ private:
     }
 };
 
-async_pool global_async_pool;
+inline async_pool global_async_pool;
 
 } // namespace detail
 

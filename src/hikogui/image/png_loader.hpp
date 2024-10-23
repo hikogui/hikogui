@@ -3,6 +3,7 @@
 
 #include "../color/color.hpp"
 #include "../geometry/geometry.hpp"
+#include "../file/file.hpp"
 #include "../macros.hpp"
 #include "sfloat_rgba16.hpp"
 #include "pixmap.hpp"
@@ -615,7 +616,7 @@ public:
     }
 };
 
-[[nodiscard]] pixmap<sfloat_rgba16> load_png(std::span<std::byte const> data)
+[[nodiscard]] inline pixmap<sfloat_rgba16> load_png(std::span<std::byte const> data)
 {
     auto delegate = png_loader_pixmap_delegate{};
     auto loader = png_loader{delegate};
@@ -623,12 +624,12 @@ public:
     return std::move(delegate.image);
 }
 
-[[nodiscard]] pixmap<sfloat_rgba16> load_png(hi::file_view const &view)
+[[nodiscard]] inline pixmap<sfloat_rgba16> load_png(hi::file_view const &view)
 {
     return load_png(as_span<std::byte const>(view));
 }
 
-[[nodiscard]] pixmap<sfloat_rgba16> load_png(std::filesystem::path path)
+[[nodiscard]] inline pixmap<sfloat_rgba16> load_png(std::filesystem::path path)
 {
     return load_png(hi::file_view{path});
 }

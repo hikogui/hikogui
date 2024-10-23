@@ -31,7 +31,6 @@ static hi::task<int> async_task(int* x)
 TEST_CASE(function_test)
 {
     int x = 0;
-    int y = 0;
 
     auto t = async_task(&x);
     

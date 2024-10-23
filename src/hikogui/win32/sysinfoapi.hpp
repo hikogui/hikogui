@@ -6,7 +6,7 @@ hi_export_module(hikogui.win32 : sysinfoapi)
 
 hi_export namespace hi::inline v1 {
 
-[[nodiscard]] SYSTEM_INFO win32_GetSystemInfo()
+[[nodiscard]] inline SYSTEM_INFO win32_GetSystemInfo()
 {
     auto r = SYSTEM_INFO{};
     GetSystemInfo(&r);

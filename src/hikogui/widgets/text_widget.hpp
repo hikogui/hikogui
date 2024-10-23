@@ -193,6 +193,7 @@ public:
         _sentence_break_opportunities = unicode_sentence_break(_text);
         _run_indices = shaper_make_run_indices(_text, _word_break_opportunities);
         _grapheme_metrics = shaper_collect_grapheme_metrics(_text, _run_indices, style.font_size, style.text_style);
+        //_embedding_levels = shaper_collect_embedding_levels(_text);
 
         auto const maximum_width = [&] {
             if (auto pixel_width = std::get_if<unit::pixels_f>(&style.width)) {

@@ -141,9 +141,12 @@ struct shaper_grapheme_metrics {
             metrics.general_category = ucd_get_general_category(g.starter());
             metrics.bracket_type = ucd_get_bidi_paired_bracket_type(g.starter());
 
+            // If the grapheme is a bracket, then find the mirrored glyph.
+            // Only the base glyph is mirrored, the combining glyphs are not.
+            // The mirrored glyph is used when the grapheme is displayed in RTL.
             if (metrics.bracket_type != unicode_bidi_paired_bracket_type::n) {
                 auto const mirror_cp = ucd_get_bidi_mirroring_glyph(g.starter());
-                metrics.mirrored_glyph = font->get_glyph(mirror_cp);
+                metrics.mirrored_glyph = font->find_glyph(mirror_cp);
             }
 
             r.push_back(std::move(metrics));
@@ -152,6 +155,11 @@ struct shaper_grapheme_metrics {
 
     return r;
 }
+
+//[[nodiscard]] inline std::vector<uint8_t> shaper_collect_embedding_levels(gstring_view text)
+//{
+//
+//}
 
 /** Fold lines of a text.
  * 
