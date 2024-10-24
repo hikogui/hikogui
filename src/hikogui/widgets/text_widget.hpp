@@ -191,8 +191,9 @@ public:
         _line_break_opportunities = unicode_line_break(_text);
         _word_break_opportunities = unicode_word_break(_text);
         _sentence_break_opportunities = unicode_sentence_break(_text);
-        _run_indices = shaper_make_run_indices(_text, _word_break_opportunities);
-        _grapheme_metrics = shaper_collect_grapheme_metrics(_text, _run_indices, style.font_size, style.text_style);
+        _run_lengths = shaper_make_run_lengths(_text, _word_break_opportunities);
+        _run_ids = shaper_make_run_ids(_run_lengths);
+        _grapheme_metrics = shaper_collect_grapheme_metrics(_text, _run_lengths, style.font_size, style.text_style);
 
         // The embedding levels are used to determine the direction of the text.
         // First are the embedding levels of text, followed by the embedding levels of paragraphs.
@@ -236,9 +237,9 @@ public:
 
         auto const br = _shaped_text.bounds(max_width);
 
-        auto const text_size = extent2{text_metrics.width.in(unit::pixels), text_metrics.height.in(unit::pixels)};
+        auto const text_size = extent2{ceil_in(unit::pixels, text_metrics.width), ceil_in(unit::pixels, text_metrics.height)};
 
-        auto const minimum_spacing = text_metrics.overhang + text_metrics.underhang;
+        auto const minimum_spacing = ceil_as(unit::pixels, text_metrics.overhang + text_metrics.underhang);
         _margins = max(style.margins_px, hi::margins(0.0f, minimum_spacing.in(unit::pixels), 0.0f, minimum_spacing.in(unit::pixels)));
 
         return _constraints_cache = {
@@ -252,6 +253,9 @@ public:
     void set_layout(widget_layout const& context) noexcept override
     {
         super::set_layout(context);
+
+        _line_lengths = shaper_fold_lines(_line_break_opportunities, _grapheme_metrics, unit::pixels(context.width()));
+        _display_order = shaper_display_order(_line_lengths, _embedding_levels, _text);
 
         _shaped_text.layout(context.rectangle(), context.get_baseline().in(unit::pixels), context.sub_pixel_size);
     }
@@ -826,9 +830,13 @@ private:
     unicode_line_break_vector _line_break_opportunities;
     unicode_word_break_vector _word_break_opportunities;
     unicode_sentence_break_vector _sentence_break_opportunities;
-    std::vector<shaper_run_indices> _run_indices;
+    std::vector<size_t> _run_lengths;
+    std::vector<size_t> _run_ids;
     std::vector<shaper_grapheme_metrics> _grapheme_metrics;
     std::vector<int8_t> _embedding_levels;
+
+    std::vector<size_t> _line_lengths;
+    std::vector<size_t> _display_order;
 
     text_shaper _shaped_text;
 
