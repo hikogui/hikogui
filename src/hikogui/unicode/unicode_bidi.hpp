@@ -1343,6 +1343,72 @@ template<std::forward_iterator It, std::invocable<std::iter_value_t<It>> GetCode
     return r;
 }
 
+/**
+ *
+ * @param embedding_levels The embedding levels of each character, followed by
+ *                         the embedding levels of each paragraph.
+ *                         This function takes a copy, since it needs to temporarily
+ *                         modify the values.
+ */
+template<std::random_access_iterator It, std::random_access_iterator InOutIt, std::invocable<std::iter_value_t<It>> GetCodePoint>
+[[nodiscard]] inline void unicode_bidi_to_display_order(
+    In text_first,
+    In text_last,
+    std::vector<int8_t> embedding_levels,
+    std::vector<size_t> const& line_sizes,
+    InOutIt inout_first,
+    InOutIt inout_last,
+    GetCodePoint const& get_code_point)
+{
+    auto const text_size = gsl::narrow<size_t>(std::distance(text_first, text_last));
+
+    // L1
+    auto paragraph_levels_it = embedding_levels.begin() + text_size;
+    auto i = size_t{};
+    for (auto const line_size : line_sizes) {
+        auto levels = std::span{embedding_levels.begin() + i, embedding_levels.begin() + i + line_size};
+        auto const line = std::span{text_first + i, text_first + i + line_size};
+        auto const paragraph_level = *paragraph_level_it;
+
+        auto ws_start = size_t{};
+        for (auto j = size_t{}; j != line_size; ++j) {
+            auto const cp = get_code_point(line[j]);
+            auto const bc = ucd_get_bidi_class(cp);
+
+            using enum unicode_bidi_class;
+            if (bc == S or bc == P) {
+                for (auto k = ws_start; k != j; ++k) {
+                    levels[k] = paragraph_level;
+                }
+                levels[k] = paragraph_level;
+
+            } else if (bc != WS and bc != FSI and bc != LRI and bc != RLI and bc != PDI and bc != WS) {
+                ws_start = j + 1;
+            }
+        }
+        for (auto k = ws_start; k != line_size; ++k) {
+            levels[k] = paragraph_level;
+        }
+
+        if (ucd_get_bidi_class(get_code_point(line.last())) == unicode_bidi_class::P) {
+            ++paragraph_levels_it;
+        }
+
+        i += line_size;
+    }
+    assert(paragraph_levels_it == embedding_levels.end());
+
+
+
+    i = size_t{};
+    auto p = size_t{};
+    for (auto const line_size : line_sizes) {
+        auto levels = std::span{i, i + line_size};
+
+        i += line_size;
+    }
+}
+
 /** Get the unicode bidi direction for the first paragraph and context.
  *
  * @param first The first iterator
