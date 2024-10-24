@@ -406,14 +406,8 @@ hi_export namespace hi { inline namespace v1 {
 {
     using namespace std::literals;
 
-    auto const executable_file_ = executable_file();
-    if (not executable_file_) {
-        hi_log_error("Could not get path to executable: {}", executable_file_.error().message());
-        return policy::unspecified;
-    }
-
     auto const user_gpu_preferences_key = "Software\\Microsoft\\DirectX\\UserGpuPreferences";
-    if (auto const result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_file_->string())) {
+    if (auto const result = win32_RegGetValue<std::string>(HKEY_CURRENT_USER, user_gpu_preferences_key, executable_file().string())) {
         for (auto entry : std::views::split(std::string_view{*result}, ";"sv)) {
             auto entry_sv = std::string_view{entry};
             if (entry_sv.starts_with("GpuPreference=")) {
@@ -440,6 +434,12 @@ hi_export namespace hi { inline namespace v1 {
         hi_log_error("Could not read gpu profile policy: {}", std::error_code{result.error()}.message());
         return policy::unspecified;
     }
+}
+
+[[nodiscard]] inline size_t os_settings::gather_num_logical_processors()
+{
+    auto info = win32_GetSystemInfo();
+    return info.dwNumberOfProcessors;
 }
 
 }} // namespace hi::v1

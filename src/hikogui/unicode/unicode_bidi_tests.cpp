@@ -67,7 +67,7 @@ struct unicode_bidi_test {
         if (value == "x") {
             r.push_back(-1);
         } else {
-            r.push_back(hi::from_string<int>(value));
+            r.push_back(*hi::from_string<int>(value));
         }
     }
     return r;
@@ -80,7 +80,7 @@ struct unicode_bidi_test {
         if (value == "x") {
             r.push_back(-1);
         } else {
-            r.push_back(hi::from_string<int>(value));
+            r.push_back(*hi::from_string<int>(value));
         }
     }
     return r;
@@ -101,9 +101,9 @@ struct unicode_bidi_test {
     }
 
     auto bitset = hi::from_string<int>(hi::strip(line_s[1]), 16);
-    r.test_for_auto = (bitset & 1) != 0;
-    r.test_for_LTR = (bitset & 2) != 0;
-    r.test_for_RTL = (bitset & 4) != 0;
+    r.test_for_auto = (*bitset & 1) != 0;
+    r.test_for_LTR = (*bitset & 2) != 0;
+    r.test_for_RTL = (*bitset & 4) != 0;
 
     return r;
 }
@@ -147,6 +147,7 @@ TEST_CASE(bidi_test)
             auto test_parameters = hi::unicode_bidi_context{};
             test_parameters.enable_mirrored_brackets = false;
             test_parameters.enable_line_separator = false;
+            test_parameters.remove_explicit_embeddings = false;
             // clang-format off
             test_parameters.direction_mode =
                 paragraph_direction == hi::unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
@@ -225,7 +226,7 @@ struct unicode_bidi_character_test {
     auto r = unicode_bidi_character_test{};
     r.line_nr = line_nr;
     std::transform(begin(hex_characters), end(hex_characters), std::back_inserter(r.characters), [](auto const &x) {
-        return hi::char_cast<char32_t>(hi::from_string<uint32_t>(x, 16));
+        return hi::char_cast<char32_t>(*hi::from_string<uint32_t>(x, 16));
     });
 
     r.paragraph_direction = paragraph_direction == 0 ? hi::unicode_bidi_class::L :
@@ -240,12 +241,12 @@ struct unicode_bidi_character_test {
         if (x == "x") {
             return -1;
         } else {
-            return hi::from_string<int>(x);
+            return *hi::from_string<int>(x);
         }
     });
 
     std::transform(begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](auto const &x) {
-        return hi::from_string<int>(x);
+        return *hi::from_string<int>(x);
     });
 
     return r;
@@ -282,6 +283,7 @@ TEST_CASE(bidi_character_test)
         auto test_parameters = hi::unicode_bidi_context{};
         test_parameters.enable_mirrored_brackets = true;
         test_parameters.enable_line_separator = true;
+        test_parameters.remove_explicit_embeddings = false;
         // clang-format off
         test_parameters.direction_mode =
             test.paragraph_direction == hi::unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :

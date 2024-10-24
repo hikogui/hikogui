@@ -91,9 +91,12 @@ public:
     }
 
     /** Get the glyphs for a grapheme.
-     * @return a set of glyph-ids, or invalid when not found or error.
+     * 
+     * @param g The grapheme to look up the glyph for.
+     * @return a set of glyph-ids, or empty when the grapheme is not found in
+     *         the font.
      */
-    [[nodiscard]] lean_vector<glyph_id> find_glyph(grapheme g) const
+    [[nodiscard]] lean_vector<glyph_id> find_glyphs(grapheme g) const
     {
         // Create a glyph_ids object for a single grapheme.
         auto r = lean_vector<glyph_id>{};
@@ -123,6 +126,35 @@ public:
         return r;
     }
 
+    /** Get glyphs of a run of graphemes.
+     *
+     * When a run of text has a relatively unique grapheme it may not be found
+     * in the font. Therefor this function needs to be fast so it can be tried
+     * on multiple fonts. This is why this function returns the glyphs as an
+     * output argument, being able to reuse the allocation.
+     * 
+     * @param text The text to get the glyphs for from the same font.
+     * @param out Glyphs for each grapheme in the text.
+     * @return true on success, false when not all graphemes could be found in
+     *         the font.
+     */
+    bool find_glyphs(gstring_view text, std::vector<lean_vector<glyph_id>> &out) const
+    {
+        out.clear();
+        out.reserve(text.size());
+
+        for (auto g : text) {
+            if (auto glyph_ids = find_glyphs(g); not glyph_ids.empty()) {
+                out.push_back(std::move(glyph_ids));
+            } else {
+                return false;
+            }
+        }
+
+        assert(text.size() == out.size());
+        return true;
+    }
+
     /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
      *
@@ -139,7 +171,7 @@ public:
      * @return The advance for the glyph.
      * @throws std::exception If there was an error looking up the glyph.
      */
-    [[nodiscard]] virtual float get_advance(hi::glyph_id glyph_id) const = 0;
+    [[nodiscard]] virtual unit::em_squares_f get_advance(hi::glyph_id glyph_id) const = 0;
 
     /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.

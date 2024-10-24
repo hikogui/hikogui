@@ -71,16 +71,29 @@ constexpr It unordered_remove(It first, It last, It element)
     return new_last;
 }
 
-template<typename It, typename UnaryPredicate>
-constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
+/** Find the first occurrence of an element from the end of the range.
+ * 
+ * @param first An iterator pointing to the first item of the range.
+ * @param last An iterator pointing one beyond the last item of the range.
+ * @param predicate A function returning true when the element is found.
+ * @return An iterator within the range for the first matching element, or last if not found.
+ */
+template<std::random_access_iterator It, typename UnaryPredicate>
+constexpr It rfind_if(It first, It last, UnaryPredicate predicate)
 {
+    if (first == last) {
+        return last;
+    }
+
     auto i = last;
     do {
-        i--;
+        --i;
         if (predicate(*i)) {
             return i;
         }
     } while (i != first);
+
+    // Not found.
     return last;
 }
 
@@ -88,7 +101,7 @@ template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
     return rfind_if(first, last, [&](auto const& x) {
-        return !predicate(x);
+        return not predicate(x);
     });
 }
 
@@ -405,6 +418,40 @@ template<std::endian Endian = std::endian::native, typename T, std::unsigned_int
     }
 
     return ptr;
+}
+
+/** Remove elements from a container when the predicate matches and transform
+ * those elements to another container.
+ *
+ * @param first An iterator to the first element of a range.
+ * @param last An iterator beyond the last element of a range.
+ * @param d_first An output iterator to place elements that match the predicate.
+ * @param predicate The predicate to match. The predicate should return an
+ *                  std::optional<T> where T is an element of the in the output
+ *                  range. If the predicate returns std::nullopt the element is
+ *                  removed from the range, otherwise the element is transformed
+ *                  to the value of the std::optional.
+ * @return Past-the-end iterator for the new range of elements that didn't match
+ *         the predicate.
+ */
+template<
+    std::forward_iterator InputIt,
+    std::sentinel_for<InputIt> InputLast,
+    typename OutputIt,
+    std::invocable<typename std::iterator_traits<InputIt>::value_type&> Predicate>
+InputIt remove_transform_if(InputIt first, InputLast last, OutputIt d_first, Predicate const& predicate)
+{
+    auto result = first;
+    for (; first != last; ++first) {
+        if (auto transformed_item = predicate(*first)) {
+            *d_first++ = std::move(*transformed_item);
+        } else if (result == first) {
+            ++result;
+        } else {
+            *result++ = std::move(*first);
+        }
+    }
+    return result;
 }
 
 } // namespace hi::inline v1
