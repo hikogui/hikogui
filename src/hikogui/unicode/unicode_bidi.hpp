@@ -1185,7 +1185,8 @@ constexpr void unicode_bidi_P1_line(
     }
 
     if (paragraph_begin != last) {
-        auto const [new_paragraph_end, paragraph_embedding_level, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, last, context);
+        auto const [new_paragraph_end, paragraph_embedding_level, paragraph_bidi_class] =
+            unicode_bidi_P1_paragraph(paragraph_begin, last, context);
         paragraph_embedding_levels.push_back(paragraph_embedding_level);
         last = new_paragraph_end;
     }
@@ -1343,70 +1344,130 @@ template<std::forward_iterator It, std::invocable<std::iter_value_t<It>> GetCode
     return r;
 }
 
+template<std::random_access_iterator EmbeddingLevelIt, std::random_access_iterator TextIt, typename GetBidiClass>
+[[nodiscard]] inline std::vector<int8_t> unicode_bidi_L1(std::vector<size_t> const& line_sizes,
+EmbeddingLevelIt embedding_levels_first,
+    TextIt text_first,
+    GetBidiClass const& get_bidi_class) requires std::is_same_v<std::iter_value_t<EmbeddingLevelIt>, int8_t> and
+    std::is_invocable_r_v<unicode_bidi_class, GetBidiClass, std::iter_value_t<TextIt>>
+{
+    auto const text_size = std::accumulate(line_sizes.begin(), line_sizes.end(), size_t{});
+
+    auto r = std::vector<int8_t>{};
+    r.resize(text_size);
+
+    // L1: reset embedding levels of white-space at end of lines.
+    auto paragraph_level_it = embedding_levels_first + text_size;
+    auto text_it = text_first;
+    auto level_it = embedding_levels_first;
+    auto r_it = r.begin();
+    for (auto const line_size : line_sizes) {
+        auto const paragraph_level = *paragraph_level_it;
+
+        auto r_ws_start = r_it;
+        for (auto j = size_t{}; j != line_size; ++j, ++text_it, ++level_it, ++r_it) {
+            using enum unicode_bidi_class;
+
+            *r_it = *level_it;
+
+            auto const bc = get_bidi_class(*text_it);
+            if (bc == S) {
+                // White-space in front of a tab are set to the paragraph level.
+                std::fill(r_ws_start, r_it + 1, paragraph_level);
+
+            } else if (bc == B) {
+                // White-space in front of a paragraph separator are set to the
+                // paragraph level.
+                std::fill(r_ws_start, r_it + 1, paragraph_level);
+                ++paragraph_level_it;
+
+            } else if (bc != WS and bc != FSI and bc != LRI and bc != RLI and bc != PDI and bc != WS) {
+                // Any non-white-space character resets the start of the
+                // white-space. To one character beyond.
+                r_ws_start = r_it + 1;
+            }
+        }
+        // White-space at the end of the line are set to the paragraph level.
+        std::fill(r_ws_start, r_it, paragraph_level);
+    }
+
+    assert(r_it == r.end());
+    return r;
+}
+
+[[nodiscard]] inline std::vector<size_t> unicode_bidi_L2(std::vector<size_t> const& line_sizes, std::vector<int8_t> embedding_levels)
+{
+    auto const text_size = embedding_levels.size();
+
+    auto r = std::vector<size_t>{};
+    r.resize(text_size);
+    for (auto i = size_t{}; i != text_size; ++i) {
+        r[i] = i;
+    }
+
+    auto const sequence_null = r.end();
+    auto level_it = embedding_levels.begin();
+    auto r_it = r.begin();
+    for (auto const line_size : line_sizes) {
+        auto const max_level = std::accumulate(level_it, level_it + line_size, int8_t{}, [](auto const& a, auto const& b) {
+            return std::max(a, b);
+        });
+
+        for (auto level = max_level; level >= 1; --level) {
+            auto it = level_it;
+            auto jt = r_it;
+            auto sequence_start = sequence_null;
+            for (auto i = size_t{}; i != line_size; ++i, ++it, ++jt) {
+                if (sequence_start == sequence_null) {
+                    if (*it >= level) {
+                        // We start the sequence when the character has a level
+                        // higher or equal to the level we need to reverse.
+                        sequence_start = jt;
+                    }
+
+                } else if (*it < level) {
+                    // This character no longer belongs to the current sequence.
+                    std::reverse(sequence_start, jt);
+                    sequence_start = sequence_null;
+                }
+            }
+            if (sequence_start != sequence_null) {
+                // Reverse the sequence at the end-of-line.
+                std::reverse(sequence_start, jt);
+            }
+        }
+
+        level_it += line_size;
+        r_it += line_size;
+    }
+
+    return r;
+}
+
 /**
  *
  * @param embedding_levels The embedding levels of each character, followed by
  *                         the embedding levels of each paragraph.
  *                         This function takes a copy, since it needs to temporarily
  *                         modify the values.
+ * @param line_sizes The size of each line.
+ * @param text_it An iterator pointing to the first character of the text.
+ * @param get_bidi_class A function to get the bidi-class of a character.
+ * @return A vector in display-order with indices to the text in logical order.
  */
-template<std::random_access_iterator It, std::random_access_iterator InOutIt, std::invocable<std::iter_value_t<It>> GetCodePoint>
-[[nodiscard]] inline void unicode_bidi_to_display_order(
-    In text_first,
-    In text_last,
-    std::vector<int8_t> embedding_levels,
+template<std::random_access_iterator EmbeddingLevelIt, std::random_access_iterator TextIt, typename GetBidiClass>
+[[nodiscard]] inline std::vector<size_t> unicode_bidi_to_display_order(
     std::vector<size_t> const& line_sizes,
-    InOutIt inout_first,
-    InOutIt inout_last,
-    GetCodePoint const& get_code_point)
+    EmbeddingLevelIt embedding_levels_first,
+    TextIt text_first,
+    GetBidiClass const& get_bidi_class) requires std::is_same_v<std::iter_value_t<EmbeddingLevelIt>, int8_t> and
+    std::is_invocable_r_v<unicode_bidi_class, GetBidiClass, std::iter_value_t<TextIt>>
 {
-    auto const text_size = gsl::narrow<size_t>(std::distance(text_first, text_last));
+    // L1: reset embedding levels of white-space at end of lines.
+    auto const embedding_levels = unicode_bidi_L1(line_sizes, embedding_levels_first, text_first, get_bidi_class);
 
-    // L1
-    auto paragraph_levels_it = embedding_levels.begin() + text_size;
-    auto i = size_t{};
-    for (auto const line_size : line_sizes) {
-        auto levels = std::span{embedding_levels.begin() + i, embedding_levels.begin() + i + line_size};
-        auto const line = std::span{text_first + i, text_first + i + line_size};
-        auto const paragraph_level = *paragraph_level_it;
-
-        auto ws_start = size_t{};
-        for (auto j = size_t{}; j != line_size; ++j) {
-            auto const cp = get_code_point(line[j]);
-            auto const bc = ucd_get_bidi_class(cp);
-
-            using enum unicode_bidi_class;
-            if (bc == S or bc == P) {
-                for (auto k = ws_start; k != j; ++k) {
-                    levels[k] = paragraph_level;
-                }
-                levels[k] = paragraph_level;
-
-            } else if (bc != WS and bc != FSI and bc != LRI and bc != RLI and bc != PDI and bc != WS) {
-                ws_start = j + 1;
-            }
-        }
-        for (auto k = ws_start; k != line_size; ++k) {
-            levels[k] = paragraph_level;
-        }
-
-        if (ucd_get_bidi_class(get_code_point(line.last())) == unicode_bidi_class::P) {
-            ++paragraph_levels_it;
-        }
-
-        i += line_size;
-    }
-    assert(paragraph_levels_it == embedding_levels.end());
-
-
-
-    i = size_t{};
-    auto p = size_t{};
-    for (auto const line_size : line_sizes) {
-        auto levels = std::span{i, i + line_size};
-
-        i += line_size;
-    }
+    // L2: reverse any sequence of characters that are at an odd embedding level.
+    return unicode_bidi_L2(line_sizes, embedding_levels);
 }
 
 /** Get the unicode bidi direction for the first paragraph and context.

@@ -27,12 +27,12 @@ struct shaper_run_indices {
  *
  * @param text The text to get the runs of.
  * @param word_breaks The word breaks in the text.
- * @return A vector of pairs of the start and one-past-the-end index of each run.
+ * @return A vector of number of graphemes in each run.
  */
-[[nodiscard]] inline std::vector<shaper_run_indices>
-shaper_make_run_indices(gstring_view text, unicode_word_break_vector word_breaks)
+[[nodiscard]] inline std::vector<size_t>
+shaper_make_run_lengths(gstring_view text, unicode_word_break_vector word_breaks)
 {
-    auto r = std::vector<shaper_run_indices>{};
+    auto r = std::vector<size_t>{};
 
     // If the text is empty, then word_breaks is also empty.
     if (text.empty()) {
@@ -48,15 +48,43 @@ shaper_make_run_indices(gstring_view text, unicode_word_break_vector word_breaks
     for (auto i = size_t{0}; i != text.size(); ++i) {
         // Is this is the last character of the run.
         if (word_breaks[i + 1] == unicode_break_opportunity::yes) {
-            r.emplace_back(run_start, i + 1);
+            r.emplace_back(i + 1 - run_start);
             run_start = i + 1;
 
         } else if (text[i + 1].attributes() != text[i].attributes()) { // No bound check, see assert above.
-            r.emplace_back(run_start, i + 1);
+            r.emplace_back(i + 1 - run_start);
             run_start = i + 1;
         }
     }
 
+    return r;
+}
+
+/** Get a identifier for each run.
+ * 
+ * This is used by the shaper when advancing glyphs in display order, to easily
+ * identify when a new run starts.
+ * 
+ * @param run_lengths The number of graphemes in each run.
+ * @return A vector of run identifiers, one for each grapheme in logical order.
+ */
+[[nodiscard]] std::vector<size_t> shaper_make_run_ids(std::vector<size_t> const& run_lengths)
+{
+    auto size = std::accumulate(run_lengths.begin(), run_lengths.end(), size_t{0});
+
+    auto r = std::vector<size_t>{};
+    r.resize(size);
+
+    auto id = 0;
+    auto r_it = r.begin();
+    for (auto length : run_lengths) {
+        for (auto i = size_t{0}; i != length; ++i, ++r_it) {
+            *r_it = id;
+        }
+        ++id;
+    }
+
+    assert(r_it == r.end());
     return r;
 }
 
@@ -89,12 +117,10 @@ struct shaper_grapheme_metrics {
  */
 [[nodiscard]] inline std::vector<shaper_grapheme_metrics> shaper_collect_grapheme_metrics(
     gstring_view text,
-    std::vector<shaper_run_indices>& run_indices,
+    std::vector<size_t> const& run_lengths,
     unit::pixels_per_em_f font_size,
     text_style_set const& style_set)
 {
-    assert(text.size() >= run_indices.size());
-
     // A scratch pad to share the allocation of this vector between calls to
     // find_glyphs() to improve the performance.
     auto find_glyphs_scratch = std::vector<lean_vector<glyph_id>>{};
@@ -105,10 +131,11 @@ struct shaper_grapheme_metrics {
     auto attributes = grapheme_attributes{};
     text_style style = text_style{};
     auto style_font_size = font_size;
-    for (auto [first, last] : run_indices) {
-        assert(first < last);
+    auto i = size_t{0};
+    for (auto run_length : run_lengths) {
+        assert(run_length != 0);
 
-        auto const run = text.substr(first, last - first);
+        auto const run = text.substr(i, run_length);
         if (style.empty() or run.front().attributes() != attributes) {
             attributes = run.front().attributes();
             style = style_set[attributes];
@@ -116,12 +143,12 @@ struct shaper_grapheme_metrics {
         }
 
         auto const run_glyphs = find_glyphs(run, style.font_chain(), find_glyphs_scratch);
+        assert(run_glyphs.size() == run.size());
+
         auto font_id = hi::font_id{};
         hi::font* font = nullptr;
         auto font_metrics = hi::font_metrics_px{};
-        for (auto i = size_t{0}; i != run.size(); ++i) {
-            auto const g = run[i];
-            auto const glyph_ids = run_glyphs[i];
+        for (auto [g, glyph_ids] : std::views::zip(run, run_glyphs)) {
 
             if (font == nullptr or font_id != glyph_ids.font) {
                 font_id = glyph_ids.font;
@@ -151,6 +178,8 @@ struct shaper_grapheme_metrics {
 
             r.push_back(std::move(metrics));
         }
+
+        i += run_length;
     }
 
     return r;
@@ -332,6 +361,17 @@ struct shaper_text_metrics {
     }();
 
     return r;
+}
+
+[[nodiscard]] inline std::vector<size_t> shaper_display_order(std::vector<size_t> const& line_sizes, std::vector<int8_t> const& embedding_levels, gstring_view text)
+{
+    return unicode_bidi_to_display_order(
+        line_sizes,
+        embedding_levels.begin(),
+        text.begin(),
+        [](auto const& g) {
+            return ucd_get_bidi_class(g.starter());
+        });
 }
 
 }
